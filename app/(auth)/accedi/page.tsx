@@ -1,0 +1,18 @@
+import Image from 'next/image';
+import LoginForm from './_components/LoginForm';
+
+export default function LoginPage() {
+  return (
+    <main className='flex flex-col items-center w-full h-dvh bg-black bg-[url(/images/background.webp)] bg-right xl:bg-center bg-cover'>
+      <Image
+        className='w-20 md:w-26 xl:w-36 mt-12 mb-18'
+        src='/images/logo.svg'
+        alt='Milano Ovest logo'
+        width={140}
+        height={144}
+        priority
+      />
+      <LoginForm />
+    </main>
+  );
+}
