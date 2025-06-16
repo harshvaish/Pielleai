@@ -20,7 +20,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang='it'>
-      <body className={`${plusJakartaSans.variable} antialiased`}>
+      <body
+        className={`h-dvh flex flex-col ${plusJakartaSans.variable} antialiased bg-zinc-100`}
+      >
         {children}
         <Toaster
           position='top-center'

@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import InputPassword from './InputPassword';
 import { useState } from 'react';
 import { toast } from 'sonner';
-// import { useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { signInSchema } from '@/lib/validation/signInSchema';
 import { signInAction } from '@/lib/server-actions/sign-in.action';
 import Link from 'next/link';
@@ -18,7 +18,7 @@ export default function LoginForm() {
     {}
   );
   const [isLoading, setIsLoading] = useState(false);
-  // const router = useRouter();
+  const router = useRouter();
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -43,7 +43,7 @@ export default function LoginForm() {
       const response = await signInAction(email, password);
 
       if (response.success) {
-        toast.success('Loggato'); // redirect here?
+        router.push('/');
       } else {
         toast.error(response.message || 'Oops, qualcosa è andato storto');
         setIsLoading(false);
@@ -51,8 +51,8 @@ export default function LoginForm() {
     } catch (error) {
       console.error('Error: ', error instanceof Error ? error.message : error);
       toast.error('Autenticazione non riuscita, riprova più tardi');
+      setIsLoading(false);
     }
-    setIsLoading(false);
   };
 
   return (
