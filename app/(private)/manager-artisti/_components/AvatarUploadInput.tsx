@@ -1,0 +1,136 @@
+'use client';
+
+import { AU_LOCAL_STORAGE_KEY, AU_LOCAL_STORAGE_TTL } from '@/lib/constants';
+import {
+  compressImage,
+  fileToBase64,
+  getFileMagicNumber,
+  isValidImageMagicNumber,
+} from '@/lib/utils';
+import { avatarUploadSchema } from '@/lib/validation/avatarUploadSchema';
+import { Plus, UserRound } from 'lucide-react';
+import Image from 'next/image';
+import React, { useEffect, useRef, useState } from 'react';
+import { toast } from 'sonner';
+
+export default function AvatarUploadInput() {
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [preview, setPreview] = useState<string | null>(null);
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const validation = avatarUploadSchema.safeParse(file);
+    if (!validation.success) {
+      toast.error(validation.error.issues[0].message);
+      return;
+    }
+
+    try {
+      const magicNumber = await getFileMagicNumber(file);
+      if (!isValidImageMagicNumber(magicNumber)) {
+        toast.error("Il contenuto dell'immagine non è valido.");
+        return;
+      }
+
+      const compressedFile = await compressImage(file);
+
+      const base64 = await fileToBase64(compressedFile);
+      setPreview(base64);
+
+      await uploadImage(compressedFile);
+    } catch {
+      toast.error('Caricamento immagine non riuscito.');
+      setPreview(null);
+    }
+  };
+
+  const uploadImage = async (file: File) => {
+    // Request signed URL from server
+    const response = await fetch('/api/upload-url', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: file.name,
+        size: file.size,
+        type: file.type,
+      }),
+    });
+
+    if (!response.ok) {
+      toast.error('Caricamento immagine non riuscito.');
+      return;
+    }
+
+    const { signedUrl, path } = await response.json();
+
+    // Upload directly to Supabase Storage
+    const uploadResponse = await fetch(signedUrl, {
+      method: 'PUT',
+      headers: { 'Content-Type': file.type },
+      body: file,
+    });
+
+    if (!uploadResponse.ok) {
+      toast.error('Caricamento immagine non riuscito, riprova più tardi.');
+      return;
+    }
+
+    const url = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/${process.env.NEXT_PUBLIC_SUPABASE_BUCKET_NAME}/${path}`;
+
+    // Store into localStorage
+    localStorage.setItem(
+      AU_LOCAL_STORAGE_KEY,
+      JSON.stringify({
+        url,
+        timestamp: Date.now(),
+      })
+    );
+  };
+
+  useEffect(() => {
+    const stored = localStorage.getItem(AU_LOCAL_STORAGE_KEY);
+    if (stored) {
+      const { url, timestamp } = JSON.parse(stored);
+      if (Date.now() - timestamp < AU_LOCAL_STORAGE_TTL) {
+        setPreview(url);
+      } else {
+        localStorage.removeItem(AU_LOCAL_STORAGE_KEY);
+      }
+    }
+  }, []);
+
+  return (
+    <>
+      <input
+        type='file'
+        ref={fileInputRef}
+        accept='image/*'
+        onChange={handleFileChange}
+        className='hidden absolute -top-full -left-full'
+      />
+      <div
+        className='relative w-16 h-16 flex justify-center items-center bg-muted rounded-full group hover:cursor-pointer'
+        onClick={() => fileInputRef.current?.click()}
+      >
+        {preview ? (
+          <Image
+            src={preview}
+            fill
+            alt='Immagine profilo caricata'
+            className='object-cover object-center rounded-full'
+          />
+        ) : (
+          <UserRound
+            size={32}
+            className='text-zinc-400'
+          />
+        )}
+        <div className='absolute -bottom-1 right-0 w-6 h-6 flex justify-center items-center bg-emerald-600 text-white rounded-full transition-transform group-hover:scale-105'>
+          <Plus size={16} />
+        </div>
+      </div>
+    </>
+  );
+}

@@ -14,6 +14,7 @@ export type EventStatus =
   | 'conflict'
   | 'draft';
 
+/* ------------------------------------------------- */
 export interface CalendarEvent extends Event {
   id: number;
   artistName: string;
@@ -21,3 +22,4 @@ export interface CalendarEvent extends Event {
   venueName: string;
   status: EventStatus;
 }
+/* ------------------------------------------------- */

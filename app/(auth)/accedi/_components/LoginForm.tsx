@@ -43,7 +43,7 @@ export default function LoginForm() {
       const response = await signInAction(email, password);
 
       if (response.success) {
-        router.push('/');
+        router.push('/dashboard');
       } else {
         toast.error(response.message || 'Oops, qualcosa è andato storto');
         setIsLoading(false);

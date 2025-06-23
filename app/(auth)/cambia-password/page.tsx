@@ -14,7 +14,7 @@ export default async function ChangePasswordPage({
 
   if (error)
     return (
-      <main className='flex flex-col items-center w-full h-dvh bg-black bg-[url(/images/background.webp)] bg-right xl:bg-center bg-cover'>
+      <main className='flex flex-col items-center w-full h-dvh bg-black px-4'>
         <Image
           className='w-20 md:w-26 xl:w-36 mt-12 mb-18'
           src='/images/icon.svg'
@@ -30,9 +30,9 @@ export default async function ChangePasswordPage({
   if (!token) redirect('/accedi');
 
   return (
-    <main className='flex flex-col items-center w-full h-dvh bg-black bg-[url(/images/background.webp)] bg-right xl:bg-center bg-cover'>
+    <main className='flex flex-col items-center w-full h-dvh bg-black px-4'>
       <Image
-        className='w-20 md:w-26 xl:w-36 mt-12 mb-18'
+        className='w-20 md:w-26 xl:w-36 mt-8 mb-12'
         src='/images/icon.svg'
         alt='logo Milano Ovest'
         width={140}

@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Eye, EyeOff } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 
 interface InputPasswordProps {
   value: string;
@@ -33,19 +32,17 @@ export default function InputPassword({
         minLength={8}
         maxLength={16}
       />
-      <Button
-        type='button'
-        variant='secondary'
+      <div
         onClick={() => setVisible((prev) => !prev)}
-        className='absolute right-0 top-1/2 -translate-y-1/2 h-full bg-transparent hover:bg-transparent shadow-none'
+        className='absolute right-3 top-1/2 -translate-y-1/2 w-6 h-6 flex justify-center items-center hover:cursor-pointer'
         aria-label={visible ? 'Nascondi password' : 'Mostra password'}
       >
         {visible ? (
-          <EyeOff className='text-muted-foreground' />
+          <EyeOff className='text-muted-foreground stroke-1' />
         ) : (
-          <Eye className='text-muted-foreground' />
+          <Eye className='text-muted-foreground stroke-1' />
         )}
-      </Button>
+      </div>
     </div>
   );
 }
