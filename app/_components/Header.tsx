@@ -1,6 +1,7 @@
 import Image from 'next/image';
+import LogoutButton from './LogoutButton';
 
-export default function Header() {
+export default async function Header() {
   return (
     <header className='max-h-max flex justify-between items-center px-8 py-4 border-b-1'>
       <Image
@@ -11,6 +12,7 @@ export default function Header() {
         height={40}
         priority
       />
+      <LogoutButton />
     </header>
   );
 }
