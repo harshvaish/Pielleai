@@ -1,3 +1,4 @@
+CREATE TYPE "public"."gender_enum" AS ENUM('maschile', 'femminile', 'Non-binary');--> statement-breakpoint
 CREATE TYPE "public"."user_role" AS ENUM('admin', 'artist-manager', 'venue-manager', 'user');--> statement-breakpoint
 CREATE TABLE "accounts" (
 	"id" text PRIMARY KEY NOT NULL,
@@ -15,6 +16,22 @@ CREATE TABLE "accounts" (
 	"updated_at" timestamp NOT NULL
 );
 --> statement-breakpoint
+CREATE TABLE "countries" (
+	"id" serial PRIMARY KEY NOT NULL,
+	"code" varchar(2) NOT NULL,
+	"name" varchar(100) NOT NULL,
+	"created_at" timestamp DEFAULT now(),
+	CONSTRAINT "countries_code_key" UNIQUE("code")
+);
+--> statement-breakpoint
+CREATE TABLE "languages" (
+	"id" serial PRIMARY KEY NOT NULL,
+	"code" varchar(2) NOT NULL,
+	"name" varchar(100) NOT NULL,
+	"created_at" timestamp DEFAULT now(),
+	CONSTRAINT "languages_code_key" UNIQUE("code")
+);
+--> statement-breakpoint
 CREATE TABLE "sessions" (
 	"id" text PRIMARY KEY NOT NULL,
 	"expires_at" timestamp NOT NULL,
@@ -25,6 +42,13 @@ CREATE TABLE "sessions" (
 	"user_agent" text,
 	"user_id" text NOT NULL,
 	CONSTRAINT "sessions_token_unique" UNIQUE("token")
+);
+--> statement-breakpoint
+CREATE TABLE "subdivisions" (
+	"id" serial PRIMARY KEY NOT NULL,
+	"country_id" integer NOT NULL,
+	"name" varchar(200) NOT NULL,
+	"created_at" timestamp DEFAULT now()
 );
 --> statement-breakpoint
 CREATE TABLE "users" (
@@ -49,4 +73,5 @@ CREATE TABLE "verifications" (
 );
 --> statement-breakpoint
 ALTER TABLE "accounts" ADD CONSTRAINT "accounts_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "sessions" ADD CONSTRAINT "sessions_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;
+ALTER TABLE "sessions" ADD CONSTRAINT "sessions_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "subdivisions" ADD CONSTRAINT "subdivisions_country_id_fkey" FOREIGN KEY ("country_id") REFERENCES "public"."countries"("id") ON DELETE cascade ON UPDATE cascade;

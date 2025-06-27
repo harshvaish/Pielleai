@@ -12,7 +12,8 @@ export const sendResetPasswordEmailAction = async (
   if (!apiKey) {
     return {
       success: false,
-      message: 'Configurazione errata del server: Chiave API SendGrid mancante',
+      message:
+        'Configurazione errata del server: Chiave API SendGrid mancante.',
       data: null,
     };
   }

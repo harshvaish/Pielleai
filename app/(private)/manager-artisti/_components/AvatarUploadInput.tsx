@@ -2,6 +2,7 @@
 
 import { AU_LOCAL_STORAGE_KEY, AU_LOCAL_STORAGE_TTL } from '@/lib/constants';
 import {
+  cn,
   compressImage,
   fileToBase64,
   getFileMagicNumber,
@@ -13,9 +14,19 @@ import Image from 'next/image';
 import React, { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
-export default function AvatarUploadInput() {
+type AvatarUploadInputProps = {
+  value?: string;
+  onChange: (newValue: string) => void;
+  hasError: boolean;
+};
+
+export default function AvatarUploadInput({
+  value,
+  onChange,
+  hasError,
+}: AvatarUploadInputProps) {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
-  const [preview, setPreview] = useState<string | null>(null);
+  const [preview, setPreview] = useState<string | null>(value ?? null);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -35,7 +46,6 @@ export default function AvatarUploadInput() {
       }
 
       const compressedFile = await compressImage(file);
-
       const base64 = await fileToBase64(compressedFile);
       setPreview(base64);
 
@@ -47,7 +57,6 @@ export default function AvatarUploadInput() {
   };
 
   const uploadImage = async (file: File) => {
-    // Request signed URL from server
     const response = await fetch('/api/upload-url', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -65,7 +74,6 @@ export default function AvatarUploadInput() {
 
     const { signedUrl, path } = await response.json();
 
-    // Upload directly to Supabase Storage
     const uploadResponse = await fetch(signedUrl, {
       method: 'PUT',
       headers: { 'Content-Type': file.type },
@@ -79,27 +87,34 @@ export default function AvatarUploadInput() {
 
     const url = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/${process.env.NEXT_PUBLIC_SUPABASE_BUCKET_NAME}/${path}`;
 
-    // Store into localStorage
+    // Save to react-hook-form state via onChange
+    onChange(url);
+
+    // Also store locally for preview on next render
     localStorage.setItem(
       AU_LOCAL_STORAGE_KEY,
-      JSON.stringify({
-        url,
-        timestamp: Date.now(),
-      })
+      JSON.stringify({ url, timestamp: Date.now() })
     );
+
+    setPreview(url);
   };
 
   useEffect(() => {
+    if (value) {
+      setPreview(value);
+      return;
+    }
     const stored = localStorage.getItem(AU_LOCAL_STORAGE_KEY);
     if (stored) {
       const { url, timestamp } = JSON.parse(stored);
       if (Date.now() - timestamp < AU_LOCAL_STORAGE_TTL) {
         setPreview(url);
+        onChange(url);
       } else {
         localStorage.removeItem(AU_LOCAL_STORAGE_KEY);
       }
     }
-  }, []);
+  }, [value, onChange]);
 
   return (
     <>
@@ -111,13 +126,17 @@ export default function AvatarUploadInput() {
         className='hidden absolute -top-full -left-full'
       />
       <div
-        className='relative w-16 h-16 flex justify-center items-center bg-muted rounded-full group hover:cursor-pointer'
+        className={cn(
+          'relative w-16 h-16 flex justify-center items-center bg-muted rounded-full group hover:cursor-pointer',
+          hasError && 'border border-destructive'
+        )}
         onClick={() => fileInputRef.current?.click()}
       >
         {preview ? (
           <Image
             src={preview}
             fill
+            sizes='64px'
             alt='Immagine profilo caricata'
             className='object-cover object-center rounded-full'
           />

@@ -1,11 +1,17 @@
-import { betterAuth } from 'better-auth';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
+import { betterAuth } from 'better-auth';
 import { database } from '@/lib/database/connection';
 import * as schema from '@/lib/database/schema';
 import { nextCookies } from 'better-auth/next-js';
-import { USER_ROLES } from './constants';
 import { createAuthMiddleware, APIError } from 'better-auth/api';
 import { sendResetPasswordEmailAction } from './server-actions/send-reset-password-email.action';
+import { admin } from 'better-auth/plugins/admin';
+import {
+  adminRole,
+  artistManagerRole,
+  userRole,
+  venueManagerRole,
+} from './permissions';
 
 export const auth = betterAuth({
   database: drizzleAdapter(database, {
@@ -13,21 +19,10 @@ export const auth = betterAuth({
     schema: schema,
     usePlural: true,
   }),
-  user: {
-    additionalFields: {
-      role: {
-        type: [...USER_ROLES],
-        required: false,
-        input: false,
-        returned: true,
-        defaultValue: 'user',
-      },
-    },
-  },
   emailAndPassword: {
     enabled: true,
-    disableSignUp: true,
-    autoSignIn: true,
+    autoSignIn: false,
+    disableSignUp: false,
     requireEmailVerification: false,
     resetPasswordTokenExpiresIn: 60 * 60, // 1 ora
     sendResetPassword: async ({ user, url }) => {
@@ -65,7 +60,19 @@ export const auth = betterAuth({
       }
     }),
   },
-  plugins: [nextCookies()],
+  plugins: [
+    nextCookies(),
+    admin({
+      roles: {
+        'user': userRole,
+        'admin': adminRole,
+        'artist-manager': artistManagerRole,
+        'venue-manager': venueManagerRole,
+      },
+      defaultRole: 'user',
+      adminRoles: ['admin'],
+    }),
+  ],
 });
 
 export type User = (typeof auth.$Infer.Session)['user'];

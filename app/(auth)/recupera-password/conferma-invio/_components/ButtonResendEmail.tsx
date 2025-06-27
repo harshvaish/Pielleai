@@ -5,7 +5,7 @@ import { forgetPassword } from '@/lib/auth-client';
 import { RPE_BLOCK_DURATION, RPE_BLOCK_STORAGE_NAME } from '@/lib/constants';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
-import { z } from 'zod';
+import * as z from 'zod/v4';
 
 export default function ButtonResendEmail({ email }: { email: string }) {
   const [isLoading, setIsLoading] = useState(false);
@@ -97,8 +97,8 @@ export default function ButtonResendEmail({ email }: { email: string }) {
       {isLoading
         ? 'Invio email...'
         : blockedUntil
-        ? `Invia nuovamente in ${timeLeft} secondi`
-        : 'Invia nuovamente'}
+          ? `Invia nuovamente in ${timeLeft} secondi`
+          : 'Invia nuovamente'}
     </Button>
   );
 }

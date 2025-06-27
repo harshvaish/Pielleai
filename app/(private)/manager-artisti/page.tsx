@@ -1,11 +1,11 @@
-import CreateArtistManagerButton from './_components/CreateArtistManagerButton';
+import CreateArtistsManagerButton from './_components/CreateArtistsManagerButton';
 
-export default function ArtistManagersPage() {
+export default async function ArtistManagersPage() {
   return (
     <>
       <div className='flex justify-between items-center'>
         <h1 className='text-2xl font-bold'>Manager Artisti</h1>
-        <CreateArtistManagerButton />
+        <CreateArtistsManagerButton />
       </div>
       {/* artist managers table section */}
       <section className='min-h-80 flex flex-col justify-center items-center bg-white p-4 rounded-2xl'>

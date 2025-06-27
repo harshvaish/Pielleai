@@ -9,6 +9,8 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+export const fetcher = (url: string) => fetch(url).then((res) => res.json());
+
 export function buildCalendarLabel(date: Date, view: View): string {
   switch (view) {
     case 'day': {

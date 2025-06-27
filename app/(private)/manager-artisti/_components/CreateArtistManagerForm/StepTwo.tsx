@@ -1,0 +1,473 @@
+import { useFormContext, Controller } from 'react-hook-form';
+import { Input } from '@/components/ui/input';
+import { Separator } from '@/components/ui/separator';
+import { cn, fetcher } from '@/lib/utils';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+} from '@/components/ui/select';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Country, Subdivision } from '@/lib/types';
+import useSWR from 'swr';
+import { toast } from 'sonner';
+
+export default function StepTwo({ countries }: { countries: Country[] }) {
+  const {
+    register,
+    control,
+    watch,
+    formState: { errors },
+  } = useFormContext();
+
+  const selectedCountryId = watch('countryId');
+
+  const { data, error } = useSWR(
+    selectedCountryId
+      ? `/api/country-subdivisions?country=${selectedCountryId}`
+      : null,
+    fetcher
+  );
+
+  const subdivisions: Subdivision[] = data?.subdivisions ?? [];
+
+  if (error) {
+    toast.error('Recupero delle province non riuscito.');
+  }
+
+  return (
+    <>
+      <div className='text-xl text-center font-bold'>Dati personali</div>
+      <div className='flex flex-col'>
+        <label
+          htmlFor='company'
+          className='block text-sm font-semibold mb-2'
+        >
+          Ragione sociale
+        </label>
+        <Input
+          id='company'
+          {...register('company')}
+          placeholder='Milano Ovest'
+          className={
+            errors.company ? 'border-destructive text-destructive' : ''
+          }
+        />
+        {errors.company && (
+          <p className='text-xs text-destructive mt-2'>
+            {errors.company.message as string}
+          </p>
+        )}
+      </div>
+      <div className='grid grid-cols-2 gap-4'>
+        <div className='flex flex-col'>
+          <label
+            htmlFor='taxCode'
+            className='block text-sm font-semibold mb-2'
+          >
+            Codice fiscale
+          </label>
+          <Input
+            id='taxCode'
+            {...register('taxCode')}
+            placeholder='AAAAAAAAAA1234'
+            className={
+              errors.taxCode ? 'border-destructive text-destructive' : ''
+            }
+          />
+          {errors.taxCode && (
+            <p className='text-xs text-destructive mt-2'>
+              {errors.taxCode.message as string}
+            </p>
+          )}
+        </div>
+        <div className='flex flex-col'>
+          <label
+            htmlFor='ipiCode'
+            className='block text-sm font-semibold mb-2'
+          >
+            Codice IPI
+          </label>
+          <Input
+            id='ipiCode'
+            {...register('ipiCode')}
+            placeholder='01234'
+            className={
+              errors.ipiCode ? 'border-destructive text-destructive' : ''
+            }
+            autoComplete='family-name'
+          />
+          {errors.ipiCode && (
+            <p className='text-xs text-destructive mt-2'>
+              {errors.ipiCode.message as string}
+            </p>
+          )}
+        </div>
+      </div>
+      <div className='grid grid-cols-2 gap-4'>
+        <div className='flex flex-col'>
+          <label
+            htmlFor='bicCode'
+            className='block text-sm font-semibold mb-2'
+          >
+            Codice BIC
+          </label>
+          <Input
+            id='bicCode'
+            {...register('bicCode')}
+            placeholder='AAAAAAAAAA1234'
+            className={
+              errors.bicCode ? 'border-destructive text-destructive' : ''
+            }
+          />
+          {errors.bicCode && (
+            <p className='text-xs text-destructive mt-2'>
+              {errors.bicCode.message as string}
+            </p>
+          )}
+        </div>
+        <div className='flex flex-col'>
+          <label
+            htmlFor='abaRoutingNumber'
+            className='block text-sm font-semibold mb-2'
+          >
+            Numero di Routing ABA
+          </label>
+          <Input
+            id='abaRoutingNumber'
+            {...register('abaRoutingNumber')}
+            placeholder='123456789'
+            className={
+              errors.abaRoutingNumber
+                ? 'border-destructive text-destructive'
+                : ''
+            }
+            autoComplete='family-name'
+          />
+          {errors.abaRoutingNumber && (
+            <p className='text-xs text-destructive mt-2'>
+              {errors.abaRoutingNumber.message as string}
+            </p>
+          )}
+        </div>
+      </div>
+      <div className='flex flex-col'>
+        <label
+          htmlFor='iban'
+          className='block text-sm font-semibold mb-2'
+        >
+          IBAN
+        </label>
+        <Input
+          id='iban'
+          {...register('iban')}
+          placeholder='IT0000000000000000'
+          className={errors.iban ? 'border-destructive text-destructive' : ''}
+        />
+        {errors.iban && (
+          <p className='text-xs text-destructive mt-2'>
+            {errors.iban.message as string}
+          </p>
+        )}
+      </div>
+      <div className='flex flex-col'>
+        <label
+          htmlFor='sdiRecipientCode'
+          className='block text-sm font-semibold mb-2'
+        >
+          Codice destinatario SDI
+        </label>
+        <Input
+          id='sdiRecipientCode'
+          {...register('sdiRecipientCode')}
+          placeholder='Milano Ovest'
+          className={
+            errors.sdiRecipientCode ? 'border-destructive text-destructive' : ''
+          }
+        />
+        {errors.sdiRecipientCode && (
+          <p className='text-xs text-destructive mt-2'>
+            {errors.sdiRecipientCode.message as string}
+          </p>
+        )}
+      </div>
+      <Separator className='my-4' />
+      <div className='flex flex-col'>
+        <label
+          htmlFor='billingAddress'
+          className='block text-sm font-semibold mb-2'
+        >
+          Indirizzo di fatturazione
+        </label>
+        <Input
+          id='billingAddress'
+          {...register('billingAddress')}
+          placeholder='Via Milano 1'
+          className={
+            errors.billingAddress ? 'border-destructive text-destructive' : ''
+          }
+        />
+        {errors.billingAddress && (
+          <p className='text-xs text-destructive mt-2'>
+            {errors.billingAddress.message as string}
+          </p>
+        )}
+      </div>
+      <div className='grid grid-cols-2 gap-4'>
+        <div className='flex flex-col'>
+          <label
+            htmlFor='billingCountryId'
+            className='block text-sm font-semibold mb-2'
+          >
+            Stato fatturazione
+          </label>
+          <Controller
+            control={control}
+            name='billingCountryId'
+            render={({ field }) => (
+              <Select
+                name='billingCountryId'
+                value={field.value}
+                onValueChange={(v) => field.onChange(parseInt(v))}
+              >
+                <SelectTrigger
+                  className={cn(
+                    'w-full',
+                    errors.billingCountryId &&
+                      'border-destructive text-destructive'
+                  )}
+                  size='sm'
+                >
+                  {countries.find((c) => c.id == field.value)?.name ||
+                    'Seleziona uno stato'}
+                </SelectTrigger>
+                <SelectContent>
+                  {countries.map((country) => (
+                    <SelectItem
+                      key={country.id}
+                      value={country.id.toString()}
+                    >
+                      {country.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+          />
+          {errors.billingCountryId && (
+            <p className='text-xs text-destructive mt-2'>
+              {errors.billingCountryId.message as string}
+            </p>
+          )}
+        </div>
+
+        <div className='flex flex-col'>
+          <label
+            htmlFor='billingSubdivisionId'
+            className='block text-sm font-semibold mb-2'
+          >
+            Provincia fatturazione
+          </label>
+          <Controller
+            control={control}
+            name='billingSubdivisionId'
+            render={({ field }) => (
+              <Select
+                name='billingSubdivisionId'
+                value={field.value}
+                disabled={!selectedCountryId}
+                onValueChange={(v) => field.onChange(parseInt(v))}
+              >
+                <SelectTrigger
+                  className={cn(
+                    'w-full',
+                    errors.billingSubdivisionId &&
+                      'border-destructive text-destructive'
+                  )}
+                  size='sm'
+                >
+                  {subdivisions.find((s) => s.id == field.value)?.name ||
+                    (selectedCountryId
+                      ? 'Seleziona una provincia'
+                      : 'Seleziona uno stato')}
+                </SelectTrigger>
+                <SelectContent>
+                  {subdivisions.map((subdivision: Subdivision) => (
+                    <SelectItem
+                      key={subdivision.id}
+                      value={subdivision.id.toString()}
+                    >
+                      {subdivision.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+          />
+          {errors.billingSubdivisionId && (
+            <p className='text-xs text-destructive mt-2'>
+              {errors.billingSubdivisionId.message as string}
+            </p>
+          )}
+        </div>
+      </div>
+      <div className='grid grid-cols-2 gap-4'>
+        <div className='flex flex-col'>
+          <label
+            htmlFor='billingCity'
+            className='block text-sm font-semibold mb-2'
+          >
+            Comune fatturazione
+          </label>
+          <Input
+            id='billingCity'
+            {...register('billingCity')}
+            placeholder='Milano'
+            className={
+              errors.billingCity ? 'border-destructive text-destructive' : ''
+            }
+          />
+          {errors.billingCity && (
+            <p className='text-xs text-destructive mt-2'>
+              {errors.billingCity.message as string}
+            </p>
+          )}
+        </div>
+
+        <div className='flex flex-col'>
+          <label
+            htmlFor='billingZipCode'
+            className='block text-sm font-semibold mb-2'
+          >
+            CAP
+          </label>
+          <Input
+            id='billingZipCode'
+            {...register('billingZipCode')}
+            placeholder='20100'
+            className={
+              errors.billingZipCode ? 'border-destructive text-destructive' : ''
+            }
+          />
+          {errors.billingZipCode && (
+            <p className='text-xs text-destructive mt-2'>
+              {errors.billingZipCode.message as string}
+            </p>
+          )}
+        </div>
+      </div>
+      <div className='grid grid-cols-2 gap-4'>
+        <div className='flex flex-col'>
+          <label
+            htmlFor='billingEmail'
+            className='block text-sm font-semibold mb-2'
+          >
+            Email fatturazione
+          </label>
+          <Input
+            id='billingEmail'
+            type='email'
+            {...register('billingEmail')}
+            placeholder='fatturazione@eaglebooking.it'
+            className={
+              errors.billingEmail ? 'border-destructive text-destructive' : ''
+            }
+          />
+          {errors.billingEmail && (
+            <p className='text-xs text-destructive mt-2'>
+              {errors.billingEmail.message as string}
+            </p>
+          )}
+        </div>
+        <div className='flex flex-col'>
+          <label
+            htmlFor='billingPhone'
+            className='block text-sm font-semibold mb-2'
+          >
+            Telefono fatturazione
+          </label>
+          <Input
+            id='billingPhone'
+            {...register('billingPhone')}
+            placeholder='+39 123456789'
+            className={
+              errors.billingPhone ? 'border-destructive text-destructive' : ''
+            }
+            autoComplete='tel'
+          />
+          {errors.billingPhone && (
+            <p className='text-xs text-destructive mt-2'>
+              {errors.billingPhone.message as string}
+            </p>
+          )}
+        </div>
+      </div>
+      <div className='flex flex-col'>
+        <label
+          htmlFor='billingPec'
+          className='block text-sm font-semibold mb-2'
+        >
+          Indirizzo PEC
+        </label>
+        <Input
+          id='billingPec'
+          {...register('billingPec')}
+          placeholder='Milano Ovest'
+          className={
+            errors.billingPec ? 'border-destructive text-destructive' : ''
+          }
+        />
+        {errors.billingPec && (
+          <p className='text-xs text-destructive mt-2'>
+            {errors.billingPec.message as string}
+          </p>
+        )}
+      </div>
+      <Separator className='my-4' />
+      <div className='flex flex-col'>
+        <label
+          htmlFor='taxableInvoice'
+          className='block text-sm font-semibold mb-2'
+        >
+          Riporta imponibile in fattura
+        </label>
+        <Controller
+          control={control}
+          name='taxableInvoice'
+          render={({ field }) => (
+            <RadioGroup
+              value={field.value}
+              onValueChange={(value) => field.onChange(value)}
+              className='flex gap-2'
+            >
+              <label
+                className={cn(
+                  'h-10 flex items-center gap-2 text-sm p-2 rounded-xl border hover:cursor-pointer',
+                  errors.taxableInvoice && 'border-destructive text-destructive'
+                )}
+              >
+                <RadioGroupItem value={'true'} />
+                Sì
+              </label>
+              <label
+                className={cn(
+                  'h-10 flex items-center gap-2 text-sm p-2 rounded-xl border hover:cursor-pointer',
+                  errors.taxableInvoice && 'border-destructive text-destructive'
+                )}
+              >
+                <RadioGroupItem value={'false'} />
+                No
+              </label>
+            </RadioGroup>
+          )}
+        />
+        {errors.taxableInvoice && (
+          <p className='text-xs text-destructive mt-2'>
+            {errors.taxableInvoice.message as string}
+          </p>
+        )}
+      </div>
+    </>
+  );
+}

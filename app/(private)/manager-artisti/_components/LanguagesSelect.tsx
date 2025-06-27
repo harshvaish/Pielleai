@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { cn } from '@/lib/utils';
+import { Badge } from '@/components/ui/badge';
 import {
   Select,
   SelectTrigger,
@@ -8,63 +9,50 @@ import {
   SelectItem,
 } from '@/components/ui/select';
 import { X } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
-import { Language, LANGUAGES } from '@/lib/constants';
-
-type LanguageSelectState = {
-  languages: Language[];
-} & Record<string, unknown>;
+import { Language } from '@/lib/types';
 
 type LanguageSelectProps = {
-  state: LanguageSelectState;
-  setState: React.Dispatch<React.SetStateAction<LanguageSelectState>>;
+  languages: Language[];
+  value: number[]; // array of language IDs
+  onChange: (newValue: number[]) => void;
+  hasError: boolean;
 };
 
 export default function LanguagesSelect({
-  state,
-  setState,
+  languages,
+  value,
+  onChange,
+  hasError,
 }: LanguageSelectProps) {
-  const [value] = useState<string>('');
+  const handleAddLanguage = (languageId: string) => {
+    const id = parseInt(languageId);
+    if (value.includes(id)) return;
+    onChange([...value, id]);
+  };
+
+  const handleRemoveLanguage = (languageId: number) => {
+    onChange(value.filter((id) => id !== languageId));
+  };
 
   return (
     <>
-      <label
-        htmlFor='languages'
-        className='block text-sm font-semibold mb-2'
-      >
-        Lingue
-      </label>
-
-      <Select
-        value={value}
-        onValueChange={(languageId: string) => {
-          const lang = LANGUAGES.find((l) => l.id === languageId);
-          if (!lang) return;
-
-          setState((prev) => {
-            if (prev.languages.some((l) => l.id === languageId)) {
-              return prev;
-            }
-
-            return {
-              ...prev,
-              languages: [...prev.languages, lang],
-            };
-          });
-        }}
-      >
+      <Select onValueChange={handleAddLanguage}>
         <SelectTrigger
+          id='languages'
           size='sm'
-          className='w-full mb-2'
+          className={cn(
+            'w-full',
+            hasError && 'border-destructive text-destructive'
+          )}
         >
           Seleziona una o più lingue
         </SelectTrigger>
         <SelectContent>
-          {LANGUAGES.map((language) => (
+          {languages.map((language) => (
             <SelectItem
               key={language.id}
-              value={language.id}
-              disabled={state.languages.some((l) => l.id === language.id)}
+              value={language.id.toString()}
+              disabled={value.includes(language.id)}
             >
               {language.name}
             </SelectItem>
@@ -72,24 +60,27 @@ export default function LanguagesSelect({
         </SelectContent>
       </Select>
 
-      {state.languages && state.languages.length > 0 && (
-        <div className='w-full flex flex-nowrap gap-1 overflow-x-auto mb-4'>
-          {state.languages.map((language) => (
-            <Badge
-              key={language.id}
-              variant='outline'
-              className='group transition-colors hover:cursor-pointer hover:border-red-500'
-              onClick={() =>
-                setState((prev) => ({
-                  ...prev,
-                  languages: prev.languages.filter((l) => l.id !== language.id),
-                }))
-              }
-            >
-              {language.name}{' '}
-              <X className='transition-colors group-hover:text-red-700' />
-            </Badge>
-          ))}
+      {value.length > 0 && (
+        <div className='w-full flex flex-nowrap gap-1 overflow-x-auto mt-2'>
+          {value.map((languageId) => {
+            const langObj = languages.find((l) => l.id === languageId);
+            if (!langObj) return null;
+
+            return (
+              <Badge
+                key={languageId}
+                variant='outline'
+                className='group transition-colors hover:cursor-pointer hover:text-destructive hover:border-destructive'
+                onClick={() => handleRemoveLanguage(languageId)}
+              >
+                {langObj.name}
+                <X
+                  className='transition-colors group-hover:text-destructive ml-1'
+                  size={12}
+                />
+              </Badge>
+            );
+          })}
         </div>
       )}
     </>

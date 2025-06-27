@@ -23,3 +23,18 @@ export interface CalendarEvent extends Event {
   status: EventStatus;
 }
 /* ------------------------------------------------- */
+export type Language = {
+  id: number;
+  name: string;
+};
+/* ------------------------------------------------- */
+export type Country = {
+  id: number;
+  name: string;
+};
+
+export type Subdivision = {
+  id: number;
+  name: string;
+};
+/* ------------------------------------------------- */

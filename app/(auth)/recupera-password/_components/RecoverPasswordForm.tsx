@@ -10,7 +10,7 @@ import {
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { useState } from 'react';
-import { z } from 'zod';
+import * as z from 'zod/v4';
 import { toast } from 'sonner';
 import { forgetPassword } from '@/lib/auth-client';
 import { useRouter } from 'next/navigation';
