@@ -4,22 +4,32 @@ import { auth } from '@/lib/auth';
 import { headers } from 'next/headers';
 import { ServerActionResponse } from '@/lib/types';
 import {
-  ArtistsManagerFormData,
   createArtistsManagerFullFormSchema,
+  ArtistsManagerFormSchema,
 } from '@/lib/validation/createArtistsManagerFormSchema';
 import { database } from '@/lib/database/connection';
-import { profileLanguages, profiles } from '@/lib/database/schema';
+import { eq, inArray } from 'drizzle-orm';
+import {
+  profileLanguages,
+  profiles,
+  countries,
+  languages as languagesTable,
+  subdivisions,
+} from '@/lib/database/schema';
+import { APIError } from 'better-auth/api';
+import { getBetterAuthErrorMessage } from '@/lib/utils';
 
 export const createArtistsManager = async (
-  data: ArtistsManagerFormData
+  data: ArtistsManagerFormSchema
 ): Promise<ServerActionResponse<null>> => {
+  const headersList = await headers();
   try {
     const session = await auth.api.getSession({
-      headers: await headers(),
+      headers: headersList,
     });
 
     if (!session?.user || session.user.role != 'admin') {
-      console.error('[signIn] - Error: unauthorized', session);
+      console.error('[createArtistsManager] - Error: unauthorized', session);
       return {
         success: false,
         message: 'Non sei autorizzato.',
@@ -27,7 +37,7 @@ export const createArtistsManager = async (
       };
     }
   } catch (error) {
-    console.error('[signIn] - Error: ', error);
+    console.error('[createArtistsManager] - Error: ', error);
     return {
       success: false,
       message: 'Autenticazione non riutita.',
@@ -38,22 +48,124 @@ export const createArtistsManager = async (
   const validation = createArtistsManagerFullFormSchema.safeParse(data);
 
   if (!validation.success) {
-    console.error('[signIn] - Error: validation failed');
+    console.error(
+      '[createArtistsManager] - Error: validation failed',
+      validation.error.issues[0]
+    );
     return {
-      success: true,
+      success: false,
       message: 'I dati inviati non sono corretti.',
       data: null,
     };
   }
 
-  const { name, signUpEmail, signUpPassword } = data;
+  const {
+    name,
+    signUpEmail,
+    signUpPassword,
+    languages,
+    countryId,
+    subdivisionId,
+    billingCountryId,
+    billingSubdivisionId,
+  } = validation.data;
 
   let newUserId: string | undefined;
 
   try {
+    const [
+      languagesCheck,
+      countryCheck,
+      subdivisionCheck,
+      billingCountryCheck,
+      billingSubdivisionCheck,
+    ] = await Promise.all([
+      database
+        .select({ id: languagesTable.id })
+        .from(languagesTable)
+        .where(inArray(languagesTable.id, languages)),
+
+      database
+        .select({ id: countries.id })
+        .from(countries)
+        .where(eq(countries.id, countryId)),
+
+      database
+        .select({ id: subdivisions.id, countryId: subdivisions.countryId })
+        .from(subdivisions)
+        .where(eq(subdivisions.id, subdivisionId)),
+
+      database
+        .select({ id: countries.id })
+        .from(countries)
+        .where(eq(countries.id, billingCountryId)),
+
+      database
+        .select({ id: subdivisions.id, countryId: subdivisions.countryId })
+        .from(subdivisions)
+        .where(eq(subdivisions.id, billingSubdivisionId)),
+    ]);
+
+    if (languagesCheck.length !== languages.length) {
+      return {
+        success: false,
+        message: 'Una o più lingue selezionate non valide.',
+        data: null,
+      };
+    }
+
+    if (countryCheck.length !== 1) {
+      return {
+        success: false,
+        message: 'Stato selezionato non valido.',
+        data: null,
+      };
+    }
+
+    if (billingCountryCheck.length !== 1) {
+      return {
+        success: false,
+        message: 'Stato fatturazione selezionato non valido.',
+        data: null,
+      };
+    }
+
+    if (subdivisionCheck.length !== 1) {
+      return {
+        success: false,
+        message: 'Provincia selezionata non valida.',
+        data: null,
+      };
+    }
+
+    if (billingSubdivisionCheck.length !== 1) {
+      return {
+        success: false,
+        message: 'Provincia fatturazione selezionata non valida.',
+        data: null,
+      };
+    }
+
+    if (subdivisionCheck[0].countryId != countryId) {
+      return {
+        success: false,
+        message: 'La provincia selezionata non appartiene allo stato indicato.',
+        data: null,
+      };
+    }
+
+    if (billingSubdivisionCheck[0].countryId != billingCountryId) {
+      return {
+        success: false,
+        message:
+          'La provincia fatturazione non appartiene allo stato fatturazione selezionato.',
+        data: null,
+      };
+    }
+
     await database.transaction(async (tx) => {
       const { user } = await auth.api.createUser({
-        headers: await headers(),
+        headers: headersList,
         body: {
           email: signUpEmail,
           password: signUpPassword,
@@ -83,7 +195,6 @@ export const createArtistsManager = async (
           birthDate: data.birthDate,
           birthPlace: data.birthPlace,
           gender: data.gender,
-          // languages: data.languages,
           address: data.address,
           countryId: data.countryId,
           subdivisionId: data.subdivisionId,
@@ -118,7 +229,6 @@ export const createArtistsManager = async (
         };
       }
 
-      // Insert profile-language relationships
       const languageInserts = (data.languages || []).map(
         (languageId: number) => ({
           profileId,
@@ -140,7 +250,7 @@ export const createArtistsManager = async (
     if (newUserId) {
       try {
         await auth.api.removeUser({
-          headers: await headers(),
+          headers: headersList,
           body: { userId: newUserId },
         });
       } catch (delErr) {
@@ -151,10 +261,15 @@ export const createArtistsManager = async (
       }
     }
 
+    let message = 'Creazione account non riuscita.';
+    if (error instanceof APIError && error.body?.code) {
+      message = getBetterAuthErrorMessage(error.body.code);
+    }
+
     console.error('[createArtistsManager] transaction failed', error);
     return {
       success: false,
-      message: "Errore durante la creazione dell'account.",
+      message,
       data: null,
     };
   }

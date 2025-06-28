@@ -6,12 +6,7 @@ import { nextCookies } from 'better-auth/next-js';
 import { createAuthMiddleware, APIError } from 'better-auth/api';
 import { sendResetPasswordEmailAction } from './server-actions/send-reset-password-email.action';
 import { admin } from 'better-auth/plugins/admin';
-import {
-  adminRole,
-  artistManagerRole,
-  userRole,
-  venueManagerRole,
-} from './permissions';
+import { adminConfig } from './permissions';
 
 export const auth = betterAuth({
   database: drizzleAdapter(database, {
@@ -60,19 +55,7 @@ export const auth = betterAuth({
       }
     }),
   },
-  plugins: [
-    nextCookies(),
-    admin({
-      roles: {
-        'user': userRole,
-        'admin': adminRole,
-        'artist-manager': artistManagerRole,
-        'venue-manager': venueManagerRole,
-      },
-      defaultRole: 'user',
-      adminRoles: ['admin'],
-    }),
-  ],
+  plugins: [nextCookies(), admin(adminConfig)],
 });
 
 export type User = (typeof auth.$Infer.Session)['user'];

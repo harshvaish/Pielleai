@@ -386,7 +386,11 @@ export default function StepOne({
           </label>
           <Input
             id='zipCode'
-            {...register('zipCode')}
+            {...register('zipCode', {
+              onChange: (e) => {
+                e.target.value = e.target.value.toUpperCase();
+              },
+            })}
             placeholder='20100'
             className={
               errors.zipCode ? 'border-destructive text-destructive' : ''

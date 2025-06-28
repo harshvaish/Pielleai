@@ -20,7 +20,7 @@ export default function StepIndicator({
       <div className='w-6 h-6 flex justify-center items-center bg-black rounded-sm'>
         <Loader
           size={16}
-          className='text-white'
+          className='text-white animate-[spin_5s_ease-in-out_infinite]'
         />
       </div>
     );

@@ -21,7 +21,7 @@ export default function StepTwo({ countries }: { countries: Country[] }) {
     formState: { errors },
   } = useFormContext();
 
-  const selectedCountryId = watch('countryId');
+  const selectedCountryId = watch('billingCountryId');
 
   const { data, error } = useSWR(
     selectedCountryId
@@ -33,7 +33,7 @@ export default function StepTwo({ countries }: { countries: Country[] }) {
   const subdivisions: Subdivision[] = data?.subdivisions ?? [];
 
   if (error) {
-    toast.error('Recupero delle province non riuscito.');
+    toast.error('Recupero delle province fatturazione non riuscito.');
   }
 
   return (
@@ -70,7 +70,11 @@ export default function StepTwo({ countries }: { countries: Country[] }) {
           </label>
           <Input
             id='taxCode'
-            {...register('taxCode')}
+            {...register('taxCode', {
+              onChange: (e) => {
+                e.target.value = e.target.value.toUpperCase();
+              },
+            })}
             placeholder='AAAAAAAAAA1234'
             className={
               errors.taxCode ? 'border-destructive text-destructive' : ''
@@ -91,12 +95,16 @@ export default function StepTwo({ countries }: { countries: Country[] }) {
           </label>
           <Input
             id='ipiCode'
-            {...register('ipiCode')}
-            placeholder='01234'
+            placeholder='123456789'
+            inputMode='numeric'
+            {...register('ipiCode', {
+              onChange: (e) => {
+                e.target.value = e.target.value.replace(/\D/g, '');
+              },
+            })}
             className={
               errors.ipiCode ? 'border-destructive text-destructive' : ''
             }
-            autoComplete='family-name'
           />
           {errors.ipiCode && (
             <p className='text-xs text-destructive mt-2'>
@@ -115,8 +123,12 @@ export default function StepTwo({ countries }: { countries: Country[] }) {
           </label>
           <Input
             id='bicCode'
-            {...register('bicCode')}
-            placeholder='AAAAAAAAAA1234'
+            {...register('bicCode', {
+              onChange: (e) => {
+                e.target.value = e.target.value.toUpperCase();
+              },
+            })}
+            placeholder='AAAA1234'
             className={
               errors.bicCode ? 'border-destructive text-destructive' : ''
             }
@@ -136,14 +148,18 @@ export default function StepTwo({ countries }: { countries: Country[] }) {
           </label>
           <Input
             id='abaRoutingNumber'
-            {...register('abaRoutingNumber')}
+            inputMode='numeric'
+            {...register('abaRoutingNumber', {
+              onChange: (e) => {
+                e.target.value = e.target.value.replace(/\D/g, '');
+              },
+            })}
             placeholder='123456789'
             className={
               errors.abaRoutingNumber
                 ? 'border-destructive text-destructive'
                 : ''
             }
-            autoComplete='family-name'
           />
           {errors.abaRoutingNumber && (
             <p className='text-xs text-destructive mt-2'>
@@ -161,7 +177,11 @@ export default function StepTwo({ countries }: { countries: Country[] }) {
         </label>
         <Input
           id='iban'
-          {...register('iban')}
+          {...register('iban', {
+            onChange: (e) => {
+              e.target.value = e.target.value.toUpperCase();
+            },
+          })}
           placeholder='IT0000000000000000'
           className={errors.iban ? 'border-destructive text-destructive' : ''}
         />
@@ -180,8 +200,12 @@ export default function StepTwo({ countries }: { countries: Country[] }) {
         </label>
         <Input
           id='sdiRecipientCode'
-          {...register('sdiRecipientCode')}
-          placeholder='Milano Ovest'
+          {...register('sdiRecipientCode', {
+            onChange: (e) => {
+              e.target.value = e.target.value.toUpperCase();
+            },
+          })}
+          placeholder='ABC1234'
           className={
             errors.sdiRecipientCode ? 'border-destructive text-destructive' : ''
           }
@@ -203,7 +227,7 @@ export default function StepTwo({ countries }: { countries: Country[] }) {
         <Input
           id='billingAddress'
           {...register('billingAddress')}
-          placeholder='Via Milano 1'
+          placeholder='Via Duomo 1'
           className={
             errors.billingAddress ? 'border-destructive text-destructive' : ''
           }
@@ -344,7 +368,11 @@ export default function StepTwo({ countries }: { countries: Country[] }) {
           </label>
           <Input
             id='billingZipCode'
-            {...register('billingZipCode')}
+            {...register('billingZipCode', {
+              onChange: (e) => {
+                e.target.value = e.target.value.toUpperCase();
+              },
+            })}
             placeholder='20100'
             className={
               errors.billingZipCode ? 'border-destructive text-destructive' : ''

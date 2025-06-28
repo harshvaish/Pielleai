@@ -1,8 +1,7 @@
 import * as z from 'zod/v4';
 import { GENDERS } from '../constants';
-import { Country, Language } from '../types';
 
-const genderEnum = z.enum(GENDERS, "Seleziona un'opzione valida");
+const genderEnum = z.enum(GENDERS, "Seleziona un'opzione valida.");
 
 const today = new Date();
 const subtractYears = (date: Date, years: number): Date => {
@@ -14,14 +13,18 @@ const subtractYears = (date: Date, years: number): Date => {
 const minBirthDate = subtractYears(today, 6);
 const maxBirthDate = subtractYears(today, 100);
 
-const ibanRegex = /^[A-Z]{2}\d{2}[A-Z0-9]{1,30}$/i;
-
 export const createArtistsManagerFormS1Schema = z.object({
-  avatarUrl: z.url('Campo non valido.').trim(),
+  avatarUrl: z
+    .url('Campo obbligatorio.')
+    .refine(
+      (url) => url.startsWith(`${process.env.NEXT_PUBLIC_SUPABASE_URL}`),
+      'Campo non valido.'
+    )
+    .trim(),
 
   name: z
     .string('Campo malformato.')
-    .min(1, 'Campo obbligatorio.')
+    .min(2, 'Minimo 2 caratteri.')
     .max(50, 'Massimo 50 caratteri.')
     .regex(
       /^[\p{L}\s'-]+$/u,
@@ -31,7 +34,7 @@ export const createArtistsManagerFormS1Schema = z.object({
 
   surname: z
     .string('Campo malformato.')
-    .min(1, 'Campo obbligatorio.')
+    .min(2, 'Minimo 2 caratteri.')
     .max(50, 'Massimo 50 caratteri.')
     .regex(
       /^[\p{L}\s'-]+$/u,
@@ -41,14 +44,12 @@ export const createArtistsManagerFormS1Schema = z.object({
 
   phone: z
     .string('Campo malformato.')
-    .min(1, 'Campo obbligatorio.')
-    .regex(
-      /^\+\d{1,3}\s?\d{6,14}$/,
-      'Formato non valido. Esempio: +39 123456789'
-    )
+    .min(8, 'Minimo 8 caratteri.')
+    .max(20, 'Massimo 20 caratteri.')
+    .regex(/^\+\d{1,3}\s?\d+$/, 'Formato non valido. Esempio: +39 123456789')
     .trim(),
 
-  email: z.email('Formato non valido.').trim(),
+  email: z.email('Formato non valido. Esempio info@eaglebooking.it').trim(),
 
   birthDate: z
     .string('Campo malformato.')
@@ -68,40 +69,53 @@ export const createArtistsManagerFormS1Schema = z.object({
 
   birthPlace: z
     .string('Campo malformato.')
-    .min(1, 'Campo obbligatorio.')
+    .min(2, 'Minimo 2 caratteri.')
     .max(100, 'Massimo 100 caratteri.')
     .trim(),
 
   languages: z
-    .array(z.number('Campo malformato.'))
+    .array(
+      z
+        .number("Seleziona un'opzione valida.")
+        .positive("Seleziona un'opzione valida."),
+      'Campo malformato'
+    )
     .min(1, 'Campo obbligatorio.'),
 
   address: z
     .string('Campo malformato.')
-    .min(1, 'Campo obbligatorio.')
+    .min(5, 'Minimo 5 caratteri.')
     .max(150, 'Massimo 150 caratteri.')
     .trim(),
 
   countryId: z
-    .number("Seleziona un'opzione valida")
-    .min(1, 'Campo obbligatorio.'),
+    .number("Seleziona un'opzione valida.")
+    .min(1, 'Campo obbligatorio.')
+    .positive("Seleziona un'opzione valida."),
 
   subdivisionId: z
-    .number("Seleziona un'opzione valida")
-    .min(1, 'Campo obbligatorio.'),
+    .number("Seleziona un'opzione valida.")
+    .min(1, 'Campo obbligatorio.')
+    .positive("Seleziona un'opzione valida."),
 
   city: z
     .string('Campo malformato.')
-    .min(1, 'Campo obbligatorio.')
+    .min(5, 'Minimo 5 caratteri.')
     .max(100, 'Massimo 100 caratteri.')
-    .regex(/^[\p{L}\s'-]+$/u, 'Formato non valido.')
+    .regex(
+      /^[\p{L}\s'-]+$/u,
+      'Può contenere solo lettere, spazi, trattini o apostrofi.'
+    )
     .trim(),
 
   zipCode: z
     .string('Campo malformato.')
-    .min(1, 'Campo obbligatorio.')
-    .max(15, 'Massimo 15 caratteri.')
-    .regex(/^[\p{N}\p{L}\s-]+$/u, 'Formato non valido.')
+    .min(3, 'Minimo 3 caratteri.')
+    .max(20, 'Massimo 20 caratteri.')
+    .regex(
+      /^[A-Z0-9\- ]+$/,
+      'Può contenere solo lettere maiuscole, numeri, trattini o spazi.'
+    )
     .trim(),
 
   gender: genderEnum,
@@ -110,137 +124,130 @@ export const createArtistsManagerFormS1Schema = z.object({
 export const createArtistsManagerFormS2Schema = z.object({
   company: z
     .string('Campo malformato.')
-    .min(1, 'Campo obbligatorio.')
+    .min(2, 'Minimo 2 caratteri.')
     .max(100, 'Massimo 100 caratteri.')
     .trim(),
 
   taxCode: z
     .string('Campo malformato.')
-    .min(1, 'Campo obbligatorio.')
-    .max(16, 'Massimo 16 caratteri.')
-    .regex(/^[A-Z0-9]+$/i, 'Formato non valido.')
+    .min(1, 'Minimo 5 caratteri.')
+    .max(100, 'Massimo 100 caratteri.')
+    .regex(
+      /^[A-Z0-9\-]+$/,
+      'Può contenere solo lettere maiuscole, numeri e trattini.'
+    )
     .trim(),
 
   ipiCode: z
     .string('Campo malformato.')
-    .min(1, 'Campo obbligatorio.')
-    .max(20, 'Massimo 20 caratteri.')
+    .min(9, 'Minimo 9 cifre.')
+    .max(20, 'Massimo 20 cifre.')
+    .regex(/^\d+$/, 'Può contenere solo numeri.')
     .trim(),
 
   bicCode: z
     .string('Campo malformato.')
-    .min(1, 'Campo obbligatorio.')
+    .min(8, 'Minimo 8 caratteri.')
     .max(20, 'Massimo 20 caratteri.')
+    .regex(/^[A-Z0-9]+$/, 'Può contenere solo lettere maiuscole e numeri.')
     .trim(),
 
   abaRoutingNumber: z
     .string('Campo malformato.')
-    .min(1, 'Campo obbligatorio.')
-    .max(9, 'Massimo 9 caratteri.')
+    .min(5, 'Minimo 5 cifre.')
+    .max(12, 'Massimo 12 cifre.')
+    .regex(/^\d+$/, 'Può contenere solo numeri.')
     .trim(),
 
   iban: z
     .string('Campo malformato.')
-    .min(1, 'Campo obbligatorio.')
-    .regex(ibanRegex, 'Formato non valido.')
+    .min(15, 'Minimo 15 caratteri.')
+    .max(50, 'Massimo 50 caratteri.')
+    .regex(
+      /^[A-Z]{2}\d{2}[A-Z0-9]+$/,
+      'Può contenere solo lettere maiuscole e numeri.'
+    )
     .trim(),
 
   sdiRecipientCode: z
     .string('Campo malformato.')
-    .min(1, 'Campo obbligatorio.')
-    .max(7, 'Massimo 7 caratteri.')
+    .length(7, 'Deve contenere esattamente 7 caratteri.')
+    .regex(/^[A-Z0-9]{7}$/, 'Può contenere solo lettere maiuscole e numeri.')
     .trim(),
 
   billingAddress: z
     .string('Campo malformato.')
-    .min(1, 'Campo obbligatorio.')
+    .min(5, 'Minimo 5 caratteri.')
     .max(150, 'Massimo 150 caratteri.')
     .trim(),
 
   billingCountryId: z
-    .number("Seleziona un'opzione valida")
-    .min(1, 'Campo obbligatorio.'),
+    .number("Seleziona un'opzione valida.")
+    .min(1, 'Campo obbligatorio.')
+    .positive("Seleziona un'opzione valida."),
 
   billingSubdivisionId: z
-    .number("Seleziona un'opzione valida")
-    .min(1, 'Campo obbligatorio.'),
+    .number("Seleziona un'opzione valida.")
+    .min(1, 'Campo obbligatorio.')
+    .positive("Seleziona un'opzione valida."),
 
   billingCity: z
     .string('Campo malformato.')
-    .min(1, 'Campo obbligatorio.')
+    .min(5, 'Minimo 5 caratteri.')
     .max(100, 'Massimo 100 caratteri.')
-    .regex(/^[\p{L}\s'-]+$/u, 'Formato non valido.')
+    .regex(
+      /^[\p{L}\s'-]+$/u,
+      'Può contenere solo lettere, spazi, trattini o apostrofi.'
+    )
     .trim(),
 
   billingZipCode: z
     .string('Campo malformato.')
-    .min(1, 'Campo obbligatorio.')
-    .max(15, 'Massimo 15 caratteri.')
-    .regex(/^[\p{N}\p{L}\s-]+$/u, 'Formato non valido.')
-    .trim(),
-
-  billingEmail: z.email('Formato non valido.').trim(),
-
-  billingPhone: z
-    .string('Campo malformato.')
-    .min(1, 'Campo obbligatorio.')
+    .min(3, 'Minimo 3 caratteri.')
+    .max(20, 'Massimo 20 caratteri.')
     .regex(
-      /^\+\d{1,3}\s?\d{6,14}$/,
-      'Formato non valido. Esempio: +39 123456789'
+      /^[A-Z0-9\- ]+$/,
+      'Può contenere solo lettere maiuscole, numeri, trattini o spazi.'
     )
     .trim(),
 
-  billingPec: z.email('Formato non valido.').trim(),
+  billingEmail: z
+    .email('Formato non valido. Esempio fatturazione@eaglebooking.it')
+    .trim(),
 
-  taxableInvoice: z.enum(['true', 'false'], "Seleziona un'opzione valida"),
+  billingPhone: z
+    .string('Campo malformato.')
+    .min(8, 'Minimo 8 caratteri.')
+    .max(20, 'Massimo 20 caratteri.')
+    .regex(/^\+\d{1,3}\s?\d+$/, 'Formato non valido. Esempio: +39 123456789')
+    .trim(),
+
+  billingPec: z.email('Formato non valido. Esempio pec@eaglebooking.it').trim(),
+
+  taxableInvoice: z
+    .string('Campo malformato.')
+    .refine((val) => val === 'true' || val === 'false', {
+      message: "Seleziona un'opzione valida",
+    }),
 });
 
 export const createArtistsManagerFormS3Schema = z.object({
-  signUpEmail: z.email('Formato non valido.').trim(),
+  signUpEmail: z
+    .email('Formato non valido. Esempio info@eaglebooking.it')
+    .trim(),
   signUpPassword: z
-    .string()
+    .string('Campo malformato.')
     .min(1, 'Campo obbligatorio.')
     .min(8, 'Almeno 8 caratteri.')
     .max(16, 'Massimo 16 caratteri.'),
 });
 
-export const createArtistsManagerFullFormSchema =
-  createArtistsManagerFormS1Schema
-    .merge(createArtistsManagerFormS2Schema)
-    .merge(createArtistsManagerFormS3Schema);
+export const createArtistsManagerFullFormSchema = z.object({
+  ...createArtistsManagerFormS1Schema.shape,
+  ...createArtistsManagerFormS2Schema.shape,
+  ...createArtistsManagerFormS3Schema.shape,
+});
 
-export function extendCreateArtistsManagerFormSchema(
-  languages: Language[],
-  countries: Country[]
-) {
-  const validLanguageIds = new Set(languages.map((l) => l.id));
-  const validCountriesIds = new Set(countries.map((c) => c.id));
-
-  return createArtistsManagerFullFormSchema.extend({
-    languages: z
-      .array(z.number("Seleziona un'opzione valida"), 'Formato non valido.')
-      .min(1, 'Campo obbligatorio.')
-      .refine(
-        (selected) => selected.every((id) => validLanguageIds.has(id)),
-        'Seleziona una lingua valida.'
-      ),
-
-    countryId: z
-      .number("Seleziona un'opzione valida")
-      .refine(
-        (selectedId) => validCountriesIds.has(selectedId),
-        'Seleziona uno stato valido.'
-      ),
-
-    billingCountryId: z
-      .number("Seleziona un'opzione valida")
-      .refine(
-        (selectedId) => validCountriesIds.has(selectedId),
-        'Seleziona uno stato valido.'
-      ),
-  });
-}
-
-export type ArtistsManagerFormData = z.infer<
+export type ArtistsManagerFormSchema = z.infer<
   typeof createArtistsManagerFullFormSchema
 >;

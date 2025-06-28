@@ -11,6 +11,7 @@ export function cn(...inputs: ClassValue[]) {
 
 export const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
+// CALENDAR --------------------------------------------------------
 export function buildCalendarLabel(date: Date, view: View): string {
   switch (view) {
     case 'day': {
@@ -56,8 +57,9 @@ export function buildCalendarLabel(date: Date, view: View): string {
       return format(date, 'MMMM yyyy', { locale: it });
   }
 }
+// CALENDAR --------------------------------------------------------
 
-// IMAGE UPLOAD
+// IMAGE UPLOAD --------------------------------------------------------
 export async function getFileMagicNumber(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -115,3 +117,62 @@ export async function compressImage(file: File): Promise<File> {
   const compressedFile = await imageCompression(file, options);
   return compressedFile;
 }
+// IMAGE UPLOAD --------------------------------------------------------
+
+// BETTER AUTH --------------------------------------------------------
+export function getBetterAuthErrorMessage(code: string): string {
+  switch (code) {
+    case 'INVALID_EMAIL_OR_PASSWORD':
+      return 'Email o password non validi.';
+    case 'EMAIL_ALREADY_EXISTS':
+      return 'Questa email è già registrata.';
+    case 'USER_ALREADY_EXISTS':
+      return 'Utente già esistente.';
+    case 'NOT_ADMIN_USER':
+      return 'Solo gli amministratori possono accedere a questa piattaforma.';
+    case 'INVALID_ROLE':
+      return 'Ruolo specificato non valido.';
+    case 'MISSING_FIELDS':
+      return 'Alcuni campi obbligatori sono mancanti.';
+    case 'INVALID_INPUT':
+      return 'I dati inseriti non sono validi.';
+    case 'INVALID_EMAIL':
+      return 'L’indirizzo email non è valido.';
+    case 'INVALID_PASSWORD':
+      return 'La password non soddisfa i requisiti di sicurezza.';
+    case 'PASSWORD_TOO_WEAK':
+      return 'La password è troppo debole.';
+    case 'PASSWORD_MISMATCH':
+      return 'Le password non corrispondono.';
+    case 'USER_NOT_FOUND':
+      return 'Utente non trovato.';
+    case 'EMAIL_NOT_VERIFIED':
+      return 'Email non verificata. Controlla la tua casella di posta.';
+    case 'UNAUTHORIZED':
+      return 'Non sei autorizzato a eseguire questa azione.';
+    case 'FORBIDDEN':
+      return 'Accesso negato.';
+    case 'ACCOUNT_DISABLED':
+      return 'Questo account è stato disabilitato.';
+    case 'RATE_LIMIT_EXCEEDED':
+      return 'Hai superato il numero massimo di tentativi. Riprova più tardi.';
+    case 'TOO_MANY_ATTEMPTS':
+      return 'Troppi tentativi. Riprova più tardi.';
+    case 'TOKEN_EXPIRED':
+      return 'Il token è scaduto. Effettua nuovamente l’accesso.';
+    case 'TOKEN_INVALID':
+      return 'Token non valido. Riprova.';
+    case 'TOKEN_NOT_FOUND':
+      return 'Token non trovato o già utilizzato.';
+    case 'SESSION_EXPIRED':
+      return 'Sessione scaduta. Effettua di nuovo l’accesso.';
+    case 'INTERNAL_SERVER_ERROR':
+      return 'Errore del server. Riprova più tardi.';
+    case 'UNKNOWN_ERROR':
+      return 'Si è verificato un errore sconosciuto.';
+    default:
+      return 'Errore imprevisto. Riprova più tardi.';
+  }
+}
+
+// BETTER AUTH --------------------------------------------------------

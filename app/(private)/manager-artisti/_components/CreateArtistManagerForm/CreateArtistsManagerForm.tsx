@@ -3,14 +3,13 @@
 import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
+  ArtistsManagerFormSchema,
   createArtistsManagerFormS1Schema,
   createArtistsManagerFormS2Schema,
   createArtistsManagerFormS3Schema,
   createArtistsManagerFullFormSchema,
-  extendCreateArtistsManagerFormSchema,
 } from '@/lib/validation/createArtistsManagerFormSchema';
 import { useEffect, useState } from 'react';
-import * as z from 'zod/v4';
 import StepOne from './StepOne';
 import StepTwo from './StepTwo';
 import { toast } from 'sonner';
@@ -22,26 +21,22 @@ import StepIndicator from './StepIndicator';
 import { Button } from '@/components/ui/button';
 import { createArtistsManager } from '@/lib/server-actions/artists-manager/create-artists-manager';
 
-type CreateArtistsManagerFormData = z.infer<
-  typeof createArtistsManagerFullFormSchema
->;
-
 function getFormFieldsForStep(
   step: number
-): Array<keyof CreateArtistsManagerFormData> {
+): Array<keyof ArtistsManagerFormSchema> {
   if (step === 1) {
     return Object.keys(createArtistsManagerFormS1Schema.shape) as Array<
-      keyof CreateArtistsManagerFormData
+      keyof ArtistsManagerFormSchema
     >;
   }
   if (step === 2) {
     return Object.keys(createArtistsManagerFormS2Schema.shape) as Array<
-      keyof CreateArtistsManagerFormData
+      keyof ArtistsManagerFormSchema
     >;
   }
   if (step === 3) {
     return Object.keys(createArtistsManagerFormS3Schema.shape) as Array<
-      keyof CreateArtistsManagerFormData
+      keyof ArtistsManagerFormSchema
     >;
   }
   return [];
@@ -55,9 +50,8 @@ export default function CreateArtistsManagerForm({
   countries: Country[];
 }) {
   const [step, setStep] = useState<number>(1);
-  const formSchema = extendCreateArtistsManagerFormSchema(languages, countries);
-  const methods = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const methods = useForm({
+    resolver: zodResolver(createArtistsManagerFullFormSchema),
     defaultValues: {
       avatarUrl: undefined,
       name: '',
@@ -68,11 +62,11 @@ export default function CreateArtistsManagerForm({
       birthPlace: '',
       languages: [],
       address: '',
-      countryId: undefined,
-      subdivisionId: undefined,
+      countryId: 0,
+      subdivisionId: 0,
       city: '',
       zipCode: '',
-      gender: undefined,
+      gender: 'maschile',
 
       company: '',
       taxCode: '',
@@ -82,8 +76,8 @@ export default function CreateArtistsManagerForm({
       iban: '',
       sdiRecipientCode: '',
       billingAddress: '',
-      billingCountryId: undefined,
-      billingSubdivisionId: undefined,
+      billingCountryId: 0,
+      billingSubdivisionId: 0,
       billingCity: '',
       billingZipCode: '',
       billingEmail: '',
@@ -107,7 +101,7 @@ export default function CreateArtistsManagerForm({
 
   const onPrev = () => setStep((prev) => prev - 1);
 
-  const onSubmit = async (data: z.infer<typeof formSchema>) => {
+  const onSubmit = async (data: ArtistsManagerFormSchema) => {
     toast.success('Valid form data');
     console.dir(data, { depths: 0 });
     const response = await createArtistsManager(data);
