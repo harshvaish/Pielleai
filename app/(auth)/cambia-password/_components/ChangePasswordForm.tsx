@@ -59,7 +59,7 @@ export default function ChangePasswordForm({ token }: { token: string }) {
         password: '',
         confirmPassword: '',
       };
-      validation.error.errors.forEach((e) => {
+      validation.error.issues.forEach((e) => {
         if (e.path.includes('password')) validationErrors.password = e.message;
         if (e.path.includes('confirmPassword'))
           validationErrors.confirmPassword = e.message;

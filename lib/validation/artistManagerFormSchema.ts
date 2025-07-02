@@ -13,7 +13,7 @@ const subtractYears = (date: Date, years: number): Date => {
 const minBirthDate = subtractYears(today, 6);
 const maxBirthDate = subtractYears(today, 100);
 
-export const createArtistsManagerFormS1Schema = z.object({
+export const artistManagerFormS1Schema = z.object({
   avatarUrl: z
     .url('Campo obbligatorio.')
     .refine(
@@ -121,7 +121,11 @@ export const createArtistsManagerFormS1Schema = z.object({
   gender: genderEnum,
 });
 
-export const createArtistsManagerFormS2Schema = z.object({
+export type ArtistManagerS1FormSchema = z.infer<
+  typeof artistManagerFormS1Schema
+>;
+
+export const artistManagerFormS2Schema = z.object({
   company: z
     .string('Campo malformato.')
     .min(2, 'Minimo 2 caratteri.')
@@ -231,7 +235,11 @@ export const createArtistsManagerFormS2Schema = z.object({
     }),
 });
 
-export const createArtistsManagerFormS3Schema = z.object({
+export type ArtistManagerS2FormSchema = z.infer<
+  typeof artistManagerFormS2Schema
+>;
+
+export const artistManagerFormS3Schema = z.object({
   signUpEmail: z
     .email('Formato non valido. Esempio info@eaglebooking.it')
     .trim(),
@@ -242,12 +250,10 @@ export const createArtistsManagerFormS3Schema = z.object({
     .max(16, 'Massimo 16 caratteri.'),
 });
 
-export const createArtistsManagerFullFormSchema = z.object({
-  ...createArtistsManagerFormS1Schema.shape,
-  ...createArtistsManagerFormS2Schema.shape,
-  ...createArtistsManagerFormS3Schema.shape,
+export const artistManagerFormSchema = z.object({
+  ...artistManagerFormS1Schema.shape,
+  ...artistManagerFormS2Schema.shape,
+  ...artistManagerFormS3Schema.shape,
 });
 
-export type ArtistsManagerFormSchema = z.infer<
-  typeof createArtistsManagerFullFormSchema
->;
+export type ArtistManagerFormSchema = z.infer<typeof artistManagerFormSchema>;

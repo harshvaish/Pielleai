@@ -4,9 +4,9 @@ import { auth } from '@/lib/auth';
 import { headers } from 'next/headers';
 import { ServerActionResponse } from '@/lib/types';
 import {
-  createArtistsManagerFullFormSchema,
-  ArtistsManagerFormSchema,
-} from '@/lib/validation/createArtistsManagerFormSchema';
+  artistManagerFormSchema,
+  ArtistManagerFormSchema,
+} from '@/lib/validation/artistManagerFormSchema';
 import { database } from '@/lib/database/connection';
 import { eq, inArray } from 'drizzle-orm';
 import {
@@ -19,8 +19,8 @@ import {
 import { APIError } from 'better-auth/api';
 import { getBetterAuthErrorMessage } from '@/lib/utils';
 
-export const createArtistsManager = async (
-  data: ArtistsManagerFormSchema
+export const createArtistManager = async (
+  data: ArtistManagerFormSchema
 ): Promise<ServerActionResponse<null>> => {
   const headersList = await headers();
   try {
@@ -29,7 +29,7 @@ export const createArtistsManager = async (
     });
 
     if (!session?.user || session.user.role != 'admin') {
-      console.error('[createArtistsManager] - Error: unauthorized', session);
+      console.error('[createArtistManager] - Error: unauthorized', session);
       return {
         success: false,
         message: 'Non sei autorizzato.',
@@ -37,7 +37,7 @@ export const createArtistsManager = async (
       };
     }
   } catch (error) {
-    console.error('[createArtistsManager] - Error: ', error);
+    console.error('[createArtistManager] - Error: ', error);
     return {
       success: false,
       message: 'Autenticazione non riutita.',
@@ -45,11 +45,11 @@ export const createArtistsManager = async (
     };
   }
 
-  const validation = createArtistsManagerFullFormSchema.safeParse(data);
+  const validation = artistManagerFormSchema.safeParse(data);
 
   if (!validation.success) {
     console.error(
-      '[createArtistsManager] - Error: validation failed',
+      '[createArtistManager] - Error: validation failed',
       validation.error.issues[0]
     );
     return {
@@ -171,6 +171,9 @@ export const createArtistsManager = async (
           password: signUpPassword,
           name,
           role: 'artist-manager',
+          data: {
+            status: 'active',
+          },
         },
       });
 
@@ -255,7 +258,7 @@ export const createArtistsManager = async (
         });
       } catch (delErr) {
         console.error(
-          '[createArtistsManager] rollback: failed deleting auth user',
+          '[createArtistManager] rollback: failed deleting auth user',
           delErr
         );
       }
@@ -266,7 +269,7 @@ export const createArtistsManager = async (
       message = getBetterAuthErrorMessage(error.body.code);
     }
 
-    console.error('[createArtistsManager] transaction failed', error);
+    console.error('[createArtistManager] transaction failed', error);
     return {
       success: false,
       message,

@@ -3,12 +3,12 @@
 import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
-  ArtistsManagerFormSchema,
-  createArtistsManagerFormS1Schema,
-  createArtistsManagerFormS2Schema,
-  createArtistsManagerFormS3Schema,
-  createArtistsManagerFullFormSchema,
-} from '@/lib/validation/createArtistsManagerFormSchema';
+  ArtistManagerFormSchema,
+  artistManagerFormS1Schema,
+  artistManagerFormS2Schema,
+  artistManagerFormS3Schema,
+  artistManagerFormSchema,
+} from '@/lib/validation/artistManagerFormSchema';
 import { useEffect, useState } from 'react';
 import StepOne from './StepOne';
 import StepTwo from './StepTwo';
@@ -19,30 +19,31 @@ import { Country, Language } from '@/lib/types';
 import { Separator } from '@/components/ui/separator';
 import StepIndicator from './StepIndicator';
 import { Button } from '@/components/ui/button';
-import { createArtistsManager } from '@/lib/server-actions/artists-manager/create-artists-manager';
+import { createArtistManager } from '@/lib/server-actions/artist-manager/create-artist-manager';
+import { useRouter } from 'next/navigation';
 
 function getFormFieldsForStep(
   step: number
-): Array<keyof ArtistsManagerFormSchema> {
+): Array<keyof ArtistManagerFormSchema> {
   if (step === 1) {
-    return Object.keys(createArtistsManagerFormS1Schema.shape) as Array<
-      keyof ArtistsManagerFormSchema
+    return Object.keys(artistManagerFormS1Schema.shape) as Array<
+      keyof ArtistManagerFormSchema
     >;
   }
   if (step === 2) {
-    return Object.keys(createArtistsManagerFormS2Schema.shape) as Array<
-      keyof ArtistsManagerFormSchema
+    return Object.keys(artistManagerFormS2Schema.shape) as Array<
+      keyof ArtistManagerFormSchema
     >;
   }
   if (step === 3) {
-    return Object.keys(createArtistsManagerFormS3Schema.shape) as Array<
-      keyof ArtistsManagerFormSchema
+    return Object.keys(artistManagerFormS3Schema.shape) as Array<
+      keyof ArtistManagerFormSchema
     >;
   }
   return [];
 }
 
-export default function CreateArtistsManagerForm({
+export default function CreateArtistManagerForm({
   languages,
   countries,
 }: {
@@ -51,7 +52,7 @@ export default function CreateArtistsManagerForm({
 }) {
   const [step, setStep] = useState<number>(1);
   const methods = useForm({
-    resolver: zodResolver(createArtistsManagerFullFormSchema),
+    resolver: zodResolver(artistManagerFormSchema),
     defaultValues: {
       avatarUrl: undefined,
       name: '',
@@ -89,6 +90,7 @@ export default function CreateArtistsManagerForm({
       signUpPassword: '',
     },
   });
+  const router = useRouter();
 
   const onNext = async () => {
     const result = await methods.trigger(getFormFieldsForStep(step));
@@ -101,13 +103,12 @@ export default function CreateArtistsManagerForm({
 
   const onPrev = () => setStep((prev) => prev - 1);
 
-  const onSubmit = async (data: ArtistsManagerFormSchema) => {
-    toast.success('Valid form data');
-    console.dir(data, { depths: 0 });
-    const response = await createArtistsManager(data);
+  const onSubmit = async (data: ArtistManagerFormSchema) => {
+    const response = await createArtistManager(data);
 
     if (response.success) {
-      toast.success('User registered');
+      toast.success('Utenza manager artisti creata!');
+      router.refresh();
     } else {
       toast.error(response.message);
     }

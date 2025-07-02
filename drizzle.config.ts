@@ -9,3 +9,5 @@ export default defineConfig({
     // url: process.env.DATABASE_URL_FOR_INTROSPECT!,
   },
 });
+
+//drizzle-kit introspect:pg

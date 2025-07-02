@@ -1,13 +1,13 @@
 import { View } from 'react-big-calendar';
 
-export const USER_ROLES = [
-  'admin',
-  'artist-manager',
-  'venue-manager',
-  'user',
+export const USER_STATUS = [
+  'active',
+  'waiting-for-approval',
+  'disabled',
+  'banned',
 ] as const; // as const = is an immutable array
 
-export type UserRole = (typeof USER_ROLES)[number];
+export type UserStatus = (typeof USER_STATUS)[number];
 
 // resend password email
 export const RPE_BLOCK_DURATION = 30 * 1000;
@@ -61,7 +61,6 @@ export const NAVBAR_LINKS = [
 export const CALENDAR_VIEWS: View[] = ['day', 'week', 'month'];
 
 // avatar upload
-export const AU_LOCAL_STORAGE_KEY = 'au_temporary_url';
 export const AU_LOCAL_STORAGE_TTL = 2 * 60 * 60 * 1000; // 2hours;
 export const AU_MAX_SIZE_MB = 5;
 export const AU_ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp'];

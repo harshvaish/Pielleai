@@ -24,16 +24,11 @@ export default function RecoverPasswordForm() {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
-  const handleSubmit = async (event: React.FormEvent) => {
-    event.preventDefault();
+  const handleSubmit = async () => {
     setIsLoading(true);
 
     try {
-      const validation = z
-        .string()
-        .min(1, 'Email obbligatoria')
-        .email('Formato non valido')
-        .safeParse(email);
+      const validation = z.email('Formato non valido').safeParse(email);
 
       if (!validation.success) {
         setError(validation.error.issues[0].message);

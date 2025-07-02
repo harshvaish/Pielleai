@@ -6,6 +6,7 @@ import {
   countries,
   subdivisions,
   profiles,
+  profileNotes,
   languages,
   profileLanguages,
 } from './schema';
@@ -21,6 +22,7 @@ export const usersRelations = relations(users, ({ many }) => ({
   sessions: many(sessions),
   accounts: many(accounts),
   profiles: many(profiles),
+  profileNotes: many(profileNotes),
 }));
 
 export const accountsRelations = relations(accounts, ({ one }) => ({
@@ -81,7 +83,19 @@ export const profilesRelations = relations(profiles, ({ one, many }) => ({
     fields: [profiles.userId],
     references: [users.id],
   }),
+  profileNotes: many(profileNotes),
   profileLanguages: many(profileLanguages),
+}));
+
+export const profileNotesRelations = relations(profileNotes, ({ one }) => ({
+  profile: one(profiles, {
+    fields: [profileNotes.receiverProfileId],
+    references: [profiles.id],
+  }),
+  user: one(users, {
+    fields: [profileNotes.writerId],
+    references: [users.id],
+  }),
 }));
 
 export const profileLanguagesRelations = relations(

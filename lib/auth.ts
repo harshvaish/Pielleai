@@ -7,6 +7,7 @@ import { createAuthMiddleware, APIError } from 'better-auth/api';
 import { sendResetPasswordEmailAction } from './server-actions/send-reset-password-email.action';
 import { admin } from 'better-auth/plugins/admin';
 import { adminConfig } from './permissions';
+import { USER_STATUS } from './constants';
 
 export const auth = betterAuth({
   database: drizzleAdapter(database, {
@@ -14,6 +15,17 @@ export const auth = betterAuth({
     schema: schema,
     usePlural: true,
   }),
+  user: {
+    additionalFields: {
+      status: {
+        type: [...USER_STATUS],
+        required: true,
+        input: true,
+        returned: true,
+        defaultValue: 'waiting-for-approval',
+      },
+    },
+  },
   emailAndPassword: {
     enabled: true,
     autoSignIn: false,

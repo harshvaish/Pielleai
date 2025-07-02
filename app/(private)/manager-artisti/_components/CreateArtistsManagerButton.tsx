@@ -7,12 +7,12 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
-import CreateArtistsManagerForm from './CreateArtistManagerForm/CreateArtistsManagerForm';
+import CreateArtistManagerForm from './CreateArtistManagerForm/CreateArtistManagerForm';
 import { getLanguages } from '@/lib/data/get-languages';
 import { getCountries } from '@/lib/data/get-countries';
 import { notFound } from 'next/navigation';
 
-export default async function CreateArtistsManagerButton() {
+export default async function CreateArtistManagerButton() {
   const [languages, countries] = await Promise.all([
     getLanguages(),
     getCountries(),
@@ -36,7 +36,7 @@ export default async function CreateArtistsManagerButton() {
           Inserisci tutti i dati necessari alla creazione del profilo.
         </DialogDescription>
 
-        <CreateArtistsManagerForm
+        <CreateArtistManagerForm
           languages={languages}
           countries={countries}
         />

@@ -13,6 +13,19 @@ import {
   pgEnum,
 } from 'drizzle-orm/pg-core';
 
+export const genderEnum = pgEnum('gender_enum', [
+  'maschile',
+  'femminile',
+  'non-binary',
+]);
+
+export const userStatus = pgEnum('user_status', [
+  'active',
+  'waiting-for-approval',
+  'disabled',
+  'banned',
+]);
+
 export const users = pgTable('users', {
   id: text('id').primaryKey(),
   name: text('name').notNull(),
@@ -28,6 +41,7 @@ export const users = pgTable('users', {
     .$defaultFn(() => /* @__PURE__ */ new Date())
     .notNull(),
   role: text('role'),
+  status: userStatus().default('waiting-for-approval').notNull(),
   banned: boolean('banned'),
   banReason: text('ban_reason'),
   banExpires: timestamp('ban_expires'),
@@ -77,12 +91,6 @@ export const verifications = pgTable('verifications', {
     () => /* @__PURE__ */ new Date()
   ),
 });
-
-export const genderEnum = pgEnum('gender_enum', [
-  'maschile',
-  'femminile',
-  'non-binary',
-]);
 
 export const countries = pgTable(
   'countries',
@@ -187,6 +195,31 @@ export const profiles = pgTable(
       foreignColumns: [users.id],
       name: 'profiles_user_id_fkey',
     }).onDelete('cascade'),
+  ]
+);
+
+export const profileNotes = pgTable(
+  'profile_notes',
+  {
+    id: serial().primaryKey().notNull(),
+    writerId: text('writer_id').notNull(),
+    receiverProfileId: integer('receiver_profile_id').notNull(),
+    content: text().notNull(),
+    createdAt: timestamp('created_at', { mode: 'string' })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    foreignKey({
+      columns: [table.receiverProfileId],
+      foreignColumns: [profiles.id],
+      name: 'profile_notes_receiver_profile_id_fkey',
+    }),
+    foreignKey({
+      columns: [table.writerId],
+      foreignColumns: [users.id],
+      name: 'profile_notes_writer_id_fkey',
+    }),
   ]
 );
 

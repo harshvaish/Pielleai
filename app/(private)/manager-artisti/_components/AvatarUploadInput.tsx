@@ -1,6 +1,6 @@
 'use client';
 
-import { AU_LOCAL_STORAGE_KEY, AU_LOCAL_STORAGE_TTL } from '@/lib/constants';
+import { AU_LOCAL_STORAGE_TTL } from '@/lib/constants';
 import {
   cn,
   compressImage,
@@ -15,12 +15,14 @@ import React, { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
 type AvatarUploadInputProps = {
+  localStorageKey: string;
   value?: string;
   onChange: (newValue: string) => void;
   hasError: boolean;
 };
 
 export default function AvatarUploadInput({
+  localStorageKey,
   value,
   onChange,
   hasError,
@@ -92,7 +94,7 @@ export default function AvatarUploadInput({
 
     // Also store locally for preview on next render
     localStorage.setItem(
-      AU_LOCAL_STORAGE_KEY,
+      localStorageKey,
       JSON.stringify({ url, timestamp: Date.now() })
     );
 
@@ -104,17 +106,17 @@ export default function AvatarUploadInput({
       setPreview(value);
       return;
     }
-    const stored = localStorage.getItem(AU_LOCAL_STORAGE_KEY);
+    const stored = localStorage.getItem(localStorageKey);
     if (stored) {
       const { url, timestamp } = JSON.parse(stored);
       if (Date.now() - timestamp < AU_LOCAL_STORAGE_TTL) {
         setPreview(url);
         onChange(url);
       } else {
-        localStorage.removeItem(AU_LOCAL_STORAGE_KEY);
+        localStorage.removeItem(localStorageKey);
       }
     }
-  }, [value, onChange]);
+  }, [value, onChange, localStorageKey]);
 
   return (
     <>
