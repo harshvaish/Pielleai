@@ -8,7 +8,12 @@ import { Country } from '../types';
 export async function getCountries(): Promise<Country[]> {
   try {
     const results = await database
-      .select({ id: countries.id, name: countries.name })
+      .select({
+        id: countries.id,
+        code: countries.code,
+        name: countries.name,
+        isEu: countries.isEu,
+      })
       .from(countries)
       .orderBy(asc(countries.name));
 

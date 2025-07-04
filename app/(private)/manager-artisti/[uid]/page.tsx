@@ -14,12 +14,19 @@ import { Badge } from '@/components/ui/badge';
 import EditArtistManagerButton from './_components/EditProfile/EditArtistManagerButton';
 import { getLanguages } from '@/lib/data/get-languages';
 import { getCountries } from '@/lib/data/get-countries';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import PersonalDataTab from './_components/Tabs/PersonalDataTab';
+import BillingDataTab from './_components/Tabs/BillingDataTab';
+import StatusBadge from '../_components/StatusBadge';
 
 export default async function ArtistManagerDetailPage({
   params,
 }: {
   params: Promise<{ uid: string }>;
 }) {
+  const p = await params;
+  const { uid } = p;
+
   const requestHeaders = await headers();
   const session = await auth.api.getSession({
     headers: requestHeaders,
@@ -34,8 +41,6 @@ export default async function ArtistManagerDetailPage({
 
     redirect('/accedi');
   }
-
-  const { uid } = await params;
 
   const [userData, languages, countries] = await Promise.all([
     getArtistManager(uid),
@@ -96,12 +101,7 @@ export default async function ArtistManagerDetailPage({
                   <Badge variant={isDisabled ? 'disabled' : 'success'}>
                     Manager artista
                   </Badge>
-                  {isDisabled && (
-                    <div className='max-w-max flex items-center gap-1.5 text-xs font-semibold text-zinc-600 bg-zinc-100 py-1 px-2 rounded-2xl'>
-                      <div className='h-1.5 w-1.5 bg-zinc-400 rounded-full'></div>{' '}
-                      Disattivato
-                    </div>
-                  )}
+                  {isDisabled && <StatusBadge status='disabled' />}
                 </div>
               </div>
             </div>
@@ -121,7 +121,7 @@ export default async function ArtistManagerDetailPage({
             </div>
           </div>
           <Separator className='my-6' />
-          <div className='grid grid-cols-[minmax(180px,max-content)_max-content] gap-4'>
+          <div className='grid grid-cols-[minmax(200px,max-content)_max-content] gap-6'>
             <span className='text-sm font-semibold text-zinc-600'>Email</span>
             <span className='text-sm font-medium text-zinc-500'>
               {userData.email}
@@ -153,6 +153,25 @@ export default async function ArtistManagerDetailPage({
           receiverProfileId={userData.profileId}
         />
       </div>
+
+      <Tabs defaultValue='personal-data'>
+        <div className='flex justify-between items-center mb-6'>
+          <span className='text-xl font-semibold'>Dettagli</span>
+          <TabsList className='gap-4 bg-white p-1 rounded-xl'>
+            <TabsTrigger value='managed-artists'>Artisti gestiti</TabsTrigger>
+            <TabsTrigger value='billing-data'>Dati di fatturazione</TabsTrigger>
+            <TabsTrigger value='personal-data'>
+              Informazioni personali
+            </TabsTrigger>
+          </TabsList>
+        </div>
+
+        <TabsContent value='managed-artists'>
+          Change your password here.
+        </TabsContent>
+        <BillingDataTab userData={userData} />
+        <PersonalDataTab userData={userData} />
+      </Tabs>
     </>
   );
 }

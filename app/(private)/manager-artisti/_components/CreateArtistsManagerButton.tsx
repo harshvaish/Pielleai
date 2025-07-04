@@ -1,3 +1,5 @@
+'use client';
+
 import {
   Dialog,
   DialogContent,
@@ -8,20 +10,23 @@ import {
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
 import CreateArtistManagerForm from './CreateArtistManagerForm/CreateArtistManagerForm';
-import { getLanguages } from '@/lib/data/get-languages';
-import { getCountries } from '@/lib/data/get-countries';
-import { notFound } from 'next/navigation';
+import { Country, Language } from '@/lib/types';
+import { useState } from 'react';
 
-export default async function CreateArtistManagerButton() {
-  const [languages, countries] = await Promise.all([
-    getLanguages(),
-    getCountries(),
-  ]).catch((error) => {
-    console.error('❌ Error fetching countries:', error);
-    notFound();
-  });
+export default function CreateArtistManagerButton({
+  languages,
+  countries,
+}: {
+  languages: Language[];
+  countries: Country[];
+}) {
+  const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
   return (
-    <Dialog modal>
+    <Dialog
+      open={isDialogOpen}
+      onOpenChange={setIsDialogOpen}
+      modal
+    >
       <DialogTrigger asChild>
         <Button size='sm'>
           <Plus />
@@ -39,6 +44,7 @@ export default async function CreateArtistManagerButton() {
         <CreateArtistManagerForm
           languages={languages}
           countries={countries}
+          closeDialog={() => setIsDialogOpen(false)}
         />
       </DialogContent>
     </Dialog>

@@ -2,19 +2,26 @@
 
 import { database } from '@/lib/database/connection';
 import {
+  countries,
   languages,
   profileLanguages,
   profiles,
+  subdivisions,
   users,
 } from '@/lib/database/schema';
 import { ArtistsManagerData } from '@/lib/types';
 import { eq } from 'drizzle-orm';
+import { alias } from 'drizzle-orm/pg-core';
 
 export async function getArtistManager(
   uid: string
 ): Promise<ArtistsManagerData | null> {
   try {
-    // Get main user and profile data
+    const billingCountry = alias(countries, 'billingCountry');
+    const billingSubdivision = alias(subdivisions, 'billingSubdivision');
+    const country = alias(countries, 'country');
+    const subdivision = alias(subdivisions, 'subdivision');
+
     const userResult = await database
       .select({
         id: users.id,
@@ -31,8 +38,16 @@ export async function getArtistManager(
         birthDate: profiles.birthDate,
         birthPlace: profiles.birthPlace,
         address: profiles.address,
-        countryId: profiles.countryId,
-        subdivisionId: profiles.subdivisionId,
+        country: {
+          id: country.id,
+          name: country.name,
+          code: country.code,
+          isEu: country.isEu,
+        },
+        subdivision: {
+          id: subdivision.id,
+          name: subdivision.name,
+        },
         city: profiles.city,
         zipCode: profiles.zipCode,
         gender: profiles.gender,
@@ -45,8 +60,16 @@ export async function getArtistManager(
         iban: profiles.iban,
         sdiRecipientCode: profiles.sdiRecipientCode,
         billingAddress: profiles.billingAddress,
-        billingCountryId: profiles.billingCountryId,
-        billingSubdivisionId: profiles.billingSubdivisionId,
+        billingCountry: {
+          id: billingCountry.id,
+          name: billingCountry.name,
+          code: billingCountry.code,
+          isEu: billingCountry.isEu,
+        },
+        billingSubdivision: {
+          id: billingSubdivision.id,
+          name: billingSubdivision.name,
+        },
         billingCity: profiles.billingCity,
         billingZipCode: profiles.billingZipCode,
         billingEmail: profiles.billingEmail,
@@ -56,6 +79,16 @@ export async function getArtistManager(
       })
       .from(users)
       .innerJoin(profiles, eq(users.id, profiles.userId))
+      .innerJoin(country, eq(profiles.countryId, country.id))
+      .innerJoin(subdivision, eq(profiles.subdivisionId, subdivision.id))
+      .innerJoin(
+        billingCountry,
+        eq(profiles.billingCountryId, billingCountry.id)
+      )
+      .innerJoin(
+        billingSubdivision,
+        eq(profiles.billingSubdivisionId, billingSubdivision.id)
+      )
       .where(eq(users.id, uid))
       .limit(1);
 
@@ -63,18 +96,15 @@ export async function getArtistManager(
 
     const user = userResult[0];
 
-    // Get languages separately
     const languagesResult = await database
       .select({ id: languages.id, name: languages.name })
       .from(profileLanguages)
       .innerJoin(languages, eq(profileLanguages.languageId, languages.id))
       .where(eq(profileLanguages.profileId, user.profileId));
 
-    const languageIds = languagesResult.map((lang) => lang.id);
-
     return {
       ...user,
-      languages: languageIds,
+      languages: languagesResult,
     };
   } catch (error) {
     console.error('[getArtistManagerData] - Error:', error);

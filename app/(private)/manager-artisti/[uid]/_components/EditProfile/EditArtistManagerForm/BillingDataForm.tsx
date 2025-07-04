@@ -17,7 +17,7 @@ import {
   artistManagerFormS2Schema,
 } from '@/lib/validation/artistManagerFormSchema';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useEffect } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
 import { editArtistManagerBillingData } from '@/lib/server-actions/artist-manager/edit-artist-manager-billing-data';
@@ -26,32 +26,39 @@ import { X } from 'lucide-react';
 export default function BillingDataForm({
   userData,
   countries,
-  onCancel,
+  closeDialog,
 }: {
   userData: ArtistsManagerData;
   countries: Country[];
-  onCancel: () => void;
+  closeDialog: () => void;
 }) {
-  const methods = useForm({
-    resolver: zodResolver(artistManagerFormS2Schema),
-    defaultValues: {
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+
+  const defaultValues = useMemo(
+    () => ({
       company: userData.company || '',
       taxCode: userData.taxCode || '',
       ipiCode: userData.ipiCode || '',
-      bicCode: userData.bicCode || '',
-      abaRoutingNumber: userData.abaRoutingNumber || '',
+      bicCode: userData.bicCode || undefined,
+      abaRoutingNumber: userData.abaRoutingNumber || undefined,
       iban: userData.iban || '',
-      sdiRecipientCode: userData.sdiRecipientCode || '',
+      sdiRecipientCode: userData.sdiRecipientCode || undefined,
       billingAddress: userData.billingAddress || '',
-      billingCountryId: userData.billingCountryId || 0,
-      billingSubdivisionId: userData.billingSubdivisionId || 0,
+      billingCountry: userData.billingCountry || 0,
+      billingSubdivisionId: userData.billingSubdivision.id || 0,
       billingCity: userData.billingCity || '',
       billingZipCode: userData.billingZipCode || '',
       billingEmail: userData.billingEmail || '',
       billingPhone: userData.billingPhone || '',
       billingPec: userData.billingPec || '',
       taxableInvoice: userData.taxableInvoice.toString() || 'false',
-    },
+    }),
+    [userData]
+  );
+
+  const methods = useForm({
+    resolver: zodResolver(artistManagerFormS2Schema),
+    defaultValues: defaultValues,
   });
   const router = useRouter();
 
@@ -61,32 +68,37 @@ export default function BillingDataForm({
     formState: { isDirty, errors },
   } = methods;
 
-  const selectedCountryId = methods.watch('billingCountryId');
+  const selectedCountry = methods.watch('billingCountry');
+  const selectedSubdivisionId = methods.watch('billingSubdivisionId');
 
-  // Reset billingSubdivision when selectedBillingCountryId changes
-  useEffect(() => {
-    if (!selectedCountryId) return;
-    methods.resetField('billingSubdivisionId');
-  }, [selectedCountryId, methods]);
+  const isEU = selectedCountry?.isEu;
+  const isUSA = selectedCountry?.code === 'US';
+  const isITA = selectedCountry?.code === 'IT';
 
-  const { data, error } = useSWR(
-    selectedCountryId
-      ? `/api/country-subdivisions?country=${selectedCountryId}`
+  const { data, error, isLoading } = useSWR(
+    selectedCountry && selectedCountry.id
+      ? `/api/country-subdivisions?country=${selectedCountry.id}`
       : null,
     fetcher
   );
 
-  const subdivisions: Subdivision[] = data?.subdivisions ?? [];
+  const subdivisions: Subdivision[] = useMemo(() => {
+    return data?.subdivisions ?? [];
+  }, [data?.subdivisions]);
 
-  if (error) {
-    toast.error('Recupero delle province fatturazione non riuscito.');
-  }
+  const subdivisionPlaceholder = useMemo(() => {
+    if (isLoading) return 'Caricamento province...';
+    if (!selectedCountry) return 'Seleziona uno stato';
+    return 'Seleziona una provincia';
+  }, [isLoading, selectedCountry]);
 
   const onSubmit = async (data: ArtistManagerS2FormSchema) => {
     if (!isDirty) {
       toast.info('Nessun dato modificato.');
       return;
     }
+
+    setIsSubmitting(true);
 
     const response = await editArtistManagerBillingData({
       profileId: userData.profileId,
@@ -96,10 +108,50 @@ export default function BillingDataForm({
     if (response.success) {
       toast.success('Profilo manager artisti aggiornato!');
       router.refresh();
+      closeDialog();
     } else {
       toast.error(response.message);
     }
+    setIsSubmitting(false);
   };
+
+  useEffect(() => {
+    if (!selectedCountry) return;
+
+    if (isEU) {
+      methods.resetField('bicCode', { defaultValue: undefined });
+    }
+    if (!isUSA) {
+      methods.resetField('abaRoutingNumber', { defaultValue: undefined });
+    }
+    if (!isITA) {
+      methods.resetField('sdiRecipientCode', { defaultValue: undefined });
+    }
+  }, [methods, selectedCountry]);
+
+  useEffect(() => {
+    if (!selectedCountry || isLoading || !subdivisions.length) return;
+
+    const isValid = subdivisions.some(
+      (sub) => sub.id === selectedSubdivisionId
+    );
+
+    if (!isValid) {
+      methods.resetField('billingSubdivisionId', { defaultValue: 0 });
+    }
+  }, [
+    selectedCountry,
+    selectedSubdivisionId,
+    subdivisions,
+    isLoading,
+    methods,
+  ]);
+
+  useEffect(() => {
+    if (error) {
+      toast.error('Recupero delle province di fatturazione non riuscito.');
+    }
+  }, [error]);
 
   return (
     <FormProvider {...methods}>
@@ -181,61 +233,6 @@ export default function BillingDataForm({
             )}
           </div>
         </div>
-        <div className='grid grid-cols-2 gap-4'>
-          <div className='flex flex-col'>
-            <label
-              htmlFor='bicCode'
-              className='block text-sm font-semibold mb-2'
-            >
-              Codice BIC
-            </label>
-            <Input
-              id='bicCode'
-              {...register('bicCode', {
-                onChange: (e) => {
-                  e.target.value = e.target.value.toUpperCase();
-                },
-              })}
-              placeholder='AAAA1234'
-              className={
-                errors.bicCode ? 'border-destructive text-destructive' : ''
-              }
-            />
-            {errors.bicCode && (
-              <p className='text-xs text-destructive mt-2'>
-                {errors.bicCode.message as string}
-              </p>
-            )}
-          </div>
-          <div className='flex flex-col'>
-            <label
-              htmlFor='abaRoutingNumber'
-              className='block text-sm font-semibold mb-2'
-            >
-              Numero di Routing ABA
-            </label>
-            <Input
-              id='abaRoutingNumber'
-              inputMode='numeric'
-              {...register('abaRoutingNumber', {
-                onChange: (e) => {
-                  e.target.value = e.target.value.replace(/\D/g, '');
-                },
-              })}
-              placeholder='123456789'
-              className={
-                errors.abaRoutingNumber
-                  ? 'border-destructive text-destructive'
-                  : ''
-              }
-            />
-            {errors.abaRoutingNumber && (
-              <p className='text-xs text-destructive mt-2'>
-                {errors.abaRoutingNumber.message as string}
-              </p>
-            )}
-          </div>
-        </div>
         <div className='flex flex-col'>
           <label
             htmlFor='iban'
@@ -256,33 +253,6 @@ export default function BillingDataForm({
           {errors.iban && (
             <p className='text-xs text-destructive mt-2'>
               {errors.iban.message as string}
-            </p>
-          )}
-        </div>
-        <div className='flex flex-col'>
-          <label
-            htmlFor='sdiRecipientCode'
-            className='block text-sm font-semibold mb-2'
-          >
-            Codice destinatario SDI
-          </label>
-          <Input
-            id='sdiRecipientCode'
-            {...register('sdiRecipientCode', {
-              onChange: (e) => {
-                e.target.value = e.target.value.toUpperCase();
-              },
-            })}
-            placeholder='ABC1234'
-            className={
-              errors.sdiRecipientCode
-                ? 'border-destructive text-destructive'
-                : ''
-            }
-          />
-          {errors.sdiRecipientCode && (
-            <p className='text-xs text-destructive mt-2'>
-              {errors.sdiRecipientCode.message as string}
             </p>
           )}
         </div>
@@ -318,23 +288,27 @@ export default function BillingDataForm({
             </label>
             <Controller
               control={control}
-              name='billingCountryId'
+              name='billingCountry'
               render={({ field }) => (
                 <Select
-                  name='billingCountryId'
-                  value={field.value.toString()}
-                  onValueChange={(v) => field.onChange(parseInt(v))}
+                  value={field.value?.id.toString() ?? ''}
+                  onValueChange={(selectedId) => {
+                    const selectedCountry = countries.find(
+                      (c) => c.id === parseInt(selectedId)
+                    );
+                    field.onChange(selectedCountry || null);
+                  }}
+                  disabled={isLoading}
                 >
                   <SelectTrigger
                     className={cn(
                       'w-full',
-                      errors.billingCountryId &&
+                      errors.billingCountry &&
                         'border-destructive text-destructive'
                     )}
                     size='sm'
                   >
-                    {countries.find((c) => c.id == field.value)?.name ||
-                      'Seleziona uno stato'}
+                    {field.value?.name ?? 'Seleziona uno stato'}
                   </SelectTrigger>
                   <SelectContent>
                     {countries.map((country) => (
@@ -349,9 +323,9 @@ export default function BillingDataForm({
                 </Select>
               )}
             />
-            {errors.billingCountryId && (
+            {errors.billingCountry && (
               <p className='text-xs text-destructive mt-2'>
-                {errors.billingCountryId.message as string}
+                {errors.billingCountry.message as string}
               </p>
             )}
           </div>
@@ -370,7 +344,7 @@ export default function BillingDataForm({
                 <Select
                   name='billingSubdivisionId'
                   value={field.value.toString()}
-                  disabled={!selectedCountryId}
+                  disabled={!selectedCountry || isLoading}
                   onValueChange={(v) => field.onChange(parseInt(v))}
                 >
                   <SelectTrigger
@@ -382,9 +356,7 @@ export default function BillingDataForm({
                     size='sm'
                   >
                     {subdivisions.find((s) => s.id == field.value)?.name ||
-                      (selectedCountryId
-                        ? 'Seleziona una provincia'
-                        : 'Seleziona uno stato')}
+                      subdivisionPlaceholder}
                   </SelectTrigger>
                   <SelectContent>
                     {subdivisions.map((subdivision: Subdivision) => (
@@ -457,6 +429,7 @@ export default function BillingDataForm({
             )}
           </div>
         </div>
+        <Separator className='my-4' />
         <div className='grid grid-cols-2 gap-4'>
           <div className='flex flex-col'>
             <label
@@ -524,6 +497,92 @@ export default function BillingDataForm({
             </p>
           )}
         </div>
+        {!isEU && (
+          <div className='flex flex-col'>
+            <label
+              htmlFor='bicCode'
+              className='block text-sm font-semibold mb-2'
+            >
+              Codice BIC
+            </label>
+            <Input
+              id='bicCode'
+              {...register('bicCode', {
+                onChange: (e) => {
+                  e.target.value = e.target.value.toUpperCase();
+                },
+              })}
+              placeholder='AAAA1234'
+              className={
+                errors.bicCode ? 'border-destructive text-destructive' : ''
+              }
+            />
+            {errors.bicCode && (
+              <p className='text-xs text-destructive mt-2'>
+                {errors.bicCode.message as string}
+              </p>
+            )}
+          </div>
+        )}
+        {isUSA && (
+          <div className='flex flex-col'>
+            <label
+              htmlFor='abaRoutingNumber'
+              className='block text-sm font-semibold mb-2'
+            >
+              Numero di Routing ABA
+            </label>
+            <Input
+              id='abaRoutingNumber'
+              inputMode='numeric'
+              {...register('abaRoutingNumber', {
+                onChange: (e) => {
+                  e.target.value = e.target.value.replace(/\D/g, '');
+                },
+              })}
+              placeholder='123456789'
+              className={
+                errors.abaRoutingNumber
+                  ? 'border-destructive text-destructive'
+                  : ''
+              }
+            />
+            {errors.abaRoutingNumber && (
+              <p className='text-xs text-destructive mt-2'>
+                {errors.abaRoutingNumber.message as string}
+              </p>
+            )}
+          </div>
+        )}
+        {isITA && (
+          <div className='flex flex-col'>
+            <label
+              htmlFor='sdiRecipientCode'
+              className='block text-sm font-semibold mb-2'
+            >
+              Codice destinatario SDI
+            </label>
+            <Input
+              id='sdiRecipientCode'
+              {...register('sdiRecipientCode', {
+                onChange: (e) => {
+                  e.target.value = e.target.value.toUpperCase();
+                },
+              })}
+              placeholder='ABC1234'
+              className={
+                errors.sdiRecipientCode
+                  ? 'border-destructive text-destructive'
+                  : ''
+              }
+            />
+            {errors.sdiRecipientCode && (
+              <p className='text-xs text-destructive mt-2'>
+                {errors.sdiRecipientCode.message as string}
+              </p>
+            )}
+          </div>
+        )}
         <Separator className='my-4' />
         <div className='flex flex-col'>
           <label
@@ -571,14 +630,22 @@ export default function BillingDataForm({
           )}
         </div>
         <div className='flex justify-between mt-4'>
-          <div
-            onClick={onCancel}
-            className='flex justify-center items-center gap-2 h-10 text-destructive p-3 rounded-xl hover:cursor-pointer hover:bg-slate-50'
+          <Button
+            type='button'
+            onClick={closeDialog}
+            variant='ghost'
+            className='text-destructive'
+            disabled={isSubmitting}
           >
             <X size={16} /> Annulla
-          </div>
+          </Button>
 
-          <Button type='submit'>Continua</Button>
+          <Button
+            type='submit'
+            disabled={isLoading || isSubmitting}
+          >
+            {isSubmitting ? 'Salvataggio...' : 'Salva'}
+          </Button>
         </div>
       </form>
     </FormProvider>

@@ -37,7 +37,9 @@ export type Language = {
 /* ------------------------------------------------- */
 export type Country = {
   id: number;
+  code: string;
   name: string;
+  isEu: boolean;
 };
 
 export type Subdivision = {
@@ -63,25 +65,25 @@ export type ArtistsManagerData = {
   surname: string;
   phone: string;
   email: string;
-  languages: number[];
+  languages: Language[];
   birthDate: string;
   birthPlace: string;
   address: string;
-  countryId: number;
-  subdivisionId: number;
+  country: Country;
+  subdivision: Subdivision;
   city: string;
   zipCode: string;
   gender: Gender;
   company: string;
   taxCode: string;
   ipiCode: string;
-  bicCode: string;
-  abaRoutingNumber: string;
+  bicCode: string | null;
+  abaRoutingNumber: string | null;
   iban: string;
-  sdiRecipientCode: string;
+  sdiRecipientCode: string | null;
   billingAddress: string;
-  billingCountryId: number;
-  billingSubdivisionId: number;
+  billingCountry: Country;
+  billingSubdivision: Subdivision;
   billingCity: string;
   billingZipCode: string;
   billingEmail: string;

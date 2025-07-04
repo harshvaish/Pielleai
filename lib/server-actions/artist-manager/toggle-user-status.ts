@@ -18,6 +18,7 @@ export async function toggleUserStatus(
       .update(users)
       .set({
         status: newStatus,
+        updatedAt: new Date(),
       })
       .where(eq(users.id, userId));
 

@@ -27,7 +27,7 @@ import {
 } from '@/lib/validation/artistManagerFormSchema';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { editArtistManagerPersonalData } from '@/lib/server-actions/artist-manager/edit-artist-manager-personal-data';
 import { useRouter } from 'next/navigation';
 import { X } from 'lucide-react';
@@ -37,33 +37,42 @@ export default function PersonalDataForm({
   userData,
   languages,
   countries,
-  onCancel,
+  closeDialog,
 }: {
   userData: ArtistsManagerData;
   languages: Language[];
   countries: Country[];
-  onCancel: () => void;
+  closeDialog: () => void;
 }) {
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-  const methods = useForm({
-    resolver: zodResolver(artistManagerFormS1Schema),
-    defaultValues: {
-      avatarUrl: userData.avatarUrl,
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+
+  const languageIds = userData.languages.map((lang) => lang.id);
+
+  const defaultValues = useMemo(
+    () => ({
+      avatarUrl: userData.avatarUrl || '',
       name: userData.name || '',
       surname: userData.surname || '',
       phone: userData.phone || '',
       email: userData.email || '',
       birthDate: userData.birthDate || '',
       birthPlace: userData.birthPlace || '',
-      languages: userData.languages || [],
+      languages: languageIds || [],
       address: userData.address || '',
-      countryId: userData.countryId || 0,
-      subdivisionId: userData.subdivisionId || 0,
+      countryId: userData.country.id || 0,
+      subdivisionId: userData.subdivision.id || 0,
       city: userData.city || '',
       zipCode: userData.zipCode || '',
       gender: userData.gender || 'maschile',
-    },
+    }),
+    [userData]
+  );
+
+  const methods = useForm({
+    resolver: zodResolver(artistManagerFormS1Schema),
+    defaultValues: defaultValues,
   });
+
   const router = useRouter();
 
   const {
@@ -73,31 +82,31 @@ export default function PersonalDataForm({
   } = methods;
 
   const selectedCountryId = methods.watch('countryId');
+  const selectedSubdivisionId = methods.watch('subdivisionId');
 
-  // Reset subdivision when selectedCountryId changes
-  useEffect(() => {
-    if (!selectedCountryId) return;
-    methods.resetField('subdivisionId');
-  }, [selectedCountryId, methods]);
-
-  const { data } = useSWR(
+  const { data, error, isLoading } = useSWR(
     selectedCountryId
       ? `/api/country-subdivisions?country=${selectedCountryId}`
       : null,
     fetcher
   );
-  const subdivisions: Subdivision[] = data?.subdivisions ?? [];
 
-  if (subdivisions.length === 0) {
-    toast.error('Recupero delle province non riuscito.');
-  }
+  const subdivisions: Subdivision[] = useMemo(() => {
+    return data?.subdivisions ?? [];
+  }, [data?.subdivisions]);
+
+  const subdivisionPlaceholder = useMemo(() => {
+    if (isLoading) return 'Caricamento province...';
+    if (!selectedCountryId) return 'Seleziona uno stato';
+    return 'Seleziona una provincia';
+  }, [isLoading, selectedCountryId]);
 
   const onSubmit = async (data: ArtistManagerS1FormSchema) => {
     if (!isDirty) {
       toast.info('Nessun dato modificato.');
       return;
     }
-    setIsLoading(true);
+    setIsSubmitting(true);
 
     const response = await editArtistManagerPersonalData({
       profileId: userData.profileId,
@@ -107,12 +116,37 @@ export default function PersonalDataForm({
     if (response.success) {
       methods.reset(data); // new form status, isDirty to false
       toast.success('Profilo manager artisti aggiornato!');
+      closeDialog();
       router.refresh();
     } else {
       toast.error(response.message);
     }
-    setIsLoading(false);
+    setIsSubmitting(false);
   };
+
+  useEffect(() => {
+    if (!selectedCountryId || isLoading || !subdivisions.length) return;
+
+    const isValid = subdivisions.some(
+      (sub) => sub.id === selectedSubdivisionId
+    );
+
+    if (!isValid) {
+      methods.resetField('subdivisionId', { defaultValue: 0 });
+    }
+  }, [
+    selectedCountryId,
+    selectedSubdivisionId,
+    subdivisions,
+    isLoading,
+    methods,
+  ]);
+
+  useEffect(() => {
+    if (error) {
+      toast.error('Recupero delle province non riuscito.');
+    }
+  }, [error]);
 
   return (
     <FormProvider {...methods}>
@@ -353,6 +387,7 @@ export default function PersonalDataForm({
                 <Select
                   value={field.value.toString()}
                   onValueChange={(v) => field.onChange(parseInt(v))}
+                  disabled={isLoading}
                 >
                   <SelectTrigger
                     id='countryId'
@@ -398,7 +433,7 @@ export default function PersonalDataForm({
               render={({ field }) => (
                 <Select
                   value={field.value.toString()}
-                  disabled={!selectedCountryId}
+                  disabled={!selectedCountryId || isLoading}
                   onValueChange={(v) => field.onChange(parseInt(v))}
                 >
                   <SelectTrigger
@@ -411,9 +446,7 @@ export default function PersonalDataForm({
                     size='sm'
                   >
                     {subdivisions.find((s) => s.id == field.value)?.name ||
-                      (selectedCountryId
-                        ? 'Seleziona una provincia'
-                        : 'Seleziona uno stato')}
+                      subdivisionPlaceholder}
                   </SelectTrigger>
                   <SelectContent>
                     {subdivisions.map((subdivision: Subdivision) => (
@@ -526,19 +559,19 @@ export default function PersonalDataForm({
         <div className='flex justify-between mt-4'>
           <Button
             type='button'
-            onClick={onCancel}
+            onClick={closeDialog}
             variant='ghost'
             className='text-destructive'
-            disabled={isLoading}
+            disabled={isSubmitting}
           >
             <X size={16} /> Annulla
           </Button>
 
           <Button
             type='submit'
-            disabled={isLoading}
+            disabled={isLoading || isSubmitting}
           >
-            {isLoading ? 'Salvataggio...' : 'Salva'}
+            {isSubmitting ? 'Salvataggio...' : 'Salva'}
           </Button>
         </div>
       </form>

@@ -132,6 +132,7 @@ export const editArtistManagerPersonalData = async ({
           subdivisionId: data.subdivisionId,
           city: data.city,
           zipCode: data.zipCode,
+          updatedAt: new Date(),
         })
         .where(eq(profiles.id, profileId));
 

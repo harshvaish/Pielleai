@@ -66,7 +66,7 @@ export const createArtistManager = async (
     languages,
     countryId,
     subdivisionId,
-    billingCountryId,
+    billingCountry,
     billingSubdivisionId,
   } = validation.data;
 
@@ -98,7 +98,7 @@ export const createArtistManager = async (
       database
         .select({ id: countries.id })
         .from(countries)
-        .where(eq(countries.id, billingCountryId)),
+        .where(eq(countries.id, billingCountry.id)),
 
       database
         .select({ id: subdivisions.id, countryId: subdivisions.countryId })
@@ -154,7 +154,7 @@ export const createArtistManager = async (
       };
     }
 
-    if (billingSubdivisionCheck[0].countryId != billingCountryId) {
+    if (billingSubdivisionCheck[0].countryId != billingCountry.id) {
       return {
         success: false,
         message:
@@ -212,7 +212,7 @@ export const createArtistManager = async (
           iban: data.iban,
           sdiRecipientCode: data.sdiRecipientCode,
           billingAddress: data.billingAddress,
-          billingCountryId: data.billingCountryId,
+          billingCountryId: data.billingCountry.id,
           billingSubdivisionId: data.billingSubdivisionId,
           billingCity: data.billingCity,
           billingZipCode: data.billingZipCode,

@@ -9,7 +9,7 @@ import {
   artistManagerFormS3Schema,
   artistManagerFormSchema,
 } from '@/lib/validation/artistManagerFormSchema';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import StepOne from './StepOne';
 import StepTwo from './StepTwo';
 import { toast } from 'sonner';
@@ -46,11 +46,14 @@ function getFormFieldsForStep(
 export default function CreateArtistManagerForm({
   languages,
   countries,
+  closeDialog,
 }: {
   languages: Language[];
   countries: Country[];
+  closeDialog: () => void;
 }) {
   const [step, setStep] = useState<number>(1);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const methods = useForm({
     resolver: zodResolver(artistManagerFormSchema),
     defaultValues: {
@@ -72,12 +75,12 @@ export default function CreateArtistManagerForm({
       company: '',
       taxCode: '',
       ipiCode: '',
-      bicCode: '',
-      abaRoutingNumber: '',
+      bicCode: undefined,
+      abaRoutingNumber: undefined,
       iban: '',
-      sdiRecipientCode: '',
+      sdiRecipientCode: undefined,
       billingAddress: '',
-      billingCountryId: 0,
+      billingCountry: undefined,
       billingSubdivisionId: 0,
       billingCity: '',
       billingZipCode: '',
@@ -93,8 +96,8 @@ export default function CreateArtistManagerForm({
   const router = useRouter();
 
   const onNext = async () => {
-    const result = await methods.trigger(getFormFieldsForStep(step));
-    if (result) {
+    const isValid = await methods.trigger(getFormFieldsForStep(step));
+    if (isValid) {
       setStep((prev) => prev + 1);
     } else {
       toast.error('Alcuni campi sono incompleti o errati');
@@ -104,30 +107,19 @@ export default function CreateArtistManagerForm({
   const onPrev = () => setStep((prev) => prev - 1);
 
   const onSubmit = async (data: ArtistManagerFormSchema) => {
+    setIsLoading(true);
     const response = await createArtistManager(data);
 
     if (response.success) {
       toast.success('Utenza manager artisti creata!');
       router.refresh();
+      closeDialog();
     } else {
       toast.error(response.message);
     }
+
+    setIsLoading(false);
   };
-
-  const selectedCountryId = methods.watch('countryId');
-  const selectedBillingCountryId = methods.watch('billingCountryId');
-
-  // Reset subdivision when selectedCountryId changes
-  useEffect(() => {
-    if (!selectedCountryId) return;
-    methods.resetField('subdivisionId');
-  }, [selectedCountryId, methods]);
-
-  // Reset billingSubdivision when selectedBillingCountryId changes
-  useEffect(() => {
-    if (!selectedBillingCountryId) return;
-    methods.resetField('billingSubdivisionId');
-  }, [selectedBillingCountryId, methods]);
 
   return (
     <>
@@ -206,7 +198,12 @@ export default function CreateArtistManagerForm({
                   Continua
                 </div>
               ) : (
-                <Button type='submit'>Crea utente</Button>
+                <Button
+                  type='submit'
+                  disabled={isLoading}
+                >
+                  {isLoading ? 'Creazione utente...' : 'Crea utente'}
+                </Button>
               )}
             </div>
           </form>

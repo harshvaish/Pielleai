@@ -11,6 +11,7 @@ import {
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Country, Subdivision } from '@/lib/types';
 import useSWR from 'swr';
+import { useEffect, useMemo } from 'react';
 import { toast } from 'sonner';
 
 export default function StepTwo({ countries }: { countries: Country[] }) {
@@ -18,27 +19,73 @@ export default function StepTwo({ countries }: { countries: Country[] }) {
     register,
     control,
     watch,
+    setValue,
     formState: { errors },
   } = useFormContext();
 
-  const selectedCountryId = watch('billingCountryId');
+  const selectedCountry = watch('billingCountry');
+  const selectedSubdivisionId = watch('billingSubdivisionId');
 
-  const { data, error } = useSWR(
-    selectedCountryId
-      ? `/api/country-subdivisions?country=${selectedCountryId}`
+  const isEU = selectedCountry?.isEu;
+  const isUSA = selectedCountry?.code === 'US';
+  const isITA = selectedCountry?.code === 'IT';
+
+  const { data, error, isLoading } = useSWR(
+    selectedCountry && selectedCountry.id
+      ? `/api/country-subdivisions?country=${selectedCountry.id}`
       : null,
     fetcher
   );
 
-  const subdivisions: Subdivision[] = data?.subdivisions ?? [];
+  const subdivisions: Subdivision[] = useMemo(() => {
+    return data?.subdivisions ?? [];
+  }, [data?.subdivisions]);
 
-  if (error) {
-    toast.error('Recupero delle province fatturazione non riuscito.');
-  }
+  const subdivisionPlaceholder = useMemo(() => {
+    if (isLoading) return 'Caricamento province...';
+    if (!selectedCountry) return 'Seleziona uno stato';
+    return 'Seleziona una provincia';
+  }, [isLoading, selectedCountry]);
+
+  useEffect(() => {
+    if (!selectedCountry) return;
+    if (isEU) {
+      setValue('bicCode', undefined);
+    }
+    if (!isUSA) {
+      setValue('abaRoutingNumber', undefined);
+    }
+    if (!isITA) {
+      setValue('sdiRecipientCode', undefined);
+    }
+  }, [setValue, selectedCountry]);
+
+  useEffect(() => {
+    if (!selectedCountry || isLoading || !subdivisions.length) return;
+
+    const isValid = subdivisions.some(
+      (sub) => sub.id === selectedSubdivisionId
+    );
+
+    if (!isValid) {
+      setValue('billingSubdivisionId', 0);
+    }
+  }, [
+    selectedCountry,
+    selectedSubdivisionId,
+    subdivisions,
+    isLoading,
+    setValue,
+  ]);
+
+  useEffect(() => {
+    if (error) {
+      toast.error('Recupero delle province di fatturazione non riuscito.');
+    }
+  }, [error]);
 
   return (
     <>
-      <div className='text-xl text-center font-bold'>Dati personali</div>
       <div className='flex flex-col'>
         <label
           htmlFor='company'
@@ -113,61 +160,6 @@ export default function StepTwo({ countries }: { countries: Country[] }) {
           )}
         </div>
       </div>
-      <div className='grid grid-cols-2 gap-4'>
-        <div className='flex flex-col'>
-          <label
-            htmlFor='bicCode'
-            className='block text-sm font-semibold mb-2'
-          >
-            Codice BIC
-          </label>
-          <Input
-            id='bicCode'
-            {...register('bicCode', {
-              onChange: (e) => {
-                e.target.value = e.target.value.toUpperCase();
-              },
-            })}
-            placeholder='AAAA1234'
-            className={
-              errors.bicCode ? 'border-destructive text-destructive' : ''
-            }
-          />
-          {errors.bicCode && (
-            <p className='text-xs text-destructive mt-2'>
-              {errors.bicCode.message as string}
-            </p>
-          )}
-        </div>
-        <div className='flex flex-col'>
-          <label
-            htmlFor='abaRoutingNumber'
-            className='block text-sm font-semibold mb-2'
-          >
-            Numero di Routing ABA
-          </label>
-          <Input
-            id='abaRoutingNumber'
-            inputMode='numeric'
-            {...register('abaRoutingNumber', {
-              onChange: (e) => {
-                e.target.value = e.target.value.replace(/\D/g, '');
-              },
-            })}
-            placeholder='123456789'
-            className={
-              errors.abaRoutingNumber
-                ? 'border-destructive text-destructive'
-                : ''
-            }
-          />
-          {errors.abaRoutingNumber && (
-            <p className='text-xs text-destructive mt-2'>
-              {errors.abaRoutingNumber.message as string}
-            </p>
-          )}
-        </div>
-      </div>
       <div className='flex flex-col'>
         <label
           htmlFor='iban'
@@ -188,31 +180,6 @@ export default function StepTwo({ countries }: { countries: Country[] }) {
         {errors.iban && (
           <p className='text-xs text-destructive mt-2'>
             {errors.iban.message as string}
-          </p>
-        )}
-      </div>
-      <div className='flex flex-col'>
-        <label
-          htmlFor='sdiRecipientCode'
-          className='block text-sm font-semibold mb-2'
-        >
-          Codice destinatario SDI
-        </label>
-        <Input
-          id='sdiRecipientCode'
-          {...register('sdiRecipientCode', {
-            onChange: (e) => {
-              e.target.value = e.target.value.toUpperCase();
-            },
-          })}
-          placeholder='ABC1234'
-          className={
-            errors.sdiRecipientCode ? 'border-destructive text-destructive' : ''
-          }
-        />
-        {errors.sdiRecipientCode && (
-          <p className='text-xs text-destructive mt-2'>
-            {errors.sdiRecipientCode.message as string}
           </p>
         )}
       </div>
@@ -248,23 +215,26 @@ export default function StepTwo({ countries }: { countries: Country[] }) {
           </label>
           <Controller
             control={control}
-            name='billingCountryId'
+            name='billingCountry'
             render={({ field }) => (
               <Select
-                name='billingCountryId'
-                value={field.value}
-                onValueChange={(v) => field.onChange(parseInt(v))}
+                value={field.value?.id.toString() ?? ''}
+                onValueChange={(selectedId) => {
+                  const selectedCountry = countries.find(
+                    (c) => c.id === parseInt(selectedId)
+                  );
+                  field.onChange(selectedCountry || null);
+                }}
               >
                 <SelectTrigger
                   className={cn(
                     'w-full',
-                    errors.billingCountryId &&
+                    errors.billingCountry &&
                       'border-destructive text-destructive'
                   )}
                   size='sm'
                 >
-                  {countries.find((c) => c.id == field.value)?.name ||
-                    'Seleziona uno stato'}
+                  {field.value?.name ?? 'Seleziona uno stato'}
                 </SelectTrigger>
                 <SelectContent>
                   {countries.map((country) => (
@@ -279,9 +249,9 @@ export default function StepTwo({ countries }: { countries: Country[] }) {
               </Select>
             )}
           />
-          {errors.billingCountryId && (
+          {errors.billingCountry && (
             <p className='text-xs text-destructive mt-2'>
-              {errors.billingCountryId.message as string}
+              {errors.billingCountry.message as string}
             </p>
           )}
         </div>
@@ -299,8 +269,8 @@ export default function StepTwo({ countries }: { countries: Country[] }) {
             render={({ field }) => (
               <Select
                 name='billingSubdivisionId'
-                value={field.value}
-                disabled={!selectedCountryId}
+                value={field.value.toString()}
+                disabled={!selectedCountry || isLoading}
                 onValueChange={(v) => field.onChange(parseInt(v))}
               >
                 <SelectTrigger
@@ -312,9 +282,7 @@ export default function StepTwo({ countries }: { countries: Country[] }) {
                   size='sm'
                 >
                   {subdivisions.find((s) => s.id == field.value)?.name ||
-                    (selectedCountryId
-                      ? 'Seleziona una provincia'
-                      : 'Seleziona uno stato')}
+                    subdivisionPlaceholder}
                 </SelectTrigger>
                 <SelectContent>
                   {subdivisions.map((subdivision: Subdivision) => (
@@ -385,6 +353,7 @@ export default function StepTwo({ countries }: { countries: Country[] }) {
           )}
         </div>
       </div>
+      <Separator className='my-4' />
       <div className='grid grid-cols-2 gap-4'>
         <div className='flex flex-col'>
           <label
@@ -452,6 +421,92 @@ export default function StepTwo({ countries }: { countries: Country[] }) {
           </p>
         )}
       </div>
+      {!isEU && (
+        <div className='flex flex-col'>
+          <label
+            htmlFor='bicCode'
+            className='block text-sm font-semibold mb-2'
+          >
+            Codice BIC
+          </label>
+          <Input
+            id='bicCode'
+            {...register('bicCode', {
+              onChange: (e) => {
+                e.target.value = e.target.value.toUpperCase();
+              },
+            })}
+            placeholder='AAAA1234'
+            className={
+              errors.bicCode ? 'border-destructive text-destructive' : ''
+            }
+          />
+          {errors.bicCode && (
+            <p className='text-xs text-destructive mt-2'>
+              {errors.bicCode.message as string}
+            </p>
+          )}
+        </div>
+      )}
+      {isUSA && (
+        <div className='flex flex-col'>
+          <label
+            htmlFor='abaRoutingNumber'
+            className='block text-sm font-semibold mb-2'
+          >
+            Numero di Routing ABA
+          </label>
+          <Input
+            id='abaRoutingNumber'
+            inputMode='numeric'
+            {...register('abaRoutingNumber', {
+              onChange: (e) => {
+                e.target.value = e.target.value.replace(/\D/g, '');
+              },
+            })}
+            placeholder='123456789'
+            className={
+              errors.abaRoutingNumber
+                ? 'border-destructive text-destructive'
+                : ''
+            }
+          />
+          {errors.abaRoutingNumber && (
+            <p className='text-xs text-destructive mt-2'>
+              {errors.abaRoutingNumber.message as string}
+            </p>
+          )}
+        </div>
+      )}
+      {isITA && (
+        <div className='flex flex-col'>
+          <label
+            htmlFor='sdiRecipientCode'
+            className='block text-sm font-semibold mb-2'
+          >
+            Codice destinatario SDI
+          </label>
+          <Input
+            id='sdiRecipientCode'
+            {...register('sdiRecipientCode', {
+              onChange: (e) => {
+                e.target.value = e.target.value.toUpperCase();
+              },
+            })}
+            placeholder='ABC1234'
+            className={
+              errors.sdiRecipientCode
+                ? 'border-destructive text-destructive'
+                : ''
+            }
+          />
+          {errors.sdiRecipientCode && (
+            <p className='text-xs text-destructive mt-2'>
+              {errors.sdiRecipientCode.message as string}
+            </p>
+          )}
+        </div>
+      )}
       <Separator className='my-4' />
       <div className='flex flex-col'>
         <label

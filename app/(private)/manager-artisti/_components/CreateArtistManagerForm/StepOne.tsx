@@ -14,6 +14,7 @@ import { Gender, GENDERS } from '@/lib/constants';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import useSWR from 'swr';
 import { Country, Language, Subdivision } from '@/lib/types';
+import { useEffect, useMemo } from 'react';
 import { toast } from 'sonner';
 
 export default function StepOne({
@@ -27,22 +28,53 @@ export default function StepOne({
     register,
     control,
     watch,
+    resetField,
     formState: { errors },
   } = useFormContext();
 
   const selectedCountryId = watch('countryId');
+  const selectedSubdivisionId = watch('subdivisionId');
 
-  const { data, error } = useSWR(
+  const { data, error, isLoading } = useSWR(
     selectedCountryId
       ? `/api/country-subdivisions?country=${selectedCountryId}`
       : null,
     fetcher
   );
-  const subdivisions: Subdivision[] = data?.subdivisions ?? [];
 
-  if (error) {
-    toast.error('Recupero delle province non riuscito.');
-  }
+  const subdivisions: Subdivision[] = useMemo(() => {
+    return data?.subdivisions ?? [];
+  }, [data?.subdivisions]);
+
+  const subdivisionPlaceholder = useMemo(() => {
+    if (isLoading) return 'Caricamento province...';
+    if (!selectedCountryId) return 'Seleziona uno stato';
+    return 'Seleziona una provincia';
+  }, [isLoading, selectedCountryId]);
+
+  useEffect(() => {
+    if (!selectedCountryId || isLoading || !subdivisions.length) return;
+
+    const isValid = subdivisions.some(
+      (sub) => sub.id === selectedSubdivisionId
+    );
+
+    if (!isValid) {
+      resetField('subdivisionId', { defaultValue: 0 });
+    }
+  }, [
+    selectedCountryId,
+    selectedSubdivisionId,
+    subdivisions,
+    isLoading,
+    resetField,
+  ]);
+
+  useEffect(() => {
+    if (error) {
+      toast.error('Recupero delle province non riuscito.');
+    }
+  }, [error]);
 
   return (
     <>
@@ -274,6 +306,7 @@ export default function StepOne({
               <Select
                 value={field.value}
                 onValueChange={(v) => field.onChange(parseInt(v))}
+                disabled={isLoading}
               >
                 <SelectTrigger
                   id='countryId'
@@ -319,7 +352,7 @@ export default function StepOne({
             render={({ field }) => (
               <Select
                 value={field.value}
-                disabled={!selectedCountryId}
+                disabled={!selectedCountryId || isLoading}
                 onValueChange={(v) => field.onChange(parseInt(v))}
               >
                 <SelectTrigger
@@ -332,9 +365,7 @@ export default function StepOne({
                   size='sm'
                 >
                   {subdivisions.find((s) => s.id == field.value)?.name ||
-                    (selectedCountryId
-                      ? 'Seleziona una provincia'
-                      : 'Seleziona uno stato')}
+                    subdivisionPlaceholder}
                 </SelectTrigger>
                 <SelectContent>
                   {subdivisions.map((subdivision: Subdivision) => (

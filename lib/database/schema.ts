@@ -98,7 +98,8 @@ export const countries = pgTable(
     id: serial().primaryKey().notNull(),
     code: varchar({ length: 2 }).notNull(),
     name: varchar({ length: 100 }).notNull(),
-    createdAt: timestamp('created_at').defaultNow(),
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+    isEu: boolean('is_eu').notNull().default(false),
   },
   (table) => [unique('countries_code_key').on(table.code)]
 );
@@ -109,7 +110,7 @@ export const subdivisions = pgTable(
     id: serial().primaryKey().notNull(),
     countryId: integer('country_id').notNull(),
     name: varchar({ length: 200 }).notNull(),
-    createdAt: timestamp('created_at').defaultNow(),
+    createdAt: timestamp('created_at').notNull().defaultNow(),
   },
   (table) => [
     foreignKey({
@@ -128,7 +129,7 @@ export const languages = pgTable(
     id: serial().primaryKey().notNull(),
     code: varchar({ length: 2 }).notNull(),
     name: varchar({ length: 100 }).notNull(),
-    createdAt: timestamp('created_at').defaultNow(),
+    createdAt: timestamp('created_at').notNull().defaultNow(),
   },
   (table) => [unique('languages_code_key').on(table.code)]
 );
@@ -153,10 +154,10 @@ export const profiles = pgTable(
     company: text().notNull(),
     taxCode: text('tax_code').notNull(),
     ipiCode: text('ipi_code').notNull(),
-    bicCode: text('bic_code').notNull(),
-    abaRoutingNumber: varchar('aba_routing_number', { length: 20 }).notNull(),
+    bicCode: text('bic_code'),
+    abaRoutingNumber: varchar('aba_routing_number', { length: 20 }),
     iban: text().notNull(),
-    sdiRecipientCode: text('sdi_recipient_code').notNull(),
+    sdiRecipientCode: text('sdi_recipient_code'),
     billingAddress: text('billing_address').notNull(),
     billingCountryId: integer('billing_country_id').notNull(),
     billingSubdivisionId: integer('billing_subdivision_id').notNull(),

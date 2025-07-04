@@ -78,14 +78,14 @@ export default function EditArtistManagerButton({
               userData={userData}
               languages={languages}
               countries={countries}
-              onCancel={() => setIsDialogOpen(false)}
+              closeDialog={() => setIsDialogOpen(false)}
             />
           )}
           {step === 2 && (
             <BillingDataForm
               userData={userData}
               countries={countries}
-              onCancel={() => setIsDialogOpen(false)}
+              closeDialog={() => setIsDialogOpen(false)}
             />
           )}
         </section>

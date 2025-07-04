@@ -58,14 +58,14 @@ export const editArtistManagerBillingData = async ({
     };
   }
 
-  const { billingCountryId, billingSubdivisionId } = validation.data;
+  const { billingCountry, billingSubdivisionId } = validation.data;
 
   try {
     const [billingCountryCheck, billingSubdivisionCheck] = await Promise.all([
       database
         .select({ id: countries.id })
         .from(countries)
-        .where(eq(countries.id, billingCountryId)),
+        .where(eq(countries.id, billingCountry.id)),
 
       database
         .select({ id: subdivisions.id, countryId: subdivisions.countryId })
@@ -89,7 +89,7 @@ export const editArtistManagerBillingData = async ({
       };
     }
 
-    if (billingSubdivisionCheck[0].countryId != billingCountryId) {
+    if (billingSubdivisionCheck[0].countryId != billingCountry.id) {
       return {
         success: false,
         message:
@@ -104,12 +104,12 @@ export const editArtistManagerBillingData = async ({
         company: data.company,
         taxCode: data.taxCode,
         ipiCode: data.ipiCode,
-        bicCode: data.bicCode,
-        abaRoutingNumber: data.abaRoutingNumber,
+        bicCode: data.bicCode || null,
+        abaRoutingNumber: data.abaRoutingNumber || null,
         iban: data.iban,
-        sdiRecipientCode: data.sdiRecipientCode,
+        sdiRecipientCode: data.sdiRecipientCode || null,
         billingAddress: data.billingAddress,
-        billingCountryId: data.billingCountryId,
+        billingCountryId: data.billingCountry.id,
         billingSubdivisionId: data.billingSubdivisionId,
         billingCity: data.billingCity,
         billingZipCode: data.billingZipCode,
@@ -117,6 +117,7 @@ export const editArtistManagerBillingData = async ({
         billingPhone: data.billingPhone,
         billingPec: data.billingPec,
         taxableInvoice: data.taxableInvoice === 'true',
+        updatedAt: new Date(),
       })
       .where(eq(profiles.id, profileId));
 
