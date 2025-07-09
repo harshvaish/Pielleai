@@ -1,0 +1,176 @@
+'use server';
+
+import { database } from '@/lib/database/connection';
+import {
+  artistLanguages,
+  artists,
+  artistZones,
+  countries,
+  languages,
+  subdivisions,
+  zones,
+  managerArtists,
+  profiles,
+} from '@/lib/database/schema';
+import { ArtistsData } from '@/lib/types';
+import { eq, sql } from 'drizzle-orm';
+import { alias } from 'drizzle-orm/pg-core';
+
+export async function getArtist(slug: string): Promise<ArtistsData | null> {
+  try {
+    const country = alias(countries, 'country');
+    const subdivision = alias(subdivisions, 'subdivision');
+    const billingCountry = alias(countries, 'billingCountry');
+    const billingSubdivision = alias(subdivisions, 'billingSubdivision');
+
+    const userResult = await database
+      .select({
+        id: artists.id,
+        slug: artists.slug,
+        artistId: artists.id,
+        status: artists.status,
+        createdAt: artists.createdAt,
+        updatedAt: artists.updatedAt,
+
+        avatarUrl: artists.avatarUrl,
+        name: artists.name,
+        surname: artists.surname,
+        stageName: artists.stageName,
+        phone: artists.phone,
+        email: artists.email,
+        birthDate: artists.birthDate,
+        birthPlace: artists.birthPlace,
+        gender: artists.gender,
+        zones: sql<string[]>`array_agg(DISTINCT ${zones.name})`,
+
+        tourManagerEmail: artists.tourManagerEmail,
+        tourManagerName: artists.tourManagerName,
+        tourManagerSurname: artists.tourManagerSurname,
+        tourManagerPhone: artists.tourManagerPhone,
+
+        address: artists.address,
+        country: {
+          id: country.id,
+          name: country.name,
+          code: country.code,
+          isEu: country.isEu,
+        },
+        subdivision: {
+          id: subdivision.id,
+          name: subdivision.name,
+        },
+        city: artists.city,
+        zipCode: artists.zipCode,
+
+        company: artists.company,
+        taxCode: artists.taxCode,
+        ipiCode: artists.ipiCode,
+        bicCode: artists.bicCode,
+        abaRoutingNumber: artists.abaRoutingNumber,
+        iban: artists.iban,
+        sdiRecipientCode: artists.sdiRecipientCode,
+        billingAddress: artists.billingAddress,
+        billingCountry: {
+          id: billingCountry.id,
+          name: billingCountry.name,
+          code: billingCountry.code,
+          isEu: billingCountry.isEu,
+        },
+        billingSubdivision: {
+          id: billingSubdivision.id,
+          name: billingSubdivision.name,
+        },
+        billingCity: artists.billingCity,
+        billingZipCode: artists.billingZipCode,
+        billingEmail: artists.billingEmail,
+        billingPhone: artists.billingPhone,
+        billingPec: artists.billingPec,
+        taxableInvoice: artists.taxableInvoice,
+
+        tiktokUrl: artists.tiktokUrl,
+        tiktokUsername: artists.tiktokUsername,
+        tiktokFollowers: artists.tiktokFollowers,
+        tiktokCreatedAt: artists.tiktokCreatedAt,
+
+        facebookUrl: artists.facebookUrl,
+        facebookUsername: artists.facebookUsername,
+        facebookFollowers: artists.facebookFollowers,
+        facebookCreatedAt: artists.facebookCreatedAt,
+
+        instagramUrl: artists.instagramUrl,
+        instagramUsername: artists.instagramUsername,
+        instagramFollowers: artists.instagramFollowers,
+        instagramCreatedAt: artists.instagramCreatedAt,
+
+        xUrl: artists.xUrl,
+        xUsername: artists.xUsername,
+        xFollowers: artists.xFollowers,
+        xCreatedAt: artists.xCreatedAt,
+      })
+      .from(artists)
+      .innerJoin(country, eq(artists.countryId, country.id))
+      .innerJoin(subdivision, eq(artists.subdivisionId, subdivision.id))
+      .innerJoin(
+        billingCountry,
+        eq(artists.billingCountryId, billingCountry.id)
+      )
+      .innerJoin(
+        billingSubdivision,
+        eq(artists.billingSubdivisionId, billingSubdivision.id)
+      )
+      .leftJoin(artistZones, eq(artists.id, artistZones.artistId))
+      .leftJoin(zones, eq(artistZones.zoneId, zones.id))
+      .where(eq(artists.slug, slug))
+      .groupBy(
+        artists.id,
+        country.id,
+        subdivision.id,
+        billingCountry.id,
+        billingSubdivision.id
+      )
+      .limit(1);
+
+    if (!userResult.length) return null;
+
+    const user = userResult[0];
+
+    const [zonesResult, languagesResult, managersResult] = await Promise.all([
+      database
+        .select({
+          id: zones.id,
+          name: zones.name,
+        })
+        .from(artistZones)
+        .innerJoin(zones, eq(artistZones.zoneId, zones.id))
+        .where(eq(artistZones.artistId, user.artistId)),
+
+      database
+        .select({ id: languages.id, name: languages.name })
+        .from(artistLanguages)
+        .innerJoin(languages, eq(artistLanguages.languageId, languages.id))
+        .where(eq(artistLanguages.artistId, user.artistId)),
+
+      database
+        .select({
+          id: profiles.userId,
+          profileId: profiles.id,
+          avatarUrl: profiles.avatarUrl,
+          name: profiles.name,
+          surname: profiles.surname,
+        })
+        .from(managerArtists)
+        .innerJoin(profiles, eq(managerArtists.managerProfileId, profiles.id))
+        .where(eq(managerArtists.artistId, user.artistId)),
+    ]);
+
+    return {
+      ...user,
+      zones: zonesResult,
+      languages: languagesResult,
+      managers: managersResult,
+    };
+  } catch (error) {
+    console.error('[getArtist] - Error:', error);
+    throw new Error('Recupero dati artista non riuscito.');
+  }
+}

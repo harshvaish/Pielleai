@@ -2,8 +2,10 @@ import { TabsContent } from '@/components/ui/tabs';
 import { ArtistsManagerData } from '@/lib/types';
 
 export default function PersonalDataTab({
+  tabValue,
   userData,
 }: {
+  tabValue: string;
   userData: ArtistsManagerData;
 }) {
   let languagesString = '';
@@ -14,7 +16,7 @@ export default function PersonalDataTab({
 
   return (
     <TabsContent
-      value='personal-data'
+      value={tabValue}
       className='bg-white py-8 px-6 rounded-2xl'
     >
       <div className='text-xl font-semibold mb-6'>Informazioni personali</div>

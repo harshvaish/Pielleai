@@ -13,14 +13,14 @@ import { ArtistsManagerData, Country, Subdivision } from '@/lib/types';
 import useSWR from 'swr';
 import { toast } from 'sonner';
 import {
-  ArtistManagerS2FormSchema,
+  ArtistManagerFormS2Schema,
   artistManagerFormS2Schema,
 } from '@/lib/validation/artistManagerFormSchema';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useEffect, useMemo, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
-import { editArtistManagerBillingData } from '@/lib/server-actions/artist-manager/edit-artist-manager-billing-data';
+import { editArtistManagerBillingData } from '@/lib/server-actions/artist-managers/edit-artist-manager-billing-data';
 import { X } from 'lucide-react';
 
 export default function BillingDataForm({
@@ -92,7 +92,7 @@ export default function BillingDataForm({
     return 'Seleziona una provincia';
   }, [isLoading, selectedCountry]);
 
-  const onSubmit = async (data: ArtistManagerS2FormSchema) => {
+  const onSubmit = async (data: ArtistManagerFormS2Schema) => {
     if (!isDirty) {
       toast.info('Nessun dato modificato.');
       return;

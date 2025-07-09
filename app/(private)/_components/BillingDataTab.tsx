@@ -1,14 +1,16 @@
 import { TabsContent } from '@/components/ui/tabs';
-import { ArtistsManagerData } from '@/lib/types';
+import { ArtistsData, ArtistsManagerData } from '@/lib/types';
 
 export default function BillingDataTab({
+  tabValue,
   userData,
 }: {
-  userData: ArtistsManagerData;
+  tabValue: string;
+  userData: ArtistsManagerData | ArtistsData;
 }) {
   return (
     <TabsContent
-      value='billing-data'
+      value={tabValue}
       className='grid grid-cols-2 gap-6'
     >
       <section className='bg-white py-8 px-6 rounded-2xl'>

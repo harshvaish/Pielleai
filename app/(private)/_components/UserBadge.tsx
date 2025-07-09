@@ -19,7 +19,7 @@ export default function UserBadge({
     <Link
       href={href}
       prefetch={false}
-      className='w-max flex items-center gap-2 bg-zinc-100 py-1 px-2 rounded-md transition-colors hover:bg-zinc-200'
+      className='w-max flex items-center gap-2 bg-zinc-50 p-2 rounded-md transition-colors hover:bg-zinc-100'
     >
       <Image
         src={avatarUrl}

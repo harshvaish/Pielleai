@@ -20,7 +20,7 @@ import {
   Subdivision,
 } from '@/lib/types';
 import { toast } from 'sonner';
-import LanguagesSelect from '@/app/(private)/manager-artisti/_components/LanguagesSelect';
+import LanguagesSelect from '@/app/(private)/_components/LanguagesSelect';
 import {
   ArtistManagerS1FormSchema,
   artistManagerFormS1Schema,
@@ -28,10 +28,10 @@ import {
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
 import { useEffect, useMemo, useState } from 'react';
-import { editArtistManagerPersonalData } from '@/lib/server-actions/artist-manager/edit-artist-manager-personal-data';
+import { editArtistManagerPersonalData } from '@/lib/server-actions/artist-managers/edit-artist-manager-personal-data';
 import { useRouter } from 'next/navigation';
 import { X } from 'lucide-react';
-import AvatarUploadInput from '@/app/(private)/manager-artisti/_components/AvatarUploadInput';
+import AvatarUploadInput from '@/app/(private)/_components/AvatarUploadInput';
 
 export default function PersonalDataForm({
   userData,

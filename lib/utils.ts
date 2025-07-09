@@ -174,5 +174,7 @@ export function getBetterAuthErrorMessage(code: string): string {
       return 'Errore imprevisto. Riprova più tardi.';
   }
 }
-
 // BETTER AUTH --------------------------------------------------------
+
+export const areSame = (a: number[], b: number[]) =>
+  a.length === b.length && a.every((id) => b.includes(id));

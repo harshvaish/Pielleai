@@ -21,6 +21,8 @@ const badgeVariants = cva(
           'border-transparent text-emerald-600 bg-emerald-100 [a&]:hover:bg-emerald-100/90',
         disabled:
           'border-transparent text-zinc-600 bg-zinc-100 [a&]:hover:bg-zinc-100/90',
+        tertiary:
+          'border-transparent text-orange-600 bg-orange-100 [a&]:hover:bg-orange-100/90',
       },
     },
     defaultVariants: {

@@ -6,7 +6,6 @@ export const USER_STATUS = [
   'disabled',
   'banned',
 ] as const; // as const = is an immutable array
-
 export type UserStatus = (typeof USER_STATUS)[number];
 
 // resend password email
@@ -68,6 +67,6 @@ export const AU_ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 export const GENDERS = ['maschile', 'femminile', 'non-binary'] as const;
 export type Gender = (typeof GENDERS)[number];
 
-export const PAGINATED_TABLE_ROWS_X_PAGE = 2;
+export const PAGINATED_TABLE_ROWS_X_PAGE = 10;
 
 export const NEW_USER_TIME = 1000 * 60 * 60 * 24 * 7; // 1 week

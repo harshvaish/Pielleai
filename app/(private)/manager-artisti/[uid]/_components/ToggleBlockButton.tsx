@@ -18,7 +18,7 @@ import {
 } from '@/components/ui/drawer';
 import { UserStatus } from '@/lib/constants';
 import { useMediaQuery } from '@/lib/hooks/useMediaQuery';
-import { toggleUserStatus } from '@/lib/server-actions/artist-manager/toggle-user-status';
+import { toggleUserStatus } from '@/lib/server-actions/artist-managers/toggle-user-status';
 import { CircleOff, Repeat } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';

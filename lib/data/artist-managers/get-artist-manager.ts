@@ -17,10 +17,10 @@ export async function getArtistManager(
   uid: string
 ): Promise<ArtistsManagerData | null> {
   try {
-    const billingCountry = alias(countries, 'billingCountry');
-    const billingSubdivision = alias(subdivisions, 'billingSubdivision');
     const country = alias(countries, 'country');
     const subdivision = alias(subdivisions, 'subdivision');
+    const billingCountry = alias(countries, 'billingCountry');
+    const billingSubdivision = alias(subdivisions, 'billingSubdivision');
 
     const userResult = await database
       .select({

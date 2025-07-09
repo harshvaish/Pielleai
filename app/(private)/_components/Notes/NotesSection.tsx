@@ -4,19 +4,22 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
 import { toast } from 'sonner';
-import { deleteProfileNote } from '@/lib/server-actions/artist-manager/delete-profile-note';
+import { deleteProfileNote } from '@/lib/server-actions/artist-managers/delete-profile-note';
 import { ProfileNote } from '@/lib/types';
 import { notFound } from 'next/navigation';
 import { NoteForm } from './NoteForm';
 import { DeleteNoteDialog } from './DeleteNoteDialog';
 import { CancelNewNoteDialog } from './CancelNewNoteDialog';
 import { NoteItem } from './NoteItem';
+import { deleteArtistNote } from '@/lib/server-actions/artists/delete-artist-note';
 
 export default function NotesSection({
+  isArtist,
   initialNotes,
   writerId,
   receiverProfileId,
 }: {
+  isArtist: boolean;
   initialNotes: ProfileNote[];
   writerId: string;
   receiverProfileId: number;
@@ -35,7 +38,15 @@ export default function NotesSection({
     const previousNotes = [...notes];
 
     setNotes((prev) => prev.filter((note) => note.id !== id));
-    const response = await deleteProfileNote(id);
+
+    let response;
+
+    if (isArtist) {
+      response = await deleteArtistNote(id);
+    } else {
+      response = await deleteProfileNote(id);
+    }
+
     if (!response.success) {
       setNotes(previousNotes);
       toast.error(response.message || 'Eliminazione nota non riuscita.');
@@ -60,6 +71,7 @@ export default function NotesSection({
 
         {isFormVisible ? (
           <NoteForm
+            isArtist={isArtist}
             writerId={writerId}
             receiverProfileId={receiverProfileId}
             onSuccess={(note) => {

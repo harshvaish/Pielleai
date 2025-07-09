@@ -285,7 +285,7 @@ export const artistManagerFormS2Schema = z
     }
   });
 
-export type ArtistManagerS2FormSchema = z.infer<
+export type ArtistManagerFormS2Schema = z.infer<
   typeof artistManagerFormS2Schema
 >;
 

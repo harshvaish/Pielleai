@@ -4,17 +4,20 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { useState, useTransition } from 'react';
 import { toast } from 'sonner';
-import { createProfileNote } from '@/lib/server-actions/artist-manager/create-profile-note';
+import { createProfileNote } from '@/lib/server-actions/artist-managers/create-profile-note';
 import { ProfileNote } from '@/lib/types';
 import { newNoteSchema } from '@/lib/validation/newNoteSchema';
+import { createArtistNote } from '@/lib/server-actions/artists/create-artist-note';
 
 export function NoteForm({
+  isArtist,
   writerId,
   receiverProfileId,
   onSuccess,
   onCancel,
   onCancelConfirm,
 }: {
+  isArtist: boolean;
   writerId: string;
   receiverProfileId: number;
   onSuccess: (note: ProfileNote) => void;
@@ -42,14 +45,24 @@ export function NoteForm({
       return;
     }
 
-    const data = {
-      writerId,
-      receiverProfileId,
-      content: validation.data,
-    };
-
     startTransition(async () => {
-      const response = await createProfileNote(data);
+      let response;
+
+      if (isArtist) {
+        const data = {
+          writerId,
+          artistId: receiverProfileId,
+          content: validation.data,
+        };
+        response = await createArtistNote(data);
+      } else {
+        const data = {
+          writerId,
+          receiverProfileId,
+          content: validation.data,
+        };
+        response = await createProfileNote(data);
+      }
 
       if (!response.success || !response.data) {
         toast.error(response.message || 'Inserimento nota non riuscito.');

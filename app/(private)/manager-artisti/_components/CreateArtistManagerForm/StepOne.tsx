@@ -1,9 +1,9 @@
 import { useFormContext, Controller } from 'react-hook-form';
-import AvatarUploadInput from '../AvatarUploadInput';
+import AvatarUploadInput from '@/app/(private)/_components/AvatarUploadInput';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import { cn, fetcher } from '@/lib/utils';
-import LanguagesSelect from '../LanguagesSelect';
+import LanguagesSelect from '@/app/(private)/_components/LanguagesSelect';
 import {
   Select,
   SelectContent,

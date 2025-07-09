@@ -3,20 +3,20 @@
 import { auth } from '@/lib/auth';
 import { headers } from 'next/headers';
 import { ServerActionResponse } from '@/lib/types';
-import {
-  ArtistManagerS2FormSchema,
-  artistManagerFormS2Schema,
-} from '@/lib/validation/artistManagerFormSchema';
 import { database } from '@/lib/database/connection';
 import { eq } from 'drizzle-orm';
-import { profiles, countries, subdivisions } from '@/lib/database/schema';
+import { countries, subdivisions, artists } from '@/lib/database/schema';
+import {
+  artistFormS2Schema,
+  ArtistFormS2Schema,
+} from '@/lib/validation/artistFormSchema';
 
-export const editArtistManagerBillingData = async ({
-  profileId,
+export const editArtistBillingData = async ({
+  artistId,
   data,
 }: {
-  profileId: number;
-  data: ArtistManagerS2FormSchema;
+  artistId: number;
+  data: ArtistFormS2Schema;
 }): Promise<ServerActionResponse<null>> => {
   const headersList = await headers();
   try {
@@ -25,10 +25,7 @@ export const editArtistManagerBillingData = async ({
     });
 
     if (!session?.user || session.user.role != 'admin') {
-      console.error(
-        '[editArtistManagerBillingData] - Error: unauthorized',
-        session
-      );
+      console.error('[editArtistBillingData] - Error: unauthorized', session);
       return {
         success: false,
         message: 'Non sei autorizzato.',
@@ -36,7 +33,7 @@ export const editArtistManagerBillingData = async ({
       };
     }
   } catch (error) {
-    console.error('[editArtistManagerBillingData] - Error: ', error);
+    console.error('[editArtistBillingData] - Error: ', error);
     return {
       success: false,
       message: 'Autenticazione non riutita.',
@@ -44,11 +41,11 @@ export const editArtistManagerBillingData = async ({
     };
   }
 
-  const validation = artistManagerFormS2Schema.safeParse(data);
+  const validation = artistFormS2Schema.safeParse(data);
 
   if (!validation.success) {
     console.error(
-      '[editArtistManagerBillingData] - Error: validation failed',
+      '[editArtistBillingData] - Error: validation failed',
       validation.error.issues[0]
     );
     return {
@@ -99,7 +96,7 @@ export const editArtistManagerBillingData = async ({
     }
 
     await database
-      .update(profiles)
+      .update(artists)
       .set({
         company: data.company,
         taxCode: data.taxCode,
@@ -119,7 +116,7 @@ export const editArtistManagerBillingData = async ({
         taxableInvoice: data.taxableInvoice === 'true',
         updatedAt: new Date(),
       })
-      .where(eq(profiles.id, profileId));
+      .where(eq(artists.id, artistId));
 
     return {
       success: true,
@@ -127,7 +124,7 @@ export const editArtistManagerBillingData = async ({
       data: null,
     };
   } catch (error) {
-    console.error('[editArtistManagerBillingData] transaction failed', error);
+    console.error('[editArtistBillingData] transaction failed', error);
     return {
       success: false,
       message: 'Aggiornamento profilo non riuscito.',

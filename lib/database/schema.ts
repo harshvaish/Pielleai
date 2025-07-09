@@ -11,6 +11,7 @@ import {
   date,
   primaryKey,
   pgEnum,
+  uuid,
 } from 'drizzle-orm/pg-core';
 
 export const genderEnum = pgEnum('gender_enum', [
@@ -245,6 +246,204 @@ export const profileLanguages = pgTable(
     primaryKey({
       columns: [table.profileId, table.languageId],
       name: 'profile_languages_pkey',
+    }),
+  ]
+);
+
+export const artists = pgTable(
+  'artists',
+  {
+    id: serial().primaryKey().notNull(),
+    email: text().notNull(),
+    name: text().notNull(),
+    surname: text().notNull(),
+    stageName: text('stage_name').notNull(),
+    phone: text().notNull(),
+    avatarUrl: text('avatar_url').notNull(),
+    status: userStatus().notNull(),
+    birthDate: date('birth_date').notNull(),
+    birthPlace: text('birth_place').notNull(),
+    address: text().notNull(),
+    countryId: integer('country_id').notNull(),
+    subdivisionId: integer('subdivision_id').notNull(),
+    city: text().notNull(),
+    zipCode: varchar('zip_code', { length: 10 }).notNull(),
+    gender: genderEnum().notNull(),
+    tourManagerName: text('tour_manager_name').notNull(),
+    tourManagerSurname: text('tour_manager_surname').notNull(),
+    tourManagerEmail: text('tour_manager_email').notNull(),
+    tourManagerPhone: text('tour_manager_phone').notNull(),
+    company: text().notNull(),
+    taxCode: text('tax_code').notNull(),
+    ipiCode: text('ipi_code').notNull(),
+    bicCode: text('bic_code'),
+    abaRoutingNumber: varchar('aba_routing_number', { length: 20 }),
+    iban: text().notNull(),
+    sdiRecipientCode: text('sdi_recipient_code'),
+    billingAddress: text('billing_address').notNull(),
+    billingCountryId: integer('billing_country_id').notNull(),
+    billingSubdivisionId: integer('billing_subdivision_id').notNull(),
+    billingCity: text('billing_city').notNull(),
+    billingZipCode: varchar('billing_zip_code', { length: 10 }).notNull(),
+    billingEmail: text('billing_email').notNull(),
+    billingPec: text('billing_pec').notNull(),
+    billingPhone: text('billing_phone').notNull(),
+    taxableInvoice: boolean('taxable_invoice').default(false).notNull(),
+    tiktokUrl: text('tiktok_url'),
+    tiktokUsername: text('tiktok_username'),
+    tiktokFollowers: integer('tiktok_followers'),
+    tiktokCreatedAt: date('tiktok_created_at'),
+    facebookUrl: text('facebook_url'),
+    facebookUsername: text('facebook_username'),
+    facebookFollowers: integer('facebook_followers'),
+    facebookCreatedAt: date('facebook_created_at'),
+    instagramUrl: text('instagram_url'),
+    instagramUsername: text('instagram_username'),
+    instagramFollowers: integer('instagram_followers'),
+    instagramCreatedAt: date('instagram_created_at'),
+    xUrl: text('x_url'),
+    xUsername: text('x_username'),
+    xFollowers: integer('x_followers'),
+    xCreatedAt: date('x_created_at'),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+    updatedAt: timestamp('updated_at').defaultNow().notNull(),
+    slug: uuid().defaultRandom().notNull(),
+  },
+  (table) => [
+    foreignKey({
+      columns: [table.billingCountryId],
+      foreignColumns: [countries.id],
+      name: 'artists_billing_country_id_fkey',
+    }).onDelete('restrict'),
+    foreignKey({
+      columns: [table.billingSubdivisionId],
+      foreignColumns: [subdivisions.id],
+      name: 'artists_billing_subdivision_id_fkey',
+    }).onDelete('restrict'),
+    foreignKey({
+      columns: [table.countryId],
+      foreignColumns: [countries.id],
+      name: 'artists_country_id_fkey',
+    }).onDelete('restrict'),
+    foreignKey({
+      columns: [table.subdivisionId],
+      foreignColumns: [subdivisions.id],
+      name: 'artists_subdivision_id_fkey',
+    }).onDelete('restrict'),
+    unique('artists_slug_key').on(table.slug),
+  ]
+);
+
+export const zones = pgTable(
+  'zones',
+  {
+    id: serial().primaryKey().notNull(),
+    name: text().notNull(),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+  },
+  (table) => [unique('zones_name_key').on(table.name)]
+);
+
+export const artistZones = pgTable(
+  'artist_zones',
+  {
+    artistId: integer('artist_id').notNull(),
+    zoneId: integer('zone_id').notNull(),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+  },
+  (table) => [
+    foreignKey({
+      columns: [table.artistId],
+      foreignColumns: [artists.id],
+      name: 'artist_zones_artist_id_fkey',
+    }).onDelete('restrict'),
+    foreignKey({
+      columns: [table.zoneId],
+      foreignColumns: [zones.id],
+      name: 'artist_zones_zone_id_fkey',
+    }).onDelete('restrict'),
+    primaryKey({
+      columns: [table.artistId, table.zoneId],
+      name: 'artist_zones_pkey',
+    }),
+  ]
+);
+
+export const managerArtists = pgTable(
+  'manager_artists',
+  {
+    managerProfileId: integer('manager_profile_id').notNull(),
+    artistId: integer('artist_id').notNull(),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+  },
+  (table) => [
+    foreignKey({
+      columns: [table.artistId],
+      foreignColumns: [artists.id],
+      name: 'manager_artists_artist_id_fkey',
+    }).onDelete('restrict'),
+    foreignKey({
+      columns: [table.managerProfileId],
+      foreignColumns: [profiles.id],
+      name: 'manager_artists_manager_profile_id_fkey',
+    }).onDelete('restrict'),
+    primaryKey({
+      columns: [table.managerProfileId, table.artistId],
+      name: 'manager_artists_pkey',
+    }),
+  ]
+);
+
+export const artistLanguages = pgTable(
+  'artist_languages',
+  {
+    artistId: integer('artist_id').notNull(),
+    languageId: integer('language_id').notNull(),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+  },
+  (table) => [
+    foreignKey({
+      columns: [table.artistId],
+      foreignColumns: [artists.id],
+      name: 'artist_languages_artist_id_fkey',
+    })
+      .onUpdate('restrict')
+      .onDelete('restrict'),
+    foreignKey({
+      columns: [table.languageId],
+      foreignColumns: [languages.id],
+      name: 'artist_languages_language_id_fkey',
+    })
+      .onUpdate('restrict')
+      .onDelete('restrict'),
+    primaryKey({
+      columns: [table.artistId, table.languageId],
+      name: 'artist_languages_pkey',
+    }),
+  ]
+);
+
+export const artistNotes = pgTable(
+  'artist_notes',
+  {
+    id: serial().primaryKey().notNull(),
+    writerId: text('writer_id').notNull(),
+    artistId: integer('artist_id').notNull(),
+    content: text().notNull(),
+    createdAt: timestamp('created_at', { mode: 'string' })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    foreignKey({
+      columns: [table.artistId],
+      foreignColumns: [artists.id],
+      name: 'artist_notes_artist_id_fkey',
+    }),
+    foreignKey({
+      columns: [table.writerId],
+      foreignColumns: [users.id],
+      name: 'artist_notes_writer_id_fkey',
     }),
   ]
 );

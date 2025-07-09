@@ -17,9 +17,9 @@ import StepThree from './StepThree';
 import { ArrowLeft } from 'lucide-react';
 import { Country, Language } from '@/lib/types';
 import { Separator } from '@/components/ui/separator';
-import StepIndicator from './StepIndicator';
+import StepIndicator from '@/app/(private)/_components/StepIndicator';
 import { Button } from '@/components/ui/button';
-import { createArtistManager } from '@/lib/server-actions/artist-manager/create-artist-manager';
+import { createArtistManager } from '@/lib/server-actions/artist-managers/create-artist-manager';
 import { useRouter } from 'next/navigation';
 
 function getFormFieldsForStep(

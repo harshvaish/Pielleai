@@ -1,13 +1,12 @@
 import BackButton from '@/app/_components/BackButton';
 import { Separator } from '@/components/ui/separator';
-import { getArtistManager } from '@/lib/data/artist-manager/get-artist-manager';
+import { getArtistManager } from '@/lib/data/artist-managers/get-artist-manager';
 import { format } from 'date-fns';
 import Image from 'next/image';
 import { notFound, redirect } from 'next/navigation';
 import { headers } from 'next/headers';
 import { auth } from '@/lib/auth';
-import NotesSection from './_components/Notes/NotesSection';
-import { getProfileNotes } from '@/lib/data/artist-manager/get-profile-notes';
+import { getProfileNotes } from '@/lib/data/artist-managers/get-profile-notes';
 import ToggleBlockButton from './_components/ToggleBlockButton';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
@@ -16,8 +15,9 @@ import { getLanguages } from '@/lib/data/get-languages';
 import { getCountries } from '@/lib/data/get-countries';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import PersonalDataTab from './_components/Tabs/PersonalDataTab';
-import BillingDataTab from './_components/Tabs/BillingDataTab';
-import StatusBadge from '../_components/StatusBadge';
+import BillingDataTab from '../../_components/BillingDataTab';
+import StatusBadge from '../../_components/StatusBadge';
+import NotesSection from '../../_components/Notes/NotesSection';
 
 export default async function ArtistManagerDetailPage({
   params,
@@ -54,7 +54,6 @@ export default async function ArtistManagerDetailPage({
   if (!userData) notFound();
 
   const initialNotesData = await getProfileNotes({
-    writerId: session.user.id,
     receiverProfileId: userData.profileId,
   });
 
@@ -148,6 +147,7 @@ export default async function ArtistManagerDetailPage({
         </section>
 
         <NotesSection
+          isArtist={false}
           initialNotes={initialNotesData.data || []}
           writerId={session.user.id}
           receiverProfileId={userData.profileId}
@@ -169,8 +169,14 @@ export default async function ArtistManagerDetailPage({
         <TabsContent value='managed-artists'>
           Change your password here.
         </TabsContent>
-        <BillingDataTab userData={userData} />
-        <PersonalDataTab userData={userData} />
+        <BillingDataTab
+          tabValue='billing-data'
+          userData={userData}
+        />
+        <PersonalDataTab
+          tabValue='personal-data'
+          userData={userData}
+        />
       </Tabs>
     </>
   );

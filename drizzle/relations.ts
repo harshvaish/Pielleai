@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm/relations";
-import { users, sessions, accounts, countries, subdivisions, profiles, profileNotes, languages, profileLanguages } from "./schema";
+import { users, sessions, accounts, countries, artists, subdivisions, profiles, profileNotes, artistNotes, artistZones, zones, managerArtists, artistLanguages, languages, profileLanguages } from "./schema";
 
 export const sessionsRelations = relations(sessions, ({one}) => ({
 	user: one(users, {
@@ -13,6 +13,7 @@ export const usersRelations = relations(users, ({many}) => ({
 	accounts: many(accounts),
 	profiles: many(profiles),
 	profileNotes: many(profileNotes),
+	artistNotes: many(artistNotes),
 }));
 
 export const accountsRelations = relations(accounts, ({one}) => ({
@@ -22,7 +23,56 @@ export const accountsRelations = relations(accounts, ({one}) => ({
 	}),
 }));
 
+export const artistsRelations = relations(artists, ({one, many}) => ({
+	country_billingCountryId: one(countries, {
+		fields: [artists.billingCountryId],
+		references: [countries.id],
+		relationName: "artists_billingCountryId_countries_id"
+	}),
+	subdivision_billingSubdivisionId: one(subdivisions, {
+		fields: [artists.billingSubdivisionId],
+		references: [subdivisions.id],
+		relationName: "artists_billingSubdivisionId_subdivisions_id"
+	}),
+	country_countryId: one(countries, {
+		fields: [artists.countryId],
+		references: [countries.id],
+		relationName: "artists_countryId_countries_id"
+	}),
+	subdivision_subdivisionId: one(subdivisions, {
+		fields: [artists.subdivisionId],
+		references: [subdivisions.id],
+		relationName: "artists_subdivisionId_subdivisions_id"
+	}),
+	artistNotes: many(artistNotes),
+	artistZones: many(artistZones),
+	managerArtists: many(managerArtists),
+	artistLanguages: many(artistLanguages),
+}));
+
+export const countriesRelations = relations(countries, ({many}) => ({
+	artists_billingCountryId: many(artists, {
+		relationName: "artists_billingCountryId_countries_id"
+	}),
+	artists_countryId: many(artists, {
+		relationName: "artists_countryId_countries_id"
+	}),
+	subdivisions: many(subdivisions),
+	profiles_billingCountryId: many(profiles, {
+		relationName: "profiles_billingCountryId_countries_id"
+	}),
+	profiles_countryId: many(profiles, {
+		relationName: "profiles_countryId_countries_id"
+	}),
+}));
+
 export const subdivisionsRelations = relations(subdivisions, ({one, many}) => ({
+	artists_billingSubdivisionId: many(artists, {
+		relationName: "artists_billingSubdivisionId_subdivisions_id"
+	}),
+	artists_subdivisionId: many(artists, {
+		relationName: "artists_subdivisionId_subdivisions_id"
+	}),
 	country: one(countries, {
 		fields: [subdivisions.countryId],
 		references: [countries.id]
@@ -32,16 +82,6 @@ export const subdivisionsRelations = relations(subdivisions, ({one, many}) => ({
 	}),
 	profiles_subdivisionId: many(profiles, {
 		relationName: "profiles_subdivisionId_subdivisions_id"
-	}),
-}));
-
-export const countriesRelations = relations(countries, ({many}) => ({
-	subdivisions: many(subdivisions),
-	profiles_billingCountryId: many(profiles, {
-		relationName: "profiles_billingCountryId_countries_id"
-	}),
-	profiles_countryId: many(profiles, {
-		relationName: "profiles_countryId_countries_id"
 	}),
 }));
 
@@ -71,6 +111,7 @@ export const profilesRelations = relations(profiles, ({one, many}) => ({
 		references: [users.id]
 	}),
 	profileNotes: many(profileNotes),
+	managerArtists: many(managerArtists),
 	profileLanguages: many(profileLanguages),
 }));
 
@@ -85,6 +126,59 @@ export const profileNotesRelations = relations(profileNotes, ({one}) => ({
 	}),
 }));
 
+export const artistNotesRelations = relations(artistNotes, ({one}) => ({
+	artist: one(artists, {
+		fields: [artistNotes.artistId],
+		references: [artists.id]
+	}),
+	user: one(users, {
+		fields: [artistNotes.writerId],
+		references: [users.id]
+	}),
+}));
+
+export const artistZonesRelations = relations(artistZones, ({one}) => ({
+	artist: one(artists, {
+		fields: [artistZones.artistId],
+		references: [artists.id]
+	}),
+	zone: one(zones, {
+		fields: [artistZones.zoneId],
+		references: [zones.id]
+	}),
+}));
+
+export const zonesRelations = relations(zones, ({many}) => ({
+	artistZones: many(artistZones),
+}));
+
+export const managerArtistsRelations = relations(managerArtists, ({one}) => ({
+	artist: one(artists, {
+		fields: [managerArtists.artistId],
+		references: [artists.id]
+	}),
+	profile: one(profiles, {
+		fields: [managerArtists.managerProfileId],
+		references: [profiles.id]
+	}),
+}));
+
+export const artistLanguagesRelations = relations(artistLanguages, ({one}) => ({
+	artist: one(artists, {
+		fields: [artistLanguages.artistId],
+		references: [artists.id]
+	}),
+	language: one(languages, {
+		fields: [artistLanguages.languageId],
+		references: [languages.id]
+	}),
+}));
+
+export const languagesRelations = relations(languages, ({many}) => ({
+	artistLanguages: many(artistLanguages),
+	profileLanguages: many(profileLanguages),
+}));
+
 export const profileLanguagesRelations = relations(profileLanguages, ({one}) => ({
 	language: one(languages, {
 		fields: [profileLanguages.languageId],
@@ -94,8 +188,4 @@ export const profileLanguagesRelations = relations(profileLanguages, ({one}) => 
 		fields: [profileLanguages.profileId],
 		references: [profiles.id]
 	}),
-}));
-
-export const languagesRelations = relations(languages, ({many}) => ({
-	profileLanguages: many(profileLanguages),
 }));

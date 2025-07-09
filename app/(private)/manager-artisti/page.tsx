@@ -6,27 +6,48 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import CreateArtistManagerButton from './_components/CreateArtistsManagerButton';
-import { getPaginatedArtistManagers } from '@/lib/data/artist-manager/get-paginated-artist-managers';
+import CreateArtistManagerButton from './_components/CreateArtistManagerButton';
+import { getPaginatedArtistManagers } from '@/lib/data/artist-managers/get-paginated-artist-managers';
 import { getLanguages } from '@/lib/data/get-languages';
 import { getCountries } from '@/lib/data/get-countries';
 import { notFound } from 'next/navigation';
-import { TablePagination } from './_components/TablePagination';
-import UserBadge from './_components/UserBadge';
-import StatusBadge from './_components/StatusBadge';
+import { TablePagination } from '../_components/TablePagination';
+import UserBadge from '../_components/UserBadge';
+import StatusBadge from '../_components/StatusBadge';
 import { NEW_USER_TIME } from '@/lib/constants';
+import ToggleFiltersButton from '../_components/ToggleFiltersButton';
+import FilterInput from '../_components/FilterInput';
 
 export default async function ArtistManagersPage({
   searchParams,
 }: {
-  searchParams?: Promise<{ page?: string }>;
+  searchParams?: Promise<{
+    page?: string;
+    showFilters?: string;
+    fullName?: string;
+    email?: string;
+    phone?: string;
+    artists?: string[];
+    company?: string;
+  }>;
 }) {
   const sp = await searchParams;
+
   const currentPage = Number(sp?.page ?? '1');
+  const showFilters = sp?.showFilters === 'true';
+
+  const filters = {
+    currentPage: currentPage,
+    fullName: sp?.fullName || '',
+    email: sp?.email || '',
+    phone: sp?.phone || '',
+    artist: sp?.artists || [],
+    company: sp?.company || '',
+  };
 
   const [{ data: managers, totalPages }, languages, countries] =
     await Promise.all([
-      getPaginatedArtistManagers(currentPage),
+      getPaginatedArtistManagers(filters),
       getLanguages(),
       getCountries(),
     ]).catch((error) => {
@@ -38,10 +59,15 @@ export default async function ArtistManagersPage({
     <div className='h-full grid grid-rows-[min-content_1fr_min-content] gap-4'>
       <div className='flex justify-between items-center'>
         <h1 className='text-2xl font-bold'>Manager Artisti</h1>
-        <CreateArtistManagerButton
-          languages={languages}
-          countries={countries}
-        />
+        <div className='flex items-center gap-4'>
+          {managers.length > 0 && (
+            <ToggleFiltersButton showFilters={showFilters} />
+          )}
+          <CreateArtistManagerButton
+            languages={languages}
+            countries={countries}
+          />
+        </div>
       </div>
       {/* artist managers table section */}
       {managers.length > 0 ? (
@@ -49,11 +75,43 @@ export default async function ArtistManagersPage({
           <Table className='w-full'>
             <TableHeader className='bg-zinc-50'>
               <TableRow>
-                <TableHead>Nome completo</TableHead>
-                <TableHead>Email</TableHead>
-                <TableHead>Numero di telefono</TableHead>
+                <TableHead>
+                  <div>Nome completo</div>
+                  {showFilters && (
+                    <FilterInput
+                      paramKey='fullName'
+                      defaultValue={filters.fullName}
+                    />
+                  )}
+                </TableHead>
+                <TableHead>
+                  <div>Email</div>
+                  {showFilters && (
+                    <FilterInput
+                      paramKey='email'
+                      defaultValue={filters.email}
+                    />
+                  )}
+                </TableHead>
+                <TableHead>
+                  <div>Numero di telefono</div>
+                  {showFilters && (
+                    <FilterInput
+                      paramKey='phone'
+                      defaultValue={filters.phone}
+                    />
+                  )}
+                </TableHead>
                 <TableHead>Artisti</TableHead>
-                <TableHead>Ragione sociale</TableHead>
+                <TableHead>
+                  <div>Ragione sociale</div>
+                  {showFilters && (
+                    <FilterInput
+                      paramKey='company'
+                      defaultValue={filters.company}
+                    />
+                  )}
+                </TableHead>
               </TableRow>
             </TableHeader>
 
@@ -98,7 +156,7 @@ export default async function ArtistManagersPage({
           </Table>
         </section>
       ) : (
-        <section className='bg-white rounded-2xl'>
+        <section className='max-h-80 flex flex-col justify-center items-center bg-white rounded-2xl p-8'>
           <h2 className='text-base font-bold'>Nessun manager artista</h2>
           <div className='text-sm font-medium text-zinc-400'>
             Aggiungine uno per vederlo nella lista
