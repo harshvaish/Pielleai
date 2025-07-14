@@ -4,7 +4,7 @@ import { database } from '@/lib/database/connection';
 import * as schema from '@/lib/database/schema';
 import { nextCookies } from 'better-auth/next-js';
 import { createAuthMiddleware, APIError } from 'better-auth/api';
-import { sendResetPasswordEmailAction } from './server-actions/send-reset-password-email.action';
+import { sendResetPasswordEmailAction } from './server-actions/send-reset-password-email';
 import { admin } from 'better-auth/plugins/admin';
 import { adminConfig } from './permissions';
 import { USER_STATUS } from './constants';

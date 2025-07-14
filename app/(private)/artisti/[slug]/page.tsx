@@ -14,7 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import PersonalDataTab from './_components/Tabs/PersonalDataTab';
 import StatusBadge from '../../_components/StatusBadge';
 import { getArtist } from '@/lib/data/artists/get-artist';
-import { getArtistNotes } from '@/lib/data/artists/get-artist-notes';
+import { getArtistNotes } from '@/lib/data/notes/get-artist-notes';
 import BillingDataTab from '../../_components/BillingDataTab';
 import SocialDataTab from './_components/Tabs/SocialDataTab';
 import ToggleArtistBlockButton from './_components/ToggleArtistBlockButton';
@@ -105,7 +105,7 @@ export default async function ArtistDetailPage({
                   {userData.name} {userData.surname}
                 </div>
                 <div className='flex items-center gap-2'>
-                  <Badge variant={isDisabled ? 'disabled' : 'tertiary'}>
+                  <Badge variant={isDisabled ? 'disabled' : 'orange'}>
                     Artista
                   </Badge>
                   {isDisabled && <StatusBadge status='disabled' />}
@@ -166,9 +166,7 @@ export default async function ArtistDetailPage({
         <div className='flex justify-between items-center mb-6'>
           <span className='text-xl font-semibold'>Dettagli</span>
           <TabsList className='gap-4 bg-white p-1 rounded-xl'>
-            <TabsTrigger value='personal-data'>
-              Informazioni personali
-            </TabsTrigger>
+            <TabsTrigger value='personal-data'>Dati personali</TabsTrigger>
             <TabsTrigger value='billing-data'>Dati di fatturazione</TabsTrigger>
             <TabsTrigger value='availabilities'>Disponibilità</TabsTrigger>
             <TabsTrigger value='social-data'>Social</TabsTrigger>

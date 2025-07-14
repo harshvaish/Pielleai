@@ -168,22 +168,22 @@ export type ArtistsData = {
   tiktokUrl: string | null;
   tiktokUsername: string | null;
   tiktokFollowers: number | null;
-  tiktokCreatedAt: string | null;
+  tiktokCreatedAt: Date | null;
 
   facebookUrl: string | null;
   facebookUsername: string | null;
   facebookFollowers: number | null;
-  facebookCreatedAt: string | null;
+  facebookCreatedAt: Date | null;
 
   instagramUrl: string | null;
   instagramUsername: string | null;
   instagramFollowers: number | null;
-  instagramCreatedAt: string | null;
+  instagramCreatedAt: Date | null;
 
   xUrl: string | null;
   xUsername: string | null;
   xFollowers: number | null;
-  xCreatedAt: string | null;
+  xCreatedAt: Date | null;
 };
 
 export type ArtistTableData = Pick<
@@ -200,4 +200,46 @@ export type ArtistTableData = Pick<
   | 'email'
   | 'company'
   | 'managers'
+>;
+
+/* ------------------------------------------------- */
+export type VenueManagerData = {
+  id: string;
+  profileId: number;
+  status: UserStatus;
+  createdAt: Date;
+  updatedAt: Date;
+  avatarUrl: string;
+  name: string;
+  surname: string;
+  phone: string;
+  email: string;
+  languages: Language[];
+  birthDate: string;
+  birthPlace: string;
+  address: string;
+  country: Country;
+  subdivision: Subdivision;
+  city: string;
+  zipCode: string;
+  gender: Gender;
+};
+
+export type VenueManagerTableData = Pick<
+  ArtistsManagerData,
+  | 'id'
+  | 'profileId'
+  | 'status'
+  | 'createdAt'
+  | 'avatarUrl'
+  | 'name'
+  | 'surname'
+  | 'phone'
+  | 'email'
+  | 'company'
+>;
+
+export type VenueManagerSelectData = Pick<
+  ArtistsManagerData,
+  'id' | 'profileId' | 'avatarUrl' | 'name' | 'surname'
 >;

@@ -20,6 +20,7 @@ import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import PersonalDataForm from './EditArtistForm/PersonalDataForm';
 import BillingDataForm from './EditArtistForm/BillingDataForm';
+import SocialDataForm from './EditArtistForm/SocialDataForm';
 
 export default function EditArtistButton({
   userData,
@@ -106,6 +107,12 @@ export default function EditArtistButton({
             <BillingDataForm
               userData={userData}
               countries={countries}
+              closeDialog={() => setIsDialogOpen(false)}
+            />
+          )}
+          {step === 3 && (
+            <SocialDataForm
+              userData={userData}
               closeDialog={() => setIsDialogOpen(false)}
             />
           )}

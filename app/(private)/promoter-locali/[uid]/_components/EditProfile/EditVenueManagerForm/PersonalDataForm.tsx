@@ -13,25 +13,20 @@ import {
 import { Gender, GENDERS } from '@/lib/constants';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import useSWR from 'swr';
-import {
-  ArtistsManagerData,
-  Country,
-  Language,
-  Subdivision,
-} from '@/lib/types';
+import { Country, Language, Subdivision, VenueManagerData } from '@/lib/types';
 import { toast } from 'sonner';
 import LanguagesSelect from '@/app/(private)/_components/LanguagesSelect';
-import {
-  ArtistManagerS1FormSchema,
-  artistManagerS1FormSchema,
-} from '@/lib/validation/artistManagerFormSchema';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
 import { useEffect, useMemo, useState } from 'react';
-import { editArtistManagerPersonalData } from '@/lib/server-actions/artist-managers/edit-artist-manager-personal-data';
 import { useRouter } from 'next/navigation';
 import { X } from 'lucide-react';
 import AvatarUploadInput from '@/app/(private)/_components/AvatarUploadInput';
+import {
+  VenueManagerS1FormSchema,
+  venueManagerS1FormSchema,
+} from '@/lib/validation/venueManagerFormSchema';
+import { editVenueManagerPersonalData } from '@/lib/server-actions/venue-managers/edit-venue-manager-personal-data';
 
 export default function PersonalDataForm({
   userData,
@@ -39,7 +34,7 @@ export default function PersonalDataForm({
   countries,
   closeDialog,
 }: {
-  userData: ArtistsManagerData;
+  userData: VenueManagerData;
   languages: Language[];
   countries: Country[];
   closeDialog: () => void;
@@ -69,7 +64,7 @@ export default function PersonalDataForm({
   );
 
   const methods = useForm({
-    resolver: zodResolver(artistManagerS1FormSchema),
+    resolver: zodResolver(venueManagerS1FormSchema),
     defaultValues: defaultValues,
   });
 
@@ -101,21 +96,21 @@ export default function PersonalDataForm({
     return 'Seleziona una provincia';
   }, [isLoading, selectedCountryId]);
 
-  const onSubmit = async (data: ArtistManagerS1FormSchema) => {
+  const onSubmit = async (data: VenueManagerS1FormSchema) => {
     if (!isDirty) {
       toast.info('Nessun dato modificato.');
       return;
     }
     setIsSubmitting(true);
 
-    const response = await editArtistManagerPersonalData({
+    const response = await editVenueManagerPersonalData({
       profileId: userData.profileId,
       data: data,
     });
 
     if (response.success) {
       methods.reset(data); // new form status, isDirty to false
-      toast.success('Profilo manager artisti aggiornato!');
+      toast.success('Profilo promoter locali aggiornato!');
       closeDialog();
       router.refresh();
     } else {
@@ -161,7 +156,7 @@ export default function PersonalDataForm({
               name='avatarUrl'
               render={({ field }) => (
                 <AvatarUploadInput
-                  localStorageKey={'eama_temporary_url'} // edit artist manager avatar
+                  localStorageKey={'evma_temporary_url'} // edit venue manager avatar
                   value={field.value}
                   onChange={field.onChange}
                   hasError={!!errors.avatarUrl}

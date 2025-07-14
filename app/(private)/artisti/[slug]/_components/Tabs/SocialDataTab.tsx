@@ -10,6 +10,8 @@ import {
 } from '@/components/ui/table';
 import Image from 'next/image';
 import Link from 'next/link';
+import { format } from 'date-fns';
+import { SquareArrowOutUpRight } from 'lucide-react';
 
 export default function SocialDataTab({
   tabValue,
@@ -37,6 +39,45 @@ export default function SocialDataTab({
                 <div className='flex items-center flex-nowrap gap-3'>
                   <Image
                     className='w-8'
+                    src='/images/socials/tiktok.svg'
+                    alt='logo tiktok'
+                    width={32}
+                    height={32}
+                  />
+                  <span>TikTok</span>
+                </div>
+              </TableCell>
+              <TableCell>
+                {userData.tiktokUrl && userData.tiktokUsername ? (
+                  <Link
+                    href={userData.tiktokUrl}
+                    prefetch={false}
+                    target='_blank'
+                    rel='noopener noreferrer'
+                    className='flex flex-nowrap gap-2 text-blue-600'
+                  >
+                    @{userData.tiktokUsername}{' '}
+                    <SquareArrowOutUpRight size={16} />
+                  </Link>
+                ) : (
+                  '-'
+                )}
+              </TableCell>
+              <TableCell>
+                {userData.tiktokFollowers ? userData.tiktokFollowers : '-'}
+              </TableCell>
+              <TableCell>
+                {userData.tiktokCreatedAt
+                  ? format(new Date(userData.tiktokCreatedAt), 'dd/MM/yyyy')
+                  : '-'}
+              </TableCell>
+            </TableRow>
+
+            <TableRow>
+              <TableCell>
+                <div className='flex items-center flex-nowrap gap-3'>
+                  <Image
+                    className='w-8'
                     src='/images/socials/facebook.svg'
                     alt='logo facebook'
                     width={32}
@@ -47,20 +88,27 @@ export default function SocialDataTab({
               </TableCell>
               <TableCell>
                 {userData.facebookUrl && userData.facebookUsername ? (
-                  <Link href={userData.facebookUrl}>
-                    {userData.facebookUsername}
+                  <Link
+                    href={userData.facebookUrl}
+                    prefetch={false}
+                    target='_blank'
+                    rel='noopener noreferrer'
+                    className='flex flex-nowrap gap-2 text-blue-600'
+                  >
+                    @{userData.facebookUsername}{' '}
+                    <SquareArrowOutUpRight size={16} />
                   </Link>
                 ) : (
                   '-'
                 )}
               </TableCell>
               <TableCell>
-                {userData.instagramFollowers
-                  ? userData.instagramFollowers
-                  : '-'}
+                {userData.facebookFollowers ? userData.facebookFollowers : '-'}
               </TableCell>
               <TableCell>
-                {userData.facebookCreatedAt ? userData.facebookCreatedAt : '-'}
+                {userData.facebookCreatedAt
+                  ? format(new Date(userData.facebookCreatedAt), 'dd/MM/yyyy')
+                  : '-'}
               </TableCell>
             </TableRow>
 
@@ -79,8 +127,15 @@ export default function SocialDataTab({
               </TableCell>
               <TableCell>
                 {userData.instagramUrl && userData.instagramUsername ? (
-                  <Link href={userData.instagramUrl}>
-                    {userData.instagramUsername}
+                  <Link
+                    href={userData.instagramUrl}
+                    prefetch={false}
+                    target='_blank'
+                    rel='noopener noreferrer'
+                    className='flex flex-nowrap gap-2 text-blue-600'
+                  >
+                    @{userData.instagramUsername}{' '}
+                    <SquareArrowOutUpRight size={16} />
                   </Link>
                 ) : (
                   '-'
@@ -93,40 +148,8 @@ export default function SocialDataTab({
               </TableCell>
               <TableCell>
                 {userData.instagramCreatedAt
-                  ? userData.instagramCreatedAt
+                  ? format(new Date(userData.instagramCreatedAt), 'dd/MM/yyyy')
                   : '-'}
-              </TableCell>
-            </TableRow>
-
-            <TableRow>
-              <TableCell>
-                <div className='flex items-center flex-nowrap gap-3'>
-                  <Image
-                    className='w-8'
-                    src='/images/socials/tiktok.svg'
-                    alt='logo tiktok'
-                    width={32}
-                    height={32}
-                  />
-                  <span>TikTok</span>
-                </div>
-              </TableCell>
-              <TableCell>
-                {userData.tiktokUrl && userData.tiktokUsername ? (
-                  <Link href={userData.tiktokUrl}>
-                    {userData.tiktokUsername}
-                  </Link>
-                ) : (
-                  '-'
-                )}
-              </TableCell>
-              <TableCell>
-                {userData.instagramFollowers
-                  ? userData.instagramFollowers
-                  : '-'}
-              </TableCell>
-              <TableCell>
-                {userData.tiktokCreatedAt ? userData.tiktokCreatedAt : '-'}
               </TableCell>
             </TableRow>
 
@@ -145,18 +168,26 @@ export default function SocialDataTab({
               </TableCell>
               <TableCell>
                 {userData.xUrl && userData.xUsername ? (
-                  <Link href={userData.xUrl}>{userData.xUsername}</Link>
+                  <Link
+                    href={userData.xUrl}
+                    prefetch={false}
+                    target='_blank'
+                    rel='noopener noreferrer'
+                    className='flex flex-nowrap gap-2 text-blue-600'
+                  >
+                    @{userData.xUsername} <SquareArrowOutUpRight size={16} />
+                  </Link>
                 ) : (
                   '-'
                 )}
               </TableCell>
               <TableCell>
-                {userData.instagramFollowers
-                  ? userData.instagramFollowers
-                  : '-'}
+                {userData.xFollowers ? userData.xFollowers : '-'}
               </TableCell>
               <TableCell>
-                {userData.xCreatedAt ? userData.xCreatedAt : '-'}
+                {userData.xCreatedAt
+                  ? format(new Date(userData.xCreatedAt), 'dd/MM/yyyy')
+                  : '-'}
               </TableCell>
             </TableRow>
           </TableBody>

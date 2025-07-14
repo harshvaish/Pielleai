@@ -13,7 +13,7 @@ const subtractYears = (date: Date, years: number): Date => {
 const minBirthDate = subtractYears(today, 6);
 const maxBirthDate = subtractYears(today, 100);
 
-export const artistFormS1Schema = z.object({
+export const artistS1FormSchema = z.object({
   avatarUrl: z
     .url('Inserisci un link valido.')
     .refine(
@@ -176,9 +176,9 @@ export const artistFormS1Schema = z.object({
     .trim(),
 });
 
-export type ArtistFormS1Schema = z.infer<typeof artistFormS1Schema>;
+export type ArtistS1FormSchema = z.infer<typeof artistS1FormSchema>;
 
-export const artistFormS2Schema = z
+export const artistS2FormSchema = z
   .object({
     company: z
       .string('Campo malformato.')
@@ -338,9 +338,9 @@ export const artistFormS2Schema = z
     }
   });
 
-export type ArtistFormS2Schema = z.infer<typeof artistFormS2Schema>;
+export type ArtistS2FormSchema = z.infer<typeof artistS2FormSchema>;
 
-export const artistFormS3Schema = z.object({
+export const artistS3FormSchema = z.object({
   tiktokUrl: z.preprocess(
     (val) => (typeof val === 'string' && val.trim() !== '' ? val : undefined),
     z
@@ -358,10 +358,10 @@ export const artistFormS3Schema = z.object({
     z
       .string('Campo malformato.')
       .min(2, 'Minimo 2 caratteri.')
-      .max(50, 'Massimo 50 caratteri.')
+      .max(24, 'Massimo 24 caratteri.')
       .regex(
-        /^[\p{L}\s'-]+$/u,
-        'Può contenere solo lettere, spazi, trattini o apostrofi.'
+        /^[A-Za-z0-9_.]{1,23}[A-Za-z0-9_]$/,
+        'Può contenere solo lettere, numeri, underscore o punti (non terminare con punto).'
       )
       .trim()
       .optional()
@@ -406,8 +406,8 @@ export const artistFormS3Schema = z.object({
       .min(2, 'Minimo 2 caratteri.')
       .max(50, 'Massimo 50 caratteri.')
       .regex(
-        /^[\p{L}\s'-]+$/u,
-        'Può contenere solo lettere, spazi, trattini o apostrofi.'
+        /^[A-Za-z0-9.]{1,50}$/,
+        'Può contenere solo lettere, numeri o punti.'
       )
       .trim()
       .optional()
@@ -450,10 +450,10 @@ export const artistFormS3Schema = z.object({
     z
       .string('Campo malformato.')
       .min(2, 'Minimo 2 caratteri.')
-      .max(50, 'Massimo 50 caratteri.')
+      .max(30, 'Massimo 30 caratteri.')
       .regex(
-        /^[\p{L}\s'-]+$/u,
-        'Può contenere solo lettere, spazi, trattini o apostrofi.'
+        /^[A-Za-z0-9._]{1,30}$/,
+        'Può contenere solo lettere, numeri, underscore o punti.'
       )
       .trim()
       .optional()
@@ -498,10 +498,10 @@ export const artistFormS3Schema = z.object({
     z
       .string('Campo malformato.')
       .min(2, 'Minimo 2 caratteri.')
-      .max(50, 'Massimo 50 caratteri.')
+      .max(15, 'Massimo 15 caratteri.')
       .regex(
-        /^[\p{L}\s'-]+$/u,
-        'Può contenere solo lettere, spazi, trattini o apostrofi.'
+        /^[A-Za-z0-9_]{1,15}$/,
+        'Può contenere solo lettere, numeri o underscore.'
       )
       .trim()
       .optional()
@@ -528,12 +528,12 @@ export const artistFormS3Schema = z.object({
   ),
 });
 
-export type ArtistFormS3Schema = z.infer<typeof artistFormS3Schema>;
+export type ArtistS3FormSchema = z.infer<typeof artistS3FormSchema>;
 
 export const artistFormSchema = z.object({
-  ...artistFormS1Schema.shape,
-  ...artistFormS2Schema.shape,
-  ...artistFormS3Schema.shape,
+  ...artistS1FormSchema.shape,
+  ...artistS2FormSchema.shape,
+  ...artistS3FormSchema.shape,
 });
 
 export type ArtistFormSchema = z.infer<typeof artistFormSchema>;

@@ -1,6 +1,5 @@
 import BackButton from '@/app/_components/BackButton';
 import { Separator } from '@/components/ui/separator';
-import { getArtistManager } from '@/lib/data/artist-managers/get-artist-manager';
 import { format } from 'date-fns';
 import Image from 'next/image';
 import { notFound, redirect } from 'next/navigation';
@@ -9,17 +8,17 @@ import { auth } from '@/lib/auth';
 import { getProfileNotes } from '@/lib/data/notes/get-profile-notes';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
-import EditArtistManagerButton from './_components/EditProfile/EditArtistManagerButton';
 import { getLanguages } from '@/lib/data/get-languages';
 import { getCountries } from '@/lib/data/get-countries';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import PersonalDataTab from './_components/Tabs/PersonalDataTab';
-import BillingDataTab from '../../_components/BillingDataTab';
 import StatusBadge from '../../_components/StatusBadge';
 import NotesSection from '../../_components/Notes/NotesSection';
+import { getVenueManager } from '@/lib/data/venue-managers/get-venue-manager';
 import ToggleBlockButton from '../../_components/ToggleBlockButton';
+import EditVenueManagerButton from './_components/EditProfile/EditVenueManagerButton';
 
-export default async function ArtistManagerDetailPage({
+export default async function VenueManagerDetailPage({
   params,
 }: {
   params: Promise<{ uid: string }>;
@@ -43,7 +42,7 @@ export default async function ArtistManagerDetailPage({
   }
 
   const [userData, languages, countries] = await Promise.all([
-    getArtistManager(uid),
+    getVenueManager(uid),
     getLanguages(),
     getCountries(),
   ]).catch((error) => {
@@ -68,7 +67,7 @@ export default async function ArtistManagerDetailPage({
             userId={userData.id}
             userInitialStatus={userData.status}
           />
-          <EditArtistManagerButton
+          <EditVenueManagerButton
             userData={userData}
             languages={languages}
             countries={countries}
@@ -83,7 +82,7 @@ export default async function ArtistManagerDetailPage({
             <div className='flex items-center gap-4'>
               <Image
                 src={userData.avatarUrl}
-                alt='Icona profilo manager artista'
+                alt='Icona profilo promoter locali'
                 width={60}
                 height={60}
                 className={cn(
@@ -97,8 +96,8 @@ export default async function ArtistManagerDetailPage({
                   {userData.name} {userData.surname}
                 </div>
                 <div className='flex items-center gap-2'>
-                  <Badge variant={isDisabled ? 'disabled' : 'success'}>
-                    Manager artista
+                  <Badge variant={isDisabled ? 'disabled' : 'yellow'}>
+                    Promoter locali
                   </Badge>
                   {isDisabled && <StatusBadge status='disabled' />}
                 </div>
@@ -131,18 +130,6 @@ export default async function ArtistManagerDetailPage({
             <span className='text-sm font-medium text-zinc-500'>
               {userData.phone}
             </span>
-            <span className='text-sm font-semibold text-zinc-600'>
-              Indirizzo PEC
-            </span>
-            <span className='text-sm font-medium text-zinc-500'>
-              {userData.billingPec}
-            </span>
-            <span className='text-sm font-semibold text-zinc-600'>
-              Ragione sociale
-            </span>
-            <span className='text-sm font-medium text-zinc-500'>
-              {userData.company}
-            </span>
           </div>
         </section>
 
@@ -158,19 +145,14 @@ export default async function ArtistManagerDetailPage({
         <div className='flex justify-between items-center mb-6'>
           <span className='text-xl font-semibold'>Dettagli</span>
           <TabsList className='gap-4 bg-white p-1 rounded-xl'>
-            <TabsTrigger value='managed-artists'>Artisti gestiti</TabsTrigger>
-            <TabsTrigger value='billing-data'>Dati di fatturazione</TabsTrigger>
+            <TabsTrigger value='managed-venues'>Locali gestiti</TabsTrigger>
             <TabsTrigger value='personal-data'>Dati personali</TabsTrigger>
           </TabsList>
         </div>
 
-        <TabsContent value='managed-artists'>
+        <TabsContent value='managed-venues'>
           Change your password here.
         </TabsContent>
-        <BillingDataTab
-          tabValue='billing-data'
-          userData={userData}
-        />
         <PersonalDataTab
           tabValue='personal-data'
           userData={userData}

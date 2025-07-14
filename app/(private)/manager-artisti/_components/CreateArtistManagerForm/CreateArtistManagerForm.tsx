@@ -4,9 +4,9 @@ import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
   ArtistManagerFormSchema,
-  artistManagerFormS1Schema,
-  artistManagerFormS2Schema,
-  artistManagerFormS3Schema,
+  artistManagerS1FormSchema,
+  artistManagerS2FormSchema,
+  artistManagerS3FormSchema,
   artistManagerFormSchema,
 } from '@/lib/validation/artistManagerFormSchema';
 import { useState } from 'react';
@@ -26,17 +26,17 @@ function getFormFieldsForStep(
   step: number
 ): Array<keyof ArtistManagerFormSchema> {
   if (step === 1) {
-    return Object.keys(artistManagerFormS1Schema.shape) as Array<
+    return Object.keys(artistManagerS1FormSchema.shape) as Array<
       keyof ArtistManagerFormSchema
     >;
   }
   if (step === 2) {
-    return Object.keys(artistManagerFormS2Schema.shape) as Array<
+    return Object.keys(artistManagerS2FormSchema.shape) as Array<
       keyof ArtistManagerFormSchema
     >;
   }
   if (step === 3) {
-    return Object.keys(artistManagerFormS3Schema.shape) as Array<
+    return Object.keys(artistManagerS3FormSchema.shape) as Array<
       keyof ArtistManagerFormSchema
     >;
   }

@@ -1,12 +1,12 @@
 import { TabsContent } from '@/components/ui/tabs';
-import { ArtistsManagerData } from '@/lib/types';
+import { VenueManagerData } from '@/lib/types';
 
 export default function PersonalDataTab({
   tabValue,
   userData,
 }: {
   tabValue: string;
-  userData: ArtistsManagerData;
+  userData: VenueManagerData;
 }) {
   let languagesString = '';
 

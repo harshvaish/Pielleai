@@ -3,10 +3,6 @@
 import { auth } from '@/lib/auth';
 import { headers } from 'next/headers';
 import { ServerActionResponse } from '@/lib/types';
-import {
-  ArtistManagerS1FormSchema,
-  artistManagerS1FormSchema,
-} from '@/lib/validation/artistManagerFormSchema';
 import { database } from '@/lib/database/connection';
 import { eq, inArray } from 'drizzle-orm';
 import {
@@ -16,13 +12,17 @@ import {
   languages as languagesTable,
   subdivisions,
 } from '@/lib/database/schema';
+import {
+  venueManagerS1FormSchema,
+  VenueManagerS1FormSchema,
+} from '@/lib/validation/venueManagerFormSchema';
 
-export const editArtistManagerPersonalData = async ({
+export const editVenueManagerPersonalData = async ({
   profileId,
   data,
 }: {
   profileId: number;
-  data: ArtistManagerS1FormSchema;
+  data: VenueManagerS1FormSchema;
 }): Promise<ServerActionResponse<null>> => {
   const headersList = await headers();
   try {
@@ -32,7 +32,7 @@ export const editArtistManagerPersonalData = async ({
 
     if (!session?.user || session.user.role != 'admin') {
       console.error(
-        '[editArtistManagerPersonalData] - Error: unauthorized',
+        '[editVenueManagerPersonalData] - Error: unauthorized',
         session
       );
       return {
@@ -42,7 +42,7 @@ export const editArtistManagerPersonalData = async ({
       };
     }
   } catch (error) {
-    console.error('[editArtistManagerPersonalData] - Error: ', error);
+    console.error('[editVenueManagerPersonalData] - Error: ', error);
     return {
       success: false,
       message: 'Autenticazione non riutita.',
@@ -50,7 +50,7 @@ export const editArtistManagerPersonalData = async ({
     };
   }
 
-  const validation = artistManagerS1FormSchema.safeParse(data);
+  const validation = venueManagerS1FormSchema.safeParse(data);
 
   if (!validation.success) {
     console.error(
@@ -160,7 +160,7 @@ export const editArtistManagerPersonalData = async ({
       data: null,
     };
   } catch (error) {
-    console.error('[editArtistManagerPersonalData] transaction failed', error);
+    console.error('[editVenueManagerPersonalData] transaction failed', error);
     return {
       success: false,
       message: 'Aggiornamento profilo non riuscito.',

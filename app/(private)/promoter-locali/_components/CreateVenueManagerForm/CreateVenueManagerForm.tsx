@@ -3,66 +3,56 @@
 import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
-  ArtistFormSchema,
-  artistS1FormSchema,
-  artistS2FormSchema,
-  artistS3FormSchema,
-  artistFormSchema,
-} from '@/lib/validation/artistFormSchema';
+  venueManagerFormSchema,
+  VenueManagerFormSchema,
+  venueManagerS1FormSchema,
+  venueManagerS2FormSchema,
+} from '@/lib/validation/venueManagerFormSchema';
 import { useState } from 'react';
 import StepOne from './StepOne';
-import StepTwo from './StepTwo';
 import { toast } from 'sonner';
-import StepThree from './StepThree';
+import StepTwo from './StepTwo';
 import { ArrowLeft } from 'lucide-react';
-import { ArtistManagerSelectData, Country, Language, Zone } from '@/lib/types';
+import { Country, Language } from '@/lib/types';
 import { Separator } from '@/components/ui/separator';
 import StepIndicator from '@/app/(private)/_components/StepIndicator';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
-import { createArtist } from '@/lib/server-actions/artists/create-artist';
+import { createVenueManager } from '@/lib/server-actions/venue-managers/create-venue-manager';
 
-function getFormFieldsForStep(step: number): Array<keyof ArtistFormSchema> {
+function getFormFieldsForStep(
+  step: number
+): Array<keyof VenueManagerFormSchema> {
   if (step === 1) {
-    return Object.keys(artistS1FormSchema.shape) as Array<
-      keyof ArtistFormSchema
+    return Object.keys(venueManagerS1FormSchema.shape) as Array<
+      keyof VenueManagerFormSchema
     >;
   }
   if (step === 2) {
-    return Object.keys(artistS2FormSchema.shape) as Array<
-      keyof ArtistFormSchema
-    >;
-  }
-  if (step === 3) {
-    return Object.keys(artistS3FormSchema.shape) as Array<
-      keyof ArtistFormSchema
+    return Object.keys(venueManagerS2FormSchema.shape) as Array<
+      keyof VenueManagerFormSchema
     >;
   }
   return [];
 }
 
-export default function CreateArtistForm({
+export default function CreateVenueManagerForm({
   languages,
   countries,
-  zones,
-  artistManagers,
   closeDialog,
 }: {
   languages: Language[];
   countries: Country[];
-  zones: Zone[];
-  artistManagers: ArtistManagerSelectData[];
   closeDialog: () => void;
 }) {
   const [step, setStep] = useState<number>(1);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const methods = useForm({
-    resolver: zodResolver(artistFormSchema),
+    resolver: zodResolver(venueManagerFormSchema),
     defaultValues: {
       avatarUrl: undefined,
       name: '',
       surname: '',
-      stageName: '',
       phone: '',
       email: '',
       birthDate: '',
@@ -74,42 +64,9 @@ export default function CreateArtistForm({
       city: '',
       zipCode: '',
       gender: 'maschile',
-      zones: [],
-      artistManagers: [],
 
-      company: '',
-      taxCode: '',
-      ipiCode: '',
-      bicCode: '',
-      abaRoutingNumber: '',
-      iban: '',
-      sdiRecipientCode: '',
-      billingAddress: '',
-      billingCountry: undefined,
-      billingSubdivisionId: 0,
-      billingCity: '',
-      billingZipCode: '',
-      billingEmail: '',
-      billingPhone: '',
-      billingPec: '',
-      taxableInvoice: 'false',
-
-      tiktokUrl: '',
-      tiktokUsername: '',
-      tiktokFollowers: undefined,
-      tiktokCreatedAt: '',
-      facebookUrl: '',
-      facebookUsername: '',
-      facebookFollowers: undefined,
-      facebookCreatedAt: '',
-      instagramUrl: '',
-      instagramUsername: '',
-      instagramFollowers: undefined,
-      instagramCreatedAt: '',
-      xUrl: '',
-      xUsername: '',
-      xFollowers: undefined,
-      xCreatedAt: '',
+      signUpEmail: '',
+      signUpPassword: '',
     },
   });
   const router = useRouter();
@@ -125,12 +82,12 @@ export default function CreateArtistForm({
 
   const onPrev = () => setStep((prev) => prev - 1);
 
-  const onSubmit = async (data: ArtistFormSchema) => {
+  const onSubmit = async (data: VenueManagerFormSchema) => {
     setIsLoading(true);
-    const response = await createArtist(data);
+    const response = await createVenueManager(data);
 
     if (response.success) {
-      toast.success('Profilo artista creato!');
+      toast.success('Utenza promoter locali creata!');
       router.refresh();
       closeDialog();
     } else {
@@ -143,7 +100,7 @@ export default function CreateArtistForm({
   return (
     <>
       {/* step section */}
-      <section className='grid grid-cols-5 justify-items-center gap-4 bg-zinc-50 p-4 rounded-xl'>
+      <section className='grid grid-cols-3 justify-items-center gap-4 bg-zinc-50 p-4 rounded-xl'>
         {/* step 1 */}
         <div className='flex flex-col items-center gap-2'>
           <StepIndicator
@@ -165,19 +122,7 @@ export default function CreateArtistForm({
           />
 
           <div className='text-[10px] font-medium text-zinc-400'>FASE 2</div>
-          <div className='text-xs font-semibold text-center'>
-            Dati aziendali
-          </div>
-        </div>
-        <Separator className='self-center' />
-        {/* step 3 */}
-        <div className='flex flex-col items-center gap-2'>
-          <StepIndicator
-            step={3}
-            currentStep={step}
-          />
-          <div className='text-[10px] font-medium text-zinc-400'>FASE 3</div>
-          <div className='text-xs font-semibold text-center'>Social</div>
+          <div className='text-xs font-semibold text-center'>Credenziali</div>
         </div>
       </section>
       {/* tab section */}
@@ -191,12 +136,9 @@ export default function CreateArtistForm({
               <StepOne
                 languages={languages}
                 countries={countries}
-                zones={zones}
-                artistManagers={artistManagers}
               />
             )}
-            {step === 2 && <StepTwo countries={countries} />}
-            {step === 3 && <StepThree />}
+            {step === 2 && <StepTwo />}
 
             <div
               className={`flex ${
@@ -211,7 +153,7 @@ export default function CreateArtistForm({
                   <ArrowLeft size={16} /> Indietro
                 </div>
               )}
-              {step < 3 ? (
+              {step < 2 ? (
                 <div
                   onClick={onNext}
                   className='flex justify-center items-center h-10 bg-primary text-white p-3 rounded-xl hover:cursor-pointer hover:bg-primary/90'

@@ -42,10 +42,10 @@ export const NAVBAR_LINKS = [
     separator: true,
   },
   {
-    label: 'Manager locali',
-    href: '/manager-locali',
+    label: 'Promoter locali',
+    href: '/promoter-locali',
     iconSrc: '/images/navbar-icons/manager-venues.svg',
-    iconAlt: 'icona Manager locali',
+    iconAlt: 'icona Promoter locali',
     separator: false,
   },
   {

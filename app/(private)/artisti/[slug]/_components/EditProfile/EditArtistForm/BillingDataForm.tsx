@@ -18,8 +18,8 @@ import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
 import { X } from 'lucide-react';
 import {
-  ArtistFormS2Schema,
-  artistFormS2Schema,
+  ArtistS2FormSchema,
+  artistS2FormSchema,
 } from '@/lib/validation/artistFormSchema';
 import { editArtistBillingData } from '@/lib/server-actions/artists/edit-artist-billing-data';
 
@@ -57,7 +57,7 @@ export default function BillingDataForm({
   );
 
   const methods = useForm({
-    resolver: zodResolver(artistFormS2Schema),
+    resolver: zodResolver(artistS2FormSchema),
     defaultValues: defaultValues,
   });
   const router = useRouter();
@@ -92,7 +92,7 @@ export default function BillingDataForm({
     return 'Seleziona una provincia';
   }, [isLoading, selectedCountry]);
 
-  const onSubmit = async (data: ArtistFormS2Schema) => {
+  const onSubmit = async (data: ArtistS2FormSchema) => {
     if (!isDirty) {
       toast.info('Nessun dato modificato.');
       return;

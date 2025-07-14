@@ -8,7 +8,7 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 import { signInSchema } from '@/lib/validation/signInSchema';
-import { signInAction } from '@/lib/server-actions/sign-in.action';
+import { signInAction } from '@/lib/server-actions/sign-in';
 import Link from 'next/link';
 
 export default function LoginForm() {

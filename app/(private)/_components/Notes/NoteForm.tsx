@@ -4,10 +4,10 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { useState, useTransition } from 'react';
 import { toast } from 'sonner';
-import { createProfileNote } from '@/lib/server-actions/artist-managers/create-profile-note';
+import { createProfileNote } from '@/lib/server-actions/notes/create-profile-note';
 import { ProfileNote } from '@/lib/types';
 import { newNoteSchema } from '@/lib/validation/newNoteSchema';
-import { createArtistNote } from '@/lib/server-actions/artists/create-artist-note';
+import { createArtistNote } from '@/lib/server-actions/notes/create-artist-note';
 
 export function NoteForm({
   isArtist,

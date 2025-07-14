@@ -30,8 +30,8 @@ import { useRouter } from 'next/navigation';
 import { X } from 'lucide-react';
 import AvatarUploadInput from '@/app/(private)/_components/AvatarUploadInput';
 import {
-  ArtistFormS1Schema,
-  artistFormS1Schema,
+  ArtistS1FormSchema,
+  artistS1FormSchema,
 } from '@/lib/validation/artistFormSchema';
 import { Checkbox } from '@/components/ui/checkbox';
 import ArtistManagersSelect from '@/app/(private)/artisti/_components/CreateArtistForm/ArtistManagersSelect';
@@ -89,7 +89,7 @@ export default function PersonalDataForm({
   );
 
   const methods = useForm({
-    resolver: zodResolver(artistFormS1Schema),
+    resolver: zodResolver(artistS1FormSchema),
     defaultValues: defaultValues,
   });
 
@@ -121,7 +121,7 @@ export default function PersonalDataForm({
     return 'Seleziona una provincia';
   }, [isLoading, selectedCountryId]);
 
-  const onSubmit = async (data: ArtistFormS1Schema) => {
+  const onSubmit = async (data: ArtistS1FormSchema) => {
     if (!isDirty) {
       toast.info('Nessun dato modificato.');
       return;

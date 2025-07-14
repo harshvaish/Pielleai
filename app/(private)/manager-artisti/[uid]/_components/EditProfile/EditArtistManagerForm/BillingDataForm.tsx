@@ -13,8 +13,8 @@ import { ArtistsManagerData, Country, Subdivision } from '@/lib/types';
 import useSWR from 'swr';
 import { toast } from 'sonner';
 import {
-  ArtistManagerFormS2Schema,
-  artistManagerFormS2Schema,
+  ArtistManagerS2FormSchema,
+  artistManagerS2FormSchema,
 } from '@/lib/validation/artistManagerFormSchema';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useEffect, useMemo, useState } from 'react';
@@ -57,7 +57,7 @@ export default function BillingDataForm({
   );
 
   const methods = useForm({
-    resolver: zodResolver(artistManagerFormS2Schema),
+    resolver: zodResolver(artistManagerS2FormSchema),
     defaultValues: defaultValues,
   });
   const router = useRouter();
@@ -92,7 +92,7 @@ export default function BillingDataForm({
     return 'Seleziona una provincia';
   }, [isLoading, selectedCountry]);
 
-  const onSubmit = async (data: ArtistManagerFormS2Schema) => {
+  const onSubmit = async (data: ArtistManagerS2FormSchema) => {
     if (!isDirty) {
       toast.info('Nessun dato modificato.');
       return;

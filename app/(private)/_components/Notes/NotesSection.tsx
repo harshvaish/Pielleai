@@ -4,14 +4,14 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
 import { toast } from 'sonner';
-import { deleteProfileNote } from '@/lib/server-actions/artist-managers/delete-profile-note';
 import { ProfileNote } from '@/lib/types';
 import { notFound } from 'next/navigation';
 import { NoteForm } from './NoteForm';
 import { DeleteNoteDialog } from './DeleteNoteDialog';
 import { CancelNewNoteDialog } from './CancelNewNoteDialog';
 import { NoteItem } from './NoteItem';
-import { deleteArtistNote } from '@/lib/server-actions/artists/delete-artist-note';
+import { deleteArtistNote } from '@/lib/server-actions/notes/delete-artist-note';
+import { deleteProfileNote } from '@/lib/server-actions/notes/delete-profile-note';
 
 export default function NotesSection({
   isArtist,

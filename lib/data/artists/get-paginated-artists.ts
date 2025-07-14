@@ -9,8 +9,8 @@ import {
   managerArtists,
   profiles,
 } from '@/lib/database/schema';
-import { ArtistTableData, ArtistManagerSelectData } from '@/lib/types';
-import { and, count, eq, ilike, inArray, sql } from 'drizzle-orm';
+import { ArtistTableData, ArtistManagerSelectData, Zone } from '@/lib/types';
+import { and, count, eq, ilike, inArray } from 'drizzle-orm';
 
 export async function getPaginatedArtists({
   currentPage,
@@ -45,7 +45,6 @@ export async function getPaginatedArtists({
         company: artists.company,
         status: artists.status,
         createdAt: artists.createdAt,
-        zones: sql<string[]>`array_agg(${zones.name})`,
       })
       .from(artists)
       .leftJoin(artistZones, eq(artists.id, artistZones.artistId))
@@ -63,22 +62,34 @@ export async function getPaginatedArtists({
 
     const artistIds = artistsResult.map((a) => a.id);
 
-    // Get all managers for the artists in the current page
-    const managersResult = await database
-      .select({
-        artistId: managerArtists.artistId,
-        id: profiles.userId,
-        profileId: profiles.id,
-        avatarUrl: profiles.avatarUrl,
-        name: profiles.name,
-        surname: profiles.surname,
-      })
-      .from(managerArtists)
-      .innerJoin(profiles, eq(managerArtists.managerProfileId, profiles.id))
-      .where(inArray(managerArtists.artistId, artistIds));
+    const [zonesResult, managersResult] = await Promise.all([
+      database
+        .select({
+          artistId: artistZones.artistId,
+          id: zones.id,
+          name: zones.name,
+        })
+        .from(artistZones)
+        .innerJoin(zones, eq(artistZones.zoneId, zones.id))
+        .where(inArray(artistZones.artistId, artistIds)),
+
+      database
+        .select({
+          artistId: managerArtists.artistId,
+          id: profiles.userId,
+          profileId: profiles.id,
+          avatarUrl: profiles.avatarUrl,
+          name: profiles.name,
+          surname: profiles.surname,
+        })
+        .from(managerArtists)
+        .innerJoin(profiles, eq(managerArtists.managerProfileId, profiles.id))
+        .where(inArray(managerArtists.artistId, artistIds)),
+    ]);
 
     // Group managers by artistId
     const managersByArtist: Record<number, ArtistManagerSelectData[]> = {};
+
     for (const row of managersResult) {
       if (!managersByArtist[row.artistId]) {
         managersByArtist[row.artistId] = [];
@@ -92,16 +103,37 @@ export async function getPaginatedArtists({
       });
     }
 
-    // Merge artist + managers
+    // Group zones by artistId
+    const zonesByArtist: Record<number, Zone[]> = {};
+
+    for (const row of zonesResult) {
+      if (!zonesByArtist[row.artistId]) {
+        zonesByArtist[row.artistId] = [];
+      }
+      zonesByArtist[row.artistId].push({
+        id: row.id,
+        name: row.name,
+      });
+    }
+
+    // Merge artist + managers + zones
     const mergedResult = artistsResult.map((artist) => ({
       ...artist,
+      zones: zonesByArtist[artist.id] || [],
       managers: managersByArtist[artist.id] || [],
     }));
 
     // Get total count
     const [{ userCount }] = await database
       .select({ userCount: count() })
-      .from(artists);
+      .from(artists)
+      .where(
+        and(
+          fullName ? ilike(artists.name, `%${fullName}%`) : undefined,
+          email ? ilike(artists.email, `%${email}%`) : undefined,
+          phone ? ilike(artists.phone, `%${phone}%`) : undefined
+        )
+      );
 
     const totalPages = Math.ceil(Number(userCount) / limit);
 

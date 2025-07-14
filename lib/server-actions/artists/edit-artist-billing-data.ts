@@ -7,8 +7,8 @@ import { database } from '@/lib/database/connection';
 import { eq } from 'drizzle-orm';
 import { countries, subdivisions, artists } from '@/lib/database/schema';
 import {
-  artistFormS2Schema,
-  ArtistFormS2Schema,
+  artistS2FormSchema,
+  ArtistS2FormSchema,
 } from '@/lib/validation/artistFormSchema';
 
 export const editArtistBillingData = async ({
@@ -16,7 +16,7 @@ export const editArtistBillingData = async ({
   data,
 }: {
   artistId: number;
-  data: ArtistFormS2Schema;
+  data: ArtistS2FormSchema;
 }): Promise<ServerActionResponse<null>> => {
   const headersList = await headers();
   try {
@@ -41,7 +41,7 @@ export const editArtistBillingData = async ({
     };
   }
 
-  const validation = artistFormS2Schema.safeParse(data);
+  const validation = artistS2FormSchema.safeParse(data);
 
   if (!validation.success) {
     console.error(
@@ -98,22 +98,22 @@ export const editArtistBillingData = async ({
     await database
       .update(artists)
       .set({
-        company: data.company,
-        taxCode: data.taxCode,
-        ipiCode: data.ipiCode,
-        bicCode: data.bicCode || null,
-        abaRoutingNumber: data.abaRoutingNumber || null,
-        iban: data.iban,
-        sdiRecipientCode: data.sdiRecipientCode || null,
-        billingAddress: data.billingAddress,
-        billingCountryId: data.billingCountry.id,
-        billingSubdivisionId: data.billingSubdivisionId,
-        billingCity: data.billingCity,
-        billingZipCode: data.billingZipCode,
-        billingEmail: data.billingEmail,
-        billingPhone: data.billingPhone,
-        billingPec: data.billingPec,
-        taxableInvoice: data.taxableInvoice === 'true',
+        company: validation.data.company,
+        taxCode: validation.data.taxCode,
+        ipiCode: validation.data.ipiCode,
+        bicCode: validation.data.bicCode || null,
+        abaRoutingNumber: validation.data.abaRoutingNumber || null,
+        iban: validation.data.iban,
+        sdiRecipientCode: validation.data.sdiRecipientCode || null,
+        billingAddress: validation.data.billingAddress,
+        billingCountryId: validation.data.billingCountry.id,
+        billingSubdivisionId: validation.data.billingSubdivisionId,
+        billingCity: validation.data.billingCity,
+        billingZipCode: validation.data.billingZipCode,
+        billingEmail: validation.data.billingEmail,
+        billingPhone: validation.data.billingPhone,
+        billingPec: validation.data.billingPec,
+        taxableInvoice: validation.data.taxableInvoice === 'true',
         updatedAt: new Date(),
       })
       .where(eq(artists.id, artistId));

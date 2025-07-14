@@ -13,3 +13,5 @@
 - manager block button refactor
 - updates enitities in others join table only if data is dirty
 - an artist can have 0 managers -> mo manager
+- artist social data batch of 4 or nothing
+- create subfolders for upload based on entity

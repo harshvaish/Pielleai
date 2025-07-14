@@ -46,7 +46,7 @@ export default function ZonesBadge({ zones }: { zones: Zone[] }) {
   const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
   const count = zones.length;
 
-  if (!count) return <div>Nessun area di intesse</div>;
+  if (!count) return <div>Nessun&apos;area di intesse</div>;
 
   if (count === 1) {
     const zone = zones[0];
@@ -64,7 +64,7 @@ export default function ZonesBadge({ zones }: { zones: Zone[] }) {
     >
       <DropdownMenuTrigger className='flex items-center gap-2 p-2 bg-zinc-50 rounded-md w-max hover:bg-zinc-100 transition-colors'>
         <div className='flex -space-x-3'>
-          {zones.slice(0, 3).map((zone, idx) => {
+          {zones.slice(0, 4).map((zone, idx) => {
             const zoneClass =
               zoneColorsClasses[zone.name] || zoneColorsClasses['Default'];
             return (

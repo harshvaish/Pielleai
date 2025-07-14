@@ -4,8 +4,8 @@ import { auth } from '@/lib/auth';
 import { headers } from 'next/headers';
 import { ServerActionResponse } from '@/lib/types';
 import {
-  ArtistManagerFormS2Schema,
-  artistManagerFormS2Schema,
+  ArtistManagerS2FormSchema,
+  artistManagerS2FormSchema,
 } from '@/lib/validation/artistManagerFormSchema';
 import { database } from '@/lib/database/connection';
 import { eq } from 'drizzle-orm';
@@ -16,7 +16,7 @@ export const editArtistManagerBillingData = async ({
   data,
 }: {
   profileId: number;
-  data: ArtistManagerFormS2Schema;
+  data: ArtistManagerS2FormSchema;
 }): Promise<ServerActionResponse<null>> => {
   const headersList = await headers();
   try {
@@ -44,7 +44,7 @@ export const editArtistManagerBillingData = async ({
     };
   }
 
-  const validation = artistManagerFormS2Schema.safeParse(data);
+  const validation = artistManagerS2FormSchema.safeParse(data);
 
   if (!validation.success) {
     console.error(

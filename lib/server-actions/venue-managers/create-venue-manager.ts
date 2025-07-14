@@ -3,10 +3,6 @@
 import { auth } from '@/lib/auth';
 import { headers } from 'next/headers';
 import { ServerActionResponse } from '@/lib/types';
-import {
-  ArtistManagerS1FormSchema,
-  artistManagerS1FormSchema,
-} from '@/lib/validation/artistManagerFormSchema';
 import { database } from '@/lib/database/connection';
 import { eq, inArray } from 'drizzle-orm';
 import {
@@ -16,14 +12,16 @@ import {
   languages as languagesTable,
   subdivisions,
 } from '@/lib/database/schema';
+import { APIError } from 'better-auth/api';
+import { getBetterAuthErrorMessage } from '@/lib/utils';
+import {
+  venueManagerFormSchema,
+  VenueManagerFormSchema,
+} from '@/lib/validation/venueManagerFormSchema';
 
-export const editArtistManagerPersonalData = async ({
-  profileId,
-  data,
-}: {
-  profileId: number;
-  data: ArtistManagerS1FormSchema;
-}): Promise<ServerActionResponse<null>> => {
+export const createVenueManager = async (
+  data: VenueManagerFormSchema
+): Promise<ServerActionResponse<null>> => {
   const headersList = await headers();
   try {
     const session = await auth.api.getSession({
@@ -31,10 +29,7 @@ export const editArtistManagerPersonalData = async ({
     });
 
     if (!session?.user || session.user.role != 'admin') {
-      console.error(
-        '[editArtistManagerPersonalData] - Error: unauthorized',
-        session
-      );
+      console.error('[createVenueManager] - Error: unauthorized', session);
       return {
         success: false,
         message: 'Non sei autorizzato.',
@@ -42,7 +37,7 @@ export const editArtistManagerPersonalData = async ({
       };
     }
   } catch (error) {
-    console.error('[editArtistManagerPersonalData] - Error: ', error);
+    console.error('[createVenueManager] - Error: ', error);
     return {
       success: false,
       message: 'Autenticazione non riutita.',
@@ -50,11 +45,11 @@ export const editArtistManagerPersonalData = async ({
     };
   }
 
-  const validation = artistManagerS1FormSchema.safeParse(data);
+  const validation = venueManagerFormSchema.safeParse(data);
 
   if (!validation.success) {
     console.error(
-      '[editArtistsManager] - Error: validation failed',
+      '[createVenueManager] - Error: validation failed',
       validation.error.issues[0]
     );
     return {
@@ -64,7 +59,16 @@ export const editArtistManagerPersonalData = async ({
     };
   }
 
-  const { languages, countryId, subdivisionId } = validation.data;
+  const {
+    name,
+    signUpEmail,
+    signUpPassword,
+    languages,
+    countryId,
+    subdivisionId,
+  } = validation.data;
+
+  let newUserId: string | undefined;
 
   try {
     const [languagesCheck, countryCheck, subdivisionCheck] = await Promise.all([
@@ -117,9 +121,33 @@ export const editArtistManagerPersonalData = async ({
     }
 
     await database.transaction(async (tx) => {
-      await tx
-        .update(profiles)
-        .set({
+      const { user } = await auth.api.createUser({
+        headers: headersList,
+        body: {
+          email: signUpEmail,
+          password: signUpPassword,
+          name,
+          role: 'venue-manager',
+          data: {
+            status: 'active',
+          },
+        },
+      });
+
+      if (!user || !user.id) {
+        return {
+          success: false,
+          message: "Errore durante la creazione dell'account.",
+          data: null,
+        };
+      }
+
+      newUserId = user.id;
+
+      const profileResult = await tx
+        .insert(profiles)
+        .values({
+          userId: newUserId,
           avatarUrl: data.avatarUrl,
           name: data.name,
           surname: data.surname,
@@ -132,16 +160,18 @@ export const editArtistManagerPersonalData = async ({
           subdivisionId: data.subdivisionId,
           city: data.city,
           zipCode: data.zipCode,
-          updatedAt: new Date(),
         })
-        .where(eq(profiles.id, profileId));
+        .returning({ id: profiles.id });
 
-      // First delete existing languages
-      await tx
-        .delete(profileLanguages)
-        .where(eq(profileLanguages.profileId, profileId));
+      const profileId = profileResult[0]?.id;
+      if (!profileId) {
+        return {
+          success: false,
+          message: 'Recupero id utente non riuscito.',
+          data: null,
+        };
+      }
 
-      // Then insert new ones
       const languageInserts = (data.languages || []).map(
         (languageId: number) => ({
           profileId,
@@ -160,10 +190,29 @@ export const editArtistManagerPersonalData = async ({
       data: null,
     };
   } catch (error) {
-    console.error('[editArtistManagerPersonalData] transaction failed', error);
+    if (newUserId) {
+      try {
+        await auth.api.removeUser({
+          headers: headersList,
+          body: { userId: newUserId },
+        });
+      } catch (delErr) {
+        console.error(
+          '[createVenueManager] rollback: failed deleting auth user',
+          delErr
+        );
+      }
+    }
+
+    let message = 'Creazione account non riuscita.';
+    if (error instanceof APIError && error.body?.code) {
+      message = getBetterAuthErrorMessage(error.body.code);
+    }
+
+    console.error('[createVenueManager] transaction failed', error);
     return {
       success: false,
-      message: 'Aggiornamento profilo non riuscito.',
+      message,
       data: null,
     };
   }

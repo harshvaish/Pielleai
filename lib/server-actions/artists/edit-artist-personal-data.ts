@@ -18,8 +18,8 @@ import {
   artistZones,
 } from '@/lib/database/schema';
 import {
-  artistFormS1Schema,
-  ArtistFormS1Schema,
+  artistS1FormSchema,
+  ArtistS1FormSchema,
 } from '@/lib/validation/artistFormSchema';
 import { areSame } from '@/lib/utils';
 
@@ -28,7 +28,7 @@ export const editArtistPersonalData = async ({
   data,
 }: {
   artistId: number;
-  data: ArtistFormS1Schema;
+  data: ArtistS1FormSchema;
 }): Promise<ServerActionResponse<null>> => {
   const headersList = await headers();
   try {
@@ -53,7 +53,7 @@ export const editArtistPersonalData = async ({
     };
   }
 
-  const validation = artistFormS1Schema.safeParse(data);
+  const validation = artistS1FormSchema.safeParse(data);
 
   if (!validation.success) {
     console.error(
@@ -209,14 +209,12 @@ export const editArtistPersonalData = async ({
           .delete(artistLanguages)
           .where(eq(artistLanguages.artistId, artistId));
         if (validation.data.languages.length > 0) {
-          await tx
-            .insert(artistLanguages)
-            .values(
-              validation.data.languages.map((languageId) => ({
-                artistId,
-                languageId,
-              }))
-            );
+          await tx.insert(artistLanguages).values(
+            validation.data.languages.map((languageId) => ({
+              artistId,
+              languageId,
+            }))
+          );
         }
       }
 
