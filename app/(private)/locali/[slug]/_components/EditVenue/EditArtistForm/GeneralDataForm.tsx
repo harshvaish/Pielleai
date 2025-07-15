@@ -10,61 +10,60 @@ import {
   SelectItem,
   SelectTrigger,
 } from '@/components/ui/select';
-import { Gender, GENDERS } from '@/lib/constants';
+import { VENUE_TYPES, VenueType } from '@/lib/constants';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import useSWR from 'swr';
-import { ArtistManagerData, Country, Language, Subdivision } from '@/lib/types';
-import { toast } from 'sonner';
-import LanguagesSelect from '@/app/(private)/_components/LanguagesSelect';
 import {
-  ArtistManagerS1FormSchema,
-  artistManagerS1FormSchema,
-} from '@/lib/validation/artistManagerFormSchema';
+  Country,
+  Subdivision,
+  VenueData,
+  VenueManagerSelectData,
+} from '@/lib/types';
+import { toast } from 'sonner';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
 import { useEffect, useMemo, useState } from 'react';
-import { editArtistManagerPersonalData } from '@/lib/server-actions/artist-managers/edit-artist-manager-personal-data';
 import { useRouter } from 'next/navigation';
 import { X } from 'lucide-react';
 import AvatarUploadInput from '@/app/(private)/_components/AvatarUploadInput';
+import {
+  EditVenueS1FormSchema,
+  editVenueS1FormSchema,
+} from '@/lib/validation/venueFormSchema';
+import Image from 'next/image';
+import { editVenueGeneralData } from '@/lib/server-actions/venues/edit-venue-general-data';
 
-export default function PersonalDataForm({
-  userData,
-  languages,
+export default function GeneralDataForm({
+  venueData,
   countries,
+  venueManagers,
   closeDialog,
 }: {
-  userData: ArtistManagerData;
-  languages: Language[];
+  venueData: VenueData;
   countries: Country[];
+  venueManagers: VenueManagerSelectData[];
   closeDialog: () => void;
 }) {
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
-  const languageIds = userData.languages.map((lang) => lang.id);
-
   const defaultValues = useMemo(
     () => ({
-      avatarUrl: userData.avatarUrl || '',
-      name: userData.name || '',
-      surname: userData.surname || '',
-      phone: userData.phone || '',
-      email: userData.email || '',
-      birthDate: userData.birthDate || '',
-      birthPlace: userData.birthPlace || '',
-      languages: languageIds || [],
-      address: userData.address || '',
-      countryId: userData.country.id || 0,
-      subdivisionId: userData.subdivision.id || 0,
-      city: userData.city || '',
-      zipCode: userData.zipCode || '',
-      gender: userData.gender || 'maschile',
+      avatarUrl: venueData.avatarUrl || '',
+      name: venueData.name || '',
+      type: venueData.type || 'small',
+      capacity: venueData.capacity || 0,
+      address: venueData.address || '',
+      countryId: venueData.country.id || 0,
+      subdivisionId: venueData.subdivision.id || 0,
+      city: venueData.city || '',
+      zipCode: venueData.zipCode || '',
+      venueManagerId: venueData.manager.profileId || 0,
     }),
-    [userData]
+    [venueData]
   );
 
   const methods = useForm({
-    resolver: zodResolver(artistManagerS1FormSchema),
+    resolver: zodResolver(editVenueS1FormSchema),
     defaultValues: defaultValues,
   });
 
@@ -96,21 +95,21 @@ export default function PersonalDataForm({
     return 'Seleziona una provincia';
   }, [isLoading, selectedCountryId]);
 
-  const onSubmit = async (data: ArtistManagerS1FormSchema) => {
+  const onSubmit = async (data: EditVenueS1FormSchema) => {
     if (!isDirty) {
       toast.info('Nessun dato modificato.');
       return;
     }
     setIsSubmitting(true);
 
-    const response = await editArtistManagerPersonalData({
-      profileId: userData.profileId,
+    const response = await editVenueGeneralData({
+      venueId: venueData.id,
       data: data,
     });
 
     if (response.success) {
       methods.reset(data); // new form status, isDirty to false
-      toast.success('Profilo manager artisti aggiornato!');
+      toast.success('Scheda locale aggiornata!');
       closeDialog();
       router.refresh();
     } else {
@@ -149,14 +148,15 @@ export default function PersonalDataForm({
         className='flex flex-col gap-4'
         onSubmit={methods.handleSubmit(onSubmit)}
       >
-        <div className='grid grid-cols-[auto_1fr_1fr] items-end gap-4'>
+        <div className='text-xl text-center font-bold'>Dati locale</div>
+        <div className='grid grid-cols-[max-content_1fr] items-end gap-4'>
           <div className='flex flex-col'>
             <Controller
               control={control}
               name='avatarUrl'
               render={({ field }) => (
                 <AvatarUploadInput
-                  localStorageKey={'eama_temporary_url'} // edit artist manager avatar
+                  localStorageKey={'eva_temporary_url'} // create venue avatar
                   value={field.value}
                   onChange={field.onChange}
                   hasError={!!errors.avatarUrl}
@@ -179,7 +179,7 @@ export default function PersonalDataForm({
             <Input
               id='name'
               {...register('name')}
-              placeholder='Mario'
+              placeholder='La madunina'
               className={
                 errors.name ? 'border-destructive text-destructive' : ''
               }
@@ -191,153 +191,74 @@ export default function PersonalDataForm({
               </p>
             )}
           </div>
-          <div className='flex flex-col'>
-            <label
-              htmlFor='surname'
-              className='block text-sm font-semibold mb-2'
-            >
-              Cognome
-            </label>
-            <Input
-              id='surname'
-              {...register('surname')}
-              placeholder='Rossi'
-              className={
-                errors.surname ? 'border-destructive text-destructive' : ''
-              }
-              autoComplete='family-name'
-            />
-            {errors.surname && (
-              <p className='text-xs text-destructive mt-2'>
-                {errors.surname.message as string}
-              </p>
+        </div>
+
+        <Separator className='my-4' />
+
+        <div className='flex flex-col'>
+          <div className='block text-sm font-semibold mb-2'>Tipologia</div>
+          <Controller
+            control={control}
+            name='type'
+            render={({ field }) => (
+              <RadioGroup
+                value={field.value}
+                onValueChange={(v) => field.onChange(v as VenueType)}
+                className='flex gap-2'
+              >
+                {VENUE_TYPES.map((type) => (
+                  <label
+                    key={type}
+                    htmlFor={`venue-type-${type}`}
+                    className={cn(
+                      'h-10 flex items-center gap-2 text-sm p-2 rounded-xl capitalize border hover:cursor-pointer',
+                      errors.type && 'border-destructive text-destructive'
+                    )}
+                  >
+                    <RadioGroupItem
+                      id={`venue-type-${type}`}
+                      value={type}
+                    />
+                    {type === 'small' && 'Club / DJ set'}
+                    {type === 'medium' && 'Media > 3.000'}
+                    {type === 'big' && 'Grande > 10.000'}
+                  </label>
+                ))}
+              </RadioGroup>
             )}
-          </div>
-        </div>
-
-        <div className='flex flex-col'>
-          <label
-            htmlFor='phone'
-            className='block text-sm font-semibold mb-2'
-          >
-            Numero di telefono
-          </label>
-          <Input
-            id='phone'
-            {...register('phone')}
-            placeholder='+39 123456789'
-            className={
-              errors.phone ? 'border-destructive text-destructive' : ''
-            }
-            autoComplete='tel'
           />
-          {errors.phone && (
+          {errors.type && (
             <p className='text-xs text-destructive mt-2'>
-              {errors.phone.message as string}
-            </p>
-          )}
-        </div>
-
-        <div className='flex flex-col'>
-          <label
-            htmlFor='email'
-            className='block text-sm font-semibold mb-2'
-          >
-            Email
-          </label>
-          <Input
-            id='email'
-            {...register('email')}
-            placeholder='info@eaglebooking.it'
-            className={
-              errors.email ? 'border-destructive text-destructive' : ''
-            }
-            autoComplete='email'
-          />
-          {errors.email && (
-            <p className='text-xs text-destructive mt-2'>
-              {errors.email.message as string}
+              {errors.type.message as string}
             </p>
           )}
         </div>
 
         <Separator className='my-4' />
 
-        <div className='grid grid-cols-2 gap-4'>
-          <div className='flex flex-col'>
-            <label
-              htmlFor='birthDate'
-              className='block text-sm font-semibold mb-2'
-            >
-              Data di nascita
-            </label>
-            <Controller
-              control={control}
-              name='birthDate'
-              render={({ field }) => (
-                <Input
-                  id='birthDate'
-                  className={cn(
-                    'block w-full',
-                    errors.birthDate && 'border-destructive text-destructive'
-                  )}
-                  type='date'
-                  {...field}
-                />
-              )}
-            />
-            {errors.birthDate && (
-              <p className='text-xs text-destructive mt-2'>
-                {errors.birthDate.message as string}
-              </p>
-            )}
-          </div>
-
-          <div className='flex flex-col'>
-            <label
-              htmlFor='birthPlace'
-              className='block text-sm font-semibold mb-2'
-            >
-              Luogo di nascita
-            </label>
-            <Input
-              id='birthPlace'
-              {...register('birthPlace')}
-              placeholder='Milano'
-              className={
-                errors.birthPlace ? 'border-destructive text-destructive' : ''
-              }
-            />
-            {errors.birthPlace && (
-              <p className='text-xs text-destructive mt-2'>
-                {errors.birthPlace.message as string}
-              </p>
-            )}
-          </div>
-        </div>
-
         <div className='flex flex-col'>
           <label
-            htmlFor='languages'
+            htmlFor='capacity'
             className='block text-sm font-semibold mb-2'
           >
-            Lingue
+            Capienza
           </label>
-          <Controller
-            control={control}
-            name='languages'
-            render={({ field }) => (
-              <LanguagesSelect
-                languages={languages}
-                value={field.value}
-                onChange={field.onChange}
-                hasError={!!errors.languages}
-              />
-            )}
+          <Input
+            id='capacity'
+            {...register('capacity', {
+              valueAsNumber: true,
+            })}
+            placeholder='1000'
+            type='number'
+            min={0}
+            step={1}
+            className={
+              errors.capacity ? 'border-destructive text-destructive' : ''
+            }
           />
-          {errors.languages && (
+          {errors.capacity && (
             <p className='text-xs text-destructive mt-2'>
-              {errors.languages.message as string}
+              {errors.capacity.message as string}
             </p>
           )}
         </div>
@@ -517,40 +438,68 @@ export default function PersonalDataForm({
         <Separator className='my-4' />
 
         <div className='flex flex-col'>
-          <div className='block text-sm font-semibold mb-2'>Sesso</div>
+          <label
+            htmlFor='venueManagerId'
+            className='block text-sm font-semibold mb-2'
+          >
+            Promoter
+          </label>
           <Controller
             control={control}
-            name='gender'
+            name='venueManagerId'
             render={({ field }) => (
-              <RadioGroup
-                value={field.value}
-                onValueChange={(v) => field.onChange(v as Gender)}
-                className='flex gap-2'
+              <Select
+                value={field.value.toString()}
+                onValueChange={(v) => field.onChange(parseInt(v))}
               >
-                {GENDERS.map((gender) => (
-                  <label
-                    key={gender}
-                    className={cn(
-                      'h-10 flex items-center gap-2 text-sm p-2 rounded-xl capitalize border hover:cursor-pointer',
-                      errors.gender && 'border-destructive text-destructive'
-                    )}
-                  >
-                    <RadioGroupItem
-                      value={gender}
-                      id={gender}
-                    />
-                    {gender}
-                  </label>
-                ))}
-              </RadioGroup>
+                <SelectTrigger
+                  id='venueManagerId'
+                  className={cn(
+                    'w-full',
+                    errors.venueManagerId &&
+                      'border-destructive text-destructive'
+                  )}
+                  size='sm'
+                >
+                  {(() => {
+                    const selected = venueManagers.find(
+                      (manager) => manager.profileId === field.value
+                    );
+                    return selected
+                      ? `${selected.name} ${selected.surname}`
+                      : 'Seleziona un promoter';
+                  })()}
+                </SelectTrigger>
+                <SelectContent>
+                  {venueManagers.map((manager) => (
+                    <SelectItem
+                      key={manager.id}
+                      value={manager.profileId.toString()}
+                    >
+                      <div className='flex items-center gap-2 flex-nowrap'>
+                        <Image
+                          src={manager.avatarUrl}
+                          alt='Immagine profilo utente'
+                          height={24}
+                          width={24}
+                          sizes='24px'
+                          className='w-6 h-6 rounded-full'
+                        />
+                        {manager.name} {manager.surname}
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             )}
           />
-          {errors.gender && (
+          {errors.venueManagerId && (
             <p className='text-xs text-destructive mt-2'>
-              {errors.gender.message as string}
+              {errors.venueManagerId.message as string}
             </p>
           )}
         </div>
+
         <div className='flex justify-between mt-4'>
           <Button
             type='button'

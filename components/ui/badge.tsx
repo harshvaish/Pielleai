@@ -24,7 +24,7 @@ const badgeVariants = cva(
         orange:
           'border-transparent text-orange-600 bg-orange-100 [a&]:hover:bg-orange-100/90',
         yellow:
-          'border-transparent text-tellow-600 bg-tellow-100 [a&]:hover:bg-yellow-100/90',
+          'border-transparent text-yellow-600 bg-yellow-100 [a&]:hover:bg-yellow-100/90',
       },
     },
     defaultVariants: {

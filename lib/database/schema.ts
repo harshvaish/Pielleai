@@ -27,6 +27,8 @@ export const userStatus = pgEnum('user_status', [
   'banned',
 ]);
 
+export const venueTypes = pgEnum('venue_types', ['small', 'medium', 'big']);
+
 export const users = pgTable('users', {
   id: text('id').primaryKey(),
   name: text('name').notNull(),
@@ -445,5 +447,86 @@ export const artistNotes = pgTable(
       foreignColumns: [users.id],
       name: 'artist_notes_writer_id_fkey',
     }),
+  ]
+);
+
+export const venues = pgTable(
+  'venues',
+  {
+    id: serial().primaryKey().notNull(),
+    name: text().notNull(),
+    slug: uuid().defaultRandom().notNull(),
+    status: userStatus().notNull(),
+    avatarUrl: text('avatar_url').notNull(),
+    type: venueTypes().notNull(),
+    capacity: integer().notNull(),
+    address: text().notNull(),
+    countryId: integer('country_id').notNull(),
+    subdivisionId: integer('subdivision_id').notNull(),
+    city: text().notNull(),
+    zipCode: varchar('zip_code', { length: 10 }).notNull(),
+    managerProfileId: integer('manager_profile_id').notNull(),
+    company: text().notNull(),
+    taxCode: text('tax_code').notNull(),
+    ipiCode: text('ipi_code').notNull(),
+    bicCode: text('bic_code'),
+    abaRoutingNumber: varchar('aba_routing_number', { length: 20 }),
+    iban: text().notNull(),
+    sdiRecipientCode: text('sdi_recipient_code'),
+    billingAddress: text('billing_address').notNull(),
+    billingCountryId: integer('billing_country_id').notNull(),
+    billingSubdivisionId: integer('billing_subdivision_id').notNull(),
+    billingCity: text('billing_city').notNull(),
+    billingZipCode: varchar('billing_zip_code', { length: 10 }).notNull(),
+    billingEmail: text('billing_email').notNull(),
+    billingPec: text('billing_pec').notNull(),
+    billingPhone: text('billing_phone').notNull(),
+    taxableInvoice: boolean('taxable_invoice').default(false).notNull(),
+    tiktokUrl: text('tiktok_url'),
+    tiktokUsername: text('tiktok_username'),
+    tiktokFollowers: integer('tiktok_followers'),
+    tiktokCreatedAt: date('tiktok_created_at'),
+    facebookUrl: text('facebook_url'),
+    facebookUsername: text('facebook_username'),
+    facebookFollowers: integer('facebook_followers'),
+    facebookCreatedAt: date('facebook_created_at'),
+    instagramUrl: text('instagram_url'),
+    instagramUsername: text('instagram_username'),
+    instagramFollowers: integer('instagram_followers'),
+    instagramCreatedAt: date('instagram_created_at'),
+    xUrl: text('x_url'),
+    xUsername: text('x_username'),
+    xFollowers: integer('x_followers'),
+    xCreatedAt: date('x_created_at'),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+    updatedAt: timestamp('updated_at').defaultNow().notNull(),
+  },
+  (table) => [
+    foreignKey({
+      columns: [table.billingCountryId],
+      foreignColumns: [countries.id],
+      name: 'venues_billing_country_id_fkey',
+    }).onDelete('restrict'),
+    foreignKey({
+      columns: [table.billingSubdivisionId],
+      foreignColumns: [subdivisions.id],
+      name: 'venues_billing_subdivision_id_fkey',
+    }).onDelete('restrict'),
+    foreignKey({
+      columns: [table.countryId],
+      foreignColumns: [countries.id],
+      name: 'venues_country_id_fkey',
+    }).onDelete('restrict'),
+    foreignKey({
+      columns: [table.managerProfileId],
+      foreignColumns: [profiles.id],
+      name: 'venues_manager_profile_id_fkey',
+    }).onDelete('restrict'),
+    foreignKey({
+      columns: [table.subdivisionId],
+      foreignColumns: [subdivisions.id],
+      name: 'venues_subdivision_id_fkey',
+    }).onDelete('restrict'),
+    unique('venues_slug_key').on(table.slug),
   ]
 );

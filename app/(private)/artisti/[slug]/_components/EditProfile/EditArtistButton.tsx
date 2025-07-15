@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Pencil } from 'lucide-react';
 import {
   ArtistManagerSelectData,
-  ArtistsData,
+  ArtistData,
   Country,
   Language,
   Zone,
@@ -29,7 +29,7 @@ export default function EditArtistButton({
   zones,
   artistManagers,
 }: {
-  userData: ArtistsData;
+  userData: ArtistData;
   languages: Language[];
   countries: Country[];
   zones: Zone[];

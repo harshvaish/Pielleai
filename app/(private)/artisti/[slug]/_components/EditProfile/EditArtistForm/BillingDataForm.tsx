@@ -9,7 +9,7 @@ import {
   SelectTrigger,
 } from '@/components/ui/select';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { ArtistsData, Country, Subdivision } from '@/lib/types';
+import { ArtistData, Country, Subdivision } from '@/lib/types';
 import useSWR from 'swr';
 import { toast } from 'sonner';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -28,7 +28,7 @@ export default function BillingDataForm({
   countries,
   closeDialog,
 }: {
-  userData: ArtistsData;
+  userData: ArtistData;
   countries: Country[];
   closeDialog: () => void;
 }) {

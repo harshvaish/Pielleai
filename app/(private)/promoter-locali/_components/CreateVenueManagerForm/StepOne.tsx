@@ -452,14 +452,15 @@ export default function StepOne({
               {GENDERS.map((gender) => (
                 <label
                   key={gender}
+                  htmlFor={`gender-${gender}`}
                   className={cn(
                     'h-10 flex items-center gap-2 text-sm p-2 rounded-xl capitalize border hover:cursor-pointer',
                     errors.gender && 'border-destructive text-destructive'
                   )}
                 >
                   <RadioGroupItem
+                    id={`gender-${gender}`}
                     value={gender}
-                    id={gender}
                   />
                   {gender}
                 </label>

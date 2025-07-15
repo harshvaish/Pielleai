@@ -14,7 +14,7 @@ import { getLanguages } from '@/lib/data/get-languages';
 import { getCountries } from '@/lib/data/get-countries';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import PersonalDataTab from './_components/Tabs/PersonalDataTab';
-import BillingDataTab from '../../_components/BillingDataTab';
+import BillingDataTab from '../../_components/Tabs/BillingDataTab';
 import StatusBadge from '../../_components/StatusBadge';
 import NotesSection from '../../_components/Notes/NotesSection';
 import ToggleBlockButton from '../../_components/ToggleBlockButton';
@@ -169,7 +169,7 @@ export default async function ArtistManagerDetailPage({
         </TabsContent>
         <BillingDataTab
           tabValue='billing-data'
-          userData={userData}
+          data={userData}
         />
         <PersonalDataTab
           tabValue='personal-data'

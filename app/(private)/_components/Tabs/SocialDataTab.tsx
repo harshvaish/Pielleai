@@ -1,5 +1,5 @@
 import { TabsContent } from '@/components/ui/tabs';
-import { ArtistsData } from '@/lib/types';
+import { ArtistData, VenueData } from '@/lib/types';
 import {
   Table,
   TableBody,
@@ -15,10 +15,10 @@ import { SquareArrowOutUpRight } from 'lucide-react';
 
 export default function SocialDataTab({
   tabValue,
-  userData,
+  data,
 }: {
   tabValue: string;
-  userData: ArtistsData;
+  data: ArtistData | VenueData;
 }) {
   return (
     <TabsContent value={tabValue}>
@@ -48,27 +48,26 @@ export default function SocialDataTab({
                 </div>
               </TableCell>
               <TableCell>
-                {userData.tiktokUrl && userData.tiktokUsername ? (
+                {data.tiktokUrl && data.tiktokUsername ? (
                   <Link
-                    href={userData.tiktokUrl}
+                    href={data.tiktokUrl}
                     prefetch={false}
                     target='_blank'
                     rel='noopener noreferrer'
                     className='flex flex-nowrap gap-2 text-blue-600'
                   >
-                    @{userData.tiktokUsername}{' '}
-                    <SquareArrowOutUpRight size={16} />
+                    @{data.tiktokUsername} <SquareArrowOutUpRight size={16} />
                   </Link>
                 ) : (
                   '-'
                 )}
               </TableCell>
               <TableCell>
-                {userData.tiktokFollowers ? userData.tiktokFollowers : '-'}
+                {data.tiktokFollowers ? data.tiktokFollowers : '-'}
               </TableCell>
               <TableCell>
-                {userData.tiktokCreatedAt
-                  ? format(new Date(userData.tiktokCreatedAt), 'dd/MM/yyyy')
+                {data.tiktokCreatedAt
+                  ? format(new Date(data.tiktokCreatedAt), 'dd/MM/yyyy')
                   : '-'}
               </TableCell>
             </TableRow>
@@ -87,27 +86,26 @@ export default function SocialDataTab({
                 </div>
               </TableCell>
               <TableCell>
-                {userData.facebookUrl && userData.facebookUsername ? (
+                {data.facebookUrl && data.facebookUsername ? (
                   <Link
-                    href={userData.facebookUrl}
+                    href={data.facebookUrl}
                     prefetch={false}
                     target='_blank'
                     rel='noopener noreferrer'
                     className='flex flex-nowrap gap-2 text-blue-600'
                   >
-                    @{userData.facebookUsername}{' '}
-                    <SquareArrowOutUpRight size={16} />
+                    @{data.facebookUsername} <SquareArrowOutUpRight size={16} />
                   </Link>
                 ) : (
                   '-'
                 )}
               </TableCell>
               <TableCell>
-                {userData.facebookFollowers ? userData.facebookFollowers : '-'}
+                {data.facebookFollowers ? data.facebookFollowers : '-'}
               </TableCell>
               <TableCell>
-                {userData.facebookCreatedAt
-                  ? format(new Date(userData.facebookCreatedAt), 'dd/MM/yyyy')
+                {data.facebookCreatedAt
+                  ? format(new Date(data.facebookCreatedAt), 'dd/MM/yyyy')
                   : '-'}
               </TableCell>
             </TableRow>
@@ -126,15 +124,15 @@ export default function SocialDataTab({
                 </div>
               </TableCell>
               <TableCell>
-                {userData.instagramUrl && userData.instagramUsername ? (
+                {data.instagramUrl && data.instagramUsername ? (
                   <Link
-                    href={userData.instagramUrl}
+                    href={data.instagramUrl}
                     prefetch={false}
                     target='_blank'
                     rel='noopener noreferrer'
                     className='flex flex-nowrap gap-2 text-blue-600'
                   >
-                    @{userData.instagramUsername}{' '}
+                    @{data.instagramUsername}{' '}
                     <SquareArrowOutUpRight size={16} />
                   </Link>
                 ) : (
@@ -142,13 +140,11 @@ export default function SocialDataTab({
                 )}
               </TableCell>
               <TableCell>
-                {userData.instagramFollowers
-                  ? userData.instagramFollowers
-                  : '-'}
+                {data.instagramFollowers ? data.instagramFollowers : '-'}
               </TableCell>
               <TableCell>
-                {userData.instagramCreatedAt
-                  ? format(new Date(userData.instagramCreatedAt), 'dd/MM/yyyy')
+                {data.instagramCreatedAt
+                  ? format(new Date(data.instagramCreatedAt), 'dd/MM/yyyy')
                   : '-'}
               </TableCell>
             </TableRow>
@@ -167,26 +163,24 @@ export default function SocialDataTab({
                 </div>
               </TableCell>
               <TableCell>
-                {userData.xUrl && userData.xUsername ? (
+                {data.xUrl && data.xUsername ? (
                   <Link
-                    href={userData.xUrl}
+                    href={data.xUrl}
                     prefetch={false}
                     target='_blank'
                     rel='noopener noreferrer'
                     className='flex flex-nowrap gap-2 text-blue-600'
                   >
-                    @{userData.xUsername} <SquareArrowOutUpRight size={16} />
+                    @{data.xUsername} <SquareArrowOutUpRight size={16} />
                   </Link>
                 ) : (
                   '-'
                 )}
               </TableCell>
+              <TableCell>{data.xFollowers ? data.xFollowers : '-'}</TableCell>
               <TableCell>
-                {userData.xFollowers ? userData.xFollowers : '-'}
-              </TableCell>
-              <TableCell>
-                {userData.xCreatedAt
-                  ? format(new Date(userData.xCreatedAt), 'dd/MM/yyyy')
+                {data.xCreatedAt
+                  ? format(new Date(data.xCreatedAt), 'dd/MM/yyyy')
                   : '-'}
               </TableCell>
             </TableRow>

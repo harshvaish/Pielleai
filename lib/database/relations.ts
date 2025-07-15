@@ -9,6 +9,7 @@ import {
   profiles,
   profileNotes,
   artistNotes,
+  venues,
   artistZones,
   zones,
   managerArtists,
@@ -80,6 +81,12 @@ export const countriesRelations = relations(countries, ({ many }) => ({
   profiles_countryId: many(profiles, {
     relationName: 'profiles_countryId_countries_id',
   }),
+  venues_billingCountryId: many(venues, {
+    relationName: 'venues_billingCountryId_countries_id',
+  }),
+  venues_countryId: many(venues, {
+    relationName: 'venues_countryId_countries_id',
+  }),
 }));
 
 export const subdivisionsRelations = relations(
@@ -100,6 +107,12 @@ export const subdivisionsRelations = relations(
     }),
     profiles_subdivisionId: many(profiles, {
       relationName: 'profiles_subdivisionId_subdivisions_id',
+    }),
+    venues_billingSubdivisionId: many(venues, {
+      relationName: 'venues_billingSubdivisionId_subdivisions_id',
+    }),
+    venues_subdivisionId: many(venues, {
+      relationName: 'venues_subdivisionId_subdivisions_id',
     }),
   })
 );
@@ -130,6 +143,7 @@ export const profilesRelations = relations(profiles, ({ one, many }) => ({
     references: [users.id],
   }),
   profileNotes: many(profileNotes),
+  venues: many(venues),
   managerArtists: many(managerArtists),
   profileLanguages: many(profileLanguages),
 }));
@@ -153,6 +167,33 @@ export const artistNotesRelations = relations(artistNotes, ({ one }) => ({
   user: one(users, {
     fields: [artistNotes.writerId],
     references: [users.id],
+  }),
+}));
+
+export const venuesRelations = relations(venues, ({ one }) => ({
+  country_billingCountryId: one(countries, {
+    fields: [venues.billingCountryId],
+    references: [countries.id],
+    relationName: 'venues_billingCountryId_countries_id',
+  }),
+  subdivision_billingSubdivisionId: one(subdivisions, {
+    fields: [venues.billingSubdivisionId],
+    references: [subdivisions.id],
+    relationName: 'venues_billingSubdivisionId_subdivisions_id',
+  }),
+  country_countryId: one(countries, {
+    fields: [venues.countryId],
+    references: [countries.id],
+    relationName: 'venues_countryId_countries_id',
+  }),
+  profile: one(profiles, {
+    fields: [venues.managerProfileId],
+    references: [profiles.id],
+  }),
+  subdivision_subdivisionId: one(subdivisions, {
+    fields: [venues.subdivisionId],
+    references: [subdivisions.id],
+    relationName: 'venues_subdivisionId_subdivisions_id',
   }),
 }));
 

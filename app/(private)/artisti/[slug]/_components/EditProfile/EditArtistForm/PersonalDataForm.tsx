@@ -15,7 +15,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import useSWR from 'swr';
 import {
   ArtistManagerSelectData,
-  ArtistsData,
+  ArtistData,
   Country,
   Language,
   Subdivision,
@@ -45,7 +45,7 @@ export default function PersonalDataForm({
   artistManagers,
   closeDialog,
 }: {
-  userData: ArtistsData;
+  userData: ArtistData;
   languages: Language[];
   countries: Country[];
   zones: Zone[];

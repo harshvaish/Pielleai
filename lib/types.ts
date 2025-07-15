@@ -1,5 +1,5 @@
 import { Event } from 'react-big-calendar';
-import { Gender, UserStatus } from './constants';
+import { Gender, UserStatus, VenueType } from './constants';
 
 export type ServerActionResponse<T = unknown> =
   | {
@@ -59,7 +59,7 @@ export type ProfileNote = {
   createdAt: string;
 };
 /* ------------------------------------------------- */
-export type ArtistsManagerData = {
+export type ArtistManagerData = {
   id: string;
   profileId: number;
   status: UserStatus;
@@ -98,7 +98,7 @@ export type ArtistsManagerData = {
 };
 
 export type ArtistManagerTableData = Pick<
-  ArtistsManagerData,
+  ArtistManagerData,
   | 'id'
   | 'profileId'
   | 'status'
@@ -112,13 +112,13 @@ export type ArtistManagerTableData = Pick<
 >;
 
 export type ArtistManagerSelectData = Pick<
-  ArtistsManagerData,
+  ArtistManagerData,
   'id' | 'profileId' | 'avatarUrl' | 'name' | 'surname'
 >;
 
 /* ------------------------------------------------- */
 
-export type ArtistsData = {
+export type ArtistData = {
   id: number;
   slug: string;
   status: UserStatus;
@@ -168,26 +168,26 @@ export type ArtistsData = {
   tiktokUrl: string | null;
   tiktokUsername: string | null;
   tiktokFollowers: number | null;
-  tiktokCreatedAt: Date | null;
+  tiktokCreatedAt: string | null;
 
   facebookUrl: string | null;
   facebookUsername: string | null;
   facebookFollowers: number | null;
-  facebookCreatedAt: Date | null;
+  facebookCreatedAt: string | null;
 
   instagramUrl: string | null;
   instagramUsername: string | null;
   instagramFollowers: number | null;
-  instagramCreatedAt: Date | null;
+  instagramCreatedAt: string | null;
 
   xUrl: string | null;
   xUsername: string | null;
   xFollowers: number | null;
-  xCreatedAt: Date | null;
+  xCreatedAt: string | null;
 };
 
 export type ArtistTableData = Pick<
-  ArtistsData,
+  ArtistData,
   | 'id'
   | 'slug'
   | 'status'
@@ -226,7 +226,7 @@ export type VenueManagerData = {
 };
 
 export type VenueManagerTableData = Pick<
-  ArtistsManagerData,
+  ArtistManagerData,
   | 'id'
   | 'profileId'
   | 'status'
@@ -240,6 +240,79 @@ export type VenueManagerTableData = Pick<
 >;
 
 export type VenueManagerSelectData = Pick<
-  ArtistsManagerData,
-  'id' | 'profileId' | 'avatarUrl' | 'name' | 'surname'
+  ArtistManagerData,
+  'id' | 'profileId' | 'avatarUrl' | 'name' | 'surname' | 'status'
+>;
+/* ------------------------------------------------- */
+
+export type VenueData = {
+  id: number;
+  slug: string;
+  status: UserStatus;
+  createdAt: Date;
+  updatedAt: Date;
+  avatarUrl: string;
+  name: string;
+  type: VenueType;
+  capacity: number;
+
+  address: string;
+  country: Country;
+  subdivision: Subdivision;
+  city: string;
+  zipCode: string;
+
+  manager: VenueManagerSelectData;
+
+  company: string;
+  taxCode: string;
+  ipiCode: string;
+  bicCode: string | null;
+  abaRoutingNumber: string | null;
+  iban: string;
+  sdiRecipientCode: string | null;
+  billingAddress: string;
+  billingCountry: Country;
+  billingSubdivision: Subdivision;
+  billingCity: string;
+  billingZipCode: string;
+  billingEmail: string;
+  billingPhone: string;
+  billingPec: string;
+  taxableInvoice: boolean;
+
+  tiktokUrl: string | null;
+  tiktokUsername: string | null;
+  tiktokFollowers: number | null;
+  tiktokCreatedAt: string | null;
+
+  facebookUrl: string | null;
+  facebookUsername: string | null;
+  facebookFollowers: number | null;
+  facebookCreatedAt: string | null;
+
+  instagramUrl: string | null;
+  instagramUsername: string | null;
+  instagramFollowers: number | null;
+  instagramCreatedAt: string | null;
+
+  xUrl: string | null;
+  xUsername: string | null;
+  xFollowers: number | null;
+  xCreatedAt: string | null;
+};
+
+export type VenueTableData = Pick<
+  VenueData,
+  | 'id'
+  | 'slug'
+  | 'status'
+  | 'avatarUrl'
+  | 'name'
+  | 'company'
+  | 'taxCode'
+  | 'address'
+  | 'manager'
+  | 'type'
+  | 'capacity'
 >;

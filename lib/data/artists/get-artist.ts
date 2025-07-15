@@ -12,11 +12,11 @@ import {
   managerArtists,
   profiles,
 } from '@/lib/database/schema';
-import { ArtistsData } from '@/lib/types';
-import { eq, sql } from 'drizzle-orm';
+import { ArtistData } from '@/lib/types';
+import { eq } from 'drizzle-orm';
 import { alias } from 'drizzle-orm/pg-core';
 
-export async function getArtist(slug: string): Promise<ArtistsData | null> {
+export async function getArtist(slug: string): Promise<ArtistData | null> {
   try {
     const country = alias(countries, 'country');
     const subdivision = alias(subdivisions, 'subdivision');
@@ -41,7 +41,6 @@ export async function getArtist(slug: string): Promise<ArtistsData | null> {
         birthDate: artists.birthDate,
         birthPlace: artists.birthPlace,
         gender: artists.gender,
-        zones: sql<string[]>`array_agg(DISTINCT ${zones.name})`,
 
         tourManagerEmail: artists.tourManagerEmail,
         tourManagerName: artists.tourManagerName,
@@ -118,8 +117,6 @@ export async function getArtist(slug: string): Promise<ArtistsData | null> {
         billingSubdivision,
         eq(artists.billingSubdivisionId, billingSubdivision.id)
       )
-      .leftJoin(artistZones, eq(artists.id, artistZones.artistId))
-      .leftJoin(zones, eq(artistZones.zoneId, zones.id))
       .where(eq(artists.slug, slug))
       .groupBy(
         artists.id,

@@ -18,7 +18,7 @@ import FilterInput from '../_components/FilterInput';
 import { getPaginatedArtists } from '@/lib/data/artists/get-paginated-artists';
 import CreateArtistButton from './_components/CreateArtistButton';
 import { getZones } from '@/lib/data/artists/get-zones';
-import { getArtistManagers } from '@/lib/data/artists/get-artist-managers';
+import { getArtistManagers } from '@/lib/data/artist-managers/get-artist-managers';
 import ZonesBadge from './_components/ZonesBadge';
 import ArtistManagersBadge from './_components/ArtistManagersBadge';
 

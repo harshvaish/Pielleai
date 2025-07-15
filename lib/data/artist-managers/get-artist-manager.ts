@@ -9,13 +9,13 @@ import {
   subdivisions,
   users,
 } from '@/lib/database/schema';
-import { ArtistsManagerData } from '@/lib/types';
+import { ArtistManagerData } from '@/lib/types';
 import { eq } from 'drizzle-orm';
 import { alias } from 'drizzle-orm/pg-core';
 
 export async function getArtistManager(
   uid: string
-): Promise<ArtistsManagerData | null> {
+): Promise<ArtistManagerData | null> {
   try {
     const country = alias(countries, 'country');
     const subdivision = alias(subdivisions, 'subdivision');

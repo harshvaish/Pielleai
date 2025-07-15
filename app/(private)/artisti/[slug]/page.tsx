@@ -15,11 +15,11 @@ import PersonalDataTab from './_components/Tabs/PersonalDataTab';
 import StatusBadge from '../../_components/StatusBadge';
 import { getArtist } from '@/lib/data/artists/get-artist';
 import { getArtistNotes } from '@/lib/data/notes/get-artist-notes';
-import BillingDataTab from '../../_components/BillingDataTab';
-import SocialDataTab from './_components/Tabs/SocialDataTab';
+import BillingDataTab from '../../_components/Tabs/BillingDataTab';
+import SocialDataTab from '../../_components/Tabs/SocialDataTab';
 import ToggleArtistBlockButton from './_components/ToggleArtistBlockButton';
 import { getZones } from '@/lib/data/artists/get-zones';
-import { getArtistManagers } from '@/lib/data/artists/get-artist-managers';
+import { getArtistManagers } from '@/lib/data/artist-managers/get-artist-managers';
 import EditArtistButton from './_components/EditProfile/EditArtistButton';
 
 export default async function ArtistDetailPage({
@@ -182,11 +182,11 @@ export default async function ArtistDetailPage({
         />
         <BillingDataTab
           tabValue='billing-data'
-          userData={userData}
+          data={userData}
         />
         <SocialDataTab
           tabValue='social-data'
-          userData={userData}
+          data={userData}
         />
       </Tabs>
     </>

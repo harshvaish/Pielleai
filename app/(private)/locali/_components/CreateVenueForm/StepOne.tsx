@@ -3,26 +3,27 @@ import AvatarUploadInput from '@/app/(private)/_components/AvatarUploadInput';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import { cn, fetcher } from '@/lib/utils';
-import LanguagesSelect from '@/app/(private)/_components/LanguagesSelect';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
 } from '@/components/ui/select';
-import { Gender, GENDERS } from '@/lib/constants';
+import { VENUE_TYPES, VenueType } from '@/lib/constants';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import useSWR from 'swr';
-import { Country, Language, Subdivision } from '@/lib/types';
+import { Country, Subdivision, VenueManagerSelectData } from '@/lib/types';
 import { useEffect, useMemo } from 'react';
 import { toast } from 'sonner';
+import { Checkbox } from '@/components/ui/checkbox';
+import Image from 'next/image';
 
 export default function StepOne({
-  languages,
   countries,
+  venueManagers,
 }: {
-  languages: Language[];
   countries: Country[];
+  venueManagers: VenueManagerSelectData[];
 }) {
   const {
     register,
@@ -78,15 +79,15 @@ export default function StepOne({
 
   return (
     <>
-      <div className='text-xl text-center font-bold'>Dati personali</div>
-      <div className='grid grid-cols-[auto_1fr_1fr] items-end gap-4'>
+      <div className='text-xl text-center font-bold'>Dati locale</div>
+      <div className='grid grid-cols-[max-content_1fr] items-end gap-4'>
         <div className='flex flex-col'>
           <Controller
             control={control}
             name='avatarUrl'
             render={({ field }) => (
               <AvatarUploadInput
-                localStorageKey={'cama_temporary_url'} // create artist manager avatar
+                localStorageKey={'cva_temporary_url'} // create venue avatar
                 value={field.value}
                 onChange={field.onChange}
                 hasError={!!errors.avatarUrl}
@@ -109,7 +110,7 @@ export default function StepOne({
           <Input
             id='name'
             {...register('name')}
-            placeholder='Mario'
+            placeholder='La madunina'
             className={errors.name ? 'border-destructive text-destructive' : ''}
             autoComplete='name'
           />
@@ -119,149 +120,74 @@ export default function StepOne({
             </p>
           )}
         </div>
-        <div className='flex flex-col'>
-          <label
-            htmlFor='surname'
-            className='block text-sm font-semibold mb-2'
-          >
-            Cognome
-          </label>
-          <Input
-            id='surname'
-            {...register('surname')}
-            placeholder='Rossi'
-            className={
-              errors.surname ? 'border-destructive text-destructive' : ''
-            }
-            autoComplete='family-name'
-          />
-          {errors.surname && (
-            <p className='text-xs text-destructive mt-2'>
-              {errors.surname.message as string}
-            </p>
+      </div>
+
+      <Separator className='my-4' />
+
+      <div className='flex flex-col'>
+        <div className='block text-sm font-semibold mb-2'>Tipologia</div>
+        <Controller
+          control={control}
+          name='type'
+          render={({ field }) => (
+            <RadioGroup
+              value={field.value}
+              onValueChange={(v) => field.onChange(v as VenueType)}
+              className='flex gap-2'
+            >
+              {VENUE_TYPES.map((type) => (
+                <label
+                  key={type}
+                  htmlFor={`venue-type-${type}`}
+                  className={cn(
+                    'h-10 flex items-center gap-2 text-sm p-2 rounded-xl capitalize border hover:cursor-pointer',
+                    errors.type && 'border-destructive text-destructive'
+                  )}
+                >
+                  <RadioGroupItem
+                    id={`venue-type-${type}`}
+                    value={type}
+                  />
+                  {type === 'small' && 'Club / DJ set'}
+                  {type === 'medium' && 'Media > 3.000'}
+                  {type === 'big' && 'Grande > 10.000'}
+                </label>
+              ))}
+            </RadioGroup>
           )}
-        </div>
-      </div>
-
-      <div className='flex flex-col'>
-        <label
-          htmlFor='phone'
-          className='block text-sm font-semibold mb-2'
-        >
-          Numero di telefono
-        </label>
-        <Input
-          id='phone'
-          {...register('phone')}
-          placeholder='+39 123456789'
-          className={errors.phone ? 'border-destructive text-destructive' : ''}
-          autoComplete='tel'
         />
-        {errors.phone && (
+        {errors.type && (
           <p className='text-xs text-destructive mt-2'>
-            {errors.phone.message as string}
-          </p>
-        )}
-      </div>
-
-      <div className='flex flex-col'>
-        <label
-          htmlFor='email'
-          className='block text-sm font-semibold mb-2'
-        >
-          Email
-        </label>
-        <Input
-          id='email'
-          {...register('email')}
-          placeholder='info@eaglebooking.it'
-          className={errors.email ? 'border-destructive text-destructive' : ''}
-          autoComplete='email'
-        />
-        {errors.email && (
-          <p className='text-xs text-destructive mt-2'>
-            {errors.email.message as string}
+            {errors.type.message as string}
           </p>
         )}
       </div>
 
       <Separator className='my-4' />
 
-      <div className='grid grid-cols-2 gap-4'>
-        <div className='flex flex-col'>
-          <label
-            htmlFor='birthDate'
-            className='block text-sm font-semibold mb-2'
-          >
-            Data di nascita
-          </label>
-          <Controller
-            control={control}
-            name='birthDate'
-            render={({ field }) => (
-              <Input
-                id='birthDate'
-                className={cn(
-                  'block w-full',
-                  errors.birthDate && 'border-destructive text-destructive'
-                )}
-                type='date'
-                {...field}
-              />
-            )}
-          />
-          {errors.birthDate && (
-            <p className='text-xs text-destructive mt-2'>
-              {errors.birthDate.message as string}
-            </p>
-          )}
-        </div>
-
-        <div className='flex flex-col'>
-          <label
-            htmlFor='birthPlace'
-            className='block text-sm font-semibold mb-2'
-          >
-            Luogo di nascita
-          </label>
-          <Input
-            id='birthPlace'
-            {...register('birthPlace')}
-            placeholder='Milano'
-            className={
-              errors.birthPlace ? 'border-destructive text-destructive' : ''
-            }
-          />
-          {errors.birthPlace && (
-            <p className='text-xs text-destructive mt-2'>
-              {errors.birthPlace.message as string}
-            </p>
-          )}
-        </div>
-      </div>
-
       <div className='flex flex-col'>
         <label
-          htmlFor='languages'
+          htmlFor='capacity'
           className='block text-sm font-semibold mb-2'
         >
-          Lingue
+          Capienza
         </label>
-        <Controller
-          control={control}
-          name='languages'
-          render={({ field }) => (
-            <LanguagesSelect
-              languages={languages}
-              value={field.value}
-              onChange={field.onChange}
-              hasError={!!errors.languages}
-            />
-          )}
+        <Input
+          id='capacity'
+          {...register('capacity', {
+            valueAsNumber: true,
+          })}
+          placeholder='1000'
+          type='number'
+          min={0}
+          step={1}
+          className={
+            errors.capacity ? 'border-destructive text-destructive' : ''
+          }
         />
-        {errors.languages && (
+        {errors.capacity && (
           <p className='text-xs text-destructive mt-2'>
-            {errors.languages.message as string}
+            {errors.capacity.message as string}
           </p>
         )}
       </div>
@@ -439,38 +365,103 @@ export default function StepOne({
       <Separator className='my-4' />
 
       <div className='flex flex-col'>
-        <div className='block text-sm font-semibold mb-2'>Sesso</div>
+        <label
+          htmlFor='venueManagerId'
+          className='block text-sm font-semibold mb-2'
+        >
+          Promoter
+        </label>
         <Controller
           control={control}
-          name='gender'
+          name='venueManagerId'
           render={({ field }) => (
-            <RadioGroup
+            <Select
               value={field.value}
-              onValueChange={(v) => field.onChange(v as Gender)}
-              className='flex gap-2'
+              onValueChange={(v) => field.onChange(parseInt(v))}
             >
-              {GENDERS.map((gender) => (
-                <label
-                  key={gender}
-                  htmlFor={`gender-${gender}`}
-                  className={cn(
-                    'h-10 flex items-center gap-2 text-sm p-2 rounded-xl capitalize border hover:cursor-pointer',
-                    errors.gender && 'border-destructive text-destructive'
-                  )}
-                >
-                  <RadioGroupItem
-                    id={`gender-${gender}`}
-                    value={gender}
-                  />
-                  {gender}
-                </label>
-              ))}
-            </RadioGroup>
+              <SelectTrigger
+                id='venueManagerId'
+                className={cn(
+                  'w-full',
+                  errors.venueManagerId && 'border-destructive text-destructive'
+                )}
+                size='sm'
+              >
+                {(() => {
+                  const selected = venueManagers.find(
+                    (manager) => manager.profileId === field.value
+                  );
+                  return selected
+                    ? `${selected.name} ${selected.surname}`
+                    : 'Seleziona un promoter';
+                })()}
+              </SelectTrigger>
+              <SelectContent>
+                {venueManagers.map((manager) => (
+                  <SelectItem
+                    key={manager.id}
+                    value={manager.profileId.toString()}
+                  >
+                    <div className='flex items-center gap-2 flex-nowrap'>
+                      <Image
+                        src={manager.avatarUrl}
+                        alt='Immagine profilo utente'
+                        height={24}
+                        width={24}
+                        sizes='24px'
+                        className='w-6 h-6 rounded-full'
+                      />
+                      {manager.name} {manager.surname}
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           )}
         />
-        {errors.gender && (
+        {errors.venueManagerId && (
           <p className='text-xs text-destructive mt-2'>
-            {errors.gender.message as string}
+            {errors.venueManagerId.message as string}
+          </p>
+        )}
+      </div>
+
+      <Separator className='my-4' />
+
+      <div className='flex flex-col'>
+        <div className='flex items-center space-x-2'>
+          <Controller
+            control={control}
+            name='acceptTerms'
+            render={({ field }) => (
+              <Checkbox
+                id='acceptTerms'
+                checked={field.value}
+                onCheckedChange={(checked) => field.onChange(checked === true)}
+              />
+            )}
+          />
+          <label
+            htmlFor='acceptTerms'
+            className={cn(
+              'text-xs font-normal',
+              errors.acceptTerms && 'text-destructive'
+            )}
+          >
+            Accetto i{' '}
+            <span className='underline underline-offset-2 hover:cursor-pointer'>
+              Termini e le Condizioni
+            </span>{' '}
+            e l&apos;{' '}
+            <span className='underline underline-offset-2 hover:cursor-pointer'>
+              Informativa sulla Privacy
+            </span>{' '}
+            della piattaforma.
+          </label>
+        </div>
+        {errors.acceptTerms && (
+          <p className='text-xs text-destructive mt-2'>
+            {errors.acceptTerms.message as string}
           </p>
         )}
       </div>

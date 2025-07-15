@@ -3,7 +3,7 @@
 import { Controller, FormProvider, useForm } from 'react-hook-form';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
-import { ArtistData } from '@/lib/types';
+import { VenueData } from '@/lib/types';
 import { toast } from 'sonner';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
@@ -11,23 +11,23 @@ import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { X } from 'lucide-react';
 import {
-  ArtistS3FormSchema,
-  artistS3FormSchema,
-} from '@/lib/validation/artistFormSchema';
-import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
 import { format } from 'date-fns';
-import { editArtistSocialData } from '@/lib/server-actions/artists/edit-artist-social-data';
+import {
+  venueS3FormSchema,
+  VenueS3FormSchema,
+} from '@/lib/validation/venueFormSchema';
+import { editVenueSocialData } from '@/lib/server-actions/venues/edit-artist-social-data';
 
 export default function SocialDataForm({
-  userData,
+  venueData,
   closeDialog,
 }: {
-  userData: ArtistData;
+  venueData: VenueData;
   closeDialog: () => void;
 }) {
   const [openItem, setOpenItem] = useState<string>('tiktok');
@@ -35,39 +35,39 @@ export default function SocialDataForm({
 
   const defaultValues = useMemo(
     () => ({
-      tiktokUrl: userData.tiktokUrl || '',
-      tiktokUsername: userData.tiktokUsername || '',
-      tiktokFollowers: userData.tiktokFollowers || undefined,
-      tiktokCreatedAt: userData.tiktokCreatedAt
-        ? format(new Date(userData.tiktokCreatedAt), 'yyyy-MM-dd')
+      tiktokUrl: venueData.tiktokUrl || '',
+      tiktokUsername: venueData.tiktokUsername || '',
+      tiktokFollowers: venueData.tiktokFollowers || undefined,
+      tiktokCreatedAt: venueData.tiktokCreatedAt
+        ? format(new Date(venueData.tiktokCreatedAt), 'yyyy-MM-dd')
         : undefined,
 
-      facebookUrl: userData.facebookUrl || '',
-      facebookUsername: userData.facebookUsername || '',
-      facebookFollowers: userData.facebookFollowers || undefined,
-      facebookCreatedAt: userData.facebookCreatedAt
-        ? format(new Date(userData.facebookCreatedAt), 'yyyy-MM-dd')
+      facebookUrl: venueData.facebookUrl || '',
+      facebookUsername: venueData.facebookUsername || '',
+      facebookFollowers: venueData.facebookFollowers || undefined,
+      facebookCreatedAt: venueData.facebookCreatedAt
+        ? format(new Date(venueData.facebookCreatedAt), 'yyyy-MM-dd')
         : undefined,
 
-      instagramUrl: userData.instagramUrl || '',
-      instagramUsername: userData.instagramUsername || '',
-      instagramFollowers: userData.instagramFollowers || undefined,
-      instagramCreatedAt: userData.instagramCreatedAt
-        ? format(new Date(userData.instagramCreatedAt), 'yyyy-MM-dd')
+      instagramUrl: venueData.instagramUrl || '',
+      instagramUsername: venueData.instagramUsername || '',
+      instagramFollowers: venueData.instagramFollowers || undefined,
+      instagramCreatedAt: venueData.instagramCreatedAt
+        ? format(new Date(venueData.instagramCreatedAt), 'yyyy-MM-dd')
         : undefined,
 
-      xUrl: userData.xUrl || '',
-      xUsername: userData.xUsername || '',
-      xFollowers: userData.xFollowers || undefined,
-      xCreatedAt: userData.xCreatedAt
-        ? format(new Date(userData.xCreatedAt), 'yyyy-MM-dd')
+      xUrl: venueData.xUrl || '',
+      xUsername: venueData.xUsername || '',
+      xFollowers: venueData.xFollowers || undefined,
+      xCreatedAt: venueData.xCreatedAt
+        ? format(new Date(venueData.xCreatedAt), 'yyyy-MM-dd')
         : undefined,
     }),
-    [userData]
+    [venueData]
   );
 
   const methods = useForm({
-    resolver: zodResolver(artistS3FormSchema),
+    resolver: zodResolver(venueS3FormSchema),
     defaultValues: defaultValues,
   });
 
@@ -79,21 +79,21 @@ export default function SocialDataForm({
     formState: { isDirty, errors },
   } = methods;
 
-  const onSubmit = async (data: ArtistS3FormSchema) => {
+  const onSubmit = async (data: VenueS3FormSchema) => {
     if (!isDirty) {
       toast.info('Nessun dato modificato.');
       return;
     }
     setIsSubmitting(true);
 
-    const response = await editArtistSocialData({
-      artistId: userData.id,
+    const response = await editVenueSocialData({
+      venueId: venueData.id,
       data: data,
     });
 
     if (response.success) {
       methods.reset(data); // new form status, isDirty to false
-      toast.success('Profilo artista aggiornato!');
+      toast.success('Scheda locale aggiornata!');
       closeDialog();
       router.refresh();
     } else {

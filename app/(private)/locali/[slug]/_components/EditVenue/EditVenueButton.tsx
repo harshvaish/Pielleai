@@ -9,23 +9,24 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Pencil } from 'lucide-react';
-import { ArtistManagerData, Country, Language } from '@/lib/types';
+import { Country, VenueData, VenueManagerSelectData } from '@/lib/types';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
-import PersonalDataForm from './EditArtistManagerForm/PersonalDataForm';
-import BillingDataForm from './EditArtistManagerForm/BillingDataForm';
+import GeneralDataForm from './EditArtistForm/GeneralDataForm';
+import BillingDataForm from './EditArtistForm/BillingDataForm';
+import SocialDataForm from './EditArtistForm/SocialDataForm';
 
-export default function EditArtistManagerButton({
-  userData,
-  languages,
+export default function EditVenueButton({
+  venueData,
   countries,
+  venueManagers,
 }: {
-  userData: ArtistManagerData;
-  languages: Language[];
+  venueData: VenueData;
   countries: Country[];
+  venueManagers: VenueManagerSelectData[];
 }) {
   const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
-  const [step, setStep] = useState<1 | 2>(1);
+  const [step, setStep] = useState<1 | 2 | 3>(1);
 
   return (
     <Dialog
@@ -41,11 +42,11 @@ export default function EditArtistManagerButton({
       </DialogTrigger>
       <DialogContent className='max-h-[94dvh] sm:max-w-2xl grid grid-rows-[auto_1fr]'>
         <DialogTitle className='hidden'>
-          Form per modifica dati manager artista
+          Form per modifica dati locale
         </DialogTitle>
         <DialogDescription className='hidden'>
-          Effettua le modifiche necessarie al mantenimento del profilo
-          aggiornato.
+          Effettua le modifiche necessarie al mantenimento della scheda locale
+          aggiornata.
         </DialogDescription>
 
         {/* step section */}
@@ -58,7 +59,7 @@ export default function EditArtistManagerButton({
               )}
               onClick={() => setStep(1)}
             >
-              Anagrafica
+              Dati locale
             </div>
             <div
               className={cn(
@@ -67,24 +68,39 @@ export default function EditArtistManagerButton({
               )}
               onClick={() => setStep(2)}
             >
-              Fatturazione
+              Dati fatturazione
+            </div>
+            <div
+              className={cn(
+                'w-40 text-sm font-semibold text-center py-1.5 px-3 rounded-lg hover:cursor-pointer',
+                step === 3 ? 'bg-zinc-100' : 'text-zinc-600 bg-transparent'
+              )}
+              onClick={() => setStep(3)}
+            >
+              Social
             </div>
           </div>
         </section>
         {/* tab section */}
         <section className='max-h-full overflow-y-auto'>
           {step === 1 && (
-            <PersonalDataForm
-              userData={userData}
-              languages={languages}
+            <GeneralDataForm
+              venueData={venueData}
               countries={countries}
+              venueManagers={venueManagers}
               closeDialog={() => setIsDialogOpen(false)}
             />
           )}
           {step === 2 && (
             <BillingDataForm
-              userData={userData}
+              venueData={venueData}
               countries={countries}
+              closeDialog={() => setIsDialogOpen(false)}
+            />
+          )}
+          {step === 3 && (
+            <SocialDataForm
+              venueData={venueData}
               closeDialog={() => setIsDialogOpen(false)}
             />
           )}

@@ -9,26 +9,26 @@ import {
   SelectTrigger,
 } from '@/components/ui/select';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { ArtistManagerData, Country, Subdivision } from '@/lib/types';
+import { Country, Subdivision, VenueData } from '@/lib/types';
 import useSWR from 'swr';
 import { toast } from 'sonner';
-import {
-  ArtistManagerS2FormSchema,
-  artistManagerS2FormSchema,
-} from '@/lib/validation/artistManagerFormSchema';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useEffect, useMemo, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
-import { editArtistManagerBillingData } from '@/lib/server-actions/artist-managers/edit-artist-manager-billing-data';
 import { X } from 'lucide-react';
+import {
+  VenueS2FormSchema,
+  venueS2FormSchema,
+} from '@/lib/validation/venueFormSchema';
+import { editVenueBillingData } from '@/lib/server-actions/venues/edit-venue-billing-data';
 
 export default function BillingDataForm({
-  userData,
+  venueData,
   countries,
   closeDialog,
 }: {
-  userData: ArtistManagerData;
+  venueData: VenueData;
   countries: Country[];
   closeDialog: () => void;
 }) {
@@ -36,28 +36,28 @@ export default function BillingDataForm({
 
   const defaultValues = useMemo(
     () => ({
-      company: userData.company || '',
-      taxCode: userData.taxCode || '',
-      ipiCode: userData.ipiCode || '',
-      bicCode: userData.bicCode || undefined,
-      abaRoutingNumber: userData.abaRoutingNumber || undefined,
-      iban: userData.iban || '',
-      sdiRecipientCode: userData.sdiRecipientCode || undefined,
-      billingAddress: userData.billingAddress || '',
-      billingCountry: userData.billingCountry || 0,
-      billingSubdivisionId: userData.billingSubdivision.id || 0,
-      billingCity: userData.billingCity || '',
-      billingZipCode: userData.billingZipCode || '',
-      billingEmail: userData.billingEmail || '',
-      billingPhone: userData.billingPhone || '',
-      billingPec: userData.billingPec || '',
-      taxableInvoice: userData.taxableInvoice.toString() || 'false',
+      company: venueData.company || '',
+      taxCode: venueData.taxCode || '',
+      ipiCode: venueData.ipiCode || '',
+      bicCode: venueData.bicCode || undefined,
+      abaRoutingNumber: venueData.abaRoutingNumber || undefined,
+      iban: venueData.iban || '',
+      sdiRecipientCode: venueData.sdiRecipientCode || undefined,
+      billingAddress: venueData.billingAddress || '',
+      billingCountry: venueData.billingCountry || 0,
+      billingSubdivisionId: venueData.billingSubdivision.id || 0,
+      billingCity: venueData.billingCity || '',
+      billingZipCode: venueData.billingZipCode || '',
+      billingEmail: venueData.billingEmail || '',
+      billingPhone: venueData.billingPhone || '',
+      billingPec: venueData.billingPec || '',
+      taxableInvoice: venueData.taxableInvoice.toString() || 'false',
     }),
-    [userData]
+    [venueData]
   );
 
   const methods = useForm({
-    resolver: zodResolver(artistManagerS2FormSchema),
+    resolver: zodResolver(venueS2FormSchema),
     defaultValues: defaultValues,
   });
   const router = useRouter();
@@ -92,7 +92,7 @@ export default function BillingDataForm({
     return 'Seleziona una provincia';
   }, [isLoading, selectedCountry]);
 
-  const onSubmit = async (data: ArtistManagerS2FormSchema) => {
+  const onSubmit = async (data: VenueS2FormSchema) => {
     if (!isDirty) {
       toast.info('Nessun dato modificato.');
       return;
@@ -100,13 +100,13 @@ export default function BillingDataForm({
 
     setIsSubmitting(true);
 
-    const response = await editArtistManagerBillingData({
-      profileId: userData.profileId,
+    const response = await editVenueBillingData({
+      venueId: venueData.id,
       data: data,
     });
 
     if (response.success) {
-      toast.success('Profilo manager artisti aggiornato!');
+      toast.success('Scheda locale aggiornata!');
       router.refresh();
       closeDialog();
     } else {

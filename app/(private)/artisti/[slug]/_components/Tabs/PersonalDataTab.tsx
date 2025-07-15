@@ -1,7 +1,7 @@
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
 import { TabsContent } from '@/components/ui/tabs';
-import { ArtistsData } from '@/lib/types';
+import { ArtistData } from '@/lib/types';
 import ZonesBadge from '../../../_components/ZonesBadge';
 import ArtistManagersBadge from '../../../_components/ArtistManagersBadge';
 
@@ -10,7 +10,7 @@ export default function PersonalDataTab({
   userData,
 }: {
   tabValue: string;
-  userData: ArtistsData;
+  userData: ArtistData;
 }) {
   let languagesString = '';
 

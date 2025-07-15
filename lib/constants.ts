@@ -70,3 +70,6 @@ export type Gender = (typeof GENDERS)[number];
 export const PAGINATED_TABLE_ROWS_X_PAGE = 10;
 
 export const NEW_USER_TIME = 1000 * 60 * 60 * 24 * 7; // 1 week
+
+export const VENUE_TYPES = ['small', 'medium', 'big'] as const;
+export type VenueType = (typeof VENUE_TYPES)[number];

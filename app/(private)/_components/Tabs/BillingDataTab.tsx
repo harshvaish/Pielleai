@@ -1,12 +1,12 @@
 import { TabsContent } from '@/components/ui/tabs';
-import { ArtistsData, ArtistsManagerData } from '@/lib/types';
+import { ArtistData, ArtistManagerData, VenueData } from '@/lib/types';
 
 export default function BillingDataTab({
   tabValue,
-  userData,
+  data,
 }: {
   tabValue: string;
-  userData: ArtistsManagerData | ArtistsData;
+  data: ArtistManagerData | ArtistData | VenueData;
 }) {
   return (
     <TabsContent
@@ -20,57 +20,55 @@ export default function BillingDataTab({
             Ragione sociale
           </span>
           <span className='text-sm font-medium text-zinc-500'>
-            {userData.company}
+            {data.company}
           </span>
 
           <span className='text-sm font-semibold text-zinc-600'>
             Codice fiscale
           </span>
           <span className='text-sm font-medium text-zinc-500'>
-            {userData.taxCode}
+            {data.taxCode}
           </span>
 
           <span className='text-sm font-semibold text-zinc-600'>IBAN</span>
-          <span className='text-sm font-medium text-zinc-500'>
-            {userData.iban}
-          </span>
+          <span className='text-sm font-medium text-zinc-500'>{data.iban}</span>
 
           <span className='text-sm font-semibold text-zinc-600'>
             Codice IPI
           </span>
           <span className='text-sm font-medium text-zinc-500'>
-            {userData.ipiCode}
+            {data.ipiCode}
           </span>
 
-          {userData.sdiRecipientCode && (
+          {data.sdiRecipientCode && (
             <>
               <span className='text-sm font-semibold text-zinc-600'>
                 Codice destinatario SDI
               </span>
               <span className='text-sm font-medium text-zinc-500'>
-                {userData.sdiRecipientCode}
+                {data.sdiRecipientCode}
               </span>
             </>
           )}
 
-          {userData.abaRoutingNumber && (
+          {data.abaRoutingNumber && (
             <>
               <span className='text-sm font-semibold text-zinc-600'>
                 Codice
               </span>
               <span className='text-sm font-medium text-zinc-500'>
-                {userData.abaRoutingNumber}
+                {data.abaRoutingNumber}
               </span>
             </>
           )}
 
-          {userData.bicCode && (
+          {data.bicCode && (
             <>
               <span className='text-sm font-semibold text-zinc-600'>
                 Codice BIC
               </span>
               <span className='text-sm font-medium text-zinc-500'>
-                {userData.bicCode}
+                {data.bicCode}
               </span>
             </>
           )}
@@ -86,53 +84,53 @@ export default function BillingDataTab({
             Indirizzo di fatturazione
           </span>
           <span className='text-sm font-medium text-zinc-500'>
-            {userData.billingAddress}
+            {data.billingAddress}
           </span>
 
           <span className='text-sm font-semibold text-zinc-600'>CAP</span>
           <span className='text-sm font-medium text-zinc-500'>
-            {userData.billingZipCode}
+            {data.billingZipCode}
           </span>
 
           <span className='text-sm font-semibold text-zinc-600'>Comune</span>
           <span className='text-sm font-medium text-zinc-500'>
-            {userData.billingCity}
+            {data.billingCity}
           </span>
 
           <span className='text-sm font-semibold text-zinc-600'>Provincia</span>
           <span className='text-sm font-medium text-zinc-500'>
-            {userData.billingSubdivision.name}
+            {data.billingSubdivision.name}
           </span>
 
           <span className='text-sm font-semibold text-zinc-600'>Stato</span>
           <span className='text-sm font-medium text-zinc-500'>
-            {userData.billingCountry.name}
+            {data.billingCountry.name}
           </span>
 
           <span className='text-sm font-semibold text-zinc-600'>
             Email di fatturazione
           </span>
           <span className='text-sm font-medium text-zinc-500'>
-            {userData.billingEmail}
+            {data.billingEmail}
           </span>
 
           <span className='text-sm font-semibold text-zinc-600'>PEC</span>
           <span className='text-sm font-medium text-zinc-500'>
-            {userData.billingPec}
+            {data.billingPec}
           </span>
 
           <span className='text-sm font-semibold text-zinc-600'>
             Numero di telefono
           </span>
           <span className='text-sm font-medium text-zinc-500'>
-            {userData.billingPhone}
+            {data.billingPhone}
           </span>
 
           <span className='text-sm font-semibold text-zinc-600'>
             Imponibile in fattura
           </span>
           <span className='text-sm font-medium text-zinc-500'>
-            {userData.taxableInvoice ? 'Sì' : 'No'}
+            {data.taxableInvoice ? 'Sì' : 'No'}
           </span>
         </div>
       </section>
