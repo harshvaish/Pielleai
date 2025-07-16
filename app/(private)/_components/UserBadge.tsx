@@ -1,5 +1,5 @@
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils';
-import Image from 'next/image';
 import Link from 'next/link';
 
 export default function UserBadge({
@@ -21,37 +21,19 @@ export default function UserBadge({
     <Link
       href={href}
       prefetch={false}
-      className='w-max flex items-center gap-2 bg-zinc-50 p-2 rounded-md transition-colors hover:bg-zinc-100'
+      className='w-max max-w-60 flex flex-nowrap items-center gap-2 bg-zinc-50 hover:bg-zinc-100 p-2 rounded-md transition-colors'
     >
-      {isSmall ? (
-        <Image
+      <Avatar className={isSmall ? 'w-4 h-4' : 'w-6 h-6'}>
+        <AvatarImage
           src={avatarUrl}
-          alt='Immagine profilo utente'
-          height={16}
-          width={16}
-          sizes='16px'
-          className={cn(
-            'w-4 h-4 rounded-full object-center object-cover',
-            isDisabled ? 'grayscale' : ''
-          )}
+          className={cn(isDisabled ? 'grayscale' : '')}
         />
-      ) : (
-        <Image
-          src={avatarUrl}
-          alt='Immagine profilo utente'
-          height={24}
-          width={24}
-          sizes='24px'
-          className={cn(
-            'w-6 h-6 rounded-full object-center object-cover',
-            isDisabled ? 'grayscale' : ''
-          )}
-        />
-      )}
+        <AvatarFallback>{name.substring(0, 1)}</AvatarFallback>
+      </Avatar>
 
       <span
         className={cn(
-          'text-sm font-semibold whitespace-nowrap',
+          'font-semibold line-clamp-1 text-ellipsis',
           isSmall ? 'text-xs' : 'text-sm',
           isDisabled ? 'text-zinc-500' : 'text-zinc-700'
         )}

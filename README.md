@@ -15,3 +15,8 @@
 - an artist can have 0 managers -> mo manager
 - artist social data batch of 4 or nothing
 - create subfolders for upload based on entity
+- check server actions structure: auth - validation - action
+
+TBD
+
+- filtro artisti su manager artisti table

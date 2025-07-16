@@ -2,20 +2,22 @@
 
 import { database } from '@/lib/database/connection';
 import {
+  artists,
   countries,
   languages,
+  managerArtists,
   profileLanguages,
   profiles,
   subdivisions,
   users,
 } from '@/lib/database/schema';
-import { ArtistManagerData } from '@/lib/types';
+import { ArtistListData, ArtistManagerData, Language } from '@/lib/types';
 import { eq } from 'drizzle-orm';
 import { alias } from 'drizzle-orm/pg-core';
 
 export async function getArtistManager(
   uid: string
-): Promise<ArtistManagerData | null> {
+): Promise<ArtistManagerData<ArtistListData> | null> {
   try {
     const country = alias(countries, 'country');
     const subdivision = alias(subdivisions, 'subdivision');
@@ -96,16 +98,52 @@ export async function getArtistManager(
 
     const user = userResult[0];
 
-    const languagesResult = await database
-      .select({ id: languages.id, name: languages.name })
-      .from(profileLanguages)
-      .innerJoin(languages, eq(profileLanguages.languageId, languages.id))
-      .where(eq(profileLanguages.profileId, user.profileId));
+    const [languagesResult, artistsResult]: [Language[], ArtistListData[]] =
+      await Promise.all([
+        database
+          .select({ id: languages.id, name: languages.name })
+          .from(profileLanguages)
+          .innerJoin(languages, eq(profileLanguages.languageId, languages.id))
+          .where(eq(profileLanguages.profileId, user.profileId)),
+
+        database
+          .select({
+            id: artists.id,
+            status: artists.status,
+            slug: artists.slug,
+            avatarUrl: artists.avatarUrl,
+            name: artists.name,
+            surname: artists.surname,
+            stageName: artists.stageName,
+            phone: artists.phone,
+            email: artists.email,
+            tourManagerEmail: artists.tourManagerEmail,
+            tourManagerName: artists.tourManagerName,
+            tourManagerSurname: artists.tourManagerSurname,
+            tourManagerPhone: artists.tourManagerPhone,
+          })
+          .from(managerArtists)
+          .innerJoin(artists, eq(managerArtists.artistId, artists.id))
+          .where(eq(managerArtists.managerProfileId, user.profileId)),
+      ]);
 
     return {
       ...user,
       languages: languagesResult,
-    };
+      artists: artistsResult,
+
+      company: user.company || '',
+      taxCode: user.taxCode || '',
+      ipiCode: user.ipiCode || '',
+      iban: user.iban || '',
+      billingAddress: user.billingAddress || '',
+      billingCity: user.billingCity || '',
+      billingZipCode: user.billingZipCode || '',
+      billingEmail: user.billingEmail || '',
+      billingPhone: user.billingPhone || '',
+      billingPec: user.billingPec || '',
+      taxableInvoice: user.taxableInvoice || false,
+    }; // nullable fields in the database have guard protection
   } catch (error) {
     console.error('[getArtistManagerData] - Error:', error);
     throw new Error('Recupero dati manager artisti non riuscito.');

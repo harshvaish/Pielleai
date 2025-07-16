@@ -8,14 +8,15 @@ import {
   profiles,
   subdivisions,
   users,
+  venues,
 } from '@/lib/database/schema';
-import { VenueManagerData } from '@/lib/types';
+import { Language, VenueListData, VenueManagerData } from '@/lib/types';
 import { eq } from 'drizzle-orm';
 import { alias } from 'drizzle-orm/pg-core';
 
 export async function getVenueManager(
   uid: string
-): Promise<VenueManagerData | null> {
+): Promise<VenueManagerData<VenueListData> | null> {
   try {
     const country = alias(countries, 'country');
     const subdivision = alias(subdivisions, 'subdivision');
@@ -61,15 +62,35 @@ export async function getVenueManager(
 
     const user = userResult[0];
 
-    const languagesResult = await database
-      .select({ id: languages.id, name: languages.name })
-      .from(profileLanguages)
-      .innerJoin(languages, eq(profileLanguages.languageId, languages.id))
-      .where(eq(profileLanguages.profileId, user.profileId));
+    const [languagesResult, venuesResult]: [Language[], VenueListData[]] =
+      await Promise.all([
+        database
+          .select({ id: languages.id, name: languages.name })
+          .from(profileLanguages)
+          .innerJoin(languages, eq(profileLanguages.languageId, languages.id))
+          .where(eq(profileLanguages.profileId, user.profileId)),
+
+        database
+          .select({
+            id: venues.id,
+            status: venues.status,
+            slug: venues.slug,
+            avatarUrl: venues.avatarUrl,
+            type: venues.type,
+            name: venues.name,
+            address: venues.address,
+            company: venues.company,
+            taxCode: venues.taxCode,
+            capacity: venues.capacity,
+          })
+          .from(venues)
+          .where(eq(venues.managerProfileId, user.profileId)),
+      ]);
 
     return {
       ...user,
       languages: languagesResult,
+      venues: venuesResult,
     };
   } catch (error) {
     console.error('[getVenueManager] - Error:', error);

@@ -20,7 +20,7 @@ import CreateArtistButton from './_components/CreateArtistButton';
 import { getZones } from '@/lib/data/artists/get-zones';
 import { getArtistManagers } from '@/lib/data/artist-managers/get-artist-managers';
 import ZonesBadge from './_components/ZonesBadge';
-import ArtistManagersBadge from './_components/ArtistManagersBadge';
+import ManagersBadge from '../_components/ManagersBadge';
 
 export default async function ArtistsPage({
   searchParams,
@@ -80,86 +80,87 @@ export default async function ArtistsPage({
       </div>
       {/* artists table section */}
       {artists.length > 0 ? (
-        <section className='bg-white overflow-auto rounded-2xl border group-has-[[data-pending]]:animate-pulse'>
-          <Table className='w-full'>
-            <TableHeader className='bg-zinc-50'>
-              <TableRow>
-                <TableHead>
-                  <div>Nome completo</div>
-                  {showFilters && (
-                    <FilterInput
-                      paramKey='fullName'
-                      defaultValue={filters.fullName}
-                    />
-                  )}
-                </TableHead>
-                <TableHead>
-                  <div>Email</div>
-                  {showFilters && (
-                    <FilterInput
-                      paramKey='email'
-                      defaultValue={filters.email}
-                    />
-                  )}
-                </TableHead>
-                <TableHead>
-                  <div>Numero di telefono</div>
-                  {showFilters && (
-                    <FilterInput
-                      paramKey='phone'
-                      defaultValue={filters.phone}
-                    />
-                  )}
-                </TableHead>
-                <TableHead>Manager</TableHead>
-                <TableHead>Area di interesse</TableHead>
-              </TableRow>
-            </TableHeader>
+        <Table className='w-full'>
+          <TableHeader className='bg-zinc-50'>
+            <TableRow>
+              <TableHead>
+                <div>Nome completo</div>
+                {showFilters && (
+                  <FilterInput
+                    paramKey='fullName'
+                    defaultValue={filters.fullName}
+                  />
+                )}
+              </TableHead>
+              <TableHead>
+                <div>Email</div>
+                {showFilters && (
+                  <FilterInput
+                    paramKey='email'
+                    defaultValue={filters.email}
+                  />
+                )}
+              </TableHead>
+              <TableHead>
+                <div>Numero di telefono</div>
+                {showFilters && (
+                  <FilterInput
+                    paramKey='phone'
+                    defaultValue={filters.phone}
+                  />
+                )}
+              </TableHead>
+              <TableHead>Manager</TableHead>
+              <TableHead>Area di interesse</TableHead>
+            </TableRow>
+          </TableHeader>
 
-            <TableBody>
-              {artists.map((artist, index) => {
-                const isDisabled = artist.status === 'disabled';
-                const isNew =
-                  new Date().getTime() - new Date(artist.createdAt).getTime() <
-                  NEW_USER_TIME;
+          <TableBody>
+            {artists.map((artist, index) => {
+              const isDisabled = artist.status === 'disabled';
+              const isNew =
+                new Date().getTime() - new Date(artist.createdAt).getTime() <
+                NEW_USER_TIME;
 
-                const badgeStatus = isDisabled
-                  ? 'disabled'
-                  : isNew
-                    ? 'new'
-                    : undefined;
+              const badgeStatus = isDisabled
+                ? 'disabled'
+                : isNew
+                  ? 'new'
+                  : undefined;
 
-                return (
-                  <TableRow
-                    key={index}
-                    className={isDisabled ? 'text-zinc-400' : ''}
-                  >
-                    <TableCell>
-                      <div className='flex items-center flex-nowrap gap-3'>
-                        <UserBadge
-                          name={artist.name}
-                          surname={artist.surname}
-                          avatarUrl={artist.avatarUrl}
-                          isDisabled={isDisabled}
-                          href={`/artisti/${artist.slug}`}
-                        />
-                        {badgeStatus && <StatusBadge status={badgeStatus} />}
-                      </div>
-                    </TableCell>
-                    <TableCell>{artist.email}</TableCell>
-                    <TableCell>{artist.phone}</TableCell>
-                    <TableCell>
-                      <ArtistManagersBadge managers={artist.managers} />
-                    </TableCell>
-                    <TableCell>
-                      <ZonesBadge zones={artist.zones} />
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
-        </section>
+              return (
+                <TableRow
+                  key={index}
+                  className={isDisabled ? 'text-zinc-400' : ''}
+                >
+                  <TableCell>
+                    <div className='flex items-center flex-nowrap gap-3'>
+                      <UserBadge
+                        name={artist.name}
+                        surname={artist.surname}
+                        avatarUrl={artist.avatarUrl}
+                        isDisabled={isDisabled}
+                        href={`/artisti/${artist.slug}`}
+                      />
+                      {badgeStatus && <StatusBadge status={badgeStatus} />}
+                    </div>
+                  </TableCell>
+                  <TableCell>{artist.email}</TableCell>
+                  <TableCell>{artist.phone}</TableCell>
+                  <TableCell>
+                    <ManagersBadge
+                      managers={artist.managers}
+                      pathSegment='manager-artisti'
+                    />
+                  </TableCell>
+                  <TableCell>
+                    <ZonesBadge zones={artist.zones} />
+                  </TableCell>
+                </TableRow>
+              );
+            })}
+          </TableBody>
+        </Table>
       ) : (
         <section className='max-h-80 flex flex-col justify-center items-center bg-white rounded-2xl p-8'>
           <h2 className='text-base font-bold'>Nessun artista</h2>

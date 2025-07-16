@@ -71,80 +71,78 @@ export default async function VenueManagersPage({
       </div>
       {/* venue managers table section */}
       {managers.length > 0 ? (
-        <section className='bg-white overflow-auto rounded-2xl border group-has-[[data-pending]]:animate-pulse'>
-          <Table className='w-full'>
-            <TableHeader className='bg-zinc-50'>
-              <TableRow>
-                <TableHead>
-                  <div>Nome completo</div>
-                  {showFilters && (
-                    <FilterInput
-                      paramKey='fullName'
-                      defaultValue={filters.fullName}
-                    />
-                  )}
-                </TableHead>
-                <TableHead>
-                  <div>Email</div>
-                  {showFilters && (
-                    <FilterInput
-                      paramKey='email'
-                      defaultValue={filters.email}
-                    />
-                  )}
-                </TableHead>
-                <TableHead>
-                  <div>Numero di telefono</div>
-                  {showFilters && (
-                    <FilterInput
-                      paramKey='phone'
-                      defaultValue={filters.phone}
-                    />
-                  )}
-                </TableHead>
-                <TableHead>Locali</TableHead>
-              </TableRow>
-            </TableHeader>
+        <Table className='w-full'>
+          <TableHeader className='bg-zinc-50'>
+            <TableRow>
+              <TableHead>
+                <div>Nome completo</div>
+                {showFilters && (
+                  <FilterInput
+                    paramKey='fullName'
+                    defaultValue={filters.fullName}
+                  />
+                )}
+              </TableHead>
+              <TableHead>
+                <div>Email</div>
+                {showFilters && (
+                  <FilterInput
+                    paramKey='email'
+                    defaultValue={filters.email}
+                  />
+                )}
+              </TableHead>
+              <TableHead>
+                <div>Numero di telefono</div>
+                {showFilters && (
+                  <FilterInput
+                    paramKey='phone'
+                    defaultValue={filters.phone}
+                  />
+                )}
+              </TableHead>
+              <TableHead>Locali</TableHead>
+            </TableRow>
+          </TableHeader>
 
-            <TableBody>
-              {managers.map((manager, index) => {
-                const isDisabled = manager.status === 'disabled';
-                const isNew =
-                  new Date().getTime() - new Date(manager.createdAt).getTime() <
-                  NEW_USER_TIME;
+          <TableBody>
+            {managers.map((manager, index) => {
+              const isDisabled = manager.status === 'disabled';
+              const isNew =
+                new Date().getTime() - new Date(manager.createdAt).getTime() <
+                NEW_USER_TIME;
 
-                const badgeStatus = isDisabled
-                  ? 'disabled'
-                  : isNew
-                    ? 'new'
-                    : undefined;
+              const badgeStatus = isDisabled
+                ? 'disabled'
+                : isNew
+                  ? 'new'
+                  : undefined;
 
-                return (
-                  <TableRow
-                    key={index}
-                    className={isDisabled ? 'text-zinc-400' : ''}
-                  >
-                    <TableCell>
-                      <div className='flex items-center flex-nowrap gap-3'>
-                        <UserBadge
-                          name={manager.name}
-                          surname={manager.surname}
-                          avatarUrl={manager.avatarUrl}
-                          isDisabled={isDisabled}
-                          href={`/promoter-locali/${manager.id}`}
-                        />
-                        {badgeStatus && <StatusBadge status={badgeStatus} />}
-                      </div>
-                    </TableCell>
-                    <TableCell>{manager.email}</TableCell>
-                    <TableCell>{manager.phone}</TableCell>
-                    <TableCell>Nessun locale</TableCell>
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
-        </section>
+              return (
+                <TableRow
+                  key={index}
+                  className={isDisabled ? 'text-zinc-400' : ''}
+                >
+                  <TableCell>
+                    <div className='flex items-center flex-nowrap gap-3'>
+                      <UserBadge
+                        name={manager.name}
+                        surname={manager.surname}
+                        avatarUrl={manager.avatarUrl}
+                        isDisabled={isDisabled}
+                        href={`/promoter-locali/${manager.id}`}
+                      />
+                      {badgeStatus && <StatusBadge status={badgeStatus} />}
+                    </div>
+                  </TableCell>
+                  <TableCell>{manager.email}</TableCell>
+                  <TableCell>{manager.phone}</TableCell>
+                  <TableCell>Nessun locale</TableCell>
+                </TableRow>
+              );
+            })}
+          </TableBody>
+        </Table>
       ) : (
         <section className='max-h-80 flex flex-col justify-center items-center bg-white rounded-2xl p-8'>
           <h2 className='text-base font-bold'>Nessun promoter locali</h2>

@@ -29,7 +29,8 @@ export function TablePagination({
           href={`?page=${page}`}
           className={cn(
             'w-8 aspect-square flex justify-center items-center rounded-xl transition-all',
-            currentPage === page ? 'bg-white border' : ''
+            currentPage === page ? 'bg-white border' : '',
+            pages.length === 1 ? 'pointer-events-none' : ''
           )}
         >
           {page}

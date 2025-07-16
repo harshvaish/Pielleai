@@ -9,7 +9,19 @@ export async function deleteArtistNote(
   noteId: number
 ): Promise<ServerActionResponse<null>> {
   try {
-    await database.delete(artistNotes).where(eq(artistNotes.id, noteId));
+    const result = await database
+      .delete(artistNotes)
+      .where(eq(artistNotes.id, noteId));
+
+    const deletedRows = result.rowCount;
+
+    if (!deletedRows) {
+      return {
+        success: false,
+        message: 'Nota non trovata.',
+        data: null,
+      };
+    }
 
     return {
       success: true,

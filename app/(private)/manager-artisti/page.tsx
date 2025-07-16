@@ -17,6 +17,7 @@ import StatusBadge from '../_components/StatusBadge';
 import { NEW_USER_TIME } from '@/lib/constants';
 import ToggleFiltersButton from '../_components/ToggleFiltersButton';
 import FilterInput from '../_components/FilterInput';
+import ArtistsBadge from './_components/ArtistsBadge';
 
 export default async function ArtistManagersPage({
   searchParams,
@@ -27,7 +28,7 @@ export default async function ArtistManagersPage({
     fullName?: string;
     email?: string;
     phone?: string;
-    artists?: string[];
+    artist?: string;
     company?: string;
   }>;
 }) {
@@ -41,7 +42,7 @@ export default async function ArtistManagersPage({
     fullName: sp?.fullName || '',
     email: sp?.email || '',
     phone: sp?.phone || '',
-    artist: sp?.artists || [],
+    artist: sp?.artist || '',
     company: sp?.company || '',
   };
 
@@ -60,7 +61,7 @@ export default async function ArtistManagersPage({
       <div className='flex justify-between items-center'>
         <h1 className='text-2xl font-bold'>Manager Artisti</h1>
         <div className='flex items-center gap-4'>
-          {managers.length > 0 && (
+          {(managers.length > 0 || showFilters) && (
             <ToggleFiltersButton showFilters={showFilters} />
           )}
           <CreateArtistManagerButton
@@ -71,90 +72,98 @@ export default async function ArtistManagersPage({
       </div>
       {/* artist managers table section */}
       {managers.length > 0 ? (
-        <section className='bg-white overflow-auto rounded-2xl border group-has-[[data-pending]]:animate-pulse'>
-          <Table className='w-full'>
-            <TableHeader className='bg-zinc-50'>
-              <TableRow>
-                <TableHead>
-                  <div>Nome completo</div>
-                  {showFilters && (
-                    <FilterInput
-                      paramKey='fullName'
-                      defaultValue={filters.fullName}
-                    />
-                  )}
-                </TableHead>
-                <TableHead>
-                  <div>Email</div>
-                  {showFilters && (
-                    <FilterInput
-                      paramKey='email'
-                      defaultValue={filters.email}
-                    />
-                  )}
-                </TableHead>
-                <TableHead>
-                  <div>Numero di telefono</div>
-                  {showFilters && (
-                    <FilterInput
-                      paramKey='phone'
-                      defaultValue={filters.phone}
-                    />
-                  )}
-                </TableHead>
-                <TableHead>Artisti</TableHead>
-                <TableHead>
-                  <div>Ragione sociale</div>
-                  {showFilters && (
-                    <FilterInput
-                      paramKey='company'
-                      defaultValue={filters.company}
-                    />
-                  )}
-                </TableHead>
-              </TableRow>
-            </TableHeader>
+        <Table className='w-full'>
+          <TableHeader className='bg-zinc-50'>
+            <TableRow>
+              <TableHead>
+                <div>Nome completo</div>
+                {showFilters && (
+                  <FilterInput
+                    paramKey='fullName'
+                    defaultValue={filters.fullName}
+                  />
+                )}
+              </TableHead>
+              <TableHead>
+                <div>Email</div>
+                {showFilters && (
+                  <FilterInput
+                    paramKey='email'
+                    defaultValue={filters.email}
+                  />
+                )}
+              </TableHead>
+              <TableHead>
+                <div>Numero di telefono</div>
+                {showFilters && (
+                  <FilterInput
+                    paramKey='phone'
+                    defaultValue={filters.phone}
+                  />
+                )}
+              </TableHead>
+              <TableHead>
+                <div>Artisti</div>
+                {showFilters && (
+                  <FilterInput
+                    paramKey='artist'
+                    defaultValue={filters.artist}
+                  />
+                )}
+              </TableHead>
+              <TableHead>
+                <div>Ragione sociale</div>
+                {showFilters && (
+                  <FilterInput
+                    paramKey='company'
+                    defaultValue={filters.company}
+                  />
+                )}
+              </TableHead>
+            </TableRow>
+          </TableHeader>
 
-            <TableBody>
-              {managers.map((manager, index) => {
-                const isDisabled = manager.status === 'disabled';
-                const isNew =
-                  new Date().getTime() - new Date(manager.createdAt).getTime() <
-                  NEW_USER_TIME;
+          <TableBody>
+            {managers.map((manager, index) => {
+              const isDisabled = manager.status === 'disabled';
+              const isNew =
+                new Date().getTime() - new Date(manager.createdAt).getTime() <
+                NEW_USER_TIME;
 
-                const badgeStatus = isDisabled
-                  ? 'disabled'
-                  : isNew
-                    ? 'new'
-                    : undefined;
+              const badgeStatus = isDisabled
+                ? 'disabled'
+                : isNew
+                  ? 'new'
+                  : undefined;
 
-                return (
-                  <TableRow
-                    key={index}
-                    className={isDisabled ? 'text-zinc-400' : ''}
-                  >
-                    <TableCell>
-                      <div className='flex items-center flex-nowrap gap-3'>
-                        <UserBadge
-                          name={manager.name}
-                          surname={manager.surname}
-                          avatarUrl={manager.avatarUrl}
-                          isDisabled={isDisabled}
-                          href={`/manager-artisti/${manager.id}`}
-                        />
-                        {badgeStatus && <StatusBadge status={badgeStatus} />}
-                      </div>
-                    </TableCell>
-                    <TableCell>{manager.email}</TableCell>
-                    <TableCell>{manager.phone}</TableCell>
-                    <TableCell>Nessun artista</TableCell>
-                    <TableCell>{manager.company}</TableCell>
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
-        </section>
+              return (
+                <TableRow
+                  key={index}
+                  className={isDisabled ? 'text-zinc-400' : ''}
+                >
+                  <TableCell>
+                    <div className='flex items-center flex-nowrap gap-3'>
+                      <UserBadge
+                        name={manager.name}
+                        surname={manager.surname}
+                        avatarUrl={manager.avatarUrl}
+                        isDisabled={isDisabled}
+                        href={`/manager-artisti/${manager.id}`}
+                      />
+                      {badgeStatus && <StatusBadge status={badgeStatus} />}
+                    </div>
+                  </TableCell>
+                  <TableCell>{manager.email}</TableCell>
+                  <TableCell>{manager.phone}</TableCell>
+                  <TableCell>
+                    <ArtistsBadge artists={manager.artists} />
+                  </TableCell>
+                  <TableCell>{manager.company}</TableCell>
+                </TableRow>
+              );
+            })}
+          </TableBody>
+        </Table>
       ) : (
         <section className='max-h-80 flex flex-col justify-center items-center bg-white rounded-2xl p-8'>
           <h2 className='text-base font-bold'>Nessun manager artista</h2>

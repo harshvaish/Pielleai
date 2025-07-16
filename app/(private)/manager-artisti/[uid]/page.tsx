@@ -12,12 +12,13 @@ import { Badge } from '@/components/ui/badge';
 import EditArtistManagerButton from './_components/EditProfile/EditArtistManagerButton';
 import { getLanguages } from '@/lib/data/get-languages';
 import { getCountries } from '@/lib/data/get-countries';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import PersonalDataTab from './_components/Tabs/PersonalDataTab';
 import BillingDataTab from '../../_components/Tabs/BillingDataTab';
 import StatusBadge from '../../_components/StatusBadge';
 import NotesSection from '../../_components/Notes/NotesSection';
 import ToggleBlockButton from '../../_components/ToggleBlockButton';
+import ManagedArtistsTab from './_components/Tabs/ManagedArtistsTab';
 
 export default async function ArtistManagerDetailPage({
   params,
@@ -154,7 +155,7 @@ export default async function ArtistManagerDetailPage({
         />
       </div>
 
-      <Tabs defaultValue='personal-data'>
+      <Tabs defaultValue='managed-artists'>
         <div className='flex justify-between items-center mb-6'>
           <span className='text-xl font-semibold'>Dettagli</span>
           <TabsList className='gap-4 bg-white p-1 rounded-xl'>
@@ -164,9 +165,10 @@ export default async function ArtistManagerDetailPage({
           </TabsList>
         </div>
 
-        <TabsContent value='managed-artists'>
-          Change your password here.
-        </TabsContent>
+        <ManagedArtistsTab
+          tabValue='managed-artists'
+          data={userData}
+        />
         <BillingDataTab
           tabValue='billing-data'
           data={userData}

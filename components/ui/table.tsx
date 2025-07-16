@@ -8,7 +8,7 @@ function Table({ className, ...props }: React.ComponentProps<'table'>) {
   return (
     <div
       data-slot='table-container'
-      className='relative w-full overflow-x-auto'
+      className='relative w-full bg-white rounded-2xl border overflow-x-auto group-has-[[data-pending]]:animate-pulse'
     >
       <table
         data-slot='table'

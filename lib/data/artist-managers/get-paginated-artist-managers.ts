@@ -2,16 +2,21 @@
 
 import { PAGINATED_TABLE_ROWS_X_PAGE } from '@/lib/constants';
 import { database } from '@/lib/database/connection';
-import { profiles, users } from '@/lib/database/schema';
-import { ArtistManagerTableData } from '@/lib/types';
-import { and, count, eq, ilike } from 'drizzle-orm';
+import {
+  artists,
+  managerArtists,
+  profiles,
+  users,
+} from '@/lib/database/schema';
+import { ArtistManagerTableData, ArtistSelectData } from '@/lib/types';
+import { and, count, eq, ilike, inArray } from 'drizzle-orm';
 
 export async function getPaginatedArtistManagers({
   currentPage,
   fullName,
   email,
   phone,
-  // artist,
+  artist,
   company,
   limit = PAGINATED_TABLE_ROWS_X_PAGE,
 }: {
@@ -19,7 +24,7 @@ export async function getPaginatedArtistManagers({
   fullName: string;
   email: string;
   phone: string;
-  // artist: string;
+  artist: string;
   company: string;
   limit?: number;
 }): Promise<{
@@ -31,7 +36,7 @@ export async function getPaginatedArtistManagers({
 
   try {
     // Get paginated data
-    const usersResult = await database
+    const managersResult = await database
       .select({
         id: users.id,
         profileId: profiles.id,
@@ -50,6 +55,7 @@ export async function getPaginatedArtistManagers({
         and(
           eq(users.role, 'artist-manager'),
           fullName ? ilike(profiles.name, `%${fullName}%`) : undefined,
+          fullName ? ilike(profiles.surname, `%${fullName}%`) : undefined,
           email ? ilike(users.email, `%${email}%`) : undefined,
           phone ? ilike(profiles.phone, `%${phone}%`) : undefined,
           company ? ilike(profiles.company, `%${company}%`) : undefined
@@ -58,16 +64,68 @@ export async function getPaginatedArtistManagers({
       .limit(limit)
       .offset(offset);
 
+    const managerProfilesIds = managersResult.map((m) => m.profileId);
+
+    const artistsResult = await database
+      .select({
+        managerId: managerArtists.managerProfileId,
+        id: artists.id,
+        status: artists.status,
+        slug: artists.slug,
+        avatarUrl: artists.avatarUrl,
+        name: artists.name,
+        surname: artists.surname,
+        stageName: artists.stageName,
+      })
+      .from(managerArtists)
+      .innerJoin(artists, eq(managerArtists.artistId, artists.id))
+      .where(inArray(managerArtists.managerProfileId, managerProfilesIds));
+
+    // Group artists by managerProfileId
+    const artistsByManager: Record<number, ArtistSelectData[]> = {};
+
+    for (const row of artistsResult) {
+      if (!artistsByManager[row.managerId]) {
+        artistsByManager[row.managerId] = [];
+      }
+      artistsByManager[row.managerId].push({
+        id: row.id,
+        status: row.status,
+        slug: row.slug,
+        avatarUrl: row.avatarUrl,
+        name: row.name,
+        surname: row.surname,
+        stageName: row.stageName,
+      });
+    }
+
+    // Merge managers + artists
+    const mergedResult = managersResult.map((manager) => ({
+      ...manager,
+      artists: artistsByManager[manager.profileId] || [],
+      company: manager.company ?? '',
+    }));
+
     // Get total count
     const [{ userCount }] = await database
       .select({ userCount: count() })
       .from(users)
-      .where(eq(users.role, 'artist-manager'));
+      .innerJoin(profiles, eq(users.id, profiles.userId))
+      .where(
+        and(
+          eq(users.role, 'artist-manager'),
+          fullName ? ilike(profiles.name, `%${fullName}%`) : undefined,
+          fullName ? ilike(profiles.surname, `%${fullName}%`) : undefined,
+          email ? ilike(users.email, `%${email}%`) : undefined,
+          phone ? ilike(profiles.phone, `%${phone}%`) : undefined,
+          company ? ilike(profiles.company, `%${company}%`) : undefined
+        )
+      );
 
     const totalPages = Math.ceil(Number(userCount) / limit);
 
     return {
-      data: usersResult,
+      data: mergedResult,
       totalPages,
       currentPage: currentPage,
     };

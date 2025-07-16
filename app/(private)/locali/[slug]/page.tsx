@@ -9,7 +9,7 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import BillingDataTab from '../../_components/Tabs/BillingDataTab';
 import { getVenueManagers } from '@/lib/data/venue-managers/get-venue-managers';
 import { getVenue } from '@/lib/data/venues/get-venue';
-import VenueTypeBadge from '../_components/VenueTypeBadge';
+import VenueTypeBadge from '../../_components/VenueTypeBadge';
 import UserBadge from '../../_components/UserBadge';
 import SocialDataTab from '../../_components/Tabs/SocialDataTab';
 import ToggleVenueBlockButton from './_components/ToggleVenueBlockButton';

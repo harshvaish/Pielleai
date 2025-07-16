@@ -10,13 +10,14 @@ import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { getLanguages } from '@/lib/data/get-languages';
 import { getCountries } from '@/lib/data/get-countries';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import PersonalDataTab from './_components/Tabs/PersonalDataTab';
 import StatusBadge from '../../_components/StatusBadge';
 import NotesSection from '../../_components/Notes/NotesSection';
 import { getVenueManager } from '@/lib/data/venue-managers/get-venue-manager';
 import ToggleBlockButton from '../../_components/ToggleBlockButton';
 import EditVenueManagerButton from './_components/EditProfile/EditVenueManagerButton';
+import ManagedVenuesTab from './_components/Tabs/ManagedVenuesTab';
 
 export default async function VenueManagerDetailPage({
   params,
@@ -141,7 +142,7 @@ export default async function VenueManagerDetailPage({
         />
       </div>
 
-      <Tabs defaultValue='personal-data'>
+      <Tabs defaultValue='managed-venues'>
         <div className='flex justify-between items-center mb-6'>
           <span className='text-xl font-semibold'>Dettagli</span>
           <TabsList className='gap-4 bg-white p-1 rounded-xl'>
@@ -150,9 +151,10 @@ export default async function VenueManagerDetailPage({
           </TabsList>
         </div>
 
-        <TabsContent value='managed-venues'>
-          Change your password here.
-        </TabsContent>
+        <ManagedVenuesTab
+          tabValue='managed-venues'
+          data={userData}
+        />
         <PersonalDataTab
           tabValue='personal-data'
           userData={userData}

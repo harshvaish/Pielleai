@@ -59,7 +59,7 @@ export type ProfileNote = {
   createdAt: string;
 };
 /* ------------------------------------------------- */
-export type ArtistManagerData = {
+export type ArtistManagerData<T = ArtistListData | ArtistSelectData> = {
   id: string;
   profileId: number;
   status: UserStatus;
@@ -79,6 +79,9 @@ export type ArtistManagerData = {
   city: string;
   zipCode: string;
   gender: Gender;
+
+  artists: T[];
+
   company: string;
   taxCode: string;
   ipiCode: string;
@@ -109,12 +112,27 @@ export type ArtistManagerTableData = Pick<
   | 'phone'
   | 'email'
   | 'company'
+  | 'artists'
 >;
 
 export type ArtistManagerSelectData = Pick<
   ArtistManagerData,
-  'id' | 'profileId' | 'avatarUrl' | 'name' | 'surname'
+  'id' | 'profileId' | 'avatarUrl' | 'name' | 'surname' | 'status'
 >;
+
+export type ArtistManagersTableFilters = {
+  page?: string;
+  currentPage?: number;
+  limit?: number;
+
+  showFilters?: string;
+
+  fullName?: string;
+  email?: string;
+  phone?: string;
+  artist?: string;
+  company?: string;
+};
 
 /* ------------------------------------------------- */
 
@@ -202,19 +220,45 @@ export type ArtistTableData = Pick<
   | 'managers'
 >;
 
+export type ArtistListData = Pick<
+  ArtistData,
+  | 'id'
+  | 'slug'
+  | 'status'
+  | 'avatarUrl'
+  | 'name'
+  | 'surname'
+  | 'stageName'
+  | 'phone'
+  | 'email'
+  | 'tourManagerEmail'
+  | 'tourManagerName'
+  | 'tourManagerSurname'
+  | 'tourManagerPhone'
+>;
+
+export type ArtistSelectData = Pick<
+  ArtistData,
+  'id' | 'slug' | 'status' | 'avatarUrl' | 'name' | 'surname' | 'stageName'
+>;
+
 /* ------------------------------------------------- */
-export type VenueManagerData = {
+export type VenueManagerData<T = VenueTableData | VenueListData> = {
   id: string;
   profileId: number;
   status: UserStatus;
   createdAt: Date;
   updatedAt: Date;
+
   avatarUrl: string;
   name: string;
   surname: string;
   phone: string;
   email: string;
   languages: Language[];
+
+  venues: T[];
+
   birthDate: string;
   birthPlace: string;
   address: string;
@@ -313,6 +357,20 @@ export type VenueTableData = Pick<
   | 'taxCode'
   | 'address'
   | 'manager'
+  | 'type'
+  | 'capacity'
+>;
+
+export type VenueListData = Pick<
+  VenueData,
+  | 'id'
+  | 'slug'
+  | 'status'
+  | 'avatarUrl'
+  | 'name'
+  | 'company'
+  | 'taxCode'
+  | 'address'
   | 'type'
   | 'capacity'
 >;

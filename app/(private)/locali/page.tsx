@@ -12,10 +12,11 @@ import { TablePagination } from '../_components/TablePagination';
 import ToggleFiltersButton from '../_components/ToggleFiltersButton';
 import UserBadge from '../_components/UserBadge';
 import FilterInput from '../_components/FilterInput';
-import ArtistManagersBadge from './_components/ArtistManagersBadge';
 import { getVenueManagers } from '@/lib/data/venue-managers/get-venue-managers';
 import CreateVenueButton from './_components/CreateVenueButton';
 import { getPaginatedVenues } from '@/lib/data/venues/get-paginated-venues';
+import ManagersBadge from '../_components/ManagersBadge';
+import VenueTypeBadge from '../_components/VenueTypeBadge';
 
 export default async function VenuesPage({
   searchParams,
@@ -62,66 +63,69 @@ export default async function VenuesPage({
       </div>
       {/* venues table section */}
       {venues.length > 0 ? (
-        <section className='bg-white overflow-auto rounded-2xl border group-has-[[data-pending]]:animate-pulse'>
-          <Table className='w-full'>
-            <TableHeader className='bg-zinc-50'>
-              <TableRow>
-                <TableHead>
-                  <div>Nome</div>
-                  {showFilters && (
-                    <FilterInput
-                      paramKey='name'
-                      defaultValue={filters.name}
+        <Table className='w-full'>
+          <TableHeader className='bg-zinc-50'>
+            <TableRow>
+              <TableHead>
+                <div>Nome</div>
+                {showFilters && (
+                  <FilterInput
+                    paramKey='name'
+                    defaultValue={filters.name}
+                  />
+                )}
+              </TableHead>
+              <TableHead>
+                <div>Ragione sociale</div>
+              </TableHead>
+              <TableHead>
+                <div>Partita IVA</div>
+              </TableHead>
+              <TableHead>Indirizzo</TableHead>
+              <TableHead>Tipologia</TableHead>
+              <TableHead>Promoter</TableHead>
+              <TableHead>Capienza</TableHead>
+            </TableRow>
+          </TableHeader>
+
+          <TableBody>
+            {venues.map((venue, index) => {
+              const isDisabled = venue.status === 'disabled';
+
+              return (
+                <TableRow
+                  key={index}
+                  className={isDisabled ? 'text-zinc-400' : ''}
+                >
+                  <TableCell>
+                    <div className='flex items-center flex-nowrap gap-3'>
+                      <UserBadge
+                        name={venue.name}
+                        surname={''}
+                        avatarUrl={venue.avatarUrl}
+                        isDisabled={isDisabled}
+                        href={`/locali/${venue.slug}`}
+                      />
+                    </div>
+                  </TableCell>
+                  <TableCell>{venue.company}</TableCell>
+                  <TableCell>{venue.taxCode}</TableCell>
+                  <TableCell>{venue.address}</TableCell>
+                  <TableCell>
+                    <VenueTypeBadge type={venue.type} />
+                  </TableCell>
+                  <TableCell>
+                    <ManagersBadge
+                      managers={[venue.manager]}
+                      pathSegment='promoter-locali'
                     />
-                  )}
-                </TableHead>
-                <TableHead>
-                  <div>Ragione sociale</div>
-                </TableHead>
-                <TableHead>
-                  <div>Partita IVA</div>
-                </TableHead>
-                <TableHead>Indirizzo</TableHead>
-                <TableHead>Tipologia</TableHead>
-                <TableHead>Promoter</TableHead>
-                <TableHead>Capienza</TableHead>
-              </TableRow>
-            </TableHeader>
-
-            <TableBody>
-              {venues.map((venue, index) => {
-                const isDisabled = venue.status === 'disabled';
-
-                return (
-                  <TableRow
-                    key={index}
-                    className={isDisabled ? 'text-zinc-400' : ''}
-                  >
-                    <TableCell>
-                      <div className='flex items-center flex-nowrap gap-3'>
-                        <UserBadge
-                          name={venue.name}
-                          surname={''}
-                          avatarUrl={venue.avatarUrl}
-                          isDisabled={isDisabled}
-                          href={`/locali/${venue.slug}`}
-                        />
-                      </div>
-                    </TableCell>
-                    <TableCell>{venue.company}</TableCell>
-                    <TableCell>{venue.taxCode}</TableCell>
-                    <TableCell>{venue.address}</TableCell>
-                    <TableCell>{venue.type}</TableCell>
-                    <TableCell>
-                      <ArtistManagersBadge managers={[venue.manager]} />
-                    </TableCell>
-                    <TableCell>{venue.capacity}</TableCell>
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
-        </section>
+                  </TableCell>
+                  <TableCell>{venue.capacity}</TableCell>
+                </TableRow>
+              );
+            })}
+          </TableBody>
+        </Table>
       ) : (
         <section className='max-h-80 flex flex-col justify-center items-center bg-white rounded-2xl p-8'>
           <h2 className='text-base font-bold'>Nessun locale</h2>

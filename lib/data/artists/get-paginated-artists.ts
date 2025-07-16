@@ -8,6 +8,7 @@ import {
   zones,
   managerArtists,
   profiles,
+  users,
 } from '@/lib/database/schema';
 import { ArtistTableData, ArtistManagerSelectData, Zone } from '@/lib/types';
 import { and, count, eq, ilike, inArray } from 'drizzle-orm';
@@ -81,9 +82,11 @@ export async function getPaginatedArtists({
           avatarUrl: profiles.avatarUrl,
           name: profiles.name,
           surname: profiles.surname,
+          status: users.status,
         })
         .from(managerArtists)
         .innerJoin(profiles, eq(managerArtists.managerProfileId, profiles.id))
+        .innerJoin(users, eq(profiles.userId, users.id))
         .where(inArray(managerArtists.artistId, artistIds)),
     ]);
 
@@ -100,6 +103,7 @@ export async function getPaginatedArtists({
         avatarUrl: row.avatarUrl,
         name: row.name,
         surname: row.surname,
+        status: row.status,
       });
     }
 

@@ -1,9 +1,9 @@
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
 import { TabsContent } from '@/components/ui/tabs';
 import { ArtistData } from '@/lib/types';
 import ZonesBadge from '../../../_components/ZonesBadge';
-import ArtistManagersBadge from '../../../_components/ArtistManagersBadge';
+import ArtistManagersBadge from '../../../../_components/ManagersBadge';
+import TourManagerBadge from '@/app/(private)/_components/TourManagerBadge';
 
 export default function PersonalDataTab({
   tabValue,
@@ -81,28 +81,19 @@ export default function PersonalDataTab({
       <div className='bg-white py-8 px-6 rounded-2xl'>
         {/* managers */}
         <div className='text-xl font-semibold mb-6'>Manager</div>
-        <ArtistManagersBadge managers={userData.managers} />
+        <ArtistManagersBadge
+          managers={userData.managers}
+          pathSegment='manager-artisti'
+        />
         <Separator className='my-6' />
         {/* tourn manager */}
         <div className='text-xl font-semibold mb-6'>Tour manager</div>
-        <div className='flex items-center gap-4 bg-zinc-50 p-2 rounded-sm'>
-          <Avatar>
-            <AvatarFallback className='font-semibold text-white bg-zinc-700'>
-              {userData.tourManagerName.substring(0, 1)}
-            </AvatarFallback>
-          </Avatar>
-          <div>
-            <div className='text-zinc-700 font-semibold'>
-              {userData.tourManagerName} {userData.tourManagerSurname}
-            </div>
-            <div className='text-xs text-zinc-600 font-medium'>
-              {userData.tourManagerEmail}
-            </div>
-            <div className='text-xs text-zinc-600 font-medium'>
-              {userData.tourManagerPhone}
-            </div>
-          </div>
-        </div>
+        <TourManagerBadge
+          email={userData.tourManagerEmail}
+          name={userData.tourManagerName}
+          surname={userData.tourManagerSurname}
+          phone={userData.tourManagerPhone}
+        />
         <Separator className='my-6' />
         {/* zones */}
         <div className='text-xl font-semibold mb-6'>Aree di interesse</div>
