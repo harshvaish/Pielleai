@@ -3,7 +3,7 @@
 import { PAGINATED_TABLE_ROWS_X_PAGE } from '@/lib/constants';
 import { database } from '@/lib/database/connection';
 import { profiles, users } from '@/lib/database/schema';
-import { ArtistManagerTableData } from '@/lib/types';
+import { VenueManagerTableData } from '@/lib/types';
 import { and, count, eq, ilike } from 'drizzle-orm';
 
 export async function getPaginatedVenueManagers({
@@ -11,7 +11,7 @@ export async function getPaginatedVenueManagers({
   fullName,
   email,
   phone,
-  // venues,
+  // venue,
   company,
   limit = PAGINATED_TABLE_ROWS_X_PAGE,
 }: {
@@ -19,11 +19,11 @@ export async function getPaginatedVenueManagers({
   fullName: string;
   email: string;
   phone: string;
-  // venues: string;
+  // venue: string;
   company: string;
   limit?: number;
 }): Promise<{
-  data: ArtistManagerTableData[];
+  data: VenueManagerTableData[];
   totalPages: number;
   currentPage: number;
 }> {
@@ -42,7 +42,6 @@ export async function getPaginatedVenueManagers({
         surname: profiles.surname,
         phone: profiles.phone,
         email: users.email,
-        company: profiles.company,
       })
       .from(users)
       .innerJoin(profiles, eq(users.id, profiles.userId))

@@ -280,7 +280,6 @@ export type VenueManagerTableData = Pick<
   | 'surname'
   | 'phone'
   | 'email'
-  | 'company'
 >;
 
 export type VenueManagerSelectData = Pick<

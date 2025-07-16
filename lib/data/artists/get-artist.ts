@@ -1,5 +1,6 @@
 'use server';
 
+import { users } from '@/drizzle/schema';
 import { database } from '@/lib/database/connection';
 import {
   artistLanguages,
@@ -154,9 +155,11 @@ export async function getArtist(slug: string): Promise<ArtistData | null> {
           avatarUrl: profiles.avatarUrl,
           name: profiles.name,
           surname: profiles.surname,
+          status: users.status,
         })
         .from(managerArtists)
         .innerJoin(profiles, eq(managerArtists.managerProfileId, profiles.id))
+        .innerJoin(users, eq(profiles.userId, users.id))
         .where(eq(managerArtists.artistId, user.artistId)),
     ]);
 

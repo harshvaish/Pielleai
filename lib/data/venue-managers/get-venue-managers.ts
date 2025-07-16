@@ -10,6 +10,7 @@ export async function getVenueManagers(): Promise<VenueManagerSelectData[]> {
     const results = await database
       .select({
         id: users.id,
+        status: users.status,
         profileId: profiles.id,
         avatarUrl: profiles.avatarUrl,
         name: profiles.name,

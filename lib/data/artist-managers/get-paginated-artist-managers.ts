@@ -32,6 +32,7 @@ export async function getPaginatedArtistManagers({
   totalPages: number;
   currentPage: number;
 }> {
+  console.log(artist);
   const offset = (currentPage - 1) * limit;
 
   try {
