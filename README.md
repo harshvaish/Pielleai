@@ -19,4 +19,7 @@
 
 TBD
 
-- filtro artisti su manager artisti table
+- come funzionano disponibilità artista?
+- filtri non stringa come funzionano? (artisti su manager artisti table)
+- un entità disattivata su admin cosa significa? posso editarla, assegnarci nuovi artisti/locali etc?
+- al momento è cancellabile solo un locale, tutte le altre entità sono disattivabili

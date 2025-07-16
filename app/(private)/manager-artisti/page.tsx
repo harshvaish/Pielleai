@@ -12,12 +12,12 @@ import { getLanguages } from '@/lib/data/get-languages';
 import { getCountries } from '@/lib/data/get-countries';
 import { notFound } from 'next/navigation';
 import { TablePagination } from '../_components/TablePagination';
-import UserBadge from '../_components/UserBadge';
-import StatusBadge from '../_components/StatusBadge';
+import UserBadge from '../_components/Badges/UserBadge';
+import StatusBadge from '../_components/Badges/StatusBadge';
 import { NEW_USER_TIME } from '@/lib/constants';
 import ToggleFiltersButton from '../_components/ToggleFiltersButton';
 import FilterInput from '../_components/FilterInput';
-import ArtistsBadge from './_components/ArtistsBadge';
+import ArtistsBadge from '../_components/Badges/ArtistsBadge';
 
 export default async function ArtistManagersPage({
   searchParams,

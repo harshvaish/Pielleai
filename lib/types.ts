@@ -243,7 +243,9 @@ export type ArtistSelectData = Pick<
 >;
 
 /* ------------------------------------------------- */
-export type VenueManagerData<T = VenueTableData | VenueListData> = {
+export type VenueManagerData<
+  T = VenueTableData | VenueListData | VenueBadgeData,
+> = {
   id: string;
   profileId: number;
   status: UserStatus;
@@ -270,7 +272,7 @@ export type VenueManagerData<T = VenueTableData | VenueListData> = {
 };
 
 export type VenueManagerTableData = Pick<
-  ArtistManagerData,
+  VenueManagerData,
   | 'id'
   | 'profileId'
   | 'status'
@@ -280,10 +282,11 @@ export type VenueManagerTableData = Pick<
   | 'surname'
   | 'phone'
   | 'email'
+  | 'venues'
 >;
 
 export type VenueManagerSelectData = Pick<
-  ArtistManagerData,
+  VenueManagerData,
   'id' | 'profileId' | 'avatarUrl' | 'name' | 'surname' | 'status'
 >;
 /* ------------------------------------------------- */
@@ -372,4 +375,9 @@ export type VenueListData = Pick<
   | 'address'
   | 'type'
   | 'capacity'
+>;
+
+export type VenueBadgeData = Pick<
+  VenueData,
+  'id' | 'slug' | 'status' | 'avatarUrl' | 'name'
 >;

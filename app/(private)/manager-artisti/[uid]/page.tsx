@@ -15,7 +15,7 @@ import { getCountries } from '@/lib/data/get-countries';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import PersonalDataTab from './_components/Tabs/PersonalDataTab';
 import BillingDataTab from '../../_components/Tabs/BillingDataTab';
-import StatusBadge from '../../_components/StatusBadge';
+import StatusBadge from '../../_components/Badges/StatusBadge';
 import NotesSection from '../../_components/Notes/NotesSection';
 import ToggleBlockButton from '../../_components/ToggleBlockButton';
 import ManagedArtistsTab from './_components/Tabs/ManagedArtistsTab';

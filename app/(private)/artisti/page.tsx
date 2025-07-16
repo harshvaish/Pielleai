@@ -12,15 +12,15 @@ import { notFound } from 'next/navigation';
 import { NEW_USER_TIME } from '@/lib/constants';
 import { TablePagination } from '../_components/TablePagination';
 import ToggleFiltersButton from '../_components/ToggleFiltersButton';
-import UserBadge from '../_components/UserBadge';
-import StatusBadge from '../_components/StatusBadge';
+import UserBadge from '../_components/Badges/UserBadge';
+import StatusBadge from '../_components/Badges/StatusBadge';
 import FilterInput from '../_components/FilterInput';
 import { getPaginatedArtists } from '@/lib/data/artists/get-paginated-artists';
 import CreateArtistButton from './_components/CreateArtistButton';
 import { getZones } from '@/lib/data/artists/get-zones';
 import { getArtistManagers } from '@/lib/data/artist-managers/get-artist-managers';
-import ZonesBadge from './_components/ZonesBadge';
-import ManagersBadge from '../_components/ManagersBadge';
+import ZonesBadge from '../_components/Badges/ZonesBadge';
+import ManagersBadge from '../_components/Badges/ManagersBadge';
 
 export default async function ArtistsPage({
   searchParams,

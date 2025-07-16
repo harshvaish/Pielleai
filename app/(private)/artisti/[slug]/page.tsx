@@ -12,7 +12,7 @@ import { getLanguages } from '@/lib/data/get-languages';
 import { getCountries } from '@/lib/data/get-countries';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import PersonalDataTab from './_components/Tabs/PersonalDataTab';
-import StatusBadge from '../../_components/StatusBadge';
+import StatusBadge from '../../_components/Badges/StatusBadge';
 import { getArtist } from '@/lib/data/artists/get-artist';
 import { getArtistNotes } from '@/lib/data/notes/get-artist-notes';
 import BillingDataTab from '../../_components/Tabs/BillingDataTab';

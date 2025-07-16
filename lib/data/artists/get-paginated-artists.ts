@@ -63,7 +63,7 @@ export async function getPaginatedArtists({
 
     const artistIds = artistsResult.map((a) => a.id);
 
-    const [zonesResult, managersResult] = await Promise.all([
+    const [zonesResult, managersResult, [{ userCount }]] = await Promise.all([
       database
         .select({
           artistId: artistZones.artistId,
@@ -88,6 +88,17 @@ export async function getPaginatedArtists({
         .innerJoin(profiles, eq(managerArtists.managerProfileId, profiles.id))
         .innerJoin(users, eq(profiles.userId, users.id))
         .where(inArray(managerArtists.artistId, artistIds)),
+
+      database
+        .select({ userCount: count() })
+        .from(artists)
+        .where(
+          and(
+            fullName ? ilike(artists.name, `%${fullName}%`) : undefined,
+            email ? ilike(artists.email, `%${email}%`) : undefined,
+            phone ? ilike(artists.phone, `%${phone}%`) : undefined
+          )
+        ),
     ]);
 
     // Group managers by artistId
@@ -126,18 +137,6 @@ export async function getPaginatedArtists({
       zones: zonesByArtist[artist.id] || [],
       managers: managersByArtist[artist.id] || [],
     }));
-
-    // Get total count
-    const [{ userCount }] = await database
-      .select({ userCount: count() })
-      .from(artists)
-      .where(
-        and(
-          fullName ? ilike(artists.name, `%${fullName}%`) : undefined,
-          email ? ilike(artists.email, `%${email}%`) : undefined,
-          phone ? ilike(artists.phone, `%${phone}%`) : undefined
-        )
-      );
 
     const totalPages = Math.ceil(Number(userCount) / limit);
 

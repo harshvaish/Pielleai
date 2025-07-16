@@ -1,9 +1,9 @@
 import { Separator } from '@/components/ui/separator';
 import { TabsContent } from '@/components/ui/tabs';
 import { ArtistData } from '@/lib/types';
-import ZonesBadge from '../../../_components/ZonesBadge';
-import ArtistManagersBadge from '../../../../_components/ManagersBadge';
-import TourManagerBadge from '@/app/(private)/_components/TourManagerBadge';
+import ZonesBadge from '../../../../_components/Badges/ZonesBadge';
+import TourManagerBadge from '@/app/(private)/_components/Badges/TourManagerBadge';
+import ManagersBadge from '@/app/(private)/_components/Badges/ManagersBadge';
 
 export default function PersonalDataTab({
   tabValue,
@@ -81,7 +81,7 @@ export default function PersonalDataTab({
       <div className='bg-white py-8 px-6 rounded-2xl'>
         {/* managers */}
         <div className='text-xl font-semibold mb-6'>Manager</div>
-        <ArtistManagersBadge
+        <ManagersBadge
           managers={userData.managers}
           pathSegment='manager-artisti'
         />

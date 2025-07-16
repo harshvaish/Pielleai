@@ -1,5 +1,5 @@
-import UserBadge from '@/app/(private)/_components/UserBadge';
-import VenueTypeBadge from '@/app/(private)/_components/VenueTypeBadge';
+import UserBadge from '@/app/(private)/_components/Badges/UserBadge';
+import VenueTypeBadge from '@/app/(private)/_components/Badges/VenueTypeBadge';
 import {
   Table,
   TableBody,
@@ -9,7 +9,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { TabsContent } from '@/components/ui/tabs';
-import { VenueManagerData } from '@/lib/types';
+import { VenueListData, VenueManagerData } from '@/lib/types';
 import RemoveManagedVenueButton from '../RemoveManagedVenueButton';
 
 export default function ManagedVenuesTab({
@@ -17,7 +17,7 @@ export default function ManagedVenuesTab({
   data,
 }: {
   tabValue: string;
-  data: VenueManagerData;
+  data: VenueManagerData<VenueListData>;
 }) {
   const { venues } = data;
   return (

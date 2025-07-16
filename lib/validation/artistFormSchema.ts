@@ -106,7 +106,7 @@ export const artistS1FormSchema = z.object({
 
   city: z
     .string('Campo malformato.')
-    .min(5, 'Minimo 5 caratteri.')
+    .min(2, 'Minimo 2 caratteri.')
     .max(100, 'Massimo 100 caratteri.')
     .regex(
       /^[\p{L}\s'-]+$/u,
@@ -259,7 +259,7 @@ export const artistS2FormSchema = z
 
     billingCity: z
       .string('Campo malformato.')
-      .min(5, 'Minimo 5 caratteri.')
+      .min(2, 'Minimo 2 caratteri.')
       .max(100, 'Massimo 100 caratteri.')
       .regex(
         /^[\p{L}\s'-]+$/u,

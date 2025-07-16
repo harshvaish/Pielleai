@@ -67,20 +67,37 @@ export async function getPaginatedArtistManagers({
 
     const managerProfilesIds = managersResult.map((m) => m.profileId);
 
-    const artistsResult = await database
-      .select({
-        managerId: managerArtists.managerProfileId,
-        id: artists.id,
-        status: artists.status,
-        slug: artists.slug,
-        avatarUrl: artists.avatarUrl,
-        name: artists.name,
-        surname: artists.surname,
-        stageName: artists.stageName,
-      })
-      .from(managerArtists)
-      .innerJoin(artists, eq(managerArtists.artistId, artists.id))
-      .where(inArray(managerArtists.managerProfileId, managerProfilesIds));
+    const [artistsResult, [{ userCount }]] = await Promise.all([
+      database
+        .select({
+          managerId: managerArtists.managerProfileId,
+          id: artists.id,
+          status: artists.status,
+          slug: artists.slug,
+          avatarUrl: artists.avatarUrl,
+          name: artists.name,
+          surname: artists.surname,
+          stageName: artists.stageName,
+        })
+        .from(managerArtists)
+        .innerJoin(artists, eq(managerArtists.artistId, artists.id))
+        .where(inArray(managerArtists.managerProfileId, managerProfilesIds)),
+
+      database
+        .select({ userCount: count() })
+        .from(users)
+        .innerJoin(profiles, eq(users.id, profiles.userId))
+        .where(
+          and(
+            eq(users.role, 'artist-manager'),
+            fullName ? ilike(profiles.name, `%${fullName}%`) : undefined,
+            fullName ? ilike(profiles.surname, `%${fullName}%`) : undefined,
+            email ? ilike(users.email, `%${email}%`) : undefined,
+            phone ? ilike(profiles.phone, `%${phone}%`) : undefined,
+            company ? ilike(profiles.company, `%${company}%`) : undefined
+          )
+        ),
+    ]);
 
     // Group artists by managerProfileId
     const artistsByManager: Record<number, ArtistSelectData[]> = {};
@@ -106,22 +123,6 @@ export async function getPaginatedArtistManagers({
       artists: artistsByManager[manager.profileId] || [],
       company: manager.company ?? '',
     }));
-
-    // Get total count
-    const [{ userCount }] = await database
-      .select({ userCount: count() })
-      .from(users)
-      .innerJoin(profiles, eq(users.id, profiles.userId))
-      .where(
-        and(
-          eq(users.role, 'artist-manager'),
-          fullName ? ilike(profiles.name, `%${fullName}%`) : undefined,
-          fullName ? ilike(profiles.surname, `%${fullName}%`) : undefined,
-          email ? ilike(users.email, `%${email}%`) : undefined,
-          phone ? ilike(profiles.phone, `%${phone}%`) : undefined,
-          company ? ilike(profiles.company, `%${company}%`) : undefined
-        )
-      );
 
     const totalPages = Math.ceil(Number(userCount) / limit);
 

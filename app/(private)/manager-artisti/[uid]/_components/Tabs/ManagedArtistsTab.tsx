@@ -1,5 +1,5 @@
-import TourManagerBadge from '@/app/(private)/_components/TourManagerBadge';
-import UserBadge from '@/app/(private)/_components/UserBadge';
+import TourManagerBadge from '@/app/(private)/_components/Badges/TourManagerBadge';
+import UserBadge from '@/app/(private)/_components/Badges/UserBadge';
 import {
   Table,
   TableBody,

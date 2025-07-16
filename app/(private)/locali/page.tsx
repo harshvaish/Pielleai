@@ -10,13 +10,13 @@ import { getCountries } from '@/lib/data/get-countries';
 import { notFound } from 'next/navigation';
 import { TablePagination } from '../_components/TablePagination';
 import ToggleFiltersButton from '../_components/ToggleFiltersButton';
-import UserBadge from '../_components/UserBadge';
+import UserBadge from '../_components/Badges/UserBadge';
 import FilterInput from '../_components/FilterInput';
 import { getVenueManagers } from '@/lib/data/venue-managers/get-venue-managers';
 import CreateVenueButton from './_components/CreateVenueButton';
 import { getPaginatedVenues } from '@/lib/data/venues/get-paginated-venues';
-import ManagersBadge from '../_components/ManagersBadge';
-import VenueTypeBadge from '../_components/VenueTypeBadge';
+import ManagersBadge from '../_components/Badges/ManagersBadge';
+import VenueTypeBadge from '../_components/Badges/VenueTypeBadge';
 
 export default async function VenuesPage({
   searchParams,

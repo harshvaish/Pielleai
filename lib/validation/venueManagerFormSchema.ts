@@ -100,7 +100,7 @@ export const venueManagerS1FormSchema = z.object({
 
   city: z
     .string('Campo malformato.')
-    .min(5, 'Minimo 5 caratteri.')
+    .min(2, 'Minimo 2 caratteri.')
     .max(100, 'Massimo 100 caratteri.')
     .regex(
       /^[\p{L}\s'-]+$/u,
