@@ -10,18 +10,18 @@ export async function GET(request: NextRequest) {
 
   if (!countryIdParam || isNaN(countryId)) {
     return NextResponse.json(
-      { error: 'Stato mancante o non valido' },
+      { error: 'Stato mancante o non valido.' },
       { status: 400 }
     );
   }
 
   try {
     const subdivisions = await getCountrySubdivisions(countryId);
-    return NextResponse.json({ subdivisions });
+    return NextResponse.json({ subdivisions }, { status: 200 });
   } catch (error) {
     console.error('Errore nel recupero delle province:', error);
     return NextResponse.json(
-      { error: 'Recupero delle province non riuscito' },
+      { error: 'Recupero delle province non riuscito.' },
       { status: 500 }
     );
   }

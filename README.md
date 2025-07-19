@@ -16,10 +16,6 @@
 - artist social data batch of 4 or nothing
 - create subfolders for upload based on entity
 - check server actions structure: auth - validation - action
-
-TBD
-
-- come funzionano disponibilità artista?
-- filtri non stringa come funzionano? (artisti su manager artisti table)
-- un entità disattivata su admin cosa significa? posso editarla, assegnarci nuovi artisti/locali etc?
-- al momento è cancellabile solo un locale, tutte le altre entità sono disattivabili
+- upload image check, loading state, error messages
+- create indexes on database tables
+- check for timestamp in the db for timezone

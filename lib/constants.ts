@@ -73,3 +73,10 @@ export const NEW_USER_TIME = 1000 * 60 * 60 * 24 * 7; // 1 week
 
 export const VENUE_TYPES = ['small', 'medium', 'big'] as const;
 export type VenueType = (typeof VENUE_TYPES)[number];
+
+export const AVAILABILITY_STATUS = [
+  'available',
+  'booked',
+  'cancelled',
+] as const;
+export type AvailabilityStatus = (typeof AVAILABILITY_STATUS)[number];

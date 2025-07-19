@@ -1,15 +1,19 @@
 import { clsx, type ClassValue } from 'clsx';
 import { View } from 'react-big-calendar';
 import { twMerge } from 'tailwind-merge';
-import { format, startOfWeek, endOfWeek } from 'date-fns';
+import { format, startOfWeek, endOfWeek, isBefore, startOfDay } from 'date-fns';
 import { it } from 'date-fns/locale';
 import imageCompression from 'browser-image-compression';
+import { TimeRange } from './types';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
 export const fetcher = (url: string) => fetch(url).then((res) => res.json());
+
+export const areSame = (a: number[], b: number[]) =>
+  a.length === b.length && a.every((id) => b.includes(id));
 
 // CALENDAR --------------------------------------------------------
 export function buildCalendarLabel(date: Date, view: View): string {
@@ -176,5 +180,59 @@ export function getBetterAuthErrorMessage(code: string): string {
 }
 // BETTER AUTH --------------------------------------------------------
 
-export const areSame = (a: number[], b: number[]) =>
-  a.length === b.length && a.every((id) => b.includes(id));
+// AVAILABILITIES --------------------------------------------------------
+
+export function isOverlapping(
+  aStart: string,
+  aEnd: string,
+  bStart: string,
+  bEnd: string
+) {
+  return aStart < bEnd && bStart < aEnd;
+}
+
+export function checkTimeRanges(
+  date: string,
+  timeRanges: TimeRange[]
+):
+  | {
+      success: true;
+      message: null;
+    }
+  | {
+      success: false;
+      message: string;
+    } {
+  if (!date || isBefore(startOfDay(new Date(date)), startOfDay(new Date()))) {
+    return {
+      success: false,
+      message: 'Data selezionata non valida o scaduta.',
+    };
+  }
+
+  for (let i = 0; i < timeRanges.length; i++) {
+    const { startTime: startA, endTime: endA } = timeRanges[i];
+    if (!startA || !endA || startA >= endA) {
+      return {
+        success: false,
+        message: 'Correggi le disponibilità presenti per poter procedere.',
+      };
+    }
+
+    for (let j = i + 1; j < timeRanges.length; j++) {
+      const { startTime: startB, endTime: endB } = timeRanges[j];
+      if (isOverlapping(startA, endA, startB, endB)) {
+        return {
+          success: false,
+          message:
+            'Alcune disponibilità sono in conflitto di orario, rimuovi il conflitto per procedere.',
+        };
+      }
+    }
+  }
+  return {
+    success: true,
+    message: null,
+  };
+}
+// AVAILABILITIES --------------------------------------------------------

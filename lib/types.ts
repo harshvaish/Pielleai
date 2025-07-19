@@ -1,5 +1,5 @@
 import { Event } from 'react-big-calendar';
-import { Gender, UserStatus, VenueType } from './constants';
+import { AvailabilityStatus, Gender, UserStatus, VenueType } from './constants';
 
 export type ServerActionResponse<T = unknown> =
   | {
@@ -28,6 +28,11 @@ export interface CalendarEvent extends Event {
   artistManagerName: string;
   venueName: string;
   status: EventStatus;
+}
+
+export interface CalendarAvailability extends Event {
+  id: number;
+  status: AvailabilityStatus;
 }
 /* ------------------------------------------------- */
 export type Language = {
@@ -381,3 +386,20 @@ export type VenueBadgeData = Pick<
   VenueData,
   'id' | 'slug' | 'status' | 'avatarUrl' | 'name'
 >;
+
+/* ------------------------------------------------- */
+
+export type ArtistAvailability = {
+  id: number;
+  startDate: Date;
+  endDate: Date;
+  status: AvailabilityStatus;
+};
+
+export type Availability = Pick<ArtistAvailability, 'startDate' | 'endDate'>;
+
+export type TimeRange = {
+  startTime: string;
+  endTime: string;
+  status?: AvailabilityStatus;
+};

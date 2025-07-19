@@ -1,5 +1,5 @@
 import { Separator } from '@/components/ui/separator';
-import MyCalendar from '../_components/Calendar/Calendar';
+import Calendar from '../_components/Calendar/Calendar';
 import { CalendarEvent } from '@/lib/types';
 
 const mockEvents: CalendarEvent[] = [
@@ -137,7 +137,7 @@ export default async function Home() {
       </section>
       {/* calendar section */}
       <section className='bg-white p-4 rounded-2xl'>
-        <MyCalendar events={mockEvents} />
+        <Calendar events={mockEvents} />
       </section>
     </>
   );

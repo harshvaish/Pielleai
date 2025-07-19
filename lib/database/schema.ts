@@ -1,3 +1,4 @@
+import { sql } from 'drizzle-orm';
 import {
   pgTable,
   text,
@@ -12,7 +13,14 @@ import {
   primaryKey,
   pgEnum,
   uuid,
+  check,
 } from 'drizzle-orm/pg-core';
+
+export const availabilityStatus = pgEnum('availability_status', [
+  'available',
+  'booked',
+  'cancelled',
+]);
 
 export const genderEnum = pgEnum('gender_enum', [
   'maschile',
@@ -528,5 +536,31 @@ export const venues = pgTable(
       name: 'venues_subdivision_id_fkey',
     }).onDelete('restrict'),
     unique('venues_slug_key').on(table.slug),
+  ]
+);
+
+export const artistAvailabilities = pgTable(
+  'artist_availabilities',
+  {
+    id: serial().primaryKey().notNull(),
+    artistId: integer('artist_id').notNull(),
+    startDate: timestamp('start_date').notNull(),
+    endDate: timestamp('end_date').notNull(),
+    status: availabilityStatus().default('available').notNull(),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+    updatedAt: timestamp('updated_at').defaultNow().notNull(),
+  },
+  (table) => [
+    foreignKey({
+      columns: [table.artistId],
+      foreignColumns: [artists.id],
+      name: 'artist_availabilities_artist_id_fkey',
+    }).onDelete('cascade'),
+    unique('uq_artist_availability').on(
+      table.artistId,
+      table.startDate,
+      table.endDate
+    ),
+    check('chk_time_range', sql`start_date < end_date`),
   ]
 );

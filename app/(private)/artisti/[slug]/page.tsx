@@ -10,7 +10,7 @@ import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { getLanguages } from '@/lib/data/get-languages';
 import { getCountries } from '@/lib/data/get-countries';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import PersonalDataTab from './_components/Tabs/PersonalDataTab';
 import StatusBadge from '../../_components/Badges/StatusBadge';
 import { getArtist } from '@/lib/data/artists/get-artist';
@@ -21,6 +21,7 @@ import ToggleArtistBlockButton from './_components/ToggleArtistBlockButton';
 import { getZones } from '@/lib/data/artists/get-zones';
 import { getArtistManagers } from '@/lib/data/artist-managers/get-artist-managers';
 import EditArtistButton from './_components/EditProfile/EditArtistButton';
+import AvailabilitiesTab from './_components/Tabs/AvailabilitiesTab';
 
 export default async function ArtistDetailPage({
   params,
@@ -173,9 +174,6 @@ export default async function ArtistDetailPage({
           </TabsList>
         </div>
 
-        <TabsContent value='managed-artists'>
-          Change your password here.
-        </TabsContent>
         <PersonalDataTab
           tabValue='personal-data'
           userData={userData}
@@ -184,6 +182,7 @@ export default async function ArtistDetailPage({
           tabValue='billing-data'
           data={userData}
         />
+        <AvailabilitiesTab tabValue='availabilities' />
         <SocialDataTab
           tabValue='social-data'
           data={userData}

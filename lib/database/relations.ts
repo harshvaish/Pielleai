@@ -1,10 +1,11 @@
 import { relations } from 'drizzle-orm/relations';
 import {
+  artists,
+  artistAvailabilities,
   users,
   sessions,
   accounts,
   countries,
-  artists,
   subdivisions,
   profiles,
   profileNotes,
@@ -18,29 +19,18 @@ import {
   profileLanguages,
 } from './schema';
 
-export const sessionsRelations = relations(sessions, ({ one }) => ({
-  user: one(users, {
-    fields: [sessions.userId],
-    references: [users.id],
-  }),
-}));
-
-export const usersRelations = relations(users, ({ many }) => ({
-  sessions: many(sessions),
-  accounts: many(accounts),
-  profiles: many(profiles),
-  profileNotes: many(profileNotes),
-  artistNotes: many(artistNotes),
-}));
-
-export const accountsRelations = relations(accounts, ({ one }) => ({
-  user: one(users, {
-    fields: [accounts.userId],
-    references: [users.id],
-  }),
-}));
+export const artistAvailabilitiesRelations = relations(
+  artistAvailabilities,
+  ({ one }) => ({
+    artist: one(artists, {
+      fields: [artistAvailabilities.artistId],
+      references: [artists.id],
+    }),
+  })
+);
 
 export const artistsRelations = relations(artists, ({ one, many }) => ({
+  artistAvailabilities: many(artistAvailabilities),
   country_billingCountryId: one(countries, {
     fields: [artists.billingCountryId],
     references: [countries.id],
@@ -65,6 +55,28 @@ export const artistsRelations = relations(artists, ({ one, many }) => ({
   artistZones: many(artistZones),
   managerArtists: many(managerArtists),
   artistLanguages: many(artistLanguages),
+}));
+
+export const sessionsRelations = relations(sessions, ({ one }) => ({
+  user: one(users, {
+    fields: [sessions.userId],
+    references: [users.id],
+  }),
+}));
+
+export const usersRelations = relations(users, ({ many }) => ({
+  sessions: many(sessions),
+  accounts: many(accounts),
+  profiles: many(profiles),
+  profileNotes: many(profileNotes),
+  artistNotes: many(artistNotes),
+}));
+
+export const accountsRelations = relations(accounts, ({ one }) => ({
+  user: one(users, {
+    fields: [accounts.userId],
+    references: [users.id],
+  }),
 }));
 
 export const countriesRelations = relations(countries, ({ many }) => ({
