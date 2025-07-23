@@ -1,5 +1,11 @@
 import { Event } from 'react-big-calendar';
-import { AvailabilityStatus, Gender, UserStatus, VenueType } from './constants';
+import {
+  AvailabilityStatus,
+  EventStatus,
+  Gender,
+  UserStatus,
+  VenueType,
+} from './constants';
 
 export type ServerActionResponse<T = unknown> =
   | {
@@ -12,14 +18,6 @@ export type ServerActionResponse<T = unknown> =
       message: string;
       data: null;
     };
-
-/* ------------------------------------------------- */
-export type EventStatus =
-  | 'proposed'
-  | 'preconfirmed'
-  | 'confirmed'
-  | 'conflict'
-  | 'draft';
 
 /* ------------------------------------------------- */
 export interface CalendarEvent extends Event {
@@ -366,6 +364,11 @@ export type VenueTableData = Pick<
   | 'manager'
   | 'type'
   | 'capacity'
+>;
+
+export type VenueSelectData = Pick<
+  VenueData,
+  'id' | 'slug' | 'status' | 'avatarUrl' | 'name'
 >;
 
 export type VenueListData = Pick<

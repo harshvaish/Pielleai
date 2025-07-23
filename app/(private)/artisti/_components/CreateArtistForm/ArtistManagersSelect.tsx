@@ -10,7 +10,7 @@ import {
 } from '@/components/ui/select';
 import { X } from 'lucide-react';
 import { ArtistManagerSelectData } from '@/lib/types';
-import Image from 'next/image';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 type ArtistManagersSelectProps = {
   artistManagers: ArtistManagerSelectData[];
@@ -56,14 +56,12 @@ export default function ArtistManagersSelect({
               disabled={value.includes(manager.profileId)}
             >
               <div className='flex items-center gap-2 flex-nowrap'>
-                <Image
-                  src={manager.avatarUrl}
-                  alt='Immagine profilo utente'
-                  height={24}
-                  width={24}
-                  sizes='24px'
-                  className='w-6 h-6 rounded-full'
-                />
+                <Avatar className='w-6 h-6'>
+                  <AvatarImage src={manager.avatarUrl} />
+                  <AvatarFallback>
+                    {manager.name.substring(0, 1)}
+                  </AvatarFallback>
+                </Avatar>
                 {manager.name} {manager.surname}
               </div>
             </SelectItem>

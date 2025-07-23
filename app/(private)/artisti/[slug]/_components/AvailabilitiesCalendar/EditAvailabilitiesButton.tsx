@@ -20,12 +20,14 @@ import { format } from 'date-fns';
 import useSWR from 'swr';
 import { editArtistAvailabilities } from '@/lib/server-actions/artists/edit-artist-availabilities';
 import { checkTimeRanges, cn, fetcher } from '@/lib/utils';
-import { notFound, useParams } from 'next/navigation';
+import { notFound, useParams, useRouter } from 'next/navigation';
 import { it } from 'date-fns/locale';
 
 export function EditAvailabilitiesButton() {
   const { slug } = useParams();
   if (!slug && typeof slug != 'string') notFound();
+
+  const router = useRouter();
 
   const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
@@ -91,9 +93,10 @@ export function EditAvailabilitiesButton() {
       return;
     }
 
+    router.refresh();
     setIsSubmitting(false);
     setIsDialogOpen(false);
-    toast.success('Disponibilità aggiornate.');
+    toast.success('Disponibilità aggiornate!');
   };
 
   return (

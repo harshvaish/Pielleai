@@ -2,7 +2,7 @@ import { Badge } from '@/components/ui/badge';
 import { VenueType } from '@/lib/constants';
 import { cn } from '@/lib/utils';
 
-const typesUI: Record<
+const styles: Record<
   string,
   { label: string; text: string; bg: string; dot: string }
 > = {
@@ -33,7 +33,7 @@ const typesUI: Record<
 };
 
 export default function VenueTypeBadge({ type }: { type: VenueType }) {
-  const typeUI = typesUI[type] || typesUI['default'];
+  const style = styles[type] || styles['default'];
 
-  return <Badge className={cn(typeUI.text, typeUI.bg)}>{typeUI.label}</Badge>;
+  return <Badge className={cn(style.text, style.bg)}>{style.label}</Badge>;
 }

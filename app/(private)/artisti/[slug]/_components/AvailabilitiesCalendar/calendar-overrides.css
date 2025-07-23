@@ -106,3 +106,35 @@
 .bg-draft {
   background-color: var(--color-gray-600);
 }
+
+/* availabilities */
+.rbc-event.available {
+  background-color: var(--color-blue-600);
+
+  border: none;
+
+  opacity: 0.6;
+}
+
+.rbc-event.booked {
+  background-color: var(--color-zinc-600);
+
+  border: none;
+
+  opacity: 0.6;
+}
+
+.available {
+  background-color: var(--color-blue-600);
+  opacity: 0.6;
+}
+
+.booked {
+  background-color: var(--color-zinc-600);
+  opacity: 0.6;
+}
+
+.canceled {
+  background-color: var(--color-grey-600);
+  opacity: 0.6;
+}

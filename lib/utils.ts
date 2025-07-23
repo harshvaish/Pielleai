@@ -1,7 +1,18 @@
 import { clsx, type ClassValue } from 'clsx';
 import { View } from 'react-big-calendar';
 import { twMerge } from 'tailwind-merge';
-import { format, startOfWeek, endOfWeek, isBefore, startOfDay } from 'date-fns';
+import {
+  format,
+  startOfWeek,
+  endOfWeek,
+  isBefore,
+  startOfDay,
+  startOfISOWeek,
+  endOfISOWeek,
+  startOfMonth,
+  endOfMonth,
+  endOfDay,
+} from 'date-fns';
 import { it } from 'date-fns/locale';
 import imageCompression from 'browser-image-compression';
 import { TimeRange } from './types';
@@ -181,6 +192,24 @@ export function getBetterAuthErrorMessage(code: string): string {
 // BETTER AUTH --------------------------------------------------------
 
 // AVAILABILITIES --------------------------------------------------------
+export function calculateRange(
+  date: Date,
+  view: View
+): { start: Date; end: Date } {
+  switch (view) {
+    case 'day':
+      return { start: startOfDay(date), end: endOfDay(date) };
+    case 'week':
+      return {
+        start: startOfISOWeek(date),
+        end: endOfISOWeek(date),
+      };
+    case 'month':
+      return { start: startOfMonth(date), end: endOfMonth(date) };
+    default:
+      return { start: startOfDay(date), end: endOfDay(date) };
+  }
+}
 
 export function isOverlapping(
   aStart: string,

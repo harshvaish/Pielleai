@@ -80,3 +80,11 @@ export const AVAILABILITY_STATUS = [
   'cancelled',
 ] as const;
 export type AvailabilityStatus = (typeof AVAILABILITY_STATUS)[number];
+
+export const EVENTS_STATUS = [
+  'proposed',
+  'pre-confirmed',
+  'confirmed',
+  'rejected',
+] as const;
+export type EventStatus = (typeof EVENTS_STATUS)[number];

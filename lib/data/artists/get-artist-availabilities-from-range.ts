@@ -3,7 +3,7 @@
 import { database } from '@/lib/database/connection';
 import { artistAvailabilities, artists } from '@/lib/database/schema';
 import { ArtistAvailability } from '@/lib/types';
-import { and, eq, or, sql } from 'drizzle-orm';
+import { and, eq, sql } from 'drizzle-orm';
 
 export async function getArtistAvailabilitiesFromRange({
   artistSlug,
@@ -39,10 +39,8 @@ export async function getArtistAvailabilitiesFromRange({
       .where(
         and(
           eq(artistAvailabilities.artistId, artistId),
-          or(
-            sql`DATE(${artistAvailabilities.startDate}) <= ${startDate}::date`,
-            sql`DATE(${artistAvailabilities.endDate}) >= ${endDate}::date`
-          )
+          sql`DATE(${artistAvailabilities.startDate}) <= ${endDate}::date`,
+          sql`DATE(${artistAvailabilities.endDate}) >= ${startDate}::date`
         )
       )
       .orderBy(artistAvailabilities.startDate);

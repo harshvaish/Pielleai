@@ -637,7 +637,7 @@ export default function BillingDataForm({
             className='text-destructive'
             disabled={isSubmitting}
           >
-            <X size={16} /> Annulla
+            <X /> Annulla
           </Button>
 
           <Button
