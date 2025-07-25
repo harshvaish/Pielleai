@@ -20,17 +20,21 @@ import {
 import { useMediaQuery } from '@/lib/hooks/useMediaQuery';
 import { ArtistSelectData } from '@/lib/types';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Check, ChevronUp } from 'lucide-react';
+import { Check, ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useFormContext } from 'react-hook-form';
+import { EventFormSchema } from '@/lib/validation/eventFormSchema';
 
 export default function SearchArtistSelect({
   artists,
   value,
   setValue,
+  hasError,
 }: {
   artists: ArtistSelectData[];
   value: number; // artistId
   setValue: (newValue: number) => void;
+  hasError: boolean;
 }) {
   const [open, setOpen] = React.useState(false);
   const isDesktop = useMediaQuery('(min-width: 768px)');
@@ -48,20 +52,23 @@ export default function SearchArtistSelect({
           <Button
             variant='outline'
             size='sm'
-            className='min-w-40 justify-start'
+            className={cn(
+              'min-w-40 justify-start',
+              hasError && 'border-destructive'
+            )}
           >
             {selectedArtist ? (
               selectedArtist.stageName
             ) : (
-              <>
+              <span className='flex justify-start items-center gap-2 text-sm font-medium text-zinc-500'>
                 Seleziona artista{' '}
-                <ChevronUp
+                <ChevronDown
                   className={cn(
                     'transition-transform',
                     open ? 'rotate-180' : ''
                   )}
                 />
-              </>
+              </span>
             )}
           </Button>
         </PopoverTrigger>
@@ -89,17 +96,20 @@ export default function SearchArtistSelect({
         <Button
           variant='outline'
           size='sm'
-          className='min-w-40 justify-start'
+          className={cn(
+            'min-w-40 justify-start',
+            hasError && 'text-destructive border-destructive'
+          )}
         >
           {selectedArtist ? (
             selectedArtist.stageName
           ) : (
-            <>
+            <span className='flex items-center gap-2 text-sm font-medium text-zinc-500'>
               Seleziona artista{' '}
-              <ChevronUp
+              <ChevronDown
                 className={cn('transition-transform', open ? 'rotate-180' : '')}
               />
-            </>
+            </span>
           )}
         </Button>
       </DrawerTrigger>
@@ -128,6 +138,15 @@ function ArtistsList({
   value: number | undefined;
   setValue: (newValue: number) => void;
 }) {
+  const { resetField } = useFormContext<EventFormSchema>();
+
+  const onSelectHandler = (value: string): void => {
+    setValue(parseInt(value));
+    resetField('artistManagerId');
+    resetField('availabilityId');
+    setOpen(false);
+  };
+
   return (
     <Command>
       <CommandInput placeholder='Ricerca artista' />
@@ -140,10 +159,7 @@ function ArtistsList({
               <CommandItem
                 key={artist.id}
                 value={artist.id.toString()}
-                onSelect={(value) => {
-                  setValue(parseInt(value));
-                  setOpen(false);
-                }}
+                onSelect={onSelectHandler}
                 keywords={[artist.stageName]} // to enable filtering with stageName
                 disabled={isSelected}
               >

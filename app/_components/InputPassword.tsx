@@ -4,33 +4,24 @@ import { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Eye, EyeOff } from 'lucide-react';
 
-interface InputPasswordProps {
-  value: string;
-  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  error?: string;
-  id?: string;
+interface InputPasswordProps
+  extends React.InputHTMLAttributes<HTMLInputElement> {
+  error?: boolean;
 }
 
-export default function InputPassword({
-  value,
-  onChange,
-  error,
-  id = 'password',
-}: InputPasswordProps) {
+export default function InputPassword({ error, ...props }: InputPasswordProps) {
   const [visible, setVisible] = useState<boolean>(false);
 
   return (
     <div className='relative'>
       <Input
-        id={id}
         type={visible ? 'text' : 'password'}
-        value={value}
-        placeholder='Password1234!'
-        onChange={onChange}
         className={error ? 'border-destructive text-destructive' : ''}
         autoComplete='password'
         minLength={8}
         maxLength={16}
+        placeholder='********'
+        {...props}
       />
       <div
         onClick={() => setVisible((prev) => !prev)}

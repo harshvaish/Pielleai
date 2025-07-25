@@ -18,6 +18,8 @@ import ToggleFiltersButton from '../_components/ToggleFiltersButton';
 import FilterInput from '../_components/FilterInput';
 import CreateVenueManagerButton from './_components/CreateVenueManagerButton';
 import VenuesBadge from '../_components/Badges/VenuesBadge';
+import SearchVenueSelect from './_components/SearchVenueSelect';
+import { getVenues } from '@/lib/data/venues/get-venues';
 
 export default async function VenueManagersPage({
   searchParams,
@@ -28,8 +30,7 @@ export default async function VenueManagersPage({
     fullName?: string;
     email?: string;
     phone?: string;
-    artists?: string[];
-    company?: string;
+    venue?: string;
   }>;
 }) {
   const sp = await searchParams;
@@ -42,15 +43,15 @@ export default async function VenueManagersPage({
     fullName: sp?.fullName || '',
     email: sp?.email || '',
     phone: sp?.phone || '',
-    artist: sp?.artists || [],
-    company: sp?.company || '',
+    venueIds: sp?.venue ? sp.venue.split(',') : [],
   };
 
-  const [{ data: managers, totalPages }, languages, countries] =
+  const [{ data: managers, totalPages }, languages, countries, venues] =
     await Promise.all([
       getPaginatedVenueManagers(filters),
       getLanguages(),
       getCountries(),
+      getVenues(),
     ]).catch((error) => {
       console.error('❌ Error fetching:', error);
       notFound();
@@ -102,7 +103,10 @@ export default async function VenueManagersPage({
                   />
                 )}
               </TableHead>
-              <TableHead>Locali</TableHead>
+              <TableHead>
+                <div>Locali</div>
+                {showFilters && <SearchVenueSelect venues={venues} />}
+              </TableHead>
             </TableRow>
           </TableHeader>
 

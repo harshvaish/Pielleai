@@ -107,3 +107,12 @@ export default function ZonesBadge({ zones }: { zones: Zone[] }) {
     </DropdownMenu>
   );
 }
+
+export const ZoneBadge = ({ zone }: { zone: Zone }) => {
+  const zoneClass =
+    zoneColorsClasses[zone.name] || zoneColorsClasses['Default'];
+
+  return (
+    <Badge className={cn(zoneClass.text, zoneClass.bg)}>{zone.name}</Badge>
+  );
+};

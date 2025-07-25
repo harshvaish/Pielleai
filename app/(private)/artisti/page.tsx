@@ -21,6 +21,8 @@ import { getZones } from '@/lib/data/artists/get-zones';
 import { getArtistManagers } from '@/lib/data/artist-managers/get-artist-managers';
 import ZonesBadge from '../_components/Badges/ZonesBadge';
 import ManagersBadge from '../_components/Badges/ManagersBadge';
+import SearchZoneSelect from './_components/SearchZoneSelect';
+import SearchArtistManagerSelect from './_components/SearchArtistManagerSelect';
 
 export default async function ArtistsPage({
   searchParams,
@@ -31,6 +33,8 @@ export default async function ArtistsPage({
     fullName?: string;
     email?: string;
     phone?: string;
+    manager?: string;
+    zone?: string;
   }>;
 }) {
   const sp = await searchParams;
@@ -43,20 +47,22 @@ export default async function ArtistsPage({
     fullName: sp?.fullName || '',
     email: sp?.email || '',
     phone: sp?.phone || '',
+    managerIds: sp?.manager ? sp.manager.split(',') : [],
+    zoneIds: sp?.zone ? sp.zone.split(',') : [],
   };
 
   const [
     { data: artists, totalPages },
     languages,
     countries,
-    zones,
     artistManagers,
+    zones,
   ] = await Promise.all([
     getPaginatedArtists(filters),
     getLanguages(),
     getCountries(),
-    getZones(),
     getArtistManagers(),
+    getZones(),
   ]).catch((error) => {
     console.error('❌ Error fetching:', error);
     notFound();
@@ -110,8 +116,16 @@ export default async function ArtistsPage({
                   />
                 )}
               </TableHead>
-              <TableHead>Manager</TableHead>
-              <TableHead>Area di interesse</TableHead>
+              <TableHead>
+                <div>Manager</div>
+                {showFilters && (
+                  <SearchArtistManagerSelect artistManagers={artistManagers} />
+                )}
+              </TableHead>
+              <TableHead>
+                <div>Area di interesse</div>
+                {showFilters && <SearchZoneSelect zones={zones} />}
+              </TableHead>
             </TableRow>
           </TableHeader>
 

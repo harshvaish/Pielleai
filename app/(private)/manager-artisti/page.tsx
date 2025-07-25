@@ -18,6 +18,8 @@ import { NEW_USER_TIME } from '@/lib/constants';
 import ToggleFiltersButton from '../_components/ToggleFiltersButton';
 import FilterInput from '../_components/FilterInput';
 import ArtistsBadge from '../_components/Badges/ArtistsBadge';
+import { getArtists } from '@/lib/data/artists/get-artists';
+import SearchArtistSelect from './_components/SearchArtistSelect';
 
 export default async function ArtistManagersPage({
   searchParams,
@@ -42,15 +44,16 @@ export default async function ArtistManagersPage({
     fullName: sp?.fullName || '',
     email: sp?.email || '',
     phone: sp?.phone || '',
-    artist: sp?.artist || '',
+    artistIds: sp?.artist ? sp.artist.split(',') : [],
     company: sp?.company || '',
   };
 
-  const [{ data: managers, totalPages }, languages, countries] =
+  const [{ data: managers, totalPages }, languages, countries, artists] =
     await Promise.all([
       getPaginatedArtistManagers(filters),
       getLanguages(),
       getCountries(),
+      getArtists(),
     ]).catch((error) => {
       console.error('❌ Error fetching:', error);
       notFound();
@@ -104,12 +107,7 @@ export default async function ArtistManagersPage({
               </TableHead>
               <TableHead>
                 <div>Artisti</div>
-                {showFilters && (
-                  <FilterInput
-                    paramKey='artist'
-                    defaultValue={filters.artist}
-                  />
-                )}
+                {showFilters && <SearchArtistSelect artists={artists} />}
               </TableHead>
               <TableHead>
                 <div>Ragione sociale</div>

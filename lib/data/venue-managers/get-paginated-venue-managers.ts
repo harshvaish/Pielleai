@@ -1,4 +1,4 @@
-'use server';
+'server only';
 
 import { PAGINATED_TABLE_ROWS_X_PAGE } from '@/lib/constants';
 import { database } from '@/lib/database/connection';
@@ -11,16 +11,14 @@ export async function getPaginatedVenueManagers({
   fullName,
   email,
   phone,
-  // venue,
-  company,
+  venueIds,
   limit = PAGINATED_TABLE_ROWS_X_PAGE,
 }: {
   currentPage: number;
   fullName: string;
   email: string;
   phone: string;
-  // venue: string;
-  company: string;
+  venueIds: string[];
   limit?: number;
 }): Promise<{
   data: VenueManagerTableData[];
@@ -30,6 +28,28 @@ export async function getPaginatedVenueManagers({
   const offset = (currentPage - 1) * limit;
 
   try {
+    // Get all matching managerProfileIds based on venues filter
+    let venueFilteredManagerIds: number[] | undefined = undefined;
+
+    if (venueIds.length > 0) {
+      const managerResults = await database
+        .select({ managerProfileId: venues.managerProfileId })
+        .from(venues)
+        .where(inArray(venues.id, venueIds.map(Number)));
+
+      venueFilteredManagerIds = [
+        ...new Set(managerResults.map((r) => r.managerProfileId)),
+      ];
+
+      if (venueFilteredManagerIds.length === 0) {
+        return {
+          data: [],
+          totalPages: 0,
+          currentPage,
+        };
+      }
+    }
+
     // Get paginated data
     const managersResult = await database
       .select({
@@ -51,7 +71,9 @@ export async function getPaginatedVenueManagers({
           fullName ? ilike(profiles.name, `%${fullName}%`) : undefined,
           email ? ilike(users.email, `%${email}%`) : undefined,
           phone ? ilike(profiles.phone, `%${phone}%`) : undefined,
-          company ? ilike(profiles.company, `%${company}%`) : undefined
+          venueFilteredManagerIds
+            ? inArray(profiles.id, venueFilteredManagerIds)
+            : undefined
         )
       )
       .limit(limit)
@@ -75,13 +97,16 @@ export async function getPaginatedVenueManagers({
       database
         .select({ userCount: count() })
         .from(users)
+        .innerJoin(profiles, eq(users.id, profiles.userId))
         .where(
           and(
             eq(users.role, 'venue-manager'),
             fullName ? ilike(profiles.name, `%${fullName}%`) : undefined,
             email ? ilike(users.email, `%${email}%`) : undefined,
             phone ? ilike(profiles.phone, `%${phone}%`) : undefined,
-            company ? ilike(profiles.company, `%${company}%`) : undefined
+            venueFilteredManagerIds
+              ? inArray(profiles.id, venueFilteredManagerIds)
+              : undefined
           )
         ),
     ]);

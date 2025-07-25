@@ -12,8 +12,8 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
-import { changePasswordSchema } from '@/lib/validation/changePasswordSchema';
-import InputPassword from '@/app/(auth)/accedi/_components/InputPassword';
+import { resetPasswordSchema } from '@/lib/validation/resetPasswordSchema';
+import InputPassword from '@/app/_components/InputPassword';
 import { resetPassword } from '@/lib/auth-client';
 import { useRouter } from 'next/navigation';
 import {
@@ -33,7 +33,7 @@ import {
 } from '@/components/ui/drawer';
 import { useMediaQuery } from '@/lib/hooks/useMediaQuery';
 
-export default function ChangePasswordForm({ token }: { token: string }) {
+export default function ResetPasswordForm({ token }: { token: string }) {
   const [password, setPassword] = useState<string>('');
   const [confirmPassword, setConfirmPassword] = useState<string>('');
   const [errors, setErrors] = useState<{
@@ -49,7 +49,7 @@ export default function ChangePasswordForm({ token }: { token: string }) {
     event.preventDefault();
     setIsLoading(true);
 
-    const validation = changePasswordSchema.safeParse({
+    const validation = resetPasswordSchema.safeParse({
       password,
       confirmPassword,
     });
@@ -77,10 +77,10 @@ export default function ChangePasswordForm({ token }: { token: string }) {
       fetchOptions: {
         onError: (ctx) => {
           console.dir(ctx.error, { depth: null });
-          toast.error('Aggiornamento password non riuscito, riprova più tardi');
+          toast.error('Reset password non riuscito, riprova più tardi');
         },
         onSuccess: () => {
-          toast.success('Password aggiornata!');
+          toast.success('Password resettata!');
           setTimeout(() => router.push('/accedi'), 3000);
         },
       },
@@ -100,7 +100,7 @@ export default function ChangePasswordForm({ token }: { token: string }) {
       <Card className='w-full max-w-xl items-center p-6 md:p-8 rounded-2xl'>
         <CardHeader className='w-full max-w-sm gap-0 text-center p-0'>
           <CardTitle className='text-2xl font-semibold mb-2'>
-            Cambia password
+            Reset password
           </CardTitle>
           <CardDescription>
             Crea una password sicura per proteggere il tuo account
@@ -122,7 +122,7 @@ export default function ChangePasswordForm({ token }: { token: string }) {
                 id='password'
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                error={errors.password}
+                error={!!errors.password}
               />
               {errors.password && (
                 <p className='text-xs text-destructive mt-2'>
@@ -141,7 +141,7 @@ export default function ChangePasswordForm({ token }: { token: string }) {
                 id='confirm-password'
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                error={errors.confirmPassword}
+                error={!!errors.confirmPassword}
               />
               {errors.confirmPassword && (
                 <p className='text-xs text-destructive mt-2'>
@@ -155,7 +155,7 @@ export default function ChangePasswordForm({ token }: { token: string }) {
               variant='default'
               disabled={isLoading}
             >
-              {isLoading ? 'Cambio password...' : 'Cambia password'}
+              {isLoading ? 'Reset password...' : 'Reset password'}
             </Button>
           </form>
           <div className='flex justify-center'>

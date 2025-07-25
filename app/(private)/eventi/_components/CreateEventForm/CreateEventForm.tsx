@@ -70,7 +70,7 @@ export default function CreateEventForm({
 
   const onSubmit = async (data: EventFormSchema) => {
     setIsLoading(true);
-    const response = await createVenue(data);
+    const response = await createEvent(data);
 
     if (response.success) {
       toast.success('Evento creato!');
@@ -146,6 +146,7 @@ export default function CreateEventForm({
                     artists={artists}
                     value={field.value}
                     setValue={field.onChange}
+                    hasError={!!methods.formState.errors.artistId}
                   />
                 )}
               />

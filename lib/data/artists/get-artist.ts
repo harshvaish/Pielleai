@@ -1,4 +1,4 @@
-'use server';
+'server only';
 
 import { users } from '@/drizzle/schema';
 import { database } from '@/lib/database/connection';

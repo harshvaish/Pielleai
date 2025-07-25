@@ -5,7 +5,7 @@ const PUBLIC_ROUTES = [
   '/accedi',
   '/recupera-password',
   '/recupera-password/conferma-invio',
-  '/cambia-password',
+  '/reset-password',
 ];
 
 export async function middleware(request: NextRequest) {

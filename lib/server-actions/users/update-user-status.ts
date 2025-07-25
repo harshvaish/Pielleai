@@ -6,13 +6,10 @@ import { users } from '@/lib/database/schema';
 import { ServerActionResponse } from '@/lib/types';
 import { eq } from 'drizzle-orm';
 
-export async function toggleUserStatus(
+export async function updateUserStatus(
   userId: string,
-  initialUserStatus: UserStatus
+  newStatus: UserStatus
 ): Promise<ServerActionResponse<null>> {
-  const newStatus: UserStatus =
-    initialUserStatus === 'active' ? 'disabled' : 'active';
-
   try {
     await database
       .update(users)
@@ -28,7 +25,7 @@ export async function toggleUserStatus(
       data: null,
     };
   } catch (err) {
-    console.error('[toggleUserStatus] - Error updating user:', err);
+    console.error('[updateUserStatus] - Error updating user:', err);
     return {
       success: false,
       message: 'Aggiornamento utente non riuscito.',

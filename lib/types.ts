@@ -3,9 +3,9 @@ import {
   AvailabilityStatus,
   EventStatus,
   Gender,
-  UserStatus,
   VenueType,
 } from './constants';
+import { userRoles, userStatus } from './database/schema';
 
 export type ServerActionResponse<T = unknown> =
   | {
@@ -18,7 +18,17 @@ export type ServerActionResponse<T = unknown> =
       message: string;
       data: null;
     };
+/* ------------------------------------------------- */
+export type UserStatus = (typeof userStatus.enumValues)[number];
+export type UserRole = (typeof userRoles.enumValues)[number];
 
+export type UserToApprove = {
+  id: string;
+  role: UserRole;
+  name: string;
+  surname: string;
+  email: string;
+};
 /* ------------------------------------------------- */
 export interface CalendarEvent extends Event {
   id: number;
@@ -49,7 +59,6 @@ export type Subdivision = {
   id: number;
   name: string;
 };
-
 /* ------------------------------------------------- */
 export type Zone = {
   id: number;

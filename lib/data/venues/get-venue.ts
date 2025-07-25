@@ -1,4 +1,4 @@
-'use server';
+'server only';
 
 import { database } from '@/lib/database/connection';
 import {

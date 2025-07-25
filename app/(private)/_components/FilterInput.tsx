@@ -4,16 +4,18 @@ import { SpinnerLoading } from '@/app/_components/SpinnerLoading';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Search } from 'lucide-react';
-import { useState, useTransition } from 'react';
+import { HTMLInputTypeAttribute, useState, useTransition } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
 export default function FilterInput({
   paramKey,
   defaultValue,
+  type = 'text',
   placeholder = 'Cerca',
 }: {
   paramKey: string;
   defaultValue: string;
+  type?: HTMLInputTypeAttribute;
   placeholder?: string;
 }) {
   const router = useRouter();
@@ -42,9 +44,9 @@ export default function FilterInput({
   };
 
   return (
-    <div className='relative mt-2'>
+    <div className='relative min-w-40 mt-2'>
       <Input
-        type='text'
+        type={type}
         name={paramKey}
         value={value}
         onChange={(event) => setValue(event.currentTarget.value)}

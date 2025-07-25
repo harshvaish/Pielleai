@@ -17,6 +17,9 @@ import CreateVenueButton from './_components/CreateVenueButton';
 import { getPaginatedVenues } from '@/lib/data/venues/get-paginated-venues';
 import ManagersBadge from '../_components/Badges/ManagersBadge';
 import VenueTypeBadge from '../_components/Badges/VenueTypeBadge';
+import SearchVenueTypeSelect from './_components/SearchVenueTypeSelect';
+import { VenueType } from '@/lib/constants';
+import SearchVenueManagerSelect from './_components/SearchVenueManagerSelect';
 
 export default async function VenuesPage({
   searchParams,
@@ -25,6 +28,12 @@ export default async function VenuesPage({
     page?: string;
     showFilters?: string;
     name?: string;
+    company?: string;
+    taxCode?: string;
+    address?: string;
+    type?: string;
+    manager?: string;
+    capacity?: string;
   }>;
 }) {
   const sp = await searchParams;
@@ -35,6 +44,12 @@ export default async function VenuesPage({
   const filters = {
     currentPage: currentPage,
     name: sp?.name || '',
+    company: sp?.company || '',
+    taxCode: sp?.taxCode || '',
+    address: sp?.address || '',
+    types: (sp?.type ? sp.type.split(',') : []) as VenueType[],
+    managerIds: sp?.manager ? sp.manager.split(',') : [],
+    capacity: sp?.capacity || '',
   };
 
   const [{ data: venues, totalPages }, countries, venueManagers] =
@@ -77,14 +92,52 @@ export default async function VenuesPage({
               </TableHead>
               <TableHead>
                 <div>Ragione sociale</div>
+                {showFilters && (
+                  <FilterInput
+                    paramKey='company'
+                    defaultValue={filters.company}
+                  />
+                )}
               </TableHead>
               <TableHead>
                 <div>Partita IVA</div>
+                {showFilters && (
+                  <FilterInput
+                    paramKey='taxCode'
+                    defaultValue={filters.taxCode}
+                  />
+                )}
               </TableHead>
-              <TableHead>Indirizzo</TableHead>
-              <TableHead>Tipologia</TableHead>
-              <TableHead>Promoter</TableHead>
-              <TableHead>Capienza</TableHead>
+              <TableHead>
+                <div>Indirizzo</div>
+                {showFilters && (
+                  <FilterInput
+                    paramKey='address'
+                    defaultValue={filters.address}
+                  />
+                )}
+              </TableHead>
+              <TableHead>
+                <div>Tipologia</div>
+                {showFilters && <SearchVenueTypeSelect />}
+              </TableHead>
+              <TableHead>
+                <div>Promoter</div>
+                {showFilters && (
+                  <SearchVenueManagerSelect venueManagers={venueManagers} />
+                )}
+              </TableHead>
+              <TableHead>
+                <div>Capienza</div>
+                {showFilters && (
+                  <FilterInput
+                    paramKey='capacity'
+                    defaultValue={filters.capacity}
+                    type='number'
+                    placeholder='Valore minimo'
+                  />
+                )}
+              </TableHead>
             </TableRow>
           </TableHeader>
 

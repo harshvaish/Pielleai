@@ -1,9 +1,9 @@
 import Image from 'next/image';
-import ChangePasswordForm from './_components/ChangePasswordForm';
+import ResetPasswordForm from './_components/ResetPasswordForm';
 import { redirect } from 'next/navigation';
 import InvalidTokenCard from './_components/InvalidTokenCard';
 
-export default async function ChangePasswordPage({
+export default async function ResetPasswordPage({
   searchParams,
 }: {
   searchParams: Promise<{ token: string; error?: string }>;
@@ -39,7 +39,7 @@ export default async function ChangePasswordPage({
         height={144}
         priority
       />
-      <ChangePasswordForm token={token} />
+      <ResetPasswordForm token={token} />
     </main>
   );
 }

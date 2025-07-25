@@ -1,5 +1,5 @@
 import Image from 'next/image';
-import LogoutButton from './LogoutButton';
+import UserButton from './UserButton';
 
 export default async function Header() {
   return (
@@ -12,7 +12,7 @@ export default async function Header() {
         height={40}
         priority
       />
-      <LogoutButton />
+      <UserButton />
     </header>
   );
 }

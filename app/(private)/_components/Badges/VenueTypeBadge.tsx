@@ -3,7 +3,7 @@ import { VenueType } from '@/lib/constants';
 import { cn } from '@/lib/utils';
 
 const styles: Record<
-  string,
+  VenueType,
   { label: string; text: string; bg: string; dot: string }
 > = {
   small: {
@@ -18,22 +18,16 @@ const styles: Record<
     bg: 'bg-orange-100',
     dot: 'bg-orange-200',
   },
-  large: {
+  big: {
     label: 'Grande > 10.000',
     text: 'text-purple-600',
     bg: 'bg-purple-100',
     dot: 'bg-purple-200',
   },
-  default: {
-    label: 'Locale',
-    text: 'text-zinc-600',
-    bg: 'bg-zinc-100',
-    dot: 'bg-zinc-200',
-  },
 };
 
 export default function VenueTypeBadge({ type }: { type: VenueType }) {
-  const style = styles[type] || styles['default'];
+  const style = styles[type];
 
   return <Badge className={cn(style.text, style.bg)}>{style.label}</Badge>;
 }

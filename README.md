@@ -19,3 +19,4 @@
 - upload image check, loading state, error messages
 - create indexes on database tables
 - check for timestamp in the db for timezone
+- mettere size su tutte le icone nelle classi

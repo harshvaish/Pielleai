@@ -18,7 +18,7 @@ import {
 } from '@/components/ui/drawer';
 import { UserStatus } from '@/lib/constants';
 import { useMediaQuery } from '@/lib/hooks/useMediaQuery';
-import { toggleUserStatus } from '@/lib/server-actions/toggle-user-status';
+import { updateUserStatus } from '@/lib/server-actions/users/update-user-status';
 import { CircleOff, Repeat } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
@@ -50,7 +50,8 @@ export default function ToggleBlockButton({
     setIsDialogOpen(false);
 
     startTransition(async () => {
-      const response = await toggleUserStatus(userId, userInitialStatus);
+      const newStatus = userInitialStatus === 'active' ? 'disabled' : 'active';
+      const response = await updateUserStatus(userId, newStatus);
       if (!response.success) {
         toast.error(response.message || 'Aggiornamento utente non riuscito.');
         return;

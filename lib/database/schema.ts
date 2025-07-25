@@ -15,26 +15,28 @@ import {
   uuid,
   check,
 } from 'drizzle-orm/pg-core';
-
 export const availabilityStatus = pgEnum('availability_status', [
   'available',
   'booked',
   'cancelled',
 ]);
-
-export const genderEnum = pgEnum('gender_enum', [
+export const profileGenders = pgEnum('profile_genders', [
   'maschile',
   'femminile',
   'non-binary',
 ]);
-
+export const userRoles = pgEnum('user_roles', [
+  'user',
+  'artist-manager',
+  'venue-manager',
+  'admin',
+]);
 export const userStatus = pgEnum('user_status', [
   'active',
   'waiting-for-approval',
   'disabled',
   'banned',
 ]);
-
 export const venueTypes = pgEnum('venue_types', ['small', 'medium', 'big']);
 
 export const users = pgTable('users', {
@@ -51,7 +53,7 @@ export const users = pgTable('users', {
   updatedAt: timestamp('updated_at')
     .$defaultFn(() => /* @__PURE__ */ new Date())
     .notNull(),
-  role: text('role'),
+  role: userRoles().notNull(),
   status: userStatus().default('waiting-for-approval').notNull(),
   banned: boolean('banned'),
   banReason: text('ban_reason'),
@@ -161,7 +163,7 @@ export const profiles = pgTable(
     subdivisionId: integer('subdivision_id').notNull(),
     city: text().notNull(),
     zipCode: varchar('zip_code', { length: 10 }).notNull(),
-    gender: genderEnum().notNull(),
+    gender: profileGenders().notNull(),
     company: text(),
     taxCode: text('tax_code'),
     ipiCode: text('ipi_code'),
@@ -278,7 +280,7 @@ export const artists = pgTable(
     subdivisionId: integer('subdivision_id').notNull(),
     city: text().notNull(),
     zipCode: varchar('zip_code', { length: 10 }).notNull(),
-    gender: genderEnum().notNull(),
+    gender: profileGenders().notNull(),
     tourManagerName: text('tour_manager_name').notNull(),
     tourManagerSurname: text('tour_manager_surname').notNull(),
     tourManagerEmail: text('tour_manager_email').notNull(),

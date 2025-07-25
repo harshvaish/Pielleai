@@ -40,7 +40,7 @@ export default function RecoverPasswordForm() {
 
       await forgetPassword({
         email,
-        redirectTo: '/cambia-password',
+        redirectTo: '/reset-password',
         fetchOptions: {
           onError: () => {
             toast.error('Invio email non riuscito, riprova più tardi');

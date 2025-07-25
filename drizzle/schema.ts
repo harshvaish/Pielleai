@@ -2,7 +2,8 @@ import { pgTable, foreignKey, unique, check, serial, integer, timestamp, text, b
 import { sql } from "drizzle-orm"
 
 export const availabilityStatus = pgEnum("availability_status", ['available', 'booked', 'cancelled'])
-export const genderEnum = pgEnum("gender_enum", ['maschile', 'femminile', 'non-binary'])
+export const profileGenders = pgEnum("profile_genders", ['maschile', 'femminile', 'non-binary'])
+export const userRoles = pgEnum("user_roles", ['user', 'artist-manager', 'venue-manager', 'admin'])
 export const userStatus = pgEnum("user_status", ['active', 'waiting-for-approval', 'disabled', 'banned'])
 export const venueTypes = pgEnum("venue_types", ['small', 'medium', 'big'])
 
@@ -53,6 +54,23 @@ export const verifications = pgTable("verifications", {
 	updatedAt: timestamp("updated_at", { mode: 'string' }),
 });
 
+export const users = pgTable("users", {
+	id: text().primaryKey().notNull(),
+	name: text().notNull(),
+	email: text().notNull(),
+	emailVerified: boolean("email_verified").notNull(),
+	image: text(),
+	role: userRoles().default('user').notNull(),
+	createdAt: timestamp("created_at", { mode: 'string' }).notNull(),
+	updatedAt: timestamp("updated_at", { mode: 'string' }).notNull(),
+	banned: boolean(),
+	banReason: text("ban_reason"),
+	banExpires: timestamp("ban_expires", { mode: 'string' }),
+	status: userStatus().default('waiting-for-approval').notNull(),
+}, (table) => [
+	unique("users_email_unique").on(table.email),
+]);
+
 export const accounts = pgTable("accounts", {
 	id: text().primaryKey().notNull(),
 	accountId: text("account_id").notNull(),
@@ -75,23 +93,6 @@ export const accounts = pgTable("accounts", {
 		}).onDelete("cascade"),
 ]);
 
-export const users = pgTable("users", {
-	id: text().primaryKey().notNull(),
-	name: text().notNull(),
-	email: text().notNull(),
-	emailVerified: boolean("email_verified").notNull(),
-	image: text(),
-	role: text(),
-	createdAt: timestamp("created_at", { mode: 'string' }).notNull(),
-	updatedAt: timestamp("updated_at", { mode: 'string' }).notNull(),
-	banned: boolean(),
-	banReason: text("ban_reason"),
-	banExpires: timestamp("ban_expires", { mode: 'string' }),
-	status: userStatus().default('waiting-for-approval').notNull(),
-}, (table) => [
-	unique("users_email_unique").on(table.email),
-]);
-
 export const artists = pgTable("artists", {
 	id: serial().primaryKey().notNull(),
 	email: text().notNull(),
@@ -108,7 +109,7 @@ export const artists = pgTable("artists", {
 	subdivisionId: integer("subdivision_id").notNull(),
 	city: text().notNull(),
 	zipCode: varchar("zip_code", { length: 10 }).notNull(),
-	gender: genderEnum().notNull(),
+	gender: profileGenders().notNull(),
 	tourManagerName: text("tour_manager_name").notNull(),
 	tourManagerSurname: text("tour_manager_surname").notNull(),
 	tourManagerEmail: text("tour_manager_email").notNull(),
@@ -204,14 +205,6 @@ export const countries = pgTable("countries", {
 	unique("countries_code_key").on(table.code),
 ]);
 
-export const zones = pgTable("zones", {
-	id: serial().primaryKey().notNull(),
-	name: text().notNull(),
-	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow().notNull(),
-}, (table) => [
-	unique("zones_name_key").on(table.name),
-]);
-
 export const profiles = pgTable("profiles", {
 	id: serial().primaryKey().notNull(),
 	userId: text("user_id").notNull(),
@@ -226,7 +219,7 @@ export const profiles = pgTable("profiles", {
 	subdivisionId: integer("subdivision_id").notNull(),
 	city: text().notNull(),
 	zipCode: varchar("zip_code", { length: 10 }).notNull(),
-	gender: genderEnum().notNull(),
+	gender: profileGenders().notNull(),
 	company: text(),
 	taxCode: text("tax_code"),
 	ipiCode: text("ipi_code"),
@@ -271,6 +264,14 @@ export const profiles = pgTable("profiles", {
 			foreignColumns: [users.id],
 			name: "profiles_user_id_fkey"
 		}).onDelete("cascade"),
+]);
+
+export const zones = pgTable("zones", {
+	id: serial().primaryKey().notNull(),
+	name: text().notNull(),
+	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	unique("zones_name_key").on(table.name),
 ]);
 
 export const profileNotes = pgTable("profile_notes", {

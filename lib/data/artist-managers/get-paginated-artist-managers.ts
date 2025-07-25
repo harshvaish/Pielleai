@@ -1,4 +1,4 @@
-'use server';
+'server only';
 
 import { PAGINATED_TABLE_ROWS_X_PAGE } from '@/lib/constants';
 import { database } from '@/lib/database/connection';
@@ -16,7 +16,7 @@ export async function getPaginatedArtistManagers({
   fullName,
   email,
   phone,
-  artist,
+  artistIds,
   company,
   limit = PAGINATED_TABLE_ROWS_X_PAGE,
 }: {
@@ -24,7 +24,7 @@ export async function getPaginatedArtistManagers({
   fullName: string;
   email: string;
   phone: string;
-  artist: string;
+  artistIds: string[];
   company: string;
   limit?: number;
 }): Promise<{
@@ -32,10 +32,31 @@ export async function getPaginatedArtistManagers({
   totalPages: number;
   currentPage: number;
 }> {
-  console.log(artist);
   const offset = (currentPage - 1) * limit;
 
   try {
+    // Get all matching managerProfileIds based on artist filter
+    let artistFilteredManagerIds: number[] | undefined = undefined;
+
+    if (artistIds.length > 0) {
+      const managerResults = await database
+        .select({ managerProfileId: managerArtists.managerProfileId })
+        .from(managerArtists)
+        .where(inArray(managerArtists.artistId, artistIds.map(Number)));
+
+      artistFilteredManagerIds = [
+        ...new Set(managerResults.map((r) => r.managerProfileId)),
+      ];
+
+      if (artistFilteredManagerIds.length === 0) {
+        return {
+          data: [],
+          totalPages: 0,
+          currentPage,
+        };
+      }
+    }
+
     // Get paginated data
     const managersResult = await database
       .select({
@@ -59,6 +80,9 @@ export async function getPaginatedArtistManagers({
           fullName ? ilike(profiles.surname, `%${fullName}%`) : undefined,
           email ? ilike(users.email, `%${email}%`) : undefined,
           phone ? ilike(profiles.phone, `%${phone}%`) : undefined,
+          artistFilteredManagerIds
+            ? inArray(profiles.id, artistFilteredManagerIds)
+            : undefined,
           company ? ilike(profiles.company, `%${company}%`) : undefined
         )
       )
@@ -94,6 +118,9 @@ export async function getPaginatedArtistManagers({
             fullName ? ilike(profiles.surname, `%${fullName}%`) : undefined,
             email ? ilike(users.email, `%${email}%`) : undefined,
             phone ? ilike(profiles.phone, `%${phone}%`) : undefined,
+            artistFilteredManagerIds
+              ? inArray(profiles.id, artistFilteredManagerIds)
+              : undefined,
             company ? ilike(profiles.company, `%${company}%`) : undefined
           )
         ),

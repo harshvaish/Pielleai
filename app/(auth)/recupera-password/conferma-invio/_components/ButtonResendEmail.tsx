@@ -65,7 +65,7 @@ export default function ButtonResendEmail({ email }: { email: string }) {
 
       await forgetPassword({
         email,
-        redirectTo: '/cambia-password',
+        redirectTo: '/reset-password',
         fetchOptions: {
           onError: () => {
             toast.error('Invio email non riuscito, riprova più tardi');

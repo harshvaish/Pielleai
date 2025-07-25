@@ -1,4 +1,4 @@
-'use server';
+'server only';
 
 import { PAGINATED_TABLE_ROWS_X_PAGE } from '@/lib/constants';
 import { database } from '@/lib/database/connection';
@@ -18,12 +18,16 @@ export async function getPaginatedArtists({
   fullName,
   email,
   phone,
+  managerIds,
+  zoneIds,
   limit = PAGINATED_TABLE_ROWS_X_PAGE,
 }: {
   currentPage: number;
   fullName: string;
   email: string;
   phone: string;
+  managerIds: string[];
+  zoneIds: string[];
   limit?: number;
 }): Promise<{
   data: ArtistTableData[];
@@ -33,6 +37,55 @@ export async function getPaginatedArtists({
   const offset = (currentPage - 1) * limit;
 
   try {
+    //Get all matching artistIds based on manager filter
+    let managerFilteredArtistIds: number[] | undefined = undefined;
+
+    if (managerIds.length > 0) {
+      const artistResults = await database
+        .select({ artistId: managerArtists.artistId })
+        .from(artists)
+        .innerJoin(managerArtists, eq(artists.id, managerArtists.artistId))
+        .where(
+          inArray(managerArtists.managerProfileId, managerIds.map(Number))
+        );
+
+      managerFilteredArtistIds = [
+        ...new Set(artistResults.map((r) => r.artistId)),
+      ];
+
+      if (managerFilteredArtistIds.length === 0) {
+        return {
+          data: [],
+          totalPages: 0,
+          currentPage,
+        };
+      }
+    }
+
+    //Get all matching zoneIds based on zone filter
+    let zoneFilteredArtistIds: number[] | undefined = undefined;
+
+    if (zoneIds.length > 0) {
+      const artistResults = await database
+        .select({ artistId: artistZones.artistId })
+        .from(artists)
+        .innerJoin(artistZones, eq(artists.id, artistZones.artistId))
+        .innerJoin(zones, eq(artistZones.zoneId, zones.id))
+        .where(inArray(artistZones.zoneId, zoneIds.map(Number)));
+
+      zoneFilteredArtistIds = [
+        ...new Set(artistResults.map((r) => r.artistId)),
+      ];
+
+      if (zoneFilteredArtistIds.length === 0) {
+        return {
+          data: [],
+          totalPages: 0,
+          currentPage,
+        };
+      }
+    }
+
     // Get paginated artists
     const artistsResult = await database
       .select({
@@ -48,16 +101,19 @@ export async function getPaginatedArtists({
         createdAt: artists.createdAt,
       })
       .from(artists)
-      .leftJoin(artistZones, eq(artists.id, artistZones.artistId))
-      .leftJoin(zones, eq(artistZones.zoneId, zones.id))
       .where(
         and(
           fullName ? ilike(artists.name, `%${fullName}%`) : undefined,
           email ? ilike(artists.email, `%${email}%`) : undefined,
-          phone ? ilike(artists.phone, `%${phone}%`) : undefined
+          phone ? ilike(artists.phone, `%${phone}%`) : undefined,
+          managerFilteredArtistIds
+            ? inArray(artists.id, managerFilteredArtistIds)
+            : undefined,
+          zoneFilteredArtistIds
+            ? inArray(artists.id, zoneFilteredArtistIds)
+            : undefined
         )
       )
-      .groupBy(artists.id)
       .limit(limit)
       .offset(offset);
 
@@ -96,7 +152,13 @@ export async function getPaginatedArtists({
           and(
             fullName ? ilike(artists.name, `%${fullName}%`) : undefined,
             email ? ilike(artists.email, `%${email}%`) : undefined,
-            phone ? ilike(artists.phone, `%${phone}%`) : undefined
+            phone ? ilike(artists.phone, `%${phone}%`) : undefined,
+            managerFilteredArtistIds
+              ? inArray(artists.id, managerFilteredArtistIds)
+              : undefined,
+            zoneFilteredArtistIds
+              ? inArray(artists.id, zoneFilteredArtistIds)
+              : undefined
           )
         ),
     ]);
