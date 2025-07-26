@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { SpinnerLoading } from './SpinnerLoading';
-import CornfirmDialog from './ConfirmDialog';
+import ConfirmDialog from './ConfirmDialog';
 
 export default function SignOutButton() {
   const router = useRouter();
@@ -41,7 +41,7 @@ export default function SignOutButton() {
           </>
         )}
       </div>
-      <CornfirmDialog
+      <ConfirmDialog
         open={isOpen}
         onOpenChange={setIsOpen}
         title='Sei sicuro di voler uscire?'

@@ -1,13 +1,11 @@
 - change email sender in send-reset-password-email
-- verify password complexity
 - check zod v4 use everywhere
 - security check on routes and funcions?
 - add error layouts
 - add not found layouts
+- add metatags for each layout/page
 - check all restrict or cascade keys in db
 
-- add artist to artist manager pages
-- add unique slug to artists
 - switch socials to table
 - isArtist flag or component duplication
 - manager block button refactor

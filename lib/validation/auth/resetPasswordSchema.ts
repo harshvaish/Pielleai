@@ -13,3 +13,5 @@ export const resetPasswordSchema = z
     path: ['confirmPassword'],
     message: 'Le password non corrispondono.',
   });
+
+export type ResetPasswordSchema = z.infer<typeof resetPasswordSchema>;

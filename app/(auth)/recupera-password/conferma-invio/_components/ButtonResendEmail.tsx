@@ -3,6 +3,7 @@
 import { Button } from '@/components/ui/button';
 import { forgetPassword } from '@/lib/auth-client';
 import { RPE_BLOCK_DURATION, RPE_BLOCK_STORAGE_NAME } from '@/lib/constants';
+import { getBetterAuthErrorMessage } from '@/lib/utils';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import * as z from 'zod/v4';
@@ -46,46 +47,37 @@ export default function ButtonResendEmail({ email }: { email: string }) {
     return () => clearInterval(interval);
   }, [blockedUntil]);
 
-  const onClickHandler = async (event: React.FormEvent) => {
-    event.preventDefault();
+  const onClickHandler = async () => {
     setIsLoading(true);
 
-    try {
-      const validation = z
-        .string()
-        .min(1, 'Email obbligatoria')
-        .email('Formato non valido')
-        .safeParse(email);
+    const validation = z.email('Formato non valido').safeParse(email);
 
-      if (!validation.success) {
-        toast.error('Email non trovata o malformata, riprova più tardi');
-        setIsLoading(false);
-        return;
-      }
-
-      await forgetPassword({
-        email,
-        redirectTo: '/reset-password',
-        fetchOptions: {
-          onError: () => {
-            toast.error('Invio email non riuscito, riprova più tardi');
-          },
-          onSuccess: () => {
-            const now = Date.now();
-            const expiresAt = now + RPE_BLOCK_DURATION;
-            localStorage.setItem(RPE_BLOCK_STORAGE_NAME, now.toString());
-            setBlockedUntil(expiresAt);
-            setTimeLeft(Math.ceil(RPE_BLOCK_DURATION / 1000));
-            toast.success('Email inviata con successo!');
-          },
-        },
-      });
-    } catch (error) {
-      console.error('Error: ', error instanceof Error ? error.message : error);
-      toast.error("Invio email non riuscito, per favore contatta l'assistenza");
-    } finally {
+    if (!validation.success) {
+      toast.error('Email non trovata o malformata, riprova più tardi');
       setIsLoading(false);
+      return;
     }
+
+    await forgetPassword({
+      email,
+      redirectTo: '/reset-password',
+      fetchOptions: {
+        onSuccess: () => {
+          const now = Date.now();
+          const expiresAt = now + RPE_BLOCK_DURATION;
+          localStorage.setItem(RPE_BLOCK_STORAGE_NAME, now.toString());
+          setBlockedUntil(expiresAt);
+          setTimeLeft(Math.ceil(RPE_BLOCK_DURATION / 1000));
+          toast.success('Email inviata con successo!');
+        },
+        onError: (ctx) => {
+          const code = ctx?.error?.code ?? 'UNKNOWN_ERROR';
+          const message = getBetterAuthErrorMessage(code);
+          toast.error(message);
+        },
+      },
+    });
+    setIsLoading(false);
   };
 
   return (

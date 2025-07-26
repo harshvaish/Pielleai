@@ -29,9 +29,9 @@ export default function InputPassword({ error, ...props }: InputPasswordProps) {
         aria-label={visible ? 'Nascondi password' : 'Mostra password'}
       >
         {visible ? (
-          <EyeOff className='text-muted-foreground stroke-1' />
+          <EyeOff className='size-4 text-muted-foreground stroke-1' />
         ) : (
-          <Eye className='text-muted-foreground stroke-1' />
+          <Eye className='size-4 text-muted-foreground stroke-1' />
         )}
       </div>
     </div>

@@ -152,7 +152,7 @@ export function getBetterAuthErrorMessage(code: string): string {
     case 'INVALID_INPUT':
       return 'I dati inseriti non sono validi.';
     case 'INVALID_EMAIL':
-      return 'L’indirizzo email non è valido.';
+      return "L'indirizzo email non è valido.";
     case 'INVALID_PASSWORD':
       return 'La password non soddisfa i requisiti di sicurezza.';
     case 'PASSWORD_TOO_WEAK':
@@ -174,13 +174,13 @@ export function getBetterAuthErrorMessage(code: string): string {
     case 'TOO_MANY_ATTEMPTS':
       return 'Troppi tentativi. Riprova più tardi.';
     case 'TOKEN_EXPIRED':
-      return 'Il token è scaduto. Effettua nuovamente l’accesso.';
+      return "Il token è scaduto. Effettua nuovamente l'accesso.";
     case 'TOKEN_INVALID':
       return 'Token non valido. Riprova.';
     case 'TOKEN_NOT_FOUND':
       return 'Token non trovato o già utilizzato.';
     case 'SESSION_EXPIRED':
-      return 'Sessione scaduta. Effettua di nuovo l’accesso.';
+      return "Sessione scaduta. Effettua di nuovo l'accesso.";
     case 'INTERNAL_SERVER_ERROR':
       return 'Errore del server. Riprova più tardi.';
     case 'UNKNOWN_ERROR':

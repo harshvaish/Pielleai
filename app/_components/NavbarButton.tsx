@@ -7,7 +7,7 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { Skeleton } from '@/components/ui/skeleton';
-import { authClient } from '@/lib/auth-client';
+import { useSession } from '@/lib/auth-client';
 import { cn } from '@/lib/utils';
 import { ChevronDown, SquareArrowOutUpRight } from 'lucide-react';
 import { redirect } from 'next/navigation';
@@ -16,13 +16,14 @@ import ChangePasswordButton from './ChangePassword/ChangePaswordButton';
 import { Separator } from '@/components/ui/separator';
 import SignOutButton from './SignOutButton';
 
-export default function UserButton() {
-  const { data, isPending } = authClient.useSession();
+export default function NavbarButton() {
   const [isOpen, setIsOpen] = useState<boolean>(false);
+  const { data, isPending } = useSession();
 
   const user = data?.user;
 
-  if (isPending) return <Skeleton className='w-40 h-12 rounded-md' />;
+  if (isPending)
+    return <Skeleton className='w-10 md:w-40 h-10 md:h-12 rounded-md' />;
   if (!user) return redirect('/accedi');
 
   return (

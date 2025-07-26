@@ -55,7 +55,7 @@ export const artistS1FormSchema = z.object({
     .regex(/^\+\d{1,3}\s?\d+$/, 'Formato non valido. Esempio: +39 123456789')
     .trim(),
 
-  email: z.email('Formato non valido. Esempio info@eaglebooking.it').trim(),
+  email: z.email('Formato non valido. (Es. info@eaglebooking.it)').trim(),
 
   birthDate: z
     .string('Campo malformato.')
@@ -172,7 +172,7 @@ export const artistS1FormSchema = z.object({
     .trim(),
 
   tourManagerEmail: z
-    .email('Formato non valido. Esempio info@eaglebooking.it')
+    .email('Formato non valido. (Es. info@eaglebooking.it)')
     .trim(),
 });
 

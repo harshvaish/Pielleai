@@ -49,7 +49,7 @@ export const venueManagerS1FormSchema = z.object({
     .regex(/^\+\d{1,3}\s?\d+$/, 'Formato non valido. Esempio: +39 123456789')
     .trim(),
 
-  email: z.email('Formato non valido. Esempio info@eaglebooking.it').trim(),
+  email: z.email('Formato non valido. (Es. info@eaglebooking.it)').trim(),
 
   birthDate: z
     .string('Campo malformato.')
@@ -124,9 +124,7 @@ export const venueManagerS1FormSchema = z.object({
 export type VenueManagerS1FormSchema = z.infer<typeof venueManagerS1FormSchema>;
 
 export const venueManagerS2FormSchema = z.object({
-  signUpEmail: z
-    .email('Formato non valido. Esempio info@eaglebooking.it')
-    .trim(),
+  signUpEmail: z.email('Formato non valido. (Es. info@eaglebooking.it)').trim(),
   signUpPassword: z
     .string('Campo malformato.')
     .min(1, 'Campo obbligatorio.')
