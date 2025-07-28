@@ -92,8 +92,8 @@ export default function PersonalDataForm({
 
   const subdivisionPlaceholder = useMemo(() => {
     if (isLoading) return 'Caricamento province...';
-    if (!selectedCountryId) return 'Seleziona uno stato';
-    return 'Seleziona una provincia';
+    if (!selectedCountryId) return 'seleziona stato';
+    return 'seleziona provincia';
   }, [isLoading, selectedCountryId]);
 
   const onSubmit = async (data: VenueManagerS1FormSchema) => {
@@ -393,7 +393,7 @@ export default function PersonalDataForm({
                     size='sm'
                   >
                     {countries.find((c) => c.id == field.value)?.name ||
-                      'Seleziona uno stato'}
+                      'seleziona stato'}
                   </SelectTrigger>
                   <SelectContent>
                     {countries.map((country) => (

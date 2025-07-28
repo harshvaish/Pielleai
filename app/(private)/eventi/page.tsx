@@ -11,7 +11,7 @@ import { ChevronDown, ChevronsUpDown, ListFilter } from 'lucide-react';
 import { getArtists } from '@/lib/data/artists/get-artists';
 import { getVenues } from '@/lib/data/venues/get-venues';
 import { notFound } from 'next/navigation';
-import CreateEventButton from './_components/CreateEventButton';
+import CreateButton from './_components/CreateButton';
 
 export default async function EventsPage({
   searchParams,
@@ -41,12 +41,12 @@ export default async function EventsPage({
   return (
     <div className='h-full grid grid-rows-[min-content_min-content_1fr_min-content] gap-4'>
       <div className='flex justify-between items-center'>
-        <h1 className='text-2xl font-bold'>Eventi</h1>
+        <h1 className='text-xl md:text-2xl font-bold'>Eventi</h1>
         <div className='flex items-center gap-4'>
           {/* <ToggleFiltersButton showFilters={showFilters} /> */}
           <div>export</div>
           <div>crea</div>
-          <CreateEventButton
+          <CreateButton
             artists={artists}
             venues={venues}
           />

@@ -1,7 +1,7 @@
 export default async function NotFoundPage() {
   return (
     <>
-      <h1 className='text-2xl font-bold'>Artista non trovato</h1>
+      <h1 className='text-xl md:text-2xl font-bold'>Artista non trovato</h1>
       {/* artist managers table section */}
       <section className='min-h-80 flex flex-col justify-center items-center bg-white p-4 rounded-2xl'>
         <h2 className='text-base font-bold'>Nessun artista</h2>

@@ -9,17 +9,18 @@ import {
 import { getCountries } from '@/lib/data/get-countries';
 import { notFound } from 'next/navigation';
 import { TablePagination } from '../_components/TablePagination';
-import ToggleFiltersButton from '../_components/ToggleFiltersButton';
 import UserBadge from '../_components/Badges/UserBadge';
 import FilterInput from '../_components/FilterInput';
 import { getVenueManagers } from '@/lib/data/venue-managers/get-venue-managers';
-import CreateVenueButton from './_components/CreateVenueButton';
 import { getPaginatedVenues } from '@/lib/data/venues/get-paginated-venues';
 import ManagersBadge from '../_components/Badges/ManagersBadge';
 import VenueTypeBadge from '../_components/Badges/VenueTypeBadge';
-import SearchVenueTypeSelect from './_components/SearchVenueTypeSelect';
+import SearchVenueTypeSelect from './_components/filters/desktop/VenueTypeFilter';
 import { VenueType } from '@/lib/constants';
-import SearchVenueManagerSelect from './_components/SearchVenueManagerSelect';
+import SearchVenueManagerSelect from './_components/filters/desktop/VenueManagerFilter';
+import { VenuesTableFilters } from '@/lib/types';
+import FiltersButton from './_components/filters/FiltersButton';
+import CreateButton from './_components/create/CreateButton';
 
 export default async function VenuesPage({
   searchParams,
@@ -41,7 +42,7 @@ export default async function VenuesPage({
   const currentPage = Number(sp?.page ?? '1');
   const showFilters = sp?.showFilters === 'true';
 
-  const filters = {
+  const filters: VenuesTableFilters = {
     currentPage: currentPage,
     name: sp?.name || '',
     company: sp?.company || '',
@@ -64,13 +65,17 @@ export default async function VenuesPage({
 
   return (
     <div className='h-full grid grid-rows-[min-content_1fr_min-content] gap-4'>
-      <div className='flex justify-between items-center'>
+      <div className='md:flex justify-between items-center gap-2'>
         <h1 className='text-2xl font-bold'>Locali</h1>
-        <div className='flex items-center gap-4'>
-          {venues.length > 0 && (
-            <ToggleFiltersButton showFilters={showFilters} />
+        <div className='flex items-center gap-2 md:gap-4 mt-2 md:mt-0'>
+          {(venues.length > 0 || showFilters) && (
+            <FiltersButton
+              filters={filters}
+              showFilters={showFilters}
+              venueManagers={venueManagers}
+            />
           )}
-          <CreateVenueButton
+          <CreateButton
             countries={countries}
             venueManagers={venueManagers}
           />
@@ -83,60 +88,74 @@ export default async function VenuesPage({
             <TableRow>
               <TableHead>
                 <div>Nome</div>
-                {showFilters && (
-                  <FilterInput
-                    paramKey='name'
-                    defaultValue={filters.name}
-                  />
-                )}
+                <div className='hidden md:block'>
+                  {showFilters && (
+                    <FilterInput
+                      paramKey='name'
+                      defaultValue={filters.name}
+                    />
+                  )}
+                </div>
               </TableHead>
               <TableHead>
                 <div>Ragione sociale</div>
-                {showFilters && (
-                  <FilterInput
-                    paramKey='company'
-                    defaultValue={filters.company}
-                  />
-                )}
+                <div className='hidden md:block'>
+                  {showFilters && (
+                    <FilterInput
+                      paramKey='company'
+                      defaultValue={filters.company}
+                    />
+                  )}
+                </div>
               </TableHead>
               <TableHead>
                 <div>Partita IVA</div>
-                {showFilters && (
-                  <FilterInput
-                    paramKey='taxCode'
-                    defaultValue={filters.taxCode}
-                  />
-                )}
+                <div className='hidden md:block'>
+                  {showFilters && (
+                    <FilterInput
+                      paramKey='taxCode'
+                      defaultValue={filters.taxCode}
+                    />
+                  )}
+                </div>
               </TableHead>
               <TableHead>
                 <div>Indirizzo</div>
-                {showFilters && (
-                  <FilterInput
-                    paramKey='address'
-                    defaultValue={filters.address}
-                  />
-                )}
+                <div className='hidden md:block'>
+                  {showFilters && (
+                    <FilterInput
+                      paramKey='address'
+                      defaultValue={filters.address}
+                    />
+                  )}
+                </div>
               </TableHead>
               <TableHead>
                 <div>Tipologia</div>
-                {showFilters && <SearchVenueTypeSelect />}
+                <div className='hidden md:block'>
+                  {showFilters && <SearchVenueTypeSelect />}
+                </div>
               </TableHead>
               <TableHead>
                 <div>Promoter</div>
-                {showFilters && (
-                  <SearchVenueManagerSelect venueManagers={venueManagers} />
-                )}
+                <div className='hidden md:block'>
+                  {showFilters && (
+                    <SearchVenueManagerSelect venueManagers={venueManagers} />
+                  )}
+                </div>
               </TableHead>
               <TableHead>
                 <div>Capienza</div>
-                {showFilters && (
-                  <FilterInput
-                    paramKey='capacity'
-                    defaultValue={filters.capacity}
-                    type='number'
-                    placeholder='Valore minimo'
-                  />
-                )}
+                <div className='hidden md:block'>
+                  {showFilters && (
+                    <FilterInput
+                      paramKey='capacity'
+                      defaultValue={filters.capacity}
+                      type='number'
+                      placeholder='Valore minimo'
+                    />
+                  )}
+                </div>
               </TableHead>
             </TableRow>
           </TableHeader>

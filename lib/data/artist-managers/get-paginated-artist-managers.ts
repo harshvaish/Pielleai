@@ -8,7 +8,11 @@ import {
   profiles,
   users,
 } from '@/lib/database/schema';
-import { ArtistManagerTableData, ArtistSelectData } from '@/lib/types';
+import {
+  ArtistManagerTableData,
+  ArtistManagersTableFilters,
+  ArtistSelectData,
+} from '@/lib/types';
 import { and, count, eq, ilike, inArray } from 'drizzle-orm';
 
 export async function getPaginatedArtistManagers({
@@ -18,20 +22,12 @@ export async function getPaginatedArtistManagers({
   phone,
   artistIds,
   company,
-  limit = PAGINATED_TABLE_ROWS_X_PAGE,
-}: {
-  currentPage: number;
-  fullName: string;
-  email: string;
-  phone: string;
-  artistIds: string[];
-  company: string;
-  limit?: number;
-}): Promise<{
+}: ArtistManagersTableFilters): Promise<{
   data: ArtistManagerTableData[];
   totalPages: number;
   currentPage: number;
 }> {
+  const limit = PAGINATED_TABLE_ROWS_X_PAGE;
   const offset = (currentPage - 1) * limit;
 
   try {

@@ -18,3 +18,4 @@
 - create indexes on database tables
 - check for timestamp in the db for timezone
 - mettere size su tutte le icone nelle classi
+  -refactor all components with props to externalize them

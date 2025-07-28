@@ -6,7 +6,6 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import CreateArtistManagerButton from './_components/CreateArtistManagerButton';
 import { getPaginatedArtistManagers } from '@/lib/data/artist-managers/get-paginated-artist-managers';
 import { getLanguages } from '@/lib/data/get-languages';
 import { getCountries } from '@/lib/data/get-countries';
@@ -15,11 +14,13 @@ import { TablePagination } from '../_components/TablePagination';
 import UserBadge from '../_components/Badges/UserBadge';
 import StatusBadge from '../_components/Badges/StatusBadge';
 import { NEW_USER_TIME } from '@/lib/constants';
-import ToggleFiltersButton from '../_components/ToggleFiltersButton';
 import FilterInput from '../_components/FilterInput';
 import ArtistsBadge from '../_components/Badges/ArtistsBadge';
 import { getArtists } from '@/lib/data/artists/get-artists';
-import SearchArtistSelect from './_components/SearchArtistSelect';
+import ArtistFilter from './_components/filters/desktop/ArtistFilter';
+import FiltersButton from './_components/filters/FiltersButton';
+import { ArtistManagersTableFilters } from '@/lib/types';
+import CreateButton from './_components/create/CreateButton';
 
 export default async function ArtistManagersPage({
   searchParams,
@@ -39,7 +40,7 @@ export default async function ArtistManagersPage({
   const currentPage = Number(sp?.page ?? '1');
   const showFilters = sp?.showFilters === 'true';
 
-  const filters = {
+  const filters: ArtistManagersTableFilters = {
     currentPage: currentPage,
     fullName: sp?.fullName || '',
     email: sp?.email || '',
@@ -61,13 +62,17 @@ export default async function ArtistManagersPage({
 
   return (
     <div className='h-full grid grid-rows-[min-content_1fr_min-content] gap-4'>
-      <div className='flex justify-between items-center'>
+      <div className='md:flex justify-between items-center gap-2'>
         <h1 className='text-2xl font-bold'>Manager Artisti</h1>
-        <div className='flex items-center gap-4'>
+        <div className='flex items-center gap-2 md:gap-4 mt-2 md:mt-0'>
           {(managers.length > 0 || showFilters) && (
-            <ToggleFiltersButton showFilters={showFilters} />
+            <FiltersButton
+              filters={filters}
+              showFilters={showFilters}
+              artists={artists}
+            />
           )}
-          <CreateArtistManagerButton
+          <CreateButton
             languages={languages}
             countries={countries}
           />
@@ -80,43 +85,53 @@ export default async function ArtistManagersPage({
             <TableRow>
               <TableHead>
                 <div>Nome completo</div>
-                {showFilters && (
-                  <FilterInput
-                    paramKey='fullName'
-                    defaultValue={filters.fullName}
-                  />
-                )}
+                <div className='hidden md:block'>
+                  {showFilters && (
+                    <FilterInput
+                      paramKey='fullName'
+                      defaultValue={filters.fullName}
+                    />
+                  )}
+                </div>
               </TableHead>
               <TableHead>
                 <div>Email</div>
-                {showFilters && (
-                  <FilterInput
-                    paramKey='email'
-                    defaultValue={filters.email}
-                  />
-                )}
+                <div className='hidden md:block'>
+                  {showFilters && (
+                    <FilterInput
+                      paramKey='email'
+                      defaultValue={filters.email}
+                    />
+                  )}
+                </div>
               </TableHead>
               <TableHead>
                 <div>Numero di telefono</div>
-                {showFilters && (
-                  <FilterInput
-                    paramKey='phone'
-                    defaultValue={filters.phone}
-                  />
-                )}
+                <div className='hidden md:block'>
+                  {showFilters && (
+                    <FilterInput
+                      paramKey='phone'
+                      defaultValue={filters.phone}
+                    />
+                  )}
+                </div>
               </TableHead>
               <TableHead>
                 <div>Artisti</div>
-                {showFilters && <SearchArtistSelect artists={artists} />}
+                <div className='hidden md:block'>
+                  {showFilters && <ArtistFilter artists={artists} />}
+                </div>
               </TableHead>
               <TableHead>
                 <div>Ragione sociale</div>
-                {showFilters && (
-                  <FilterInput
-                    paramKey='company'
-                    defaultValue={filters.company}
-                  />
-                )}
+                <div className='hidden md:block'>
+                  {showFilters && (
+                    <FilterInput
+                      paramKey='company'
+                      defaultValue={filters.company}
+                    />
+                  )}
+                </div>
               </TableHead>
             </TableRow>
           </TableHeader>

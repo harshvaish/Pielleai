@@ -25,6 +25,8 @@ export default function FilterInput({
   const [isPending, startTransition] = useTransition();
 
   const applyFilter = () => {
+    if (!value || !value.trim().length) return;
+
     const params = new URLSearchParams(searchParams.toString());
 
     // Update param value

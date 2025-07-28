@@ -7,7 +7,7 @@ export default async function Home() {
 
   return (
     <>
-      <h1 className='text-2xl font-bold'>Dashboard</h1>
+      <h1 className='text-xl md:text-2xl font-bold'>Dashboard</h1>
       {/* signup requests section */}
       <section className='bg-white p-4 rounded-2xl'>
         <h2 className='text-base font-bold'>Richieste registrazione</h2>

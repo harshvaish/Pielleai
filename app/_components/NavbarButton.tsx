@@ -9,22 +9,106 @@ import {
 import { Skeleton } from '@/components/ui/skeleton';
 import { useSession } from '@/lib/auth-client';
 import { cn } from '@/lib/utils';
-import { ChevronDown, SquareArrowOutUpRight } from 'lucide-react';
+import { ChevronDown, Menu, SquareArrowOutUpRight } from 'lucide-react';
 import { redirect } from 'next/navigation';
-import { useState } from 'react';
+import { Fragment, useState } from 'react';
 import ChangePasswordButton from './ChangePassword/ChangePaswordButton';
 import { Separator } from '@/components/ui/separator';
 import SignOutButton from './SignOutButton';
+import { useMediaQuery } from '@/lib/hooks/useMediaQuery';
+import {
+  Sheet,
+  SheetContent,
+  SheetTitle,
+  SheetTrigger,
+} from '@/components/ui/sheet';
+import { NAVBAR_LINKS } from '@/lib/constants';
+import Image from 'next/image';
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
 
 export default function NavbarButton() {
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const { data, isPending } = useSession();
+  const isMobile = useMediaQuery('(max-width: 767px)');
 
   const user = data?.user;
 
   if (isPending)
     return <Skeleton className='w-10 md:w-40 h-10 md:h-12 rounded-md' />;
   if (!user) return redirect('/accedi');
+
+  if (isMobile)
+    return (
+      <Sheet>
+        <SheetTrigger asChild>
+          <Button
+            variant='ghost'
+            className='w-10 h-10'
+          >
+            <Menu className='size-5' />
+          </Button>
+        </SheetTrigger>
+        <SheetContent className='px-4 pt-12 pb-4'>
+          <SheetTitle className='hidden'>
+            Menu di navigazione a scomparsa
+          </SheetTitle>
+          <nav className='max-h-max overflow-y-auto flex flex-col gap-2'>
+            {NAVBAR_LINKS.map((link) => (
+              <Fragment key={link.label}>
+                <Link
+                  href={link.href}
+                  prefetch={false}
+                  className='flex items-center gap-2 text-sm font-medium rounded-xl p-2 hover:bg-zinc-50'
+                >
+                  <Image
+                    className='w-4 h-4'
+                    src={link.iconSrc}
+                    alt={link.iconAlt}
+                    width={16}
+                    height={16}
+                    loading='lazy'
+                  />
+                  {link.label}
+                </Link>
+                {link.separator && <Separator />}
+              </Fragment>
+            ))}
+
+            <Separator />
+
+            <ChangePasswordButton
+              userId={user.id}
+              email={user.email}
+            />
+
+            <Separator />
+
+            <Link
+              href=''
+              prefetch={false}
+              className='flex items-center gap-2 text-sm text-blue-600 font-medium rounded-xl p-2 hover:bg-zinc-50'
+            >
+              <SquareArrowOutUpRight className='size-3' />
+              Informativa sulla privacy
+            </Link>
+
+            <Link
+              href=''
+              prefetch={false}
+              className='flex items-center gap-2 text-sm text-blue-600 font-medium rounded-xl p-2 hover:bg-zinc-50'
+            >
+              <SquareArrowOutUpRight className='size-3' />
+              Termini e Condizioni
+            </Link>
+
+            <Separator />
+
+            <SignOutButton />
+          </nav>
+        </SheetContent>
+      </Sheet>
+    );
 
   return (
     <Popover

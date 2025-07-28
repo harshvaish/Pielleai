@@ -14,12 +14,13 @@ import { TablePagination } from '../_components/TablePagination';
 import UserBadge from '../_components/Badges/UserBadge';
 import StatusBadge from '../_components/Badges/StatusBadge';
 import { NEW_USER_TIME } from '@/lib/constants';
-import ToggleFiltersButton from '../_components/ToggleFiltersButton';
 import FilterInput from '../_components/FilterInput';
-import CreateVenueManagerButton from './_components/CreateVenueManagerButton';
+import CreateButton from './_components/create/CreateButton';
 import VenuesBadge from '../_components/Badges/VenuesBadge';
-import SearchVenueSelect from './_components/SearchVenueSelect';
+import VenueFilter from './_components/filters/desktop/VenueFilter';
 import { getVenues } from '@/lib/data/venues/get-venues';
+import FiltersButton from './_components/filters/FiltersButton';
+import { VenueManagersTableFilters } from '@/lib/types';
 
 export default async function VenueManagersPage({
   searchParams,
@@ -38,7 +39,7 @@ export default async function VenueManagersPage({
   const currentPage = Number(sp?.page ?? '1');
   const showFilters = sp?.showFilters === 'true';
 
-  const filters = {
+  const filters: VenueManagersTableFilters = {
     currentPage: currentPage,
     fullName: sp?.fullName || '',
     email: sp?.email || '',
@@ -59,13 +60,17 @@ export default async function VenueManagersPage({
 
   return (
     <div className='h-full grid grid-rows-[min-content_1fr_min-content] gap-4'>
-      <div className='flex justify-between items-center'>
+      <div className='md:flex justify-between items-center gap-2'>
         <h1 className='text-2xl font-bold'>Promoter locali</h1>
-        <div className='flex items-center gap-4'>
-          {managers.length > 0 && (
-            <ToggleFiltersButton showFilters={showFilters} />
+        <div className='flex items-center gap-2 md:gap-4 mt-2 md:mt-0'>
+          {(managers.length > 0 || showFilters) && (
+            <FiltersButton
+              filters={filters}
+              showFilters={showFilters}
+              venues={venues}
+            />
           )}
-          <CreateVenueManagerButton
+          <CreateButton
             languages={languages}
             countries={countries}
           />
@@ -78,34 +83,42 @@ export default async function VenueManagersPage({
             <TableRow>
               <TableHead>
                 <div>Nome completo</div>
-                {showFilters && (
-                  <FilterInput
-                    paramKey='fullName'
-                    defaultValue={filters.fullName}
-                  />
-                )}
+                <div className='hidden md:block'>
+                  {showFilters && (
+                    <FilterInput
+                      paramKey='fullName'
+                      defaultValue={filters.fullName}
+                    />
+                  )}
+                </div>
               </TableHead>
               <TableHead>
                 <div>Email</div>
-                {showFilters && (
-                  <FilterInput
-                    paramKey='email'
-                    defaultValue={filters.email}
-                  />
-                )}
+                <div className='hidden md:block'>
+                  {showFilters && (
+                    <FilterInput
+                      paramKey='email'
+                      defaultValue={filters.email}
+                    />
+                  )}
+                </div>
               </TableHead>
               <TableHead>
                 <div>Numero di telefono</div>
-                {showFilters && (
-                  <FilterInput
-                    paramKey='phone'
-                    defaultValue={filters.phone}
-                  />
-                )}
+                <div className='hidden md:block'>
+                  {showFilters && (
+                    <FilterInput
+                      paramKey='phone'
+                      defaultValue={filters.phone}
+                    />
+                  )}
+                </div>
               </TableHead>
               <TableHead>
                 <div>Locali</div>
-                {showFilters && <SearchVenueSelect venues={venues} />}
+                <div className='hidden md:block'>
+                  {showFilters && <VenueFilter venues={venues} />}
+                </div>
               </TableHead>
             </TableRow>
           </TableHeader>

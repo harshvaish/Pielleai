@@ -88,8 +88,8 @@ export default function BillingDataForm({
 
   const subdivisionPlaceholder = useMemo(() => {
     if (isLoading) return 'Caricamento province...';
-    if (!selectedCountry) return 'Seleziona uno stato';
-    return 'Seleziona una provincia';
+    if (!selectedCountry) return 'seleziona stato';
+    return 'seleziona provincia';
   }, [isLoading, selectedCountry]);
 
   const onSubmit = async (data: ArtistManagerS2FormSchema) => {
@@ -308,7 +308,7 @@ export default function BillingDataForm({
                     )}
                     size='sm'
                   >
-                    {field.value?.name ?? 'Seleziona uno stato'}
+                    {field.value?.name ?? 'seleziona stato'}
                   </SelectTrigger>
                   <SelectContent>
                     {countries.map((country) => (

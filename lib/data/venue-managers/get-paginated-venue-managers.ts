@@ -3,7 +3,11 @@
 import { PAGINATED_TABLE_ROWS_X_PAGE } from '@/lib/constants';
 import { database } from '@/lib/database/connection';
 import { profiles, users, venues } from '@/lib/database/schema';
-import { VenueManagerTableData, VenueBadgeData } from '@/lib/types';
+import {
+  VenueManagerTableData,
+  VenueBadgeData,
+  VenueManagersTableFilters,
+} from '@/lib/types';
 import { and, count, eq, ilike, inArray } from 'drizzle-orm';
 
 export async function getPaginatedVenueManagers({
@@ -12,19 +16,12 @@ export async function getPaginatedVenueManagers({
   email,
   phone,
   venueIds,
-  limit = PAGINATED_TABLE_ROWS_X_PAGE,
-}: {
-  currentPage: number;
-  fullName: string;
-  email: string;
-  phone: string;
-  venueIds: string[];
-  limit?: number;
-}): Promise<{
+}: VenueManagersTableFilters): Promise<{
   data: VenueManagerTableData[];
   totalPages: number;
   currentPage: number;
 }> {
+  const limit = PAGINATED_TABLE_ROWS_X_PAGE;
   const offset = (currentPage - 1) * limit;
 
   try {

@@ -71,6 +71,15 @@ export type ProfileNote = {
   createdAt: string;
 };
 /* ------------------------------------------------- */
+export type ArtistManagersTableFilters = {
+  currentPage: number;
+  fullName: string;
+  email: string;
+  phone: string;
+  artistIds: string[];
+  company: string;
+};
+
 export type ArtistManagerData<T = ArtistListData | ArtistSelectData> = {
   id: string;
   profileId: number;
@@ -131,22 +140,15 @@ export type ArtistManagerSelectData = Pick<
   ArtistManagerData,
   'id' | 'profileId' | 'avatarUrl' | 'name' | 'surname' | 'status'
 >;
-
-export type ArtistManagersTableFilters = {
-  page?: string;
-  currentPage?: number;
-  limit?: number;
-
-  showFilters?: string;
-
-  fullName?: string;
-  email?: string;
-  phone?: string;
-  artist?: string;
-  company?: string;
-};
-
 /* ------------------------------------------------- */
+export type ArtistsTableFilters = {
+  currentPage: number;
+  fullName: string;
+  email: string;
+  phone: string;
+  managerIds: string[];
+  zoneIds: string[];
+};
 
 export type ArtistData = {
   id: number;
@@ -255,6 +257,14 @@ export type ArtistSelectData = Pick<
 >;
 
 /* ------------------------------------------------- */
+export type VenueManagersTableFilters = {
+  currentPage: number;
+  fullName: string;
+  email: string;
+  phone: string;
+  venueIds: string[];
+};
+
 export type VenueManagerData<
   T = VenueTableData | VenueListData | VenueBadgeData,
 > = {
@@ -302,6 +312,16 @@ export type VenueManagerSelectData = Pick<
   'id' | 'profileId' | 'avatarUrl' | 'name' | 'surname' | 'status'
 >;
 /* ------------------------------------------------- */
+export type VenuesTableFilters = {
+  currentPage: number;
+  name: string;
+  company: string;
+  taxCode: string;
+  address: string;
+  types: VenueType[];
+  managerIds: string[];
+  capacity: string;
+};
 
 export type VenueData = {
   id: number;

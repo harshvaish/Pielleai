@@ -34,7 +34,7 @@ import {
   artistS1FormSchema,
 } from '@/lib/validation/artistFormSchema';
 import { Checkbox } from '@/components/ui/checkbox';
-import ArtistManagersSelect from '@/app/(private)/artisti/_components/CreateArtistForm/ArtistManagersSelect';
+import ArtistManagersSelect from '@/app/(private)/artisti/_components/create/ArtistManagersSelect';
 import { editArtistPersonalData } from '@/lib/server-actions/artists/edit-artist-personal-data';
 
 export default function PersonalDataForm({
@@ -117,8 +117,8 @@ export default function PersonalDataForm({
 
   const subdivisionPlaceholder = useMemo(() => {
     if (isLoading) return 'Caricamento province...';
-    if (!selectedCountryId) return 'Seleziona uno stato';
-    return 'Seleziona una provincia';
+    if (!selectedCountryId) return 'seleziona stato';
+    return 'seleziona provincia';
   }, [isLoading, selectedCountryId]);
 
   const onSubmit = async (data: ArtistS1FormSchema) => {
@@ -440,7 +440,7 @@ export default function PersonalDataForm({
                     size='sm'
                   >
                     {countries.find((c) => c.id == field.value)?.name ||
-                      'Seleziona uno stato'}
+                      'seleziona stato'}
                   </SelectTrigger>
                   <SelectContent>
                     {countries.map((country) => (
