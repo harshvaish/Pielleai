@@ -85,7 +85,7 @@ export function NoteForm({
         onChange={(e) => setNewNoteContent(e.target.value)}
         autoFocus
         placeholder='Aggiungi nota'
-        className='resize-none h-full shadow-none'
+        className='resize-none max-w-full h-full shadow-none'
       />
       {error && <p className='text-xs text-destructive mt-2'>{error}</p>}
       <div className='flex justify-end gap-2 mt-4'>

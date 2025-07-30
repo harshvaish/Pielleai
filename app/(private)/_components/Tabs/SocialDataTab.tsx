@@ -35,15 +35,15 @@ export default function SocialDataTab({
         <TableBody>
           <TableRow>
             <TableCell>
-              <div className='flex items-center flex-nowrap gap-3'>
+              <div className='min-w-max flex items-center gap-3'>
                 <Image
-                  className='w-8'
+                  className='w-8 h-8'
                   src='/images/socials/tiktok.svg'
                   alt='logo tiktok'
                   width={32}
                   height={32}
                 />
-                <span>TikTok</span>
+                <span className='whitespace-nowrap'>TikTok</span>
               </div>
             </TableCell>
             <TableCell>
@@ -73,15 +73,15 @@ export default function SocialDataTab({
 
           <TableRow>
             <TableCell>
-              <div className='flex items-center flex-nowrap gap-3'>
+              <div className='min-w-max flex items-center gap-3'>
                 <Image
-                  className='w-8'
+                  className='w-8 h-8'
                   src='/images/socials/facebook.svg'
                   alt='logo facebook'
                   width={32}
                   height={32}
                 />
-                <span>Facebook</span>
+                <span className='whitespace-nowrap'>Facebook</span>
               </div>
             </TableCell>
             <TableCell>
@@ -111,15 +111,15 @@ export default function SocialDataTab({
 
           <TableRow>
             <TableCell>
-              <div className='flex items-center flex-nowrap gap-3'>
+              <div className='min-w-max flex items-center gap-3'>
                 <Image
-                  className='w-8'
+                  className='w-8 h-8'
                   src='/images/socials/instagram.svg'
                   alt='logo instagram'
                   width={32}
                   height={32}
                 />
-                <span>Instagram</span>
+                <span className='whitespace-nowrap'>Instagram</span>
               </div>
             </TableCell>
             <TableCell>
@@ -149,15 +149,15 @@ export default function SocialDataTab({
 
           <TableRow>
             <TableCell>
-              <div className='flex items-center flex-nowrap gap-3'>
+              <div className='min-w-max flex items-center gap-3'>
                 <Image
-                  className='w-8'
+                  className='w-8 h-8'
                   src='/images/socials/x.svg'
                   alt='logo x'
                   width={32}
                   height={32}
                 />
-                <span>X</span>
+                <span className='whitespace-nowrap'>X</span>
               </div>
             </TableCell>
             <TableCell>

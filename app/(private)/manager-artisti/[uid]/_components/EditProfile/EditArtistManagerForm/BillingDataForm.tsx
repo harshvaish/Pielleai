@@ -598,7 +598,7 @@ export default function BillingDataForm({
               <RadioGroup
                 value={field.value}
                 onValueChange={(value) => field.onChange(value)}
-                className='flex gap-2'
+                className='flex flex-wrap gap-2'
               >
                 <label
                   className={cn(
@@ -629,12 +629,12 @@ export default function BillingDataForm({
             </p>
           )}
         </div>
-        <div className='flex justify-between mt-4'>
+        <div className='grid grid-cols-2 md:flex justify-between gap-4 mt-4'>
           <Button
             type='button'
             onClick={closeDialog}
-            variant='ghost'
-            className='text-destructive'
+            variant='outline'
+            className='text-destructive border-destructive'
             disabled={isSubmitting}
           >
             <X size={16} /> Annulla

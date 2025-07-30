@@ -525,7 +525,7 @@ export default function PersonalDataForm({
               <RadioGroup
                 value={field.value}
                 onValueChange={(v) => field.onChange(v as Gender)}
-                className='flex gap-2'
+                className='flex flex-wrap gap-2'
               >
                 {GENDERS.map((gender) => (
                   <label

@@ -17,10 +17,10 @@ export default function PersonalDataTab({
   return (
     <TabsContent
       value={tabValue}
-      className='bg-white py-8 px-6 rounded-2xl'
+      className='bg-white py-8 px-6 rounded-2xl overflow-x-hidden'
     >
       <div className='text-xl font-semibold mb-6'>Dati personali</div>
-      <div className='grid grid-cols-[minmax(200px,max-content)_max-content] gap-6'>
+      <div className='grid grid-cols-[minmax(200px,max-content)_max-content] gap-6 overflow-x-auto'>
         <span className='text-sm font-semibold text-zinc-600'>
           Luogo di nascita
         </span>

@@ -17,11 +17,13 @@ export function Toolbar({
   const label = buildCalendarLabel(date, view);
 
   return (
-    <div className='flex items-center justify-between mb-4'>
+    <div className='flex flex-col xl:flex-row justify-between items-center gap-4 mb-4'>
       {/* Title & arrows */}
-      <div className='flex items-center gap-2'>
-        <div className='text-2xl font-bold capitalize'>{label}</div>
-        <div>
+      <div className='w-full xl:w-auto flex justify-center items-center gap-2'>
+        <div className='hidden md:block text-2xl font-bold capitalize'>
+          {label}
+        </div>
+        <div className='flex items-center'>
           <Button
             size='icon'
             variant='ghost'
@@ -30,6 +32,9 @@ export function Toolbar({
           >
             <ChevronLeft className='stroke-3' />
           </Button>
+          <div className='grow md:hidden font-semibold capitalize text-center'>
+            {label}
+          </div>
           <Button
             size='icon'
             variant='ghost'
@@ -42,7 +47,7 @@ export function Toolbar({
       </div>
 
       {/* view switch */}
-      <div className='flex gap-1 bg-zinc-50 p-1 rounded-xl'>
+      <div className='max-w-max flex gap-1 bg-zinc-50 p-1 rounded-xl'>
         {CALENDAR_VIEWS.map((v) => (
           <Button
             key={v}

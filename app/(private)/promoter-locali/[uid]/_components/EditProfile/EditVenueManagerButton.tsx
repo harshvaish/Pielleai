@@ -31,12 +31,16 @@ export default function EditVenueManagerButton({
       modal
     >
       <DialogTrigger asChild>
-        <Button variant='ghost'>
+        <Button
+          variant='ghost'
+          size='sm'
+          className='max-w-max'
+        >
           <Pencil />
           Modifica
         </Button>
       </DialogTrigger>
-      <DialogContent className='max-h-[94dvh] sm:max-w-2xl grid grid-rows-[auto_1fr]'>
+      <DialogContent className='h-dvh w-dvw grid grid-rows-[auto_1fr] p-4 pt-12 rounded-none md:rounded-2xl'>
         <DialogTitle className='hidden'>
           Form per modifica dati promoter locali
         </DialogTitle>

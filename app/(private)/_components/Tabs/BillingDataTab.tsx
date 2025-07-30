@@ -11,11 +11,11 @@ export default function BillingDataTab({
   return (
     <TabsContent
       value={tabValue}
-      className='grid grid-cols-2 gap-6'
+      className='grid xl:grid-cols-2 gap-6'
     >
-      <section className='bg-white py-8 px-6 rounded-2xl'>
+      <section className='bg-white py-8 px-6 rounded-2xl overflow-x-hidden'>
         <div className='text-xl font-semibold mb-6'>Dati di fatturazione</div>
-        <div className='grid grid-cols-[minmax(200px,max-content)_max-content] gap-6'>
+        <div className='grid grid-cols-[minmax(200px,max-content)_max-content] gap-6 overflow-x-auto'>
           <span className='text-sm font-semibold text-zinc-600'>
             Ragione sociale
           </span>
@@ -75,11 +75,11 @@ export default function BillingDataTab({
         </div>
       </section>
 
-      <section className='bg-white py-8 px-6 rounded-2xl'>
+      <section className='bg-white py-8 px-6 rounded-2xl overflow-x-hidden'>
         <div className='text-xl font-semibold mb-6'>
           Indirizzo di fatturazione
         </div>
-        <div className='grid grid-cols-[minmax(200px,max-content)_max-content] gap-6'>
+        <div className='grid grid-cols-[minmax(200px,max-content)_max-content] gap-6 overflow-x-auto'>
           <span className='text-sm font-semibold text-zinc-600'>
             Indirizzo di fatturazione
           </span>

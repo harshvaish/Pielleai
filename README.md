@@ -18,4 +18,5 @@
 - create indexes on database tables
 - check for timestamp in the db for timezone
 - mettere size su tutte le icone nelle classi
-  -refactor all components with props to externalize them
+- refactor all components to externalize props
+- inside the triggers of popover and stuff remove buttons if not usefull

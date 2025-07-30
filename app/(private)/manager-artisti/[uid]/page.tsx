@@ -20,6 +20,13 @@ import NotesSection from '../../_components/Notes/NotesSection';
 import ToggleBlockButton from '../../_components/ToggleBlockButton';
 import ManagedArtistsTab from './_components/Tabs/ManagedArtistsTab';
 
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
+import { Ellipsis } from 'lucide-react';
+
 export default async function ArtistManagerDetailPage({
   params,
 }: {
@@ -61,10 +68,28 @@ export default async function ArtistManagerDetailPage({
   const isDisabled = userData.status === 'disabled';
 
   return (
-    <>
+    <div className='max-w-full overflow-x-hidden'>
       <div className='flex justify-between items-center'>
         <BackButton />
-        <div className='flex items-center gap-4'>
+
+        <Popover>
+          <PopoverTrigger className='lg:hidden'>
+            <Ellipsis />
+          </PopoverTrigger>
+          <PopoverContent className='w-48 flex flex-col justify-start lg:hidden'>
+            <EditArtistManagerButton
+              userData={userData}
+              languages={languages}
+              countries={countries}
+            />
+            <ToggleBlockButton
+              userId={userData.id}
+              userInitialStatus={userData.status}
+            />
+          </PopoverContent>
+        </Popover>
+
+        <div className='hidden lg:flex items-center gap-4'>
           <ToggleBlockButton
             userId={userData.id}
             userInitialStatus={userData.status}
@@ -77,10 +102,10 @@ export default async function ArtistManagerDetailPage({
         </div>
       </div>
 
-      <div className='grid grid-cols-[60%_auto] gap-6'>
+      <div className='grid lg:grid-cols-[60%_auto] gap-6 mb-6'>
         {/* main details section */}
-        <section className='bg-white py-8 px-6 rounded-2xl'>
-          <div className='flex justify-between gap-2'>
+        <section className='bg-white py-8 px-6 rounded-2xl overflow-x-hidden'>
+          <div className='flex flex-col lg:flex-row lg:justify-between gap-4 lg:gap-2'>
             <div className='flex items-center gap-4'>
               <Image
                 src={userData.avatarUrl}
@@ -94,11 +119,11 @@ export default async function ArtistManagerDetailPage({
               />
 
               <div className='flex flex-col gap-1.5'>
-                <div className='text-2xl font-bold line-clamp-1 text-ellipsis break-all overflow-hidden'>
+                <div className='text-2xl font-bold line-clamp-1'>
                   {userData.name} {userData.surname}
                 </div>
                 <div className='flex items-center gap-2'>
-                  <Badge variant={isDisabled ? 'disabled' : 'success'}>
+                  <Badge variant={isDisabled ? 'disabled' : 'emerald'}>
                     Manager artista
                   </Badge>
                   {isDisabled && <StatusBadge status='disabled' />}
@@ -106,22 +131,22 @@ export default async function ArtistManagerDetailPage({
               </div>
             </div>
 
-            <div className='flex flex-col items-end gap-0.5'>
-              <div className='text-sm font-semibold text-zinc-500 whitespace-nowrap'>
-                ID: {userData.id}
+            <div className='max-w-full flex flex-col lg:items-end gap-0.5 overflow-x-auto'>
+              <div className='flex flex-col lg:flex-row text-sm font-semibold text-zinc-500 whitespace-nowrap'>
+                ID {userData.id}
               </div>
               <div className='text-xs font-semibold text-zinc-400'>
-                Data di creazione{' '}
+                Data di creazione:{' '}
                 {format(userData.createdAt, 'dd/MM/yyyy, HH:mm')}
               </div>
               <div className='text-xs font-semibold text-zinc-400'>
-                Data di aggiornamento{' '}
+                Data di aggiornamento:{' '}
                 {format(userData.updatedAt, 'dd/MM/yyyy, HH:mm')}
               </div>
             </div>
           </div>
           <Separator className='my-6' />
-          <div className='grid grid-cols-[minmax(200px,max-content)_max-content] gap-6'>
+          <div className='grid grid-cols-[minmax(200px,max-content)_max-content] gap-2 lg:gap-6 overflow-x-auto'>
             <span className='text-sm font-semibold text-zinc-600'>Email</span>
             <span className='text-sm font-medium text-zinc-500'>
               {userData.email}
@@ -156,9 +181,11 @@ export default async function ArtistManagerDetailPage({
       </div>
 
       <Tabs defaultValue='managed-artists'>
-        <div className='flex justify-between items-center mb-6'>
-          <span className='text-xl font-semibold'>Dettagli</span>
-          <TabsList className='gap-4 bg-white p-1 rounded-xl'>
+        <div className='flex justify-between items-center mb-2 overflow-hidden'>
+          <span className='hidden lg:block text-xl font-semibold'>
+            Dettagli
+          </span>
+          <TabsList className='justify-start gap-4 bg-white p-1 rounded-xl overflow-x-auto'>
             <TabsTrigger value='managed-artists'>Artisti gestiti</TabsTrigger>
             <TabsTrigger value='billing-data'>Dati di fatturazione</TabsTrigger>
             <TabsTrigger value='personal-data'>Dati personali</TabsTrigger>
@@ -178,6 +205,6 @@ export default async function ArtistManagerDetailPage({
           userData={userData}
         />
       </Tabs>
-    </>
+    </div>
   );
 }

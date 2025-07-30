@@ -598,7 +598,7 @@ export default function BillingDataForm({
               <RadioGroup
                 value={field.value}
                 onValueChange={(value) => field.onChange(value)}
-                className='flex gap-2'
+                className='flex flex-wrap gap-2'
               >
                 <label
                   className={cn(

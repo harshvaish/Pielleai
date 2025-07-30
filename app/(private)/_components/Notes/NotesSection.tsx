@@ -7,11 +7,10 @@ import { toast } from 'sonner';
 import { ProfileNote } from '@/lib/types';
 import { notFound } from 'next/navigation';
 import { NoteForm } from './NoteForm';
-import { DeleteNoteDialog } from './DeleteNoteDialog';
-import { CancelNewNoteDialog } from './CancelNewNoteDialog';
 import { NoteItem } from './NoteItem';
 import { deleteArtistNote } from '@/lib/server-actions/notes/delete-artist-note';
 import { deleteProfileNote } from '@/lib/server-actions/notes/delete-profile-note';
+import ConfirmDialog from '@/app/_components/ConfirmDialog';
 
 export default function NotesSection({
   isArtist,
@@ -57,7 +56,7 @@ export default function NotesSection({
 
   return (
     <>
-      <section className='max-h-80 grid grid-rows-[auto_1fr] gap-2 bg-white py-8 px-6 rounded-2xl'>
+      <section className='h-80 md:h-auto max-w-full grid grid-rows-[auto_1fr] gap-2 bg-white py-8 px-6 rounded-2xl'>
         <div className='flex justify-between items-center'>
           <div className='text-xl font-semibold'>Note</div>
           <Button
@@ -105,12 +104,21 @@ export default function NotesSection({
         )}
       </section>
 
-      <DeleteNoteDialog
+      {/* delete existing note */}
+      <ConfirmDialog
         open={isDeleteDialogOpen}
-        onClose={() => {
-          setSelectedNoteId(null);
-          setIsDeleteDialogOpen(false);
+        onOpenChange={(open) => {
+          if (!open) {
+            setSelectedNoteId(null);
+            setIsDeleteDialogOpen(false);
+          } else {
+            setIsDeleteDialogOpen(true);
+          }
         }}
+        title='Sei sicuro di voler eliminare la nota?'
+        description='Attenzione: questa operazione è irreversibile. La nota verrà eliminata definitivamente.'
+        confirmLabel='Elimina'
+        cancelLabel='Annulla'
         onConfirm={() => {
           if (selectedNoteId != null) {
             handleDeleteNote(selectedNoteId);
@@ -118,15 +126,25 @@ export default function NotesSection({
             setIsDeleteDialogOpen(false);
           }
         }}
+        onCancel={() => {
+          setSelectedNoteId(null);
+          setIsDeleteDialogOpen(false);
+        }}
       />
 
-      <CancelNewNoteDialog
+      {/* delete new note draft */}
+      <ConfirmDialog
         open={isCancelDialogOpen}
-        onClose={() => setIsCancelDialogOpen(false)}
+        onOpenChange={setIsCancelDialogOpen}
+        title='Sei sicuro di voler uscire?'
+        description='Il processo verrà interrotto e i dati verranno persi.'
+        confirmLabel='Esci'
+        cancelLabel='Annulla'
         onConfirm={() => {
           setIsCancelDialogOpen(false);
           setIsFormVisible(false);
         }}
+        onCancel={() => setIsCancelDialogOpen(false)}
       />
     </>
   );
