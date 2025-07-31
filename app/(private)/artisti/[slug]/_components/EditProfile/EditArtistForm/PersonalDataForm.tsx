@@ -175,7 +175,7 @@ export default function PersonalDataForm({
         onSubmit={methods.handleSubmit(onSubmit)}
       >
         <div className='text-xl text-center font-bold'>Dati personali</div>
-        <div className='grid grid-cols-[max-content_1fr_1fr_1fr] items-end gap-4'>
+        <div className='grid grid-cols-[max-content_1fr_1fr] items-end gap-4'>
           <div className='flex flex-col'>
             <Controller
               control={control}
@@ -239,27 +239,28 @@ export default function PersonalDataForm({
               </p>
             )}
           </div>
-          <div className='flex flex-col'>
-            <label
-              htmlFor='stageName'
-              className='block text-sm font-semibold mb-2'
-            >
-              Stage name
-            </label>
-            <Input
-              id='stageName'
-              {...register('stageName')}
-              placeholder='Shiva'
-              className={
-                errors.stageName ? 'border-destructive text-destructive' : ''
-              }
-            />
-            {errors.stageName && (
-              <p className='text-xs text-destructive mt-2'>
-                {errors.stageName.message as string}
-              </p>
-            )}
-          </div>
+        </div>
+
+        <div className='flex flex-col'>
+          <label
+            htmlFor='stageName'
+            className='block text-sm font-semibold mb-2'
+          >
+            Stage name
+          </label>
+          <Input
+            id='stageName'
+            {...register('stageName')}
+            placeholder='Shiva'
+            className={
+              errors.stageName ? 'border-destructive text-destructive' : ''
+            }
+          />
+          {errors.stageName && (
+            <p className='text-xs text-destructive mt-2'>
+              {errors.stageName.message as string}
+            </p>
+          )}
         </div>
 
         <div className='flex flex-col'>

@@ -65,10 +65,10 @@ export default function EditArtistButton({
 
         {/* step section */}
         <section className='flex justify-center mb-4'>
-          <div className='flex gap-2 py-1 px-2 border border-zinc-200 rounded-xl'>
+          <div className='w-full flex gap-2 py-1 px-2 border border-zinc-200 rounded-xl'>
             <div
               className={cn(
-                'w-40 text-sm font-semibold text-center py-1.5 px-3 rounded-lg hover:cursor-pointer',
+                'grow text-sm font-semibold text-center py-1.5 px-3 rounded-lg hover:cursor-pointer',
                 step === 1 ? 'bg-zinc-100' : 'text-zinc-600 bg-transparent'
               )}
               onClick={() => setStep(1)}
@@ -77,7 +77,7 @@ export default function EditArtistButton({
             </div>
             <div
               className={cn(
-                'w-40 text-sm font-semibold text-center py-1.5 px-3 rounded-lg hover:cursor-pointer',
+                'grow text-sm font-semibold text-center py-1.5 px-3 rounded-lg hover:cursor-pointer',
                 step === 2 ? 'bg-zinc-100' : 'text-zinc-600 bg-transparent'
               )}
               onClick={() => setStep(2)}
@@ -86,7 +86,7 @@ export default function EditArtistButton({
             </div>
             <div
               className={cn(
-                'w-40 text-sm font-semibold text-center py-1.5 px-3 rounded-lg hover:cursor-pointer',
+                'grow text-sm font-semibold text-center py-1.5 px-3 rounded-lg hover:cursor-pointer',
                 step === 3 ? 'bg-zinc-100' : 'text-zinc-600 bg-transparent'
               )}
               onClick={() => setStep(3)}

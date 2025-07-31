@@ -194,7 +194,7 @@ export default async function ArtistDetailPage({
           <span className='hidden lg:block text-xl font-semibold'>
             Dettagli
           </span>
-          <TabsList className='justify-start gap-4 bg-white p-1 rounded-xl overflow-x-auto'>
+          <TabsList className='w-full lg:max-w-max justify-start gap-4 bg-white p-1 rounded-xl overflow-x-auto'>
             <TabsTrigger value='personal-data'>Dati personali</TabsTrigger>
             <TabsTrigger value='billing-data'>Dati di fatturazione</TabsTrigger>
             <TabsTrigger value='availabilities'>Disponibilità</TabsTrigger>

@@ -56,7 +56,7 @@ export default function NotesSection({
 
   return (
     <>
-      <section className='h-80 md:h-auto max-w-full grid grid-rows-[auto_1fr] gap-2 bg-white py-8 px-6 rounded-2xl'>
+      <section className='h-80 lg:h-auto max-w-full grid grid-rows-[auto_1fr] gap-2 bg-white py-8 px-6 rounded-2xl'>
         <div className='flex justify-between items-center'>
           <div className='text-xl font-semibold'>Note</div>
           <Button

@@ -1,12 +1,27 @@
+/* === Layout and Scroll === */
 .rbc-time-view,
 .rbc-month-view {
+  width: 100%;
+  overflow-x: auto;
   border: none;
+}
+
+.rbc-time-header,
+.rbc-time-content,
+.rbc-month-header,
+.rbc-month-row {
+  min-width: 600px;
+}
+
+.rbc-time-content {
+  border-top: none;
 }
 
 .rbc-time-header {
   border-bottom: none;
 }
 
+/* === Hide Elements === */
 .rbc-event-label {
   display: none;
 } /* hides the time range */
@@ -15,27 +30,24 @@
   display: none;
 } /* hides the allday rows */
 
+/* === Button Styling === */
 .rbc-button-link[type='button'] {
   width: 100%;
   text-align: start;
-
   font-size: 14px;
   font-weight: 600;
   color: #a1a1aa;
-
   padding: 4px;
 }
 
-.rbc-time-content {
-  border-top: none;
-}
-
+/* === Labels === */
 .rbc-label {
   font-size: 12px;
   font-weight: 500;
   color: #71717a;
 }
 
+/* === Slot and Row Height === */
 .rbc-timeslot-group {
   min-height: 90px;
 }
@@ -48,30 +60,19 @@
   text-align: end;
 }
 
-.rbc-event.available {
-  background-color: var(--color-blue-600);
-
-  border: none;
-
-  opacity: 0.6;
-}
-
-.rbc-event.booked {
-  background-color: var(--color-zinc-600);
-
-  border: none;
-
-  opacity: 0.6;
-}
-
+/* === Event Styling === */
+.rbc-event.available,
 .available {
   background-color: var(--color-blue-600);
   opacity: 0.6;
+  border: none;
 }
 
+.rbc-event.booked,
 .booked {
   background-color: var(--color-zinc-600);
   opacity: 0.6;
+  border: none;
 }
 
 .canceled {

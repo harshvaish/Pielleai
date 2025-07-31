@@ -159,6 +159,7 @@ export default function BillingDataForm({
         className='flex flex-col gap-4'
         onSubmit={methods.handleSubmit(onSubmit)}
       >
+        <div className='text-xl text-center font-bold'>Dati fatturazione</div>
         <div className='flex flex-col'>
           <label
             htmlFor='company'

@@ -8,7 +8,6 @@ import {
   DialogTitle,
   DialogDescription,
 } from '@/components/ui/dialog';
-import { Separator } from '@/components/ui/separator';
 import { CalendarCheck2, Check, Plus, Trash, X } from 'lucide-react';
 import { Calendar } from '@/components/ui/calendar';
 import { Input } from '@/components/ui/input';
@@ -116,7 +115,7 @@ export function EditAvailabilitiesButton() {
         open={isDialogOpen}
         onOpenChange={setIsDialogOpen}
       >
-        <DialogContent className='sm:max-w-2xl'>
+        <DialogContent className='h-dvh w-dvw md:max-h-[460px] grid grid-rows-[max-content_1fr_max-content] rounded-none md:rounded-2xl gap-2 md:gap-4'>
           <DialogHeader>
             <DialogTitle>
               Seleziona le disponibilità e l&apos;orario dell&apos;artista
@@ -126,20 +125,20 @@ export function EditAvailabilitiesButton() {
               disponibilità dell&apos;artista.
             </DialogDescription>
           </DialogHeader>
-          <Separator />
 
-          <div className='grid grid-cols-2 gap-4'>
+          <div className='h-full grid grid-rows-[max-content_1fr] md:grid-rows-none md:grid-cols-2 gap-4 py-4 border-t border-b overflow-hidden'>
             <Calendar
               locale={it}
               mode='single'
               selected={selectedDate}
               onSelect={setSelectedDate}
               disabled={isSubmitting || isLoading}
+              className='h-max p-0 self-center'
             />
 
             {searchDate ? (
-              <div className='grid grid-rows-[auto_1fr] gap-2'>
-                <div className='flex justify-between items-center'>
+              <div className='flex flex-col overflow-y-auto'>
+                <div className='flex justify-between items-center shrink-0'>
                   <div className='font-semibold text-zinc-700'>Orario</div>
                   <Button
                     variant='ghost'
@@ -150,13 +149,14 @@ export function EditAvailabilitiesButton() {
                     <Plus />
                   </Button>
                 </div>
-                <div className='max-h-[240px] overflow-y-auto'>
+
+                <div className='flex flex-col gap-2 mt-2 overflow-y-auto'>
                   {isLoading && (
-                    <div className='flex flex-col gap-2'>
+                    <>
                       <Skeleton className='h-8 rounded-md' />
                       <Skeleton className='h-8 rounded-md' />
                       <Skeleton className='h-8 rounded-md' />
-                    </div>
+                    </>
                   )}
                   {!isLoading && timeRanges.length === 0 && (
                     <div className='text-sm text-zinc-500'>
@@ -174,7 +174,7 @@ export function EditAvailabilitiesButton() {
                       return (
                         <div
                           key={index}
-                          className='flex gap-2 items-center text-zinc-700 mb-2'
+                          className='flex gap-2 items-center text-zinc-700'
                         >
                           <Input
                             type='time'
@@ -234,7 +234,6 @@ export function EditAvailabilitiesButton() {
             )}
           </div>
 
-          <Separator />
           <div className='flex justify-between items-center gap-2'>
             <Button
               variant='ghost'
