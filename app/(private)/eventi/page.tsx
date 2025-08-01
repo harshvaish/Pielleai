@@ -12,6 +12,7 @@ import { getArtists } from '@/lib/data/artists/get-artists';
 import { getVenues } from '@/lib/data/venues/get-venues';
 import { notFound } from 'next/navigation';
 import CreateButton from './_components/CreateButton';
+import { getMoCoordinators } from '@/lib/data/get-mo-coordinators';
 
 export default async function EventsPage({
   searchParams,
@@ -29,10 +30,11 @@ export default async function EventsPage({
   };
 
   // const [{ data: events, totalPages }, artists, venues] = await Promise.all([
-  const [artists, venues] = await Promise.all([
+  const [artists, venues, moCoordinators] = await Promise.all([
     // getPaginatedEvents(filters),
     getArtists(),
     getVenues(),
+    getMoCoordinators(),
   ]).catch((error) => {
     console.error('❌ Error fetching:', error);
     notFound();
@@ -49,6 +51,7 @@ export default async function EventsPage({
           <CreateButton
             artists={artists}
             venues={venues}
+            moCoordinators={moCoordinators}
           />
         </div>
       </div>

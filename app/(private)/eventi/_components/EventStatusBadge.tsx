@@ -18,8 +18,8 @@ const styles: Record<
     text: 'text-blue-600',
     bg: 'bg-blue-100',
     icon: (
-      <div className='w-4 h-4 flex justify-center items-center bg-blue-600 rounded-full'>
-        <ChevronRight className='size-3 text-white' />
+      <div className='w-3 h-3 flex justify-center items-center bg-blue-600 rounded-full'>
+        <ChevronRight className='size-2 text-white' />
       </div>
     ),
   },
@@ -28,7 +28,7 @@ const styles: Record<
     text: 'text-amber-600',
     bg: 'bg-amber-100',
     icon: (
-      <div className='w-4 h-4 flex justify-center items-center bg-amber-600 rounded-full'>
+      <div className='w-3 h-3 flex justify-center items-center bg-amber-600 rounded-full'>
         <span className='text-xs text-white'>?</span>
       </div>
     ),
@@ -38,8 +38,8 @@ const styles: Record<
     text: 'text-lime-600',
     bg: 'bg-lime-100',
     icon: (
-      <div className='w-4 h-4 flex justify-center items-center bg-lime-600 rounded-full'>
-        <Check className='size-3 text-white' />
+      <div className='w-3 h-3 flex justify-center items-center bg-lime-600 rounded-full'>
+        <Check className='size-2 text-white' />
       </div>
     ),
   },
@@ -48,8 +48,8 @@ const styles: Record<
     text: 'text-red-600',
     bg: 'bg-red-100',
     icon: (
-      <div className='w-4 h-4 flex justify-center items-center bg-red-600 rounded-full'>
-        <X className='size-3 text-white' />
+      <div className='w-3 h-3 flex justify-center items-center bg-red-600 rounded-full'>
+        <X className='size-2 text-white' />
       </div>
     ),
   },

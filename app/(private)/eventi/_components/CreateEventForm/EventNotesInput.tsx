@@ -9,7 +9,7 @@ import { EventFormSchema } from '@/lib/validation/eventFormSchema';
 import { cn } from '@/lib/utils';
 
 export default function EventNotesInput() {
-  const [isInputVisible, setIsInputVisible] = useState<boolean>(true);
+  const [isInputVisible, setIsInputVisible] = useState<boolean>(false);
   const [newNote, setNewNote] = useState<string>('');
   const [error, setError] = useState<string>('');
   const { watch, setValue, getValues } = useFormContext<EventFormSchema>();
@@ -82,9 +82,9 @@ export default function EventNotesInput() {
         notes.map((note, index) => (
           <div
             key={index}
-            className='flex justify-between items-center ps-2 py-1 mb-2 border border-zinc-100 rounded-xl'
+            className='flex justify-between items-center ps-2 mb-2 border border-zinc-200 rounded-xl'
           >
-            <span className='text-sm text-zinc-500'>{note}</span>
+            <span className='text-sm'>{note}</span>
             <Button
               type='button'
               variant='ghost'
@@ -97,7 +97,7 @@ export default function EventNotesInput() {
         ))}
 
       {!isInputVisible && notes.length === 0 && (
-        <div className='text-sm text-zinc-500'>
+        <div className='py-1 text-sm text-zinc-500'>
           Premi il pulsante + per aggiungere una nota.
         </div>
       )}

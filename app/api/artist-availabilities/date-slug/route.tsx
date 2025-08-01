@@ -1,4 +1,4 @@
-import { getArtistDateAvailabilitiesFromId } from '@/lib/data/artists/get-artist-date-availabilities-from-id';
+import { getArtistDateAvailabilitiesFromSlug } from '@/lib/data/artists/get-artist-date-availabilities-from-slug';
 import { type NextRequest, NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
@@ -6,12 +6,12 @@ export const dynamic = 'force-dynamic';
 export async function GET(request: NextRequest) {
   const url = new URL(request.url);
 
-  const artistId = url.searchParams.get('artist');
+  const artistSlug = url.searchParams.get('artistSlug');
   const date = url.searchParams.get('date');
 
   const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
 
-  if (!artistId) {
+  if (!artistSlug) {
     return NextResponse.json(
       { error: 'Artista mancante o non valido.' },
       { status: 400 }
@@ -26,8 +26,8 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const availabilities = await getArtistDateAvailabilitiesFromId({
-      artistId,
+    const availabilities = await getArtistDateAvailabilitiesFromSlug({
+      artistSlug,
       date,
     });
     return NextResponse.json({ availabilities }, { status: 200 });

@@ -1,11 +1,11 @@
-import { avatarUploadSchema } from '@/lib/validation/avatarUploadSchema';
-import { supabaseServerClient } from './../../../lib/supabase-server-client';
+import { pdfUploadSchema } from '@/lib/validation/pdfUploadSchema';
+import { supabaseServerClient } from '../../../lib/supabase-server-client';
 import { NextRequest, NextResponse } from 'next/server';
 import { sanitizeFileName } from '@/lib/utils';
 
 export async function POST(req: NextRequest) {
   const body = await req.json();
-  const parse = avatarUploadSchema.safeParse(body);
+  const parse = pdfUploadSchema.safeParse(body);
   if (!parse.success) {
     return NextResponse.json({ error: 'Invalid request' }, { status: 400 });
   }
@@ -13,7 +13,7 @@ export async function POST(req: NextRequest) {
   const { name } = parse.data;
   const sanitizedFileName = sanitizeFileName(name);
 
-  const filePath = `avatars/${Date.now()}-${sanitizedFileName}`;
+  const filePath = `pdf/${Date.now()}-${sanitizedFileName}`;
 
   const { data, error } = await supabaseServerClient.storage
     .from(process.env.NEXT_PUBLIC_SUPABASE_BUCKET_NAME!)
@@ -23,5 +23,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  return NextResponse.json({ signedUrl: data.signedUrl, path: filePath });
+  return NextResponse.json({
+    signedUrl: data.signedUrl,
+    path: filePath,
+    fileName: sanitizedFileName,
+  });
 }

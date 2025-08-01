@@ -35,7 +35,7 @@ export function EditAvailabilitiesButton() {
 
   const searchDate = selectedDate ? format(selectedDate, 'yyyy-MM-dd') : '';
   const fetchUrl = searchDate
-    ? `/api/artist-availabilities/date?artist=${slug}&date=${searchDate}`
+    ? `/api/artist-availabilities/date-slug?artist=${slug}&date=${searchDate}`
     : null;
 
   const { data, error, isLoading } = useSWR(fetchUrl, fetcher, {

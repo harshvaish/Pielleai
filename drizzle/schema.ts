@@ -312,6 +312,13 @@ export const artistNotes = pgTable("artist_notes", {
 		}),
 ]);
 
+export const moCoordinators = pgTable("mo_coordinators", {
+	id: serial().primaryKey().notNull(),
+	name: text().notNull(),
+	surname: text().notNull(),
+	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow(),
+});
+
 export const venues = pgTable("venues", {
 	id: serial().primaryKey().notNull(),
 	name: text().notNull(),

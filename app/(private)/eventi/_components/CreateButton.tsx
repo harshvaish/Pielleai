@@ -9,16 +9,18 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
-import { ArtistSelectData, VenueSelectData } from '@/lib/types';
+import { ArtistSelectData, MoCoordinator, VenueSelectData } from '@/lib/types';
 import { useState } from 'react';
 import CreateEventForm from './CreateEventForm/CreateEventForm';
 
 export default function CreateButton({
   artists,
   venues,
+  moCoordinators,
 }: {
   artists: ArtistSelectData[];
   venues: VenueSelectData[];
+  moCoordinators: MoCoordinator[];
 }) {
   const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
   return (
@@ -33,7 +35,7 @@ export default function CreateButton({
           Aggiungi
         </Button>
       </DialogTrigger>
-      <DialogContent className='max-h-[94dvh] sm:max-w-2xl grid grid-rows-[auto_1fr] pt-12'>
+      <DialogContent className='h-dvh md:max-h-[94dvh] w-dvw grid grid-rows-[auto_1fr] p-4 pt-12 rounded-none md:rounded-2xl'>
         <DialogTitle className='hidden'>
           Form per creazione nuovo evento
         </DialogTitle>
@@ -44,6 +46,7 @@ export default function CreateButton({
         <CreateEventForm
           artists={artists}
           venues={venues}
+          moCoordinators={moCoordinators}
           closeDialog={() => setIsDialogOpen(false)}
         />
       </DialogContent>

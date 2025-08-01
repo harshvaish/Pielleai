@@ -1,82 +1,268 @@
 'use client';
 
-import useSWR from 'swr';
-import { Controller, useFormContext } from 'react-hook-form';
-import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
+import { Calendar } from '@/components/ui/calendar';
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-} from '@/components/ui/select';
-import { cn, fetcher } from '@/lib/utils';
-import { ArtistAvailability } from '@/lib/types';
-import { useEffect } from 'react';
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { EventFormSchema } from '@/lib/validation/eventFormSchema';
+import { Check, Minus, Plus } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { useFormContext } from 'react-hook-form';
+import { it } from 'date-fns/locale';
+import { Input } from '@/components/ui/input';
 import { format } from 'date-fns';
+import useSWR from 'swr';
+import { checkTimeRanges, cn, fetcher } from '@/lib/utils';
+import { ArtistAvailability, TimeRange } from '@/lib/types';
+import { toast } from 'sonner';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function ArtistAvailabilitySelect() {
-  const { watch, control, formState } = useFormContext<EventFormSchema>();
+  const { watch, setValue } = useFormContext<EventFormSchema>();
+  const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
+  const [timeRanges, setTimeRanges] = useState<TimeRange[]>([]);
+  const [isFormVisible, setIsFormVisible] = useState<boolean>(false);
+  const [newTimeRange, setNewTimeRange] = useState<TimeRange>({
+    startTime: '',
+    endTime: '',
+  });
+  const [selectedAvailability, setSelectedAvailability] = useState<
+    string | undefined
+  >(undefined);
 
-  const artistId = watch('artistId');
+  const selectedArtistId = watch('artistId');
+  const searchDate = selectedDate ? format(selectedDate, 'yyyy-MM-dd') : '';
 
-  const { data, error, isLoading } = useSWR(
-    artistId ? `/api/artist-availabilities?artist=${artistId}` : null,
-    fetcher
-  );
+  const fetchUrl =
+    selectedArtistId && searchDate
+      ? `/api/artist-availabilities/date?artist=${selectedArtistId}&date=${searchDate}`
+      : null;
 
-  const availabilities: ArtistAvailability[] = data?.availabilities || [];
+  const { data, error, isLoading } = useSWR(fetchUrl, fetcher, {
+    dedupingInterval: 0, // milliseconds; 0 disables deduplication
+    revalidateIfStale: true,
+    revalidateOnMount: true,
+  });
 
   useEffect(() => {
-    if (error) {
-      toast.error('Recupero delle disponibilità artista non riuscito.');
-    }
+    if (!data?.availabilities) return;
+    setTimeRanges(
+      data.availabilities.map((a: ArtistAvailability) => ({
+        startTime: format(a.startDate, 'HH:mm'),
+        endTime: format(a.endDate, 'HH:mm'),
+        status: a.status,
+        availabilityId: a.id,
+      }))
+    );
+  }, [data]);
+
+  useEffect(() => {
+    if (error) toast.error('Recupero disponibilità artista non riuscito.');
   }, [error]);
 
+  const onNewAvailabilityClickHandler = () => {
+    if (!selectedDate) {
+      toast.error('Seleziona una data.');
+      return;
+    }
+
+    const check = checkTimeRanges(searchDate, [...timeRanges, newTimeRange]);
+
+    if (!check.success) {
+      toast.error(check.message);
+      return;
+    }
+
+    setSelectedAvailability(
+      `${format(selectedDate, 'yyyy-MM-dd')} ${newTimeRange.startTime} - ${newTimeRange.endTime}`
+    );
+    setValue('availability', {
+      date: format(selectedDate, 'yyyy-MM-dd'),
+      startTime: newTimeRange.startTime,
+      endTime: newTimeRange.endTime,
+      id: undefined,
+    });
+    setIsDialogOpen(false);
+  };
+
+  const onAvailabilityClickHandler = (timeRange: TimeRange) => {
+    if (!selectedDate || !timeRange.availabilityId) {
+      toast.error('Disponibilità selezionata non valida.');
+      return;
+    }
+
+    setSelectedAvailability(
+      `${format(selectedDate, 'yyyy-MM-dd')} ${timeRange.startTime} - ${timeRange.endTime}`
+    );
+    setValue('availability', {
+      date: format(selectedDate, 'yyyy-MM-dd'),
+      startTime: timeRange.startTime,
+      endTime: timeRange.endTime,
+      id: timeRange.availabilityId.toString(),
+    });
+    setIsDialogOpen(false);
+  };
+
   return (
-    <Controller
-      control={control}
-      name='availabilityId'
-      render={({ field }) => (
-        <Select
-          value={field.value ? field.value.toString() : undefined}
-          onValueChange={(v) => field.onChange(parseInt(v))}
-          disabled={isLoading || !availabilities.length}
-        >
-          <SelectTrigger
-            id='availabilityId'
-            className={cn(
-              'w-full',
-              formState.errors.availabilityId &&
-                'border-destructive text-destructive'
+    <>
+      <Button
+        type='button'
+        size='sm'
+        variant='outline'
+        className={cn(
+          'justify-start text-sm',
+          selectedAvailability ? 'font-medium' : 'text-zinc-500 font-normal'
+        )}
+        onClick={() => setIsDialogOpen(true)}
+        disabled={!selectedArtistId}
+      >
+        {selectedAvailability ? selectedAvailability : 'Seleziona data'}
+      </Button>
+
+      <Dialog
+        open={isDialogOpen}
+        onOpenChange={setIsDialogOpen}
+      >
+        <DialogContent className='h-dvh md:max-h-[94dvh] w-dvw grid grid-rows-[auto_1fr] p-4 pt-12 rounded-none md:rounded-2xl'>
+          <DialogHeader>
+            <DialogTitle>Seleziona data e ora dell&apos;evento</DialogTitle>
+            <DialogDescription className='hidden'>
+              Tramite questo dialog l&apos;utente può scegliere la disponibilità
+              dell&apos;artista.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className='h-full grid grid-rows-[max-content_1fr] md:grid-rows-none md:grid-cols-2 justify-items-center gap-4 py-4 border-t overflow-hidden'>
+            <Calendar
+              locale={it}
+              mode='single'
+              className='h-max p-0 self-center'
+              selected={selectedDate}
+              onSelect={setSelectedDate}
+              disabled={isLoading}
+            />
+
+            {searchDate ? (
+              <div className='w-full flex flex-col overflow-y-auto'>
+                <div className='flex justify-between items-center shrink-0'>
+                  <div className='font-semibold text-zinc-700'>Orario</div>
+                  <Button
+                    variant='ghost'
+                    size='icon'
+                    onClick={() => setIsFormVisible(!isFormVisible)}
+                    disabled={isLoading}
+                  >
+                    {isFormVisible ? <Minus /> : <Plus />}
+                  </Button>
+                </div>
+
+                {isFormVisible && (
+                  <div className='flex gap-2 items-center text-zinc-700 pb-2 border-b'>
+                    <Input
+                      type='time'
+                      value={newTimeRange.startTime}
+                      onChange={(e) =>
+                        setNewTimeRange((prev) => ({
+                          ...prev,
+                          startTime: e.target.value,
+                        }))
+                      }
+                      className={cn(
+                        'w-min appearance-none [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none shadow-none'
+                      )}
+                      disabled={isLoading}
+                    />
+                    <span className='text-zinc-400'>-</span>
+                    <Input
+                      type='time'
+                      value={newTimeRange.endTime}
+                      onChange={(e) =>
+                        setNewTimeRange((prev) => ({
+                          ...prev,
+                          endTime: e.target.value,
+                        }))
+                      }
+                      className={cn(
+                        'w-min appearance-none [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none shadow-none'
+                      )}
+                      disabled={isLoading}
+                    />
+
+                    <Button
+                      variant='ghost'
+                      size='icon'
+                      className='text-emerald-600'
+                      onClick={onNewAvailabilityClickHandler}
+                      disabled={isLoading}
+                    >
+                      <Check />
+                    </Button>
+                  </div>
+                )}
+
+                <div className='flex flex-col gap-2 my-4 overflow-y-auto'>
+                  {isLoading && (
+                    <>
+                      <Skeleton className='h-8 rounded-md' />
+                      <Skeleton className='h-8 rounded-md' />
+                      <Skeleton className='h-8 rounded-md' />
+                    </>
+                  )}
+                  {!isLoading && timeRanges.length === 0 && (
+                    <div className='text-sm text-zinc-500'>
+                      Nessuna disponibilità. Aggiungine una per vederla nella
+                      lista.
+                    </div>
+                  )}
+                  {!isLoading &&
+                    timeRanges.length > 0 &&
+                    timeRanges.map((timeRange, index) => {
+                      const notAvailable =
+                        'status' in timeRange &&
+                        timeRange.status !== 'available';
+
+                      return (
+                        <div
+                          key={index}
+                          className='flex gap-2 justify-between items-center bg-zinc-50 px-2 rounded-xl'
+                        >
+                          <span>
+                            {timeRange.startTime}
+                            <span className='text-zinc-400 mx-1'>-</span>
+                            {timeRange.endTime}
+                          </span>
+                          {!notAvailable && (
+                            <Button
+                              variant='ghost'
+                              size='icon'
+                              className='text-emerald-600'
+                              onClick={() =>
+                                onAvailabilityClickHandler(timeRange)
+                              }
+                              disabled={isLoading}
+                            >
+                              <Check />
+                            </Button>
+                          )}
+                        </div>
+                      );
+                    })}
+                </div>
+              </div>
+            ) : (
+              <div className='w-full flex justify-center items-center text-sm text-zinc-500'>
+                Seleziona una data per accedere alle disponibilità.
+              </div>
             )}
-            size='sm'
-          >
-            {(() => {
-              const selected = availabilities.find(
-                (av) => av.id === field.value
-              );
-              return selected
-                ? `${format(selected.startDate, 'dd/MM/yyyy HH:mm')} - ${format(selected.endDate, 'HH:mm')}`
-                : availabilities.length
-                  ? 'Seleziona una disponibilità'
-                  : 'Nessuna disponibilità';
-            })()}
-          </SelectTrigger>
-          <SelectContent>
-            {availabilities.map((av) => (
-              <SelectItem
-                key={av.id}
-                value={av.id.toString()}
-              >
-                {format(av.startDate, 'dd/MM/yyyy HH:mm')} -{' '}
-                {format(av.endDate, 'HH:mm')}
-              </SelectItem>
-            ))}
-            {availabilities.length === 0 && 'Nessuna disponibilità.'}
-          </SelectContent>
-        </Select>
-      )}
-    />
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }

@@ -1,30 +1,21 @@
 'server only';
 
 import { database } from '@/lib/database/connection';
-import { artistAvailabilities, artists } from '@/lib/database/schema';
+import { artistAvailabilities } from '@/lib/database/schema';
 import { ArtistAvailability } from '@/lib/types';
 import { and, eq, or, sql } from 'drizzle-orm';
 
-export async function getArtistAvailabilitiesFromDate({
-  artistSlug,
+export async function getArtistDateAvailabilitiesFromId({
+  artistId,
   date,
 }: {
-  artistSlug: string;
+  artistId: string;
   date: string;
 }): Promise<ArtistAvailability[]> {
   try {
-    const artistResult = await database
-      .select({
-        id: artists.id,
-      })
-      .from(artists)
-      .where(and(eq(artists.slug, artistSlug)));
+    const id = parseInt(artistId);
 
-    const artistId = artistResult[0]?.id;
-
-    if (!artistId) {
-      throw new Error('Recupero artista non riuscito.');
-    }
+    if (!id || isNaN(id)) return [];
 
     const availabilitiesResult = await database
       .select({
@@ -36,7 +27,7 @@ export async function getArtistAvailabilitiesFromDate({
       .from(artistAvailabilities)
       .where(
         and(
-          eq(artistAvailabilities.artistId, artistId),
+          eq(artistAvailabilities.artistId, id),
           or(
             sql`DATE(${artistAvailabilities.startDate}) = ${date}::date`,
             sql`DATE(${artistAvailabilities.endDate}) = ${date}::date`

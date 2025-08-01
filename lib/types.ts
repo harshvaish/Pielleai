@@ -71,6 +71,12 @@ export type ProfileNote = {
   createdAt: string;
 };
 /* ------------------------------------------------- */
+export type MoCoordinator = {
+  id: number;
+  name: string;
+  surname: string;
+};
+/* ------------------------------------------------- */
 export type ArtistManagersTableFilters = {
   currentPage: number;
   fullName: string;
@@ -434,4 +440,5 @@ export type TimeRange = {
   startTime: string;
   endTime: string;
   status?: AvailabilityStatus;
+  availabilityId?: number;
 };

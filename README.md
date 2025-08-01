@@ -20,3 +20,4 @@
 - mettere size su tutte le icone nelle classi
 - refactor all components to externalize props
 - inside the triggers of popover and stuff remove buttons if not usefull
+- aggiungere trim su tutte le validationi stringa tranne password

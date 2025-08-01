@@ -36,7 +36,7 @@ export default function ArtistManagerSelect() {
   return (
     <Controller
       control={control}
-      name='artistManagerId'
+      name='artistManagerProfileId'
       render={({ field }) => (
         <Select
           value={field.value ? field.value.toString() : undefined}
@@ -44,10 +44,10 @@ export default function ArtistManagerSelect() {
           disabled={isLoading || !managers.length}
         >
           <SelectTrigger
-            id='artistManagerId'
+            id='artistManagerProfileId'
             className={cn(
               'w-full',
-              formState.errors.artistManagerId &&
+              formState.errors.artistManagerProfileId &&
                 'border-destructive text-destructive'
             )}
             size='sm'

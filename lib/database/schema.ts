@@ -566,3 +566,10 @@ export const artistAvailabilities = pgTable(
     check('chk_time_range', sql`start_date < end_date`),
   ]
 );
+
+export const moCoordinators = pgTable('mo_coordinators', {
+  id: serial().primaryKey().notNull(),
+  name: text().notNull(),
+  surname: text().notNull(),
+  createdAt: timestamp('created_at', { mode: 'string' }).defaultNow(),
+});

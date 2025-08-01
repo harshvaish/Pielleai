@@ -102,6 +102,13 @@ export function isValidImageMagicNumber(magic: string): boolean {
   return validMagicNumbers.some((sig) => magic.startsWith(sig));
 }
 
+export function isValidPdfMagicNumber(magic: string): boolean {
+  const validMagicNumbers = [
+    '25504446', // %PDF in hex
+  ];
+  return validMagicNumbers.some((sig) => magic.startsWith(sig));
+}
+
 export function sanitizeFileName(fileName: string): string {
   const name = fileName.split('.').slice(0, -1).join('.') || 'file';
   const ext = fileName.split('.').pop() || 'png';

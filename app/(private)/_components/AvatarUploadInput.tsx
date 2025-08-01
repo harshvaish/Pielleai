@@ -59,7 +59,7 @@ export default function AvatarUploadInput({
   };
 
   const uploadImage = async (file: File) => {
-    const response = await fetch('/api/upload-url', {
+    const response = await fetch('/api/avatar-upload-url', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
