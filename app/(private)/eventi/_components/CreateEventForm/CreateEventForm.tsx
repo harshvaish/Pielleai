@@ -31,6 +31,7 @@ import ArtistAvailabilitySelect from './ArtistAvailabilitySelect';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import PdfUploadInput from '@/app/(private)/eventi/_components/CreateEventForm/PdfUploadInput';
 import { Checkbox } from '@/components/ui/checkbox';
+import { createEvent } from '@/lib/server-actions/events/create-event';
 
 export default function CreateEventForm({
   artists,
@@ -55,7 +56,7 @@ export default function CreateEventForm({
       venueId: undefined,
 
       administrationEmail: '',
-      payrollSecurityConsultantEmail: '',
+      payrollConsultantEmail: '',
       notes: [],
 
       moCost: undefined,
@@ -76,11 +77,11 @@ export default function CreateEventForm({
       totalCost: undefined,
       transportationsCost: undefined,
       cashBalanceCost: undefined,
-      soundCheckStartTime: '',
-      soundCheckEndTime: '',
+      soundCheckStart: '',
+      soundCheckEnd: '',
+
       tecnicalRiderDocument: undefined,
 
-      preEventNegotiation: false,
       contractSigning: false,
       depositInvoiceIssuing: false,
       depositReceiptVerification: false,
@@ -88,9 +89,9 @@ export default function CreateEventForm({
       artistEngagement: false,
       professionalsEngagement: false,
       accompanyingPersonsEngagement: false,
-      eventDayActivities: false,
+
       performance: false,
-      postEventActivities: false,
+
       postDateFeedback: false,
       bordereau: false,
     },
@@ -186,19 +187,6 @@ export default function CreateEventForm({
           </div>
 
           <div className='flex flex-col'>
-            <div className='text-sm font-semibold mb-2'>Manager artista</div>
-            <ArtistManagerSelect />
-            {methods.formState.errors.artistManagerProfileId && (
-              <p className='text-xs text-destructive mt-2'>
-                {
-                  methods.formState.errors.artistManagerProfileId
-                    .message as string
-                }
-              </p>
-            )}
-          </div>
-
-          <div className='flex flex-col'>
             <div className='text-sm font-semibold mb-2'>Locale</div>
             <VenueSelect venues={venues} />
             {methods.formState.errors.venueId && (
@@ -223,10 +211,10 @@ export default function CreateEventForm({
             className='bg-zinc-50 p-1 rounded-2xl border'
           >
             <TabsList className='w-full justify-start gap-4 bg-white p-1 rounded-xl overflow-x-auto'>
-              <TabsTrigger value='a'>Informazioni</TabsTrigger>
-              <TabsTrigger value='b'>Milano Ovest</TabsTrigger>
-              <TabsTrigger value='c'>Dettagli tecnici</TabsTrigger>
-              <TabsTrigger value='d'>Checklist</TabsTrigger>
+              <TabsTrigger value='a'>Contatti</TabsTrigger>
+              <TabsTrigger value='b'>Financial</TabsTrigger>
+              <TabsTrigger value='c'>Scheda tecnica</TabsTrigger>
+              <TabsTrigger value='d'>Attività</TabsTrigger>
             </TabsList>
 
             <TabsContent
@@ -235,7 +223,22 @@ export default function CreateEventForm({
             >
               <div className='flex flex-col'>
                 <div className='text-sm font-semibold mb-2'>
-                  Amministrazione / EMPAS
+                  Manager artista
+                </div>
+                <ArtistManagerSelect />
+                {methods.formState.errors.artistManagerProfileId && (
+                  <p className='text-xs text-destructive mt-2'>
+                    {
+                      methods.formState.errors.artistManagerProfileId
+                        .message as string
+                    }
+                  </p>
+                )}
+              </div>
+
+              <div className='flex flex-col'>
+                <div className='text-sm font-semibold mb-2'>
+                  Amministrazione
                 </div>
                 <Input
                   type='email'
@@ -259,22 +262,22 @@ export default function CreateEventForm({
 
               <div className='flex flex-col'>
                 <div className='text-sm font-semibold mb-2'>
-                  Consulente paghe e sicurezza
+                  Consulente paghe e contributi
                 </div>
                 <Input
                   type='email'
-                  {...methods.register('payrollSecurityConsultantEmail')}
+                  {...methods.register('payrollConsultantEmail')}
                   placeholder='consulente@eaglebooking.it'
                   className={
-                    methods.formState.errors.payrollSecurityConsultantEmail
+                    methods.formState.errors.payrollConsultantEmail
                       ? 'border-destructive text-destructive'
                       : ''
                   }
                 />
-                {methods.formState.errors.payrollSecurityConsultantEmail && (
+                {methods.formState.errors.payrollConsultantEmail && (
                   <p className='text-xs text-destructive mt-2'>
                     {
-                      methods.formState.errors.payrollSecurityConsultantEmail
+                      methods.formState.errors.payrollConsultantEmail
                         .message as string
                     }
                   </p>
@@ -292,9 +295,7 @@ export default function CreateEventForm({
             >
               <div className='grid grid-cols-2 gap-4'>
                 <div className='flex flex-col'>
-                  <div className='text-sm font-semibold mb-2'>
-                    Commissione Milano Ovest
-                  </div>
+                  <div className='text-sm font-semibold mb-2'>Cachet lordo</div>
                   <Input
                     {...methods.register('moCost', {
                       valueAsNumber: true,
@@ -317,9 +318,7 @@ export default function CreateEventForm({
                 </div>
 
                 <div className='flex flex-col'>
-                  <div className='text-sm font-semibold mb-2'>
-                    Commissione promoter
-                  </div>
+                  <div className='text-sm font-semibold mb-2'>Fee promoter</div>
                   <Input
                     {...methods.register('venueManagerCost', {
                       valueAsNumber: true,
@@ -347,7 +346,7 @@ export default function CreateEventForm({
 
               <div className='grid grid-cols-2 gap-4'>
                 <div className='flex flex-col'>
-                  <div className='text-sm font-semibold mb-2'>Deposito</div>
+                  <div className='text-sm font-semibold mb-2'>Acconto</div>
                   <Input
                     {...methods.register('depositCost', {
                       valueAsNumber: true,
@@ -371,7 +370,7 @@ export default function CreateEventForm({
 
                 <div className='flex flex-col'>
                   <div className='text-sm font-semibold mb-2'>
-                    Numero fattura deposito
+                    Numero fattura acconto
                   </div>
                   <Input
                     {...methods.register('depositInvoiceNumber')}
@@ -477,7 +476,7 @@ export default function CreateEventForm({
 
                 <div className='flex flex-col'>
                   <div className='text-sm font-semibold mb-2'>
-                    Anticipo spese artista
+                    Spese anticipate da Milano Ovest per Artista
                   </div>
                   <Input
                     {...methods.register('moArtistAdvancedExpenses', {
@@ -507,7 +506,7 @@ export default function CreateEventForm({
               <div className='grid grid-cols-2 gap-4'>
                 <div className='flex flex-col'>
                   <div className='text-sm font-semibold mb-2'>
-                    Compenso netto artista
+                    Netto artista
                   </div>
                   <Input
                     {...methods.register('artistNetCost', {
@@ -532,7 +531,7 @@ export default function CreateEventForm({
 
                 <div className='flex flex-col'>
                   <div className='text-sm font-semibold mb-2'>
-                    Pagamento anticipato artista
+                    Anticipo artista
                   </div>
                   <Input
                     {...methods.register('artistUpfrontCost', {
@@ -681,7 +680,7 @@ export default function CreateEventForm({
               <div className='grid grid-cols-2 gap-4'>
                 <div className='flex flex-col'>
                   <div className='text-sm font-semibold mb-2'>
-                    Ricavo totale
+                    Incasso totale
                   </div>
                   <Input
                     {...methods.register('totalCost', {
@@ -765,19 +764,19 @@ export default function CreateEventForm({
                       Inizio sound-check
                     </div>
                     <Input
-                      {...methods.register('soundCheckStartTime')}
+                      {...methods.register('soundCheckStart')}
                       type='time'
                       className={cn(
                         'appearance-none [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none',
-                        methods.formState.errors.soundCheckStartTime
+                        methods.formState.errors.soundCheckStart
                           ? 'border-destructive text-destructive'
                           : ''
                       )}
                     />
-                    {methods.formState.errors.soundCheckStartTime && (
+                    {methods.formState.errors.soundCheckStart && (
                       <p className='text-xs text-destructive mt-2'>
                         {
-                          methods.formState.errors.soundCheckStartTime
+                          methods.formState.errors.soundCheckStart
                             .message as string
                         }
                       </p>
@@ -788,19 +787,19 @@ export default function CreateEventForm({
                       Fine sound-check
                     </div>
                     <Input
-                      {...methods.register('soundCheckEndTime')}
+                      {...methods.register('soundCheckEnd')}
                       type='time'
                       className={cn(
                         'appearance-none [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none',
-                        methods.formState.errors.soundCheckEndTime
+                        methods.formState.errors.soundCheckEnd
                           ? 'border-destructive text-destructive'
                           : ''
                       )}
                     />
-                    {methods.formState.errors.soundCheckEndTime && (
+                    {methods.formState.errors.soundCheckEnd && (
                       <p className='text-xs text-destructive mt-2'>
                         {
-                          methods.formState.errors.soundCheckEndTime
+                          methods.formState.errors.soundCheckEnd
                             .message as string
                         }
                       </p>
@@ -810,7 +809,7 @@ export default function CreateEventForm({
 
                 <div className='flex flex-col'>
                   <div className='text-sm font-semibold mb-2'>
-                    Scheda tecnica
+                    Rider tecnico
                   </div>
                   <PdfUploadInput />
                   {methods.formState.errors.tecnicalRiderDocument && (
@@ -829,40 +828,7 @@ export default function CreateEventForm({
               value='d'
               className='flex flex-col gap-4 p-2'
             >
-              <div className='flex flex-col'>
-                <Controller
-                  control={methods.control}
-                  name='preEventNegotiation'
-                  render={({ field }) => (
-                    <label
-                      htmlFor='preEventNegotiation'
-                      className={cn(
-                        'flex items-center gap-2 text-sm cursor-pointer',
-                        field.value && 'text-zinc-500',
-                        methods.formState.errors.preEventNegotiation &&
-                          'text-destructive'
-                      )}
-                    >
-                      <Checkbox
-                        id='preEventNegotiation'
-                        checked={field.value}
-                        onCheckedChange={(checked) =>
-                          field.onChange(checked === true)
-                        }
-                      />
-                      Negoziazione pre-evento
-                    </label>
-                  )}
-                />
-                {methods.formState.errors.preEventNegotiation && (
-                  <p className='text-xs text-destructive'>
-                    {
-                      methods.formState.errors.preEventNegotiation
-                        .message as string
-                    }
-                  </p>
-                )}
-              </div>
+              <div className='text-sm font-semibold'>Trattativa pre-evento</div>
 
               <div className='flex flex-col'>
                 <Controller
@@ -952,7 +918,7 @@ export default function CreateEventForm({
                           field.onChange(checked === true)
                         }
                       />
-                      Verifica pagamento acconto
+                      Verifica ricezione acconto
                     </label>
                   )}
                 />
@@ -987,7 +953,7 @@ export default function CreateEventForm({
                           field.onChange(checked === true)
                         }
                       />
-                      Invio scheda tecnica
+                      Recupero e invio scheda tecnica
                     </label>
                   )}
                 />
@@ -1092,7 +1058,7 @@ export default function CreateEventForm({
                           field.onChange(checked === true)
                         }
                       />
-                      Incarico accompagnatori
+                      Ingaggio accompagnatori
                     </label>
                   )}
                 />
@@ -1106,39 +1072,8 @@ export default function CreateEventForm({
                 )}
               </div>
 
-              <div className='flex flex-col'>
-                <Controller
-                  control={methods.control}
-                  name='eventDayActivities'
-                  render={({ field }) => (
-                    <label
-                      htmlFor='eventDayActivities'
-                      className={cn(
-                        'flex items-center gap-2 text-sm cursor-pointer',
-                        field.value && 'text-zinc-500',
-                        methods.formState.errors.eventDayActivities &&
-                          'text-destructive'
-                      )}
-                    >
-                      <Checkbox
-                        id='eventDayActivities'
-                        checked={field.value}
-                        onCheckedChange={(checked) =>
-                          field.onChange(checked === true)
-                        }
-                      />
-                      Attività nel giorno evento
-                    </label>
-                  )}
-                />
-                {methods.formState.errors.eventDayActivities && (
-                  <p className='text-xs text-destructive'>
-                    {
-                      methods.formState.errors.eventDayActivities
-                        .message as string
-                    }
-                  </p>
-                )}
+              <div className='text-sm font-semibold'>
+                Giorno dell&apos;evento
               </div>
 
               <div className='flex flex-col'>
@@ -1173,40 +1108,7 @@ export default function CreateEventForm({
                 )}
               </div>
 
-              <div className='flex flex-col'>
-                <Controller
-                  control={methods.control}
-                  name='postEventActivities'
-                  render={({ field }) => (
-                    <label
-                      htmlFor='postEventActivities'
-                      className={cn(
-                        'flex items-center gap-2 text-sm cursor-pointer',
-                        field.value && 'text-zinc-500',
-                        methods.formState.errors.postEventActivities &&
-                          'text-destructive'
-                      )}
-                    >
-                      <Checkbox
-                        id='postEventActivities'
-                        checked={field.value}
-                        onCheckedChange={(checked) =>
-                          field.onChange(checked === true)
-                        }
-                      />
-                      Attività post-evento
-                    </label>
-                  )}
-                />
-                {methods.formState.errors.postEventActivities && (
-                  <p className='text-xs text-destructive'>
-                    {
-                      methods.formState.errors.postEventActivities
-                        .message as string
-                    }
-                  </p>
-                )}
-              </div>
+              <div className='text-sm font-semibold'>Post evento</div>
 
               <div className='flex flex-col'>
                 <Controller

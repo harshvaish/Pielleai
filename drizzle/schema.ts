@@ -1,30 +1,13 @@
-import { pgTable, foreignKey, unique, check, serial, integer, timestamp, text, boolean, date, varchar, uuid, primaryKey, pgEnum } from "drizzle-orm/pg-core"
+import { pgTable, foreignKey, unique, text, timestamp, check, serial, integer, boolean, date, varchar, uuid, numeric, time, primaryKey, pgEnum } from "drizzle-orm/pg-core"
 import { sql } from "drizzle-orm"
 
 export const availabilityStatus = pgEnum("availability_status", ['available', 'booked', 'cancelled'])
+export const eventStatus = pgEnum("event_status", ['proposed', 'pre-confirmed', 'confirmed', 'rejected'])
 export const profileGenders = pgEnum("profile_genders", ['maschile', 'femminile', 'non-binary'])
 export const userRoles = pgEnum("user_roles", ['user', 'artist-manager', 'venue-manager', 'admin'])
 export const userStatus = pgEnum("user_status", ['active', 'waiting-for-approval', 'disabled', 'banned'])
 export const venueTypes = pgEnum("venue_types", ['small', 'medium', 'big'])
 
-
-export const artistAvailabilities = pgTable("artist_availabilities", {
-	id: serial().primaryKey().notNull(),
-	artistId: integer("artist_id").notNull(),
-	startDate: timestamp("start_date", { mode: 'string' }).notNull(),
-	endDate: timestamp("end_date", { mode: 'string' }).notNull(),
-	status: availabilityStatus().default('available').notNull(),
-	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow().notNull(),
-	updatedAt: timestamp("updated_at", { mode: 'string' }).defaultNow().notNull(),
-}, (table) => [
-	foreignKey({
-			columns: [table.artistId],
-			foreignColumns: [artists.id],
-			name: "artist_availabilities_artist_id_fkey"
-		}).onDelete("cascade"),
-	unique("uq_artist_availability").on(table.artistId, table.startDate, table.endDate),
-	check("chk_time_range", sql`start_date < end_date`),
-]);
 
 export const sessions = pgTable("sessions", {
 	id: text().primaryKey().notNull(),
@@ -53,6 +36,25 @@ export const verifications = pgTable("verifications", {
 	createdAt: timestamp("created_at", { mode: 'string' }),
 	updatedAt: timestamp("updated_at", { mode: 'string' }),
 });
+
+export const artistAvailabilities = pgTable("artist_availabilities", {
+	id: serial().primaryKey().notNull(),
+	artistId: integer("artist_id").notNull(),
+	startDate: timestamp("start_date", { mode: 'string' }).notNull(),
+	endDate: timestamp("end_date", { mode: 'string' }).notNull(),
+	status: availabilityStatus().default('available').notNull(),
+	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { mode: 'string' }).defaultNow().notNull(),
+	// TODO: failed to parse database type 'tsrange'
+	timeRange: unknown("time_range").generatedAlwaysAs(sql`tsrange(start_date, end_date, '[)'::text)`),
+}, (table) => [
+	foreignKey({
+			columns: [table.artistId],
+			foreignColumns: [artists.id],
+			name: "artist_availabilities_artist_id_fkey"
+		}).onDelete("cascade"),
+	check("chk_time_range", sql`start_date < end_date`),
+]);
 
 export const users = pgTable("users", {
 	id: text().primaryKey().notNull(),
@@ -394,6 +396,97 @@ export const venues = pgTable("venues", {
 			name: "venues_subdivision_id_fkey"
 		}).onDelete("restrict"),
 	unique("venues_slug_key").on(table.slug),
+]);
+
+export const events = pgTable("events", {
+	id: serial().primaryKey().notNull(),
+	artistId: integer("artist_id").notNull(),
+	status: eventStatus().default('proposed').notNull(),
+	artistManagerProfileId: integer("artist_manager_profile_id"),
+	availabilityId: integer("availability_id").notNull(),
+	venueId: integer("venue_id").notNull(),
+	administrationEmail: text("administration_email"),
+	payrollConsultantEmail: text("payroll_consultant_email"),
+	moCost: numeric("mo_cost"),
+	venueManagerCost: numeric("venue_manager_cost"),
+	depositCost: numeric("deposit_cost"),
+	depositInvoiceNumber: varchar("deposit_invoice_number", { length: 100 }),
+	expenseReimbursement: numeric("expense_reimbursement"),
+	bookingPercentage: numeric("booking_percentage"),
+	supplierCost: numeric("supplier_cost"),
+	moArtistAdvancedExpenses: numeric("mo_artist_advanced_expenses"),
+	artistNetCost: numeric("artist_net_cost"),
+	artistUpfrontCost: numeric("artist_upfront_cost"),
+	totalCost: numeric("total_cost"),
+	transportationsCost: numeric("transportations_cost"),
+	cashBalanceCost: numeric("cash_balance_cost"),
+	hotel: text(),
+	restaurant: text(),
+	eveningContact: text("evening_contact"),
+	moCoordinatorId: integer("mo_coordinator_id"),
+	soundCheckStart: time("sound_check_start"),
+	soundCheckEnd: time("sound_check_end"),
+	tecnicalRiderUrl: text("tecnical_rider_url"),
+	tecnicalRiderName: text("tecnical_rider_name"),
+	contractSigning: boolean("contract_signing").default(false),
+	depositInvoiceIssuing: boolean("deposit_invoice_issuing").default(false),
+	depositReceiptVerification: boolean("deposit_receipt_verification").default(false),
+	techSheetSubmission: boolean("tech_sheet_submission").default(false),
+	artistEngagement: boolean("artist_engagement").default(false),
+	professionalsEngagement: boolean("professionals_engagement").default(false),
+	accompanyingPersonsEngagement: boolean("accompanying_persons_engagement").default(false),
+	performance: boolean().default(false),
+	postDateFeedback: boolean("post_date_feedback").default(false),
+	bordereau: boolean().default(false),
+	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	foreignKey({
+			columns: [table.artistId],
+			foreignColumns: [artists.id],
+			name: "fk_events_artist"
+		}).onDelete("restrict"),
+	foreignKey({
+			columns: [table.availabilityId],
+			foreignColumns: [artistAvailabilities.id],
+			name: "fk_events_availability"
+		}).onDelete("restrict"),
+	foreignKey({
+			columns: [table.artistManagerProfileId],
+			foreignColumns: [profiles.id],
+			name: "fk_events_manager"
+		}).onDelete("restrict"),
+	foreignKey({
+			columns: [table.moCoordinatorId],
+			foreignColumns: [moCoordinators.id],
+			name: "fk_events_mo_coordinator"
+		}).onDelete("restrict"),
+	foreignKey({
+			columns: [table.venueId],
+			foreignColumns: [venues.id],
+			name: "fk_events_venue"
+		}).onDelete("restrict"),
+	unique("unique_artist_availability").on(table.artistId, table.availabilityId),
+	unique("unique_venue_availability").on(table.availabilityId, table.venueId),
+]);
+
+export const eventNotes = pgTable("event_notes", {
+	id: serial().primaryKey().notNull(),
+	writerId: text("writer_id").notNull(),
+	eventId: integer("event_id").notNull(),
+	content: text().notNull(),
+	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	foreignKey({
+			columns: [table.eventId],
+			foreignColumns: [events.id],
+			name: "event_notes_event_id_fkey"
+		}),
+	foreignKey({
+			columns: [table.writerId],
+			foreignColumns: [users.id],
+			name: "event_notes_writer_id_fkey"
+		}),
 ]);
 
 export const artistZones = pgTable("artist_zones", {

@@ -23,7 +23,11 @@ import { toast } from 'sonner';
 import { Skeleton } from '@/components/ui/skeleton';
 
 export default function ArtistAvailabilitySelect() {
-  const { watch, setValue } = useFormContext<EventFormSchema>();
+  const {
+    watch,
+    setValue,
+    formState: { errors },
+  } = useFormContext<EventFormSchema>();
   const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [timeRanges, setTimeRanges] = useState<TimeRange[]>([]);
@@ -97,6 +101,11 @@ export default function ArtistAvailabilitySelect() {
       return;
     }
 
+    if (selectedDate < new Date()) {
+      toast.error('Disponibilità selezionata scaduta.');
+      return;
+    }
+
     setSelectedAvailability(
       `${format(selectedDate, 'yyyy-MM-dd')} ${timeRange.startTime} - ${timeRange.endTime}`
     );
@@ -117,7 +126,8 @@ export default function ArtistAvailabilitySelect() {
         variant='outline'
         className={cn(
           'justify-start text-sm',
-          selectedAvailability ? 'font-medium' : 'text-zinc-500 font-normal'
+          selectedAvailability ? 'font-medium' : 'text-zinc-500 font-normal',
+          errors.availability && 'border-destructive'
         )}
         onClick={() => setIsDialogOpen(true)}
         disabled={!selectedArtistId}
@@ -129,7 +139,7 @@ export default function ArtistAvailabilitySelect() {
         open={isDialogOpen}
         onOpenChange={setIsDialogOpen}
       >
-        <DialogContent className='h-dvh md:max-h-[94dvh] w-dvw grid grid-rows-[auto_1fr] p-4 pt-12 rounded-none md:rounded-2xl'>
+        <DialogContent className='h-dvh md:max-h-[420px] w-dvw grid grid-rows-[auto_1fr] p-4 pt-12 rounded-none md:rounded-2xl'>
           <DialogHeader>
             <DialogTitle>Seleziona data e ora dell&apos;evento</DialogTitle>
             <DialogDescription className='hidden'>
@@ -145,7 +155,7 @@ export default function ArtistAvailabilitySelect() {
               className='h-max p-0 self-center'
               selected={selectedDate}
               onSelect={setSelectedDate}
-              disabled={isLoading}
+              disabled={isLoading ? isLoading : { before: new Date() }}
             />
 
             {searchDate ? (

@@ -12,7 +12,8 @@ export const eventFormSchema = z.object({
   artistManagerProfileId: z
     .number("Seleziona un'opzione valida.")
     .min(1, 'Campo obbligatorio.')
-    .positive("Seleziona un'opzione valida."),
+    .positive("Seleziona un'opzione valida.")
+    .optional(),
 
   availability: z.object(
     {
@@ -34,7 +35,7 @@ export const eventFormSchema = z.object({
     z.email('Formato non valido. (Es. info@eaglebooking.it)').optional()
   ),
 
-  payrollSecurityConsultantEmail: z.preprocess(
+  payrollConsultantEmail: z.preprocess(
     (val) => (typeof val === 'string' && val.trim() !== '' ? val : undefined),
     z.email('Formato non valido. (Es. info@eaglebooking.it)').optional()
   ),
@@ -193,12 +194,12 @@ export const eventFormSchema = z.object({
       .optional()
   ),
 
-  soundCheckStartTime: z.preprocess(
+  soundCheckStart: z.preprocess(
     (val) => (typeof val === 'string' && val.trim() !== '' ? val : undefined),
     z.string('Campo malformato.').optional()
   ),
 
-  soundCheckEndTime: z.preprocess(
+  soundCheckEnd: z.preprocess(
     (val) => (typeof val === 'string' && val.trim() !== '' ? val : undefined),
     z.string('Campo malformato.').optional()
   ),
@@ -221,10 +222,6 @@ export const eventFormSchema = z.object({
       )
       .optional()
   ),
-
-  preEventNegotiation: z
-    .boolean({ message: "Seleziona un'opzione valida." })
-    .default(false),
 
   contractSigning: z
     .boolean({ message: "Seleziona un'opzione valida." })
@@ -254,15 +251,7 @@ export const eventFormSchema = z.object({
     .boolean({ message: "Seleziona un'opzione valida." })
     .default(false),
 
-  eventDayActivities: z
-    .boolean({ message: "Seleziona un'opzione valida." })
-    .default(false),
-
   performance: z
-    .boolean({ message: "Seleziona un'opzione valida." })
-    .default(false),
-
-  postEventActivities: z
     .boolean({ message: "Seleziona un'opzione valida." })
     .default(false),
 
