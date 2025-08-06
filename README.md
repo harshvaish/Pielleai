@@ -21,3 +21,6 @@
 - refactor all components to externalize props
 - inside the triggers of popover and stuff remove buttons if not usefull
 - aggiungere trim su tutte le validationi stringa tranne password
+- uniform badges UI
+- custom select and button in form UI
+- format function, add locale everiwhere

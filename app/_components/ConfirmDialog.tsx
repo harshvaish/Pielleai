@@ -1,19 +1,7 @@
 'use client';
 
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import {
-  Drawer,
-  DrawerContent,
-  DrawerDescription,
-  DrawerFooter,
-  DrawerTitle,
-} from '@/components/ui/drawer';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogTitle } from '@/components/ui/dialog';
+import { Drawer, DrawerContent, DrawerDescription, DrawerFooter, DrawerTitle } from '@/components/ui/drawer';
 import { Button } from '@/components/ui/button';
 import { useMediaQuery } from '@/lib/hooks/useMediaQuery';
 import { ReactNode } from 'react';
@@ -32,6 +20,7 @@ type ConfirmDialogProps = {
   confirmLabel?: string;
   cancelLabel?: string;
   loadingLabel?: string;
+  confirmButtonVariant?: 'link' | 'default' | 'success' | 'destructive' | 'outline' | 'secondary' | 'ghost' | null | undefined;
   children?: ReactNode;
 };
 
@@ -46,6 +35,7 @@ export default function ConfirmDialog({
   onCancel,
   confirmLabel = 'Conferma',
   cancelLabel = 'Annulla',
+  confirmButtonVariant,
   loadingLabel = 'Attendere...',
   isLoading = false,
   children,
@@ -63,12 +53,8 @@ export default function ConfirmDialog({
       onOpenChange={onOpenChange}
     >
       <DialogContent>
-        <DialogTitle className={isTitleHidden ? 'hidden' : ''}>
-          {title}
-        </DialogTitle>
-        <DialogDescription className={isDescriptionHidden ? 'hidden' : ''}>
-          {description}
-        </DialogDescription>
+        <DialogTitle className={isTitleHidden ? 'hidden' : ''}>{title}</DialogTitle>
+        <DialogDescription className={isDescriptionHidden ? 'hidden' : ''}>{description}</DialogDescription>
         {children ? (
           children
         ) : (
@@ -82,7 +68,7 @@ export default function ConfirmDialog({
               {cancelLabel}
             </Button>
             <Button
-              variant='destructive'
+              variant={confirmButtonVariant || 'destructive'}
               size='sm'
               onClick={onConfirm}
               disabled={isLoading}
@@ -100,14 +86,8 @@ export default function ConfirmDialog({
     >
       <DrawerContent>
         <div className='py-8 px-4'>
-          <DrawerTitle className={cn('mb-2', isTitleHidden && 'hidden')}>
-            {title}
-          </DrawerTitle>
-          <DrawerDescription
-            className={cn('mb-6', isDescriptionHidden && 'hidden')}
-          >
-            {description}
-          </DrawerDescription>
+          <DrawerTitle className={cn('mb-2', isTitleHidden && 'hidden')}>{title}</DrawerTitle>
+          <DrawerDescription className={cn('mb-6', isDescriptionHidden && 'hidden')}>{description}</DrawerDescription>
           {children ? (
             children
           ) : (
@@ -120,7 +100,7 @@ export default function ConfirmDialog({
                 {cancelLabel}
               </Button>
               <Button
-                variant='destructive'
+                variant={confirmButtonVariant || 'destructive'}
                 onClick={onConfirm}
                 disabled={isLoading}
               >

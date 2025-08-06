@@ -1,42 +1,38 @@
 'use client';
 
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useSession } from '@/lib/auth-client';
 import { cn } from '@/lib/utils';
 import { ChevronDown, Menu, SquareArrowOutUpRight } from 'lucide-react';
-import { redirect } from 'next/navigation';
-import { Fragment, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { Fragment, useEffect, useState } from 'react';
 import ChangePasswordButton from './ChangePassword/ChangePaswordButton';
 import { Separator } from '@/components/ui/separator';
 import SignOutButton from './SignOutButton';
 import { useMediaQuery } from '@/lib/hooks/useMediaQuery';
-import {
-  Sheet,
-  SheetContent,
-  SheetTitle,
-  SheetTrigger,
-} from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { NAVBAR_LINKS } from '@/lib/constants';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 
 export default function NavbarButton() {
+  const router = useRouter();
   const [isOpen, setIsOpen] = useState<boolean>(false);
-  const { data, isPending } = useSession();
   const isMobile = useMediaQuery('(max-width: 767px)');
+  const { data, isPending } = useSession();
 
   const user = data?.user;
 
-  if (isPending)
-    return <Skeleton className='w-10 md:w-40 h-10 md:h-12 rounded-md' />;
-  if (!user) return redirect('/accedi');
+  useEffect(() => {
+    if (!user && !isPending) {
+      router.push('/accedi');
+    }
+  }, [user, isPending, router]);
+
+  if (isPending || !user) return <Skeleton className='w-10 md:w-40 h-10 md:h-12 rounded-md' />;
 
   if (isMobile)
     return (
@@ -50,9 +46,7 @@ export default function NavbarButton() {
           </Button>
         </SheetTrigger>
         <SheetContent className='px-4 pt-12 pb-4'>
-          <SheetTitle className='hidden'>
-            Menu di navigazione a scomparsa
-          </SheetTitle>
+          <SheetTitle className='hidden'>Menu di navigazione a scomparsa</SheetTitle>
           <nav className='max-h-max overflow-y-auto flex flex-col gap-2'>
             {NAVBAR_LINKS.map((link) => (
               <Fragment key={link.label}>
@@ -118,21 +112,12 @@ export default function NavbarButton() {
       <PopoverTrigger asChild>
         <div className='w-max max-w-40 flex flex-nowrap items-center gap-2 bg-zinc-50 hover:bg-white p-2 rounded-2xl hover:cursor-pointer transition-colors'>
           <Avatar className='w-8 h-8'>
-            <AvatarFallback className='bg-zinc-200'>
-              {user.name.substring(0, 1)}
-            </AvatarFallback>
+            <AvatarFallback className='bg-zinc-200'>{user.name.substring(0, 1)}</AvatarFallback>
           </Avatar>
 
-          <span className='text-sm font-semibold truncate text-zinc-700'>
-            {user.name}
-          </span>
+          <span className='text-sm font-semibold truncate text-zinc-700'>{user.name}</span>
 
-          <ChevronDown
-            className={cn(
-              'size-4 transition-transform',
-              isOpen ? 'rotate-180' : ''
-            )}
-          />
+          <ChevronDown className={cn('size-4 transition-transform', isOpen ? 'rotate-180' : '')} />
         </div>
       </PopoverTrigger>
       <PopoverContent

@@ -4,32 +4,29 @@ import { auth } from '@/lib/auth';
 import { headers } from 'next/headers';
 import { ServerActionResponse } from '@/lib/types';
 import { database } from '@/lib/database/connection';
-import { and, count, eq, lt } from 'drizzle-orm';
+import { and, count, eq } from 'drizzle-orm';
 import { profiles, users, artists, artistAvailabilities, venues, events, eventNotes } from '@/lib/database/schema';
 import { eventFormSchema, EventFormSchema } from '@/lib/validation/eventFormSchema';
 import { isBefore, parse } from 'date-fns';
 import { AppError } from '@/lib/classes/AppError';
 
-export const createEvent = async (data: EventFormSchema): Promise<ServerActionResponse<null>> => {
+export const updateEvent = async (eventId: number, data: EventFormSchema): Promise<ServerActionResponse<null>> => {
   try {
     const headersList = await headers();
-    let writerId = undefined;
 
     const session = await auth.api.getSession({
       headers: headersList,
     });
 
     if (!session?.user || session.user.role != 'admin') {
-      console.error('[createEvent] - Error: unauthorized', session);
+      console.error('[updateEvent] - Error: unauthorized', session);
       throw new AppError('Non sei autorizzato.');
     }
-
-    writerId = session.user.id;
 
     const validation = eventFormSchema.safeParse(data);
 
     if (!validation.success) {
-      console.error('[createEvent] - Error: validation failed', validation.error.issues[0]);
+      console.error('[updateEvent] - Error: validation failed', validation.error.issues[0]);
       throw new AppError('I dati inviati non sono corretti.');
     }
 
@@ -41,17 +38,18 @@ export const createEvent = async (data: EventFormSchema): Promise<ServerActionRe
       const availabilityCheck = await database
         .select({ count: count() })
         .from(artistAvailabilities)
-        .where(and(eq(artistAvailabilities.id, availabilityId), lt(artistAvailabilities.endDate, new Date())));
+        .where(and(eq(artistAvailabilities.id, availabilityId)))
+        .limit(1);
 
       if (availabilityCheck[0].count === 0) {
-        throw new AppError('Disponibilità selezionata non trovata o scaduta.');
+        throw new AppError('Disponibilità non trovata.');
       }
     } else {
       const combined = `${availability.date} ${availability.startTime}`;
       const availabilityStartDate = parse(combined, 'yyyy-MM-dd HH:mm', new Date());
 
       if (isBefore(availabilityStartDate, new Date())) {
-        throw new AppError('Nuova disponibilità inserita scaduta.');
+        throw new AppError('Nuova disponibilità scaduta.');
       }
     }
 
@@ -83,20 +81,16 @@ export const createEvent = async (data: EventFormSchema): Promise<ServerActionRe
     }
 
     await database.transaction(async (tx) => {
-      if (availabilityId && validation.data.status === 'confirmed') {
-        const existingConfirmed = await tx
-          .select({ count: count() })
-          .from(events)
-          .where(and(eq(events.availabilityId, availabilityId), eq(events.status, 'confirmed')))
-          .limit(1);
-
-        if (existingConfirmed[0].count > 0) {
-          throw new AppError('Esiste già un evento confermato per questa disponibilità.');
-        }
-      }
-
-      if (!availabilityId) {
-        const [newAvailability] = await tx
+      if (availabilityId) {
+        await tx
+          .update(artistAvailabilities)
+          .set({
+            status: validation.data.status == 'confirmed' ? 'booked' : 'available',
+            updatedAt: new Date(),
+          })
+          .where(eq(artistAvailabilities.id, availabilityId));
+      } else {
+        const newAvailability = await tx
           .insert(artistAvailabilities)
           .values({
             artistId: artistId,
@@ -106,24 +100,22 @@ export const createEvent = async (data: EventFormSchema): Promise<ServerActionRe
           })
           .returning({ id: artistAvailabilities.id });
 
-        availabilityId = newAvailability?.id;
-
-        if (!availabilityId) {
-          throw new AppError('Inserimento nuova disponibilità non riuscito.');
-        }
+        availabilityId = newAvailability[0]?.id;
       }
 
-      const [eventResult] = await tx
-        .insert(events)
-        .values({
+      await tx
+        .update(events)
+        .set({
           artistId: artistId,
           availabilityId: availabilityId,
           venueId: venueId,
           status: validation.data.status,
+          previousStatus: events.status,
 
           artistManagerProfileId: artistManagerProfileId || null,
           administrationEmail: validation.data.administrationEmail || null,
           payrollConsultantEmail: validation.data.payrollConsultantEmail || null,
+
           moCost: validation.data.moCost?.toString() ?? null,
           venueManagerCost: validation.data.venueManagerCost?.toString() ?? null,
           depositCost: validation.data.depositCost?.toString() ?? null,
@@ -143,7 +135,6 @@ export const createEvent = async (data: EventFormSchema): Promise<ServerActionRe
           totalCost: validation.data.totalCost?.toString() ?? null,
           transportationsCost: validation.data.transportationsCost?.toString() ?? null,
           cashBalanceCost: validation.data.cashBalanceCost?.toString() ?? null,
-
           soundCheckStart: validation.data.soundCheckStart || null,
           soundCheckEnd: validation.data.soundCheckEnd || null,
           tecnicalRiderUrl: validation.data.tecnicalRiderDocument ? validation.data.tecnicalRiderDocument.url : null,
@@ -159,17 +150,18 @@ export const createEvent = async (data: EventFormSchema): Promise<ServerActionRe
           performance: validation.data.performance,
           postDateFeedback: validation.data.postDateFeedback,
           bordereau: validation.data.bordereau,
-        })
-        .returning({ id: events.id });
 
-      const newEventId = eventResult?.id;
-      if (!newEventId) {
-        throw new AppError('Inserimento evento non riuscito.');
-      }
+          updatedAt: new Date(),
+        })
+        .where(eq(events.id, eventId));
+
+      await tx.delete(eventNotes).where(eq(eventNotes.eventId, eventId));
+
+      const writerId = session.user.id;
 
       const noteInserts = (validation.data.notes || []).map((content: string) => ({
         writerId: writerId,
-        eventId: newEventId,
+        eventId: eventId,
         content,
       }));
 
@@ -184,11 +176,11 @@ export const createEvent = async (data: EventFormSchema): Promise<ServerActionRe
       data: null,
     };
   } catch (error) {
-    console.error('[createEvent] transaction failed:', error);
+    console.error('[updateEvent] error: ', error);
 
     return {
       success: false,
-      message: error instanceof AppError ? error.message : 'Creazione evento non riuscita.',
+      message: error instanceof AppError ? error.message : 'Aggiornamento evento non riuscito.',
       data: null,
     };
   }

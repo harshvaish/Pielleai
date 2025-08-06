@@ -1,11 +1,6 @@
 import { View } from 'react-big-calendar';
 
-export const USER_STATUS = [
-  'active',
-  'waiting-for-approval',
-  'disabled',
-  'banned',
-] as const; // as const = is an immutable array
+export const USER_STATUS = ['active', 'waiting-for-approval', 'disabled', 'banned'] as const; // as const = is an immutable array
 export type UserStatus = (typeof USER_STATUS)[number];
 
 // resend password email
@@ -79,17 +74,8 @@ export const NEW_USER_TIME = 1000 * 60 * 60 * 24 * 7; // 1 week
 export const VENUE_TYPES = ['small', 'medium', 'big'] as const;
 export type VenueType = (typeof VENUE_TYPES)[number];
 
-export const AVAILABILITY_STATUS = [
-  'available',
-  'booked',
-  'cancelled',
-] as const;
+export const AVAILABILITY_STATUS = ['available', 'booked', 'expired'] as const;
 export type AvailabilityStatus = (typeof AVAILABILITY_STATUS)[number];
 
-export const EVENTS_STATUS = [
-  'proposed',
-  'pre-confirmed',
-  'confirmed',
-  'rejected',
-] as const;
+export const EVENTS_STATUS = ['proposed', 'pre-confirmed', 'confirmed', 'conflict', 'rejected'] as const;
 export type EventStatus = (typeof EVENTS_STATUS)[number];

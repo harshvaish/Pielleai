@@ -1,11 +1,7 @@
 'use client';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { ArtistManagerSelectData, VenueManagerSelectData } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { ChevronDown } from 'lucide-react';
@@ -13,13 +9,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useState } from 'react';
 
-export default function ManagersBadge({
-  managers,
-  pathSegment,
-}: {
-  managers: ArtistManagerSelectData[] | VenueManagerSelectData[];
-  pathSegment: string;
-}) {
+export default function ManagersBadge({ managers, pathSegment }: { managers: ArtistManagerSelectData[] | VenueManagerSelectData[]; pathSegment: string }) {
   const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
   const count = managers.length;
 
@@ -65,15 +55,10 @@ export default function ManagersBadge({
             );
           })}
         </div>
-        <span className='text-sm font-semibold text-zinc-700 whitespace-nowrap'>
-          {count} Manager
-        </span>
+        <span className='text-sm font-semibold text-zinc-700 whitespace-nowrap'>{count} Manager</span>
         <ChevronDown
           size={16}
-          className={cn(
-            'transition-transform',
-            isDropdownOpen ? 'rotate-180' : ''
-          )}
+          className={cn('transition-transform', isDropdownOpen ? 'rotate-180' : '')}
         />
       </DropdownMenuTrigger>
 
@@ -92,13 +77,7 @@ export default function ManagersBadge({
   );
 }
 
-function ManagerBadge({
-  manager,
-  pathSegment,
-}: {
-  manager: ArtistManagerSelectData | VenueManagerSelectData;
-  pathSegment: string;
-}) {
+function ManagerBadge({ manager, pathSegment }: { manager: ArtistManagerSelectData | VenueManagerSelectData; pathSegment: string }) {
   const isDisabled = manager.status === 'disabled';
 
   return (
@@ -113,8 +92,11 @@ function ManagerBadge({
         />
         <AvatarFallback>{manager.name.substring(0, 1)}</AvatarFallback>
       </Avatar>
-      <div className={isDisabled ? 'text-zinc-400' : 'text-zinc-700'}>
-        {manager.name} {manager.surname}
+
+      <div className='max-w-full overflow-hidden'>
+        <div className={cn('text-xs font-semibold line-clamp-1 text-ellipsis', isDisabled ? 'text-zinc-400' : 'text-zinc-700')}>
+          {manager.name} {manager.surname}
+        </div>
       </div>
     </Link>
   );

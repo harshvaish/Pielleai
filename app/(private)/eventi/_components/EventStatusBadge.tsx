@@ -9,10 +9,7 @@ type EventStatusBadgeProps = {
   size?: 'default' | 'sm';
 };
 
-const styles: Record<
-  EventStatus,
-  { label: string; text: string; bg: string; icon: JSX.Element }
-> = {
+const styles: Record<EventStatus, { label: string; text: string; bg: string; icon: JSX.Element }> = {
   'proposed': {
     label: 'Proposto',
     text: 'text-blue-600',
@@ -29,7 +26,7 @@ const styles: Record<
     bg: 'bg-amber-100',
     icon: (
       <div className='w-3 h-3 flex justify-center items-center bg-amber-600 rounded-full'>
-        <span className='text-xs text-white'>?</span>
+        <span className='text-[8px] text-white'>?</span>
       </div>
     ),
   },
@@ -40,6 +37,16 @@ const styles: Record<
     icon: (
       <div className='w-3 h-3 flex justify-center items-center bg-lime-600 rounded-full'>
         <Check className='size-2 text-white' />
+      </div>
+    ),
+  },
+  'conflict': {
+    label: 'Conflitto',
+    text: 'text-rose-600',
+    bg: 'bg-rose-100',
+    icon: (
+      <div className='w-3 h-3 flex justify-center items-center bg-rose-600 rounded-full'>
+        <span className='text-[8px] text-white'>!</span>
       </div>
     ),
   },
@@ -55,21 +62,12 @@ const styles: Record<
   },
 };
 
-export default function EventStatusBadge({
-  status,
-  variant = 'primary',
-  size = 'default',
-}: EventStatusBadgeProps) {
+export default function EventStatusBadge({ status, variant = 'primary', size = 'default' }: EventStatusBadgeProps) {
   const style = styles[status];
 
   return (
     <div
-      className={cn(
-        'inline-flex items-center gap-2 font-medium rounded-md',
-        style.text,
-        variant === 'primary' ? style.bg : 'bg-white',
-        size === 'sm' ? 'text-xs px-1 py-0.5' : 'text-sm px-2 py-1'
-      )}
+      className={cn('inline-flex items-center gap-2 font-medium rounded-md', style.text, variant === 'primary' ? style.bg : 'bg-white', size === 'sm' ? 'text-xs px-1 py-0.5' : 'text-sm px-2 py-1')}
     >
       {style.icon}
       <span>{style.label}</span>

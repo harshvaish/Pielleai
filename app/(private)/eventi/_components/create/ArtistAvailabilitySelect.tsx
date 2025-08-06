@@ -2,13 +2,7 @@
 
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { EventFormSchema } from '@/lib/validation/eventFormSchema';
 import { Check, Minus, Plus } from 'lucide-react';
 import { useEffect, useState } from 'react';
@@ -36,17 +30,14 @@ export default function ArtistAvailabilitySelect() {
     startTime: '',
     endTime: '',
   });
-  const [selectedAvailability, setSelectedAvailability] = useState<
-    string | undefined
-  >(undefined);
 
   const selectedArtistId = watch('artistId');
-  const searchDate = selectedDate ? format(selectedDate, 'yyyy-MM-dd') : '';
+  const selectedAvailability = watch('availability');
 
-  const fetchUrl =
-    selectedArtistId && searchDate
-      ? `/api/artist-availabilities/date?artist=${selectedArtistId}&date=${searchDate}`
-      : null;
+  const searchDate = selectedDate ? format(selectedDate, 'yyyy-MM-dd') : '';
+  const label = selectedAvailability ? `${selectedAvailability.date} (${selectedAvailability.startTime} - ${selectedAvailability.endTime})` : 'Seleziona data';
+
+  const fetchUrl = selectedArtistId && searchDate ? `/api/artist-availabilities/date?artist=${selectedArtistId}&date=${searchDate}` : null;
 
   const { data, error, isLoading } = useSWR(fetchUrl, fetcher, {
     dedupingInterval: 0, // milliseconds; 0 disables deduplication
@@ -58,10 +49,10 @@ export default function ArtistAvailabilitySelect() {
     if (!data?.availabilities) return;
     setTimeRanges(
       data.availabilities.map((a: ArtistAvailability) => ({
+        availabilityId: a.id,
         startTime: format(a.startDate, 'HH:mm'),
         endTime: format(a.endDate, 'HH:mm'),
         status: a.status,
-        availabilityId: a.id,
       }))
     );
   }, [data]);
@@ -83,14 +74,11 @@ export default function ArtistAvailabilitySelect() {
       return;
     }
 
-    setSelectedAvailability(
-      `${format(selectedDate, 'yyyy-MM-dd')} ${newTimeRange.startTime} - ${newTimeRange.endTime}`
-    );
     setValue('availability', {
+      id: undefined,
       date: format(selectedDate, 'yyyy-MM-dd'),
       startTime: newTimeRange.startTime,
       endTime: newTimeRange.endTime,
-      id: undefined,
     });
     setIsDialogOpen(false);
   };
@@ -106,14 +94,11 @@ export default function ArtistAvailabilitySelect() {
       return;
     }
 
-    setSelectedAvailability(
-      `${format(selectedDate, 'yyyy-MM-dd')} ${timeRange.startTime} - ${timeRange.endTime}`
-    );
     setValue('availability', {
+      id: timeRange.availabilityId,
       date: format(selectedDate, 'yyyy-MM-dd'),
       startTime: timeRange.startTime,
       endTime: timeRange.endTime,
-      id: timeRange.availabilityId.toString(),
     });
     setIsDialogOpen(false);
   };
@@ -124,15 +109,11 @@ export default function ArtistAvailabilitySelect() {
         type='button'
         size='sm'
         variant='outline'
-        className={cn(
-          'justify-start text-sm',
-          selectedAvailability ? 'font-medium' : 'text-zinc-500 font-normal',
-          errors.availability && 'border-destructive'
-        )}
+        className={cn('justify-start text-sm', selectedAvailability ? 'font-medium' : 'text-zinc-500 font-normal', errors.availability && 'border-destructive')}
         onClick={() => setIsDialogOpen(true)}
         disabled={!selectedArtistId}
       >
-        {selectedAvailability ? selectedAvailability : 'Seleziona data'}
+        {label}
       </Button>
 
       <Dialog
@@ -142,10 +123,7 @@ export default function ArtistAvailabilitySelect() {
         <DialogContent className='h-dvh md:max-h-[420px] w-dvw grid grid-rows-[auto_1fr] p-4 pt-12 rounded-none md:rounded-2xl'>
           <DialogHeader>
             <DialogTitle>Seleziona data e ora dell&apos;evento</DialogTitle>
-            <DialogDescription className='hidden'>
-              Tramite questo dialog l&apos;utente può scegliere la disponibilità
-              dell&apos;artista.
-            </DialogDescription>
+            <DialogDescription className='hidden'>Tramite questo dialog l&apos;utente può scegliere la disponibilità dell&apos;artista.</DialogDescription>
           </DialogHeader>
 
           <div className='h-full grid grid-rows-[max-content_1fr] md:grid-rows-none md:grid-cols-2 justify-items-center gap-4 py-4 border-t overflow-hidden'>
@@ -183,9 +161,7 @@ export default function ArtistAvailabilitySelect() {
                           startTime: e.target.value,
                         }))
                       }
-                      className={cn(
-                        'w-min appearance-none [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none shadow-none'
-                      )}
+                      className={cn('w-min appearance-none [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none shadow-none')}
                       disabled={isLoading}
                     />
                     <span className='text-zinc-400'>-</span>
@@ -198,9 +174,7 @@ export default function ArtistAvailabilitySelect() {
                           endTime: e.target.value,
                         }))
                       }
-                      className={cn(
-                        'w-min appearance-none [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none shadow-none'
-                      )}
+                      className={cn('w-min appearance-none [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none shadow-none')}
                       disabled={isLoading}
                     />
 
@@ -224,18 +198,11 @@ export default function ArtistAvailabilitySelect() {
                       <Skeleton className='h-8 rounded-md' />
                     </>
                   )}
-                  {!isLoading && timeRanges.length === 0 && (
-                    <div className='text-sm text-zinc-500'>
-                      Nessuna disponibilità. Aggiungine una per vederla nella
-                      lista.
-                    </div>
-                  )}
+                  {!isLoading && timeRanges.length === 0 && <div className='text-sm text-zinc-500'>Nessuna disponibilità. Aggiungine una per vederla nella lista.</div>}
                   {!isLoading &&
                     timeRanges.length > 0 &&
                     timeRanges.map((timeRange, index) => {
-                      const notAvailable =
-                        'status' in timeRange &&
-                        timeRange.status !== 'available';
+                      const notAvailable = 'status' in timeRange && timeRange.status !== 'available';
 
                       return (
                         <div
@@ -252,9 +219,7 @@ export default function ArtistAvailabilitySelect() {
                               variant='ghost'
                               size='icon'
                               className='text-emerald-600'
-                              onClick={() =>
-                                onAvailabilityClickHandler(timeRange)
-                              }
+                              onClick={() => onAvailabilityClickHandler(timeRange)}
                               disabled={isLoading}
                             >
                               <Check />
@@ -266,9 +231,7 @@ export default function ArtistAvailabilitySelect() {
                 </div>
               </div>
             ) : (
-              <div className='w-full flex justify-center items-center text-sm text-zinc-500'>
-                Seleziona una data per accedere alle disponibilità.
-              </div>
+              <div className='w-full flex justify-center items-center text-sm text-zinc-500'>Seleziona una data per accedere alle disponibilità.</div>
             )}
           </div>
         </DialogContent>

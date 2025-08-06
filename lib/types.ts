@@ -1,10 +1,5 @@
-import { Event } from 'react-big-calendar';
-import {
-  AvailabilityStatus,
-  EventStatus,
-  Gender,
-  VenueType,
-} from './constants';
+import { Event as RbcEvent } from 'react-big-calendar';
+import { AvailabilityStatus, EventStatus, Gender, VenueType } from './constants';
 import { userRoles, userStatus } from './database/schema';
 
 export type ServerActionResponse<T = unknown> =
@@ -30,7 +25,7 @@ export type UserToApprove = {
   email: string;
 };
 /* ------------------------------------------------- */
-export interface CalendarEvent extends Event {
+export interface CalendarEvent extends RbcEvent {
   id: number;
   artistName: string;
   artistManagerName: string;
@@ -38,7 +33,7 @@ export interface CalendarEvent extends Event {
   status: EventStatus;
 }
 
-export interface CalendarAvailability extends Event {
+export interface CalendarAvailability extends RbcEvent {
   id: number;
   status: AvailabilityStatus;
 }
@@ -69,6 +64,12 @@ export type ProfileNote = {
   id: number;
   content: string;
   createdAt: string;
+};
+
+export type EventNote = {
+  id: number;
+  content: string;
+  createdAt: Date;
 };
 /* ------------------------------------------------- */
 export type MoCoordinator = {
@@ -127,25 +128,9 @@ export type ArtistManagerData<T = ArtistListData | ArtistSelectData> = {
   taxableInvoice: boolean;
 };
 
-export type ArtistManagerTableData = Pick<
-  ArtistManagerData,
-  | 'id'
-  | 'profileId'
-  | 'status'
-  | 'createdAt'
-  | 'avatarUrl'
-  | 'name'
-  | 'surname'
-  | 'phone'
-  | 'email'
-  | 'company'
-  | 'artists'
->;
+export type ArtistManagerTableData = Pick<ArtistManagerData, 'id' | 'profileId' | 'status' | 'createdAt' | 'avatarUrl' | 'name' | 'surname' | 'phone' | 'email' | 'company' | 'artists'>;
 
-export type ArtistManagerSelectData = Pick<
-  ArtistManagerData,
-  'id' | 'profileId' | 'avatarUrl' | 'name' | 'surname' | 'status'
->;
+export type ArtistManagerSelectData = Pick<ArtistManagerData, 'id' | 'profileId' | 'avatarUrl' | 'name' | 'surname' | 'status'>;
 /* ------------------------------------------------- */
 export type ArtistsTableFilters = {
   currentPage: number;
@@ -224,43 +209,14 @@ export type ArtistData = {
   xCreatedAt: string | null;
 };
 
-export type ArtistTableData = Pick<
-  ArtistData,
-  | 'id'
-  | 'slug'
-  | 'status'
-  | 'zones'
-  | 'createdAt'
-  | 'avatarUrl'
-  | 'name'
-  | 'surname'
-  | 'phone'
-  | 'email'
-  | 'company'
-  | 'managers'
->;
+export type ArtistTableData = Pick<ArtistData, 'id' | 'slug' | 'status' | 'zones' | 'createdAt' | 'avatarUrl' | 'name' | 'surname' | 'phone' | 'email' | 'company' | 'managers'>;
 
 export type ArtistListData = Pick<
   ArtistData,
-  | 'id'
-  | 'slug'
-  | 'status'
-  | 'avatarUrl'
-  | 'name'
-  | 'surname'
-  | 'stageName'
-  | 'phone'
-  | 'email'
-  | 'tourManagerEmail'
-  | 'tourManagerName'
-  | 'tourManagerSurname'
-  | 'tourManagerPhone'
+  'id' | 'slug' | 'status' | 'avatarUrl' | 'name' | 'surname' | 'stageName' | 'phone' | 'email' | 'tourManagerEmail' | 'tourManagerName' | 'tourManagerSurname' | 'tourManagerPhone'
 >;
 
-export type ArtistSelectData = Pick<
-  ArtistData,
-  'id' | 'slug' | 'status' | 'avatarUrl' | 'name' | 'surname' | 'stageName'
->;
+export type ArtistSelectData = Pick<ArtistData, 'id' | 'slug' | 'status' | 'avatarUrl' | 'name' | 'surname' | 'stageName'>;
 
 /* ------------------------------------------------- */
 export type VenueManagersTableFilters = {
@@ -271,9 +227,7 @@ export type VenueManagersTableFilters = {
   venueIds: string[];
 };
 
-export type VenueManagerData<
-  T = VenueTableData | VenueListData | VenueBadgeData,
-> = {
+export type VenueManagerData<T = VenueTableData | VenueListData | VenueBadgeData> = {
   id: string;
   profileId: number;
   status: UserStatus;
@@ -299,24 +253,9 @@ export type VenueManagerData<
   gender: Gender;
 };
 
-export type VenueManagerTableData = Pick<
-  VenueManagerData,
-  | 'id'
-  | 'profileId'
-  | 'status'
-  | 'createdAt'
-  | 'avatarUrl'
-  | 'name'
-  | 'surname'
-  | 'phone'
-  | 'email'
-  | 'venues'
->;
+export type VenueManagerTableData = Pick<VenueManagerData, 'id' | 'profileId' | 'status' | 'createdAt' | 'avatarUrl' | 'name' | 'surname' | 'phone' | 'email' | 'venues'>;
 
-export type VenueManagerSelectData = Pick<
-  VenueManagerData,
-  'id' | 'profileId' | 'avatarUrl' | 'name' | 'surname' | 'status'
->;
+export type VenueManagerSelectData = Pick<VenueManagerData, 'id' | 'profileId' | 'avatarUrl' | 'name' | 'surname' | 'status'>;
 /* ------------------------------------------------- */
 export type VenuesTableFilters = {
   currentPage: number;
@@ -386,44 +325,13 @@ export type VenueData = {
   xCreatedAt: string | null;
 };
 
-export type VenueTableData = Pick<
-  VenueData,
-  | 'id'
-  | 'slug'
-  | 'status'
-  | 'avatarUrl'
-  | 'name'
-  | 'company'
-  | 'taxCode'
-  | 'address'
-  | 'manager'
-  | 'type'
-  | 'capacity'
->;
+export type VenueTableData = Pick<VenueData, 'id' | 'slug' | 'status' | 'avatarUrl' | 'name' | 'company' | 'taxCode' | 'address' | 'manager' | 'type' | 'capacity'>;
 
-export type VenueSelectData = Pick<
-  VenueData,
-  'id' | 'slug' | 'status' | 'avatarUrl' | 'name'
->;
+export type VenueSelectData = Pick<VenueData, 'id' | 'slug' | 'status' | 'avatarUrl' | 'name'>;
 
-export type VenueListData = Pick<
-  VenueData,
-  | 'id'
-  | 'slug'
-  | 'status'
-  | 'avatarUrl'
-  | 'name'
-  | 'company'
-  | 'taxCode'
-  | 'address'
-  | 'type'
-  | 'capacity'
->;
+export type VenueListData = Pick<VenueData, 'id' | 'slug' | 'status' | 'avatarUrl' | 'name' | 'company' | 'taxCode' | 'address' | 'type' | 'capacity'>;
 
-export type VenueBadgeData = Pick<
-  VenueData,
-  'id' | 'slug' | 'status' | 'avatarUrl' | 'name'
->;
+export type VenueBadgeData = Pick<VenueData, 'id' | 'slug' | 'status' | 'avatarUrl' | 'name'>;
 
 /* ------------------------------------------------- */
 
@@ -441,4 +349,77 @@ export type TimeRange = {
   endTime: string;
   status?: AvailabilityStatus;
   availabilityId?: number;
+};
+
+/* ------------------------------------------------- */
+
+export type Event = {
+  id: number;
+
+  artist: ArtistSelectData;
+  availability: ArtistAvailability;
+  venue: VenueSelectData;
+  status: EventStatus;
+
+  previousStatus: EventStatus | null;
+
+  artistManager: ArtistManagerSelectData | null;
+
+  tourManagerName: string;
+  tourManagerSurname: string;
+
+  administrationEmail: string | null;
+
+  payrollConsultantEmail: string | null;
+
+  moCost: string | null;
+
+  venueManagerCost: string | null;
+
+  depositCost: string | null;
+
+  depositInvoiceNumber: string | null;
+
+  expenseReimbursement: string | null;
+
+  bookingPercentage: string | null;
+
+  supplierCost: string | null;
+
+  moArtistAdvancedExpenses: string | null;
+
+  artistNetCost: string | null;
+
+  artistUpfrontCost: string | null;
+
+  hotel: string | null;
+  restaurant: string | null;
+  eveningContact: string | null;
+  moCoordinator: MoCoordinator | null;
+
+  totalCost: string | null;
+
+  transportationsCost: string | null;
+
+  cashBalanceCost: string | null;
+
+  soundCheckStart: string | null;
+  soundCheckEnd: string | null;
+  tecnicalRiderUrl: string | null;
+  tecnicalRiderName: string | null;
+
+  contractSigning: boolean;
+  depositInvoiceIssuing: boolean;
+  depositReceiptVerification: boolean;
+  techSheetSubmission: boolean;
+  artistEngagement: boolean;
+  professionalsEngagement: boolean;
+  accompanyingPersonsEngagement: boolean;
+
+  performance: boolean;
+
+  postDateFeedback: boolean;
+  bordereau: boolean;
+
+  notes: EventNote[];
 };

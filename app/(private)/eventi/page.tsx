@@ -1,18 +1,13 @@
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { ChevronDown, ChevronsUpDown, ListFilter } from 'lucide-react';
 import { getArtists } from '@/lib/data/artists/get-artists';
 import { getVenues } from '@/lib/data/venues/get-venues';
 import { notFound } from 'next/navigation';
-import CreateButton from './_components/CreateButton';
+import CreateButton from './_components/create/CreateButton';
 import { getMoCoordinators } from '@/lib/data/get-mo-coordinators';
+import { getPaginatedEvents } from '@/lib/data/events/get-paginated-events';
+import { TablePagination } from '../_components/TablePagination';
+import EventTile from './_components/EventTile/EventTile';
 
 export default async function EventsPage({
   searchParams,
@@ -29,13 +24,7 @@ export default async function EventsPage({
     currentPage: currentPage,
   };
 
-  // const [{ data: events, totalPages }, artists, venues] = await Promise.all([
-  const [artists, venues, moCoordinators] = await Promise.all([
-    // getPaginatedEvents(filters),
-    getArtists(),
-    getVenues(),
-    getMoCoordinators(),
-  ]).catch((error) => {
+  const [{ data: events, totalPages }, artists, venues, moCoordinators] = await Promise.all([getPaginatedEvents(filters), getArtists(), getVenues(), getMoCoordinators()]).catch((error) => {
     console.error('❌ Error fetching:', error);
     notFound();
   });
@@ -88,12 +77,6 @@ export default async function EventsPage({
           >
             Rifiutato
           </Button>
-          <Button
-            variant='ghost'
-            size='sm'
-          >
-            Finito
-          </Button>
         </div>
         <div className='flex items-center gap-1'>
           <div>
@@ -112,12 +95,28 @@ export default async function EventsPage({
       </div>
 
       {/* events table section */}
-      <section className='max-h-80 flex flex-col justify-center items-center bg-white rounded-2xl p-8'>
-        <h2 className='text-base font-bold'>Nessun evento</h2>
-        <div className='text-sm font-medium text-zinc-400'>
-          Aggiungine uno per vederlo nella lista
-        </div>
-      </section>
+      {events.length > 0 ? (
+        events.map((event) => (
+          <EventTile
+            key={event.id}
+            event={event}
+            artists={artists}
+            venues={venues}
+            moCoordinators={moCoordinators}
+          />
+        ))
+      ) : (
+        <section className='max-h-80 flex flex-col justify-center items-center bg-white rounded-2xl p-8'>
+          <h2 className='text-base font-bold'>Nessun evento</h2>
+          <div className='text-sm font-medium text-zinc-400'>Aggiungine uno per vederlo nella lista</div>
+        </section>
+      )}
+      {events.length > 0 && (
+        <TablePagination
+          totalPages={totalPages}
+          currentPage={currentPage}
+        />
+      )}
     </div>
   );
 }

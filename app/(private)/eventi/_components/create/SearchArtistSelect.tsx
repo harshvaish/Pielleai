@@ -3,20 +3,9 @@
 import * as React from 'react';
 
 import { Button } from '@/components/ui/button';
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from '@/components/ui/command';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { Drawer, DrawerContent, DrawerTrigger } from '@/components/ui/drawer';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useMediaQuery } from '@/lib/hooks/useMediaQuery';
 import { ArtistSelectData } from '@/lib/types';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -39,8 +28,7 @@ export default function SearchArtistSelect({
   const [open, setOpen] = React.useState(false);
   const isDesktop = useMediaQuery('(min-width: 768px)');
 
-  const selectedArtist =
-    artists.find((artist) => artist.id === value) ?? undefined;
+  const selectedArtist = artists.find((artist) => artist.id === value) ?? undefined;
 
   if (isDesktop) {
     return (
@@ -52,22 +40,13 @@ export default function SearchArtistSelect({
           <Button
             variant='outline'
             size='sm'
-            className={cn(
-              'min-w-40 justify-start',
-              hasError && 'border-destructive'
-            )}
+            className={cn('min-w-40 justify-start', hasError && 'border-destructive')}
           >
             {selectedArtist ? (
               selectedArtist.stageName
             ) : (
               <span className='flex justify-start items-center gap-2 text-sm font-medium text-zinc-500'>
-                Seleziona artista{' '}
-                <ChevronDown
-                  className={cn(
-                    'transition-transform',
-                    open ? 'rotate-180' : ''
-                  )}
-                />
+                Seleziona artista <ChevronDown className={cn('transition-transform', open ? 'rotate-180' : '')} />
               </span>
             )}
           </Button>
@@ -96,19 +75,13 @@ export default function SearchArtistSelect({
         <Button
           variant='outline'
           size='sm'
-          className={cn(
-            'min-w-40 justify-start',
-            hasError && 'text-destructive border-destructive'
-          )}
+          className={cn('min-w-40 justify-start', hasError && 'text-destructive border-destructive')}
         >
           {selectedArtist ? (
             selectedArtist.stageName
           ) : (
             <span className='flex items-center gap-2 text-sm font-medium text-zinc-500'>
-              Seleziona artista{' '}
-              <ChevronDown
-                className={cn('transition-transform', open ? 'rotate-180' : '')}
-              />
+              Seleziona artista <ChevronDown className={cn('transition-transform', open ? 'rotate-180' : '')} />
             </span>
           )}
         </Button>
@@ -127,23 +100,13 @@ export default function SearchArtistSelect({
   );
 }
 
-function ArtistsList({
-  artists,
-  setOpen,
-  value,
-  setValue,
-}: {
-  artists: ArtistSelectData[];
-  setOpen: (open: boolean) => void;
-  value: number | undefined;
-  setValue: (newValue: number) => void;
-}) {
+function ArtistsList({ artists, setOpen, value, setValue }: { artists: ArtistSelectData[]; setOpen: (open: boolean) => void; value: number | undefined; setValue: (newValue: number) => void }) {
   const { resetField } = useFormContext<EventFormSchema>();
 
   const onSelectHandler = (value: string): void => {
     setValue(parseInt(value));
-    resetField('artistManagerId');
-    resetField('availabilityId');
+    resetField('artistManagerProfileId');
+    resetField('availability');
     setOpen(false);
   };
 
@@ -167,15 +130,11 @@ function ArtistsList({
                   <div className='flex items-center gap-2 flex-nowrap'>
                     <Avatar className='w-6 h-6'>
                       <AvatarImage src={artist.avatarUrl} />
-                      <AvatarFallback>
-                        {artist.stageName.substring(0, 1)}
-                      </AvatarFallback>
+                      <AvatarFallback>{artist.stageName.substring(0, 1)}</AvatarFallback>
                     </Avatar>
                     {artist.stageName}
                   </div>
-                  <Check
-                    className={cn(isSelected ? 'opacity-100' : 'opacity-0')}
-                  />
+                  <Check className={cn(isSelected ? 'opacity-100' : 'opacity-0')} />
                 </div>
               </CommandItem>
             );
