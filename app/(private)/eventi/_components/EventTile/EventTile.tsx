@@ -28,11 +28,11 @@ export default function EventTile({ event, artists, venues, moCoordinators }: Ev
     >
       <div className='flex items-center gap-4'>
         {/* time info */}
-        <div className='flex flex-col gap-1 justify-center pe-4 border-r'>
+        <div className='w-40 flex flex-col gap-1 justify-center pe-4 border-r'>
           <EventStatusBadge status={event.status} />
-          <div className='text-lg font-semibold capitalize'>{format(event.availability.startDate, 'dd E yy', { locale: it })}</div>
+          <div className='text-lg font-semibold capitalize'>{format(event.availability.startDate, 'dd MMM yy', { locale: it })}</div>
           <div className='text-zinc-500 font-medium'>
-            {format(event.availability.startDate, 'hh:mm')} - {format(event.availability.endDate, 'hh:mm')}
+            {format(event.availability.startDate, 'HH:mm', { locale: it })} - {format(event.availability.endDate, 'HH:mm', { locale: it })}
           </div>
         </div>
 
@@ -100,8 +100,8 @@ export default function EventTile({ event, artists, venues, moCoordinators }: Ev
                 <div className='flex items-center gap-1'>
                   <Image
                     className='w-4 h-4'
-                    src='/images/navbar-icons/manager-.svg'
-                    alt='icona valigetta'
+                    src='/images/navbar-icons/manager-venues.svg'
+                    alt='icona con tre pallini'
                     width={16}
                     height={16}
                     loading='lazy'
@@ -120,7 +120,7 @@ export default function EventTile({ event, artists, venues, moCoordinators }: Ev
           <>
             <UpdateEventStatusButton
               event={event}
-              newStatus='confirmed'
+              newStatus='pre-confirmed'
               buttonLabel='Accetta'
               buttonVariant='success'
               dialogTitle='Vuoi accettare questa richiesta?'

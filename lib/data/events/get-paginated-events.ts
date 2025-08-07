@@ -1,12 +1,12 @@
 'server only';
 
-import { PAGINATED_TABLE_ROWS_X_PAGE } from '@/lib/constants';
+import { EventStatus, PAGINATED_TABLE_ROWS_X_PAGE } from '@/lib/constants';
 import { database } from '@/lib/database/connection';
 import { artists, events, artistAvailabilities, venues, eventNotes, profiles, users, moCoordinators } from '@/lib/database/schema';
 import { Event, EventNote } from '@/lib/types';
 import { count, desc, eq, inArray } from 'drizzle-orm';
 
-export async function getPaginatedEvents({ currentPage }: { currentPage: number }): Promise<{
+export async function getPaginatedEvents({ currentPage, filterStatus }: { currentPage: number; filterStatus: EventStatus[] }): Promise<{
   data: Event[];
   totalPages: number;
   currentPage: number;
@@ -42,7 +42,9 @@ export async function getPaginatedEvents({ currentPage }: { currentPage: number 
           avatarUrl: venues.avatarUrl,
           name: venues.name,
         },
+
         status: events.status,
+        previousStatus: events.previousStatus,
 
         artistManager: {
           id: users.id,
@@ -107,9 +109,10 @@ export async function getPaginatedEvents({ currentPage }: { currentPage: number 
       .innerJoin(artistAvailabilities, eq(events.availabilityId, artistAvailabilities.id))
       .innerJoin(venues, eq(events.venueId, venues.id))
       .innerJoin(artists, eq(events.artistId, artists.id))
-      .innerJoin(profiles, eq(events.artistManagerProfileId, profiles.id))
-      .innerJoin(users, eq(profiles.userId, users.id))
+      .leftJoin(profiles, eq(events.artistManagerProfileId, profiles.id))
+      .leftJoin(users, eq(profiles.userId, users.id))
       .leftJoin(moCoordinators, eq(events.moCoordinatorId, moCoordinators.id))
+      .where(filterStatus.length > 0 ? inArray(events.status, filterStatus) : undefined)
       .orderBy(desc(events.createdAt))
       .limit(limit)
       .offset(offset);
@@ -146,10 +149,22 @@ export async function getPaginatedEvents({ currentPage }: { currentPage: number 
     }
 
     // Merge artist + managers + zones
-    const mergedResult = eventsResult.map((event) => ({
-      ...event,
-      notes: notesByEvent[event.id] || [],
-    }));
+    const mergedResult: Event[] = eventsResult.map((event) => {
+      const newObj = {
+        ...event,
+        notes: notesByEvent[event.id] || [],
+      };
+
+      if (!event.artistManager?.id) {
+        (newObj as Event).artistManager = null;
+      }
+
+      if (!event.moCoordinator?.id) {
+        (newObj as Event).moCoordinator = null;
+      }
+
+      return newObj as Event;
+    });
 
     const totalPages = Math.ceil(Number(eventCount) / limit);
 

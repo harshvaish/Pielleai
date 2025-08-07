@@ -207,7 +207,7 @@ export default function ArtistAvailabilitySelect() {
                       return (
                         <div
                           key={index}
-                          className='flex gap-2 justify-between items-center bg-zinc-50 px-2 rounded-xl'
+                          className='h-10 flex gap-2 justify-between items-center bg-zinc-50 px-2 rounded-xl'
                         >
                           <span>
                             {timeRange.startTime}

@@ -513,8 +513,7 @@ export const events = pgTable(
       foreignColumns: [venues.id],
       name: 'fk_events_venue',
     }).onDelete('restrict'),
-    unique('unique_artist_availability').on(table.artistId, table.availabilityId),
-    unique('unique_venue_availability').on(table.availabilityId, table.venueId),
+    unique('unique_artist_availability_venue').on(table.artistId, table.availabilityId, table.venueId),
   ]
 );
 
@@ -532,12 +531,12 @@ export const eventNotes = pgTable(
       columns: [table.eventId],
       foreignColumns: [events.id],
       name: 'event_notes_event_id_fkey',
-    }),
+    }).onDelete('cascade'),
     foreignKey({
       columns: [table.writerId],
       foreignColumns: [users.id],
       name: 'event_notes_writer_id_fkey',
-    }),
+    }).onDelete('cascade'),
   ]
 );
 

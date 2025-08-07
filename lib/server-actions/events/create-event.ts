@@ -4,11 +4,13 @@ import { auth } from '@/lib/auth';
 import { headers } from 'next/headers';
 import { ServerActionResponse } from '@/lib/types';
 import { database } from '@/lib/database/connection';
-import { and, count, eq, lt } from 'drizzle-orm';
+import { and, count, eq, gt } from 'drizzle-orm';
 import { profiles, users, artists, artistAvailabilities, venues, events, eventNotes } from '@/lib/database/schema';
 import { eventFormSchema, EventFormSchema } from '@/lib/validation/eventFormSchema';
 import { isBefore, parse } from 'date-fns';
 import { AppError } from '@/lib/classes/AppError';
+import { TIME_ZONE } from '@/lib/constants';
+import { fromZonedTime } from 'date-fns-tz';
 
 export const createEvent = async (data: EventFormSchema): Promise<ServerActionResponse<null>> => {
   try {
@@ -41,14 +43,13 @@ export const createEvent = async (data: EventFormSchema): Promise<ServerActionRe
       const availabilityCheck = await database
         .select({ count: count() })
         .from(artistAvailabilities)
-        .where(and(eq(artistAvailabilities.id, availabilityId), lt(artistAvailabilities.endDate, new Date())));
+        .where(and(eq(artistAvailabilities.id, availabilityId), gt(artistAvailabilities.endDate, new Date())));
 
       if (availabilityCheck[0].count === 0) {
         throw new AppError('Disponibilità selezionata non trovata o scaduta.');
       }
     } else {
-      const combined = `${availability.date} ${availability.startTime}`;
-      const availabilityStartDate = parse(combined, 'yyyy-MM-dd HH:mm', new Date());
+      const availabilityStartDate = parse(`${availability.date} ${availability.startTime}`, 'yyyy-MM-dd HH:mm', new Date());
 
       if (isBefore(availabilityStartDate, new Date())) {
         throw new AppError('Nuova disponibilità inserita scaduta.');
@@ -96,12 +97,22 @@ export const createEvent = async (data: EventFormSchema): Promise<ServerActionRe
       }
 
       if (!availabilityId) {
+        const { date, startTime, endTime } = availability;
+
+        // Step 1: Parse as naive date (no timezone interpretation yet)
+        const parsedStart = parse(`${date} ${startTime}`, 'yyyy-MM-dd HH:mm', new Date());
+        const parsedEnd = parse(`${date} ${endTime}`, 'yyyy-MM-dd HH:mm', new Date());
+
+        // Step 2: Interpret as Europe/Rome and convert to UTC
+        const startDate = fromZonedTime(parsedStart, TIME_ZONE);
+        const endDate = fromZonedTime(parsedEnd, TIME_ZONE);
+
         const [newAvailability] = await tx
           .insert(artistAvailabilities)
           .values({
             artistId: artistId,
-            startDate: new Date(`${availability.date} ${availability.startTime}`),
-            endDate: new Date(`${availability.date} ${availability.endTime}`),
+            startDate: startDate,
+            endDate: endDate,
             status: validation.data.status === 'confirmed' ? 'booked' : 'available',
           })
           .returning({ id: artistAvailabilities.id });

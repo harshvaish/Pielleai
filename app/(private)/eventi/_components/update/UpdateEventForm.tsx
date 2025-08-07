@@ -47,8 +47,8 @@ export default function UpdateEventForm({ event, artists, venues, moCoordinators
       availability: {
         id: event.availability.id,
         date: format(event.availability.startDate, 'yyyy-MM-dd'),
-        startTime: format(event.availability.startDate, 'hh:mm'),
-        endTime: format(event.availability.endDate, 'hh:mm'),
+        startTime: format(event.availability.startDate, 'HH:mm'),
+        endTime: format(event.availability.endDate, 'HH:mm'),
       },
       venueId: event.venue.id,
 

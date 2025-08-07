@@ -81,15 +81,7 @@ export const updateEvent = async (eventId: number, data: EventFormSchema): Promi
     }
 
     await database.transaction(async (tx) => {
-      if (availabilityId) {
-        await tx
-          .update(artistAvailabilities)
-          .set({
-            status: validation.data.status == 'confirmed' ? 'booked' : 'available',
-            updatedAt: new Date(),
-          })
-          .where(eq(artistAvailabilities.id, availabilityId));
-      } else {
+      if (!availabilityId) {
         const newAvailability = await tx
           .insert(artistAvailabilities)
           .values({

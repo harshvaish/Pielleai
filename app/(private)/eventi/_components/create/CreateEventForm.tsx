@@ -55,7 +55,7 @@ export default function CreateEventForm({
       moCost: undefined,
       venueManagerCost: undefined,
       depositCost: undefined,
-      depositInvoiceNumber: undefined,
+      depositInvoiceNumber: '',
       expenseReimbursement: undefined,
       bookingPercentage: undefined,
       supplierCost: undefined,

@@ -24,3 +24,13 @@
 - uniform badges UI
 - custom select and button in form UI
 - format function, add locale everiwhere
+- transitions sui filtri
+
+- managers possono essere visualizzati anche se non ancora approvati?
+- in tabella no, mettere sezione accetta anche su relativa pgina
+
+- flusso status eventi e disponibilità?
+  --- conflict solo su disponibilità artista
+
+- se cancello disponibilità di un artista che è collegata ad un evento?
+  --- si può cancellare solo se ha collegati proposti, rifiutati

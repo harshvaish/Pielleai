@@ -26,11 +26,11 @@ export const eventFormSchema = z.object({
 
   notes: z.array(z.string('Campo malformato.').min(3, 'Almeno 3 caratteri.')).optional(),
 
-  moCost: z.preprocess((val) => (typeof val === 'string' && val.trim() !== '' ? val : undefined), z.number('Campo malformato.').positive('Può contenere solo numeri positivi.').optional()),
+  moCost: z.number('Campo malformato.').positive('Può contenere solo numeri positivi.').optional(),
 
-  venueManagerCost: z.preprocess((val) => (typeof val === 'string' && val.trim() !== '' ? val : undefined), z.number('Campo malformato.').positive('Può contenere solo numeri positivi.').optional()),
+  venueManagerCost: z.number('Campo malformato.').positive('Può contenere solo numeri positivi.').optional(),
 
-  depositCost: z.preprocess((val) => (typeof val === 'string' && val.trim() !== '' ? val : undefined), z.number('Campo malformato.').positive('Può contenere solo numeri positivi.').optional()),
+  depositCost: z.number('Campo malformato.').positive('Può contenere solo numeri positivi.').optional(),
 
   depositInvoiceNumber: z.preprocess(
     (val) => (typeof val === 'string' && val.trim() !== '' ? val : undefined),
@@ -42,26 +42,17 @@ export const eventFormSchema = z.object({
       .optional()
   ),
 
-  expenseReimbursement: z.preprocess(
-    (val) => (typeof val === 'string' && val.trim() !== '' ? val : undefined),
-    z.number('Campo malformato.').positive('Può contenere solo numeri positivi.').optional()
-  ),
+  expenseReimbursement: z.number('Campo malformato.').positive('Può contenere solo numeri positivi.').optional(),
 
-  bookingPercentage: z.preprocess(
-    (val) => (typeof val === 'string' && val.trim() !== '' ? val : undefined),
-    z.number('Campo malformato.').min(0, 'Minimo 0.').max(100, 'Massimo 100.').positive('Può contenere solo numeri positivi.').optional()
-  ),
+  bookingPercentage: z.number('Campo malformato.').min(0, 'Minimo 0.').max(100, 'Massimo 100.').positive('Può contenere solo numeri positivi.').optional(),
 
-  supplierCost: z.preprocess((val) => (typeof val === 'string' && val.trim() !== '' ? val : undefined), z.number('Campo malformato.').positive('Può contenere solo numeri positivi.').optional()),
+  supplierCost: z.number('Campo malformato.').positive('Può contenere solo numeri positivi.').optional(),
 
-  moArtistAdvancedExpenses: z.preprocess(
-    (val) => (typeof val === 'string' && val.trim() !== '' ? val : undefined),
-    z.number('Campo malformato.').positive('Può contenere solo numeri positivi.').optional()
-  ),
+  moArtistAdvancedExpenses: z.number('Campo malformato.').positive('Può contenere solo numeri positivi.').optional(),
 
-  artistNetCost: z.preprocess((val) => (typeof val === 'string' && val.trim() !== '' ? val : undefined), z.number('Campo malformato.').positive('Può contenere solo numeri positivi.').optional()),
+  artistNetCost: z.number('Campo malformato.').positive('Può contenere solo numeri positivi.').optional(),
 
-  artistUpfrontCost: z.preprocess((val) => (typeof val === 'string' && val.trim() !== '' ? val : undefined), z.number('Campo malformato.').positive('Può contenere solo numeri positivi.').optional()),
+  artistUpfrontCost: z.number('Campo malformato.').positive('Può contenere solo numeri positivi.').optional(),
 
   hotel: z.preprocess(
     (val) => (typeof val === 'string' && val.trim() !== '' ? val : undefined),
@@ -78,19 +69,13 @@ export const eventFormSchema = z.object({
     z.string('Campo malformato.').min(2, 'Minimo 2 caratteri.').max(300, 'Massimo 300 caratteri.').trim().optional()
   ),
 
-  moCoordinatorId: z.preprocess(
-    (val) => (typeof val === 'string' && val.trim() !== '' ? val : undefined),
-    z.number("Seleziona un'opzione valida.").min(1, 'Campo obbligatorio.').positive("Seleziona un'opzione valida.").optional()
-  ),
+  moCoordinatorId: z.number("Seleziona un'opzione valida.").min(1, 'Campo obbligatorio.').positive("Seleziona un'opzione valida.").optional(),
 
-  totalCost: z.preprocess((val) => (typeof val === 'string' && val.trim() !== '' ? val : undefined), z.number('Campo malformato.').positive('Può contenere solo numeri positivi.').optional()),
+  totalCost: z.number('Campo malformato.').positive('Può contenere solo numeri positivi.').optional(),
 
-  transportationsCost: z.preprocess(
-    (val) => (typeof val === 'string' && val.trim() !== '' ? val : undefined),
-    z.number('Campo malformato.').positive('Può contenere solo numeri positivi.').optional()
-  ),
+  transportationsCost: z.number('Campo malformato.').positive('Può contenere solo numeri positivi.').optional(),
 
-  cashBalanceCost: z.preprocess((val) => (typeof val === 'string' && val.trim() !== '' ? val : undefined), z.number('Campo malformato.').positive('Può contenere solo numeri positivi.').optional()),
+  cashBalanceCost: z.number('Campo malformato.').positive('Può contenere solo numeri positivi.').optional(),
 
   soundCheckStart: z.preprocess((val) => (typeof val === 'string' && val.trim() !== '' ? val : undefined), z.string('Campo malformato.').optional()),
 

@@ -50,8 +50,6 @@ export const artistAvailabilities = pgTable(
     status: availabilityStatus().default('available').notNull(),
     createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
     updatedAt: timestamp('updated_at', { mode: 'string' }).defaultNow().notNull(),
-    // TODO: failed to parse database type 'tsrange'
-    timeRange: unknown('time_range').generatedAlwaysAs(sql`tsrange(start_date, end_date, '[)'::text)`),
   },
   (table) => [
     foreignKey({
@@ -457,12 +455,12 @@ export const eventNotes = pgTable(
       columns: [table.eventId],
       foreignColumns: [events.id],
       name: 'event_notes_event_id_fkey',
-    }),
+    }).onDelete('cascade'),
     foreignKey({
       columns: [table.writerId],
       foreignColumns: [users.id],
       name: 'event_notes_writer_id_fkey',
-    }),
+    }).onDelete('cascade'),
   ]
 );
 
@@ -538,8 +536,7 @@ export const events = pgTable(
       foreignColumns: [venues.id],
       name: 'fk_events_venue',
     }).onDelete('restrict'),
-    unique('unique_artist_availability').on(table.artistId, table.availabilityId),
-    unique('unique_venue_availability').on(table.availabilityId, table.venueId),
+    unique('unique_artist_availability_venue').on(table.artistId, table.availabilityId, table.venueId),
   ]
 );
 

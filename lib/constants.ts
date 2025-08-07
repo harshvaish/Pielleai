@@ -1,5 +1,7 @@
 import { View } from 'react-big-calendar';
 
+export const TIME_ZONE = 'Europe/Rome';
+
 export const USER_STATUS = ['active', 'waiting-for-approval', 'disabled', 'banned'] as const; // as const = is an immutable array
 export type UserStatus = (typeof USER_STATUS)[number];
 
