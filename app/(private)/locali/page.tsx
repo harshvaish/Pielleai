@@ -1,23 +1,16 @@
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { getCountries } from '@/lib/data/get-countries';
 import { notFound } from 'next/navigation';
 import { TablePagination } from '../_components/TablePagination';
 import UserBadge from '../_components/Badges/UserBadge';
-import FilterInput from '../_components/FilterInput';
+import FilterInput from '../_components/filters/desktop/FilterInput';
 import { getVenueManagers } from '@/lib/data/venue-managers/get-venue-managers';
 import { getPaginatedVenues } from '@/lib/data/venues/get-paginated-venues';
 import ManagersBadge from '../_components/Badges/ManagersBadge';
 import VenueTypeBadge from '../_components/Badges/VenueTypeBadge';
-import SearchVenueTypeSelect from './_components/filters/desktop/VenueTypeFilter';
+import SearchVenueTypeSelect from '../_components/filters/desktop/VenueTypeFilter';
 import { VenueType } from '@/lib/constants';
-import SearchVenueManagerSelect from './_components/filters/desktop/VenueManagerFilter';
+import SearchVenueManagerSelect from '../_components/filters/desktop/VenueManagerFilter';
 import { VenuesTableFilters } from '@/lib/types';
 import FiltersButton from './_components/filters/FiltersButton';
 import CreateButton from './_components/create/CreateButton';
@@ -53,15 +46,10 @@ export default async function VenuesPage({
     capacity: sp?.capacity || '',
   };
 
-  const [{ data: venues, totalPages }, countries, venueManagers] =
-    await Promise.all([
-      getPaginatedVenues(filters),
-      getCountries(),
-      getVenueManagers(),
-    ]).catch((error) => {
-      console.error('❌ Error fetching:', error);
-      notFound();
-    });
+  const [{ data: venues, totalPages }, countries, venueManagers] = await Promise.all([getPaginatedVenues(filters), getCountries(), getVenueManagers()]).catch((error) => {
+    console.error('❌ Error fetching:', error);
+    notFound();
+  });
 
   return (
     <div className='h-full grid grid-rows-[min-content_1fr_min-content] gap-4'>
@@ -132,17 +120,11 @@ export default async function VenuesPage({
               </TableHead>
               <TableHead>
                 <div>Tipologia</div>
-                <div className='hidden md:block'>
-                  {showFilters && <SearchVenueTypeSelect />}
-                </div>
+                <div className='hidden md:block'>{showFilters && <SearchVenueTypeSelect />}</div>
               </TableHead>
               <TableHead>
                 <div>Promoter</div>
-                <div className='hidden md:block'>
-                  {showFilters && (
-                    <SearchVenueManagerSelect venueManagers={venueManagers} />
-                  )}
-                </div>
+                <div className='hidden md:block'>{showFilters && <SearchVenueManagerSelect venueManagers={venueManagers} />}</div>
               </TableHead>
               <TableHead>
                 <div>Capienza</div>
@@ -201,9 +183,7 @@ export default async function VenuesPage({
       ) : (
         <section className='max-h-80 flex flex-col justify-center items-center bg-white rounded-2xl p-8'>
           <h2 className='text-base font-bold'>Nessun locale</h2>
-          <div className='text-sm font-medium text-zinc-400'>
-            Aggiungine uno per vederlo nella lista
-          </div>
+          <div className='text-sm font-medium text-zinc-400'>Aggiungine uno per vederlo nella lista</div>
         </section>
       )}
       {venues.length > 0 && (

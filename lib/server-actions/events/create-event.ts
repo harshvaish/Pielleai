@@ -15,7 +15,6 @@ import { fromZonedTime } from 'date-fns-tz';
 export const createEvent = async (data: EventFormSchema): Promise<ServerActionResponse<null>> => {
   try {
     const headersList = await headers();
-    let writerId = undefined;
 
     const session = await auth.api.getSession({
       headers: headersList,
@@ -25,8 +24,6 @@ export const createEvent = async (data: EventFormSchema): Promise<ServerActionRe
       console.error('[createEvent] - Error: unauthorized', session);
       throw new AppError('Non sei autorizzato.');
     }
-
-    writerId = session.user.id;
 
     const validation = eventFormSchema.safeParse(data);
 
@@ -38,21 +35,35 @@ export const createEvent = async (data: EventFormSchema): Promise<ServerActionRe
     const { artistId, artistManagerProfileId, venueId, availability } = validation.data;
 
     let availabilityId = availability.id;
+    const { date, startTime, endTime } = availability;
+
+    // Step 1: Parse as naive date (no timezone interpretation yet)
+    const parsedStart = parse(`${date} ${startTime}`, 'yyyy-MM-dd HH:mm', new Date());
+    const parsedEnd = parse(`${date} ${endTime}`, 'yyyy-MM-dd HH:mm', new Date());
+
+    // Step 2: Interpret as Europe/Rome and convert to UTC
+    const startDateUTC = fromZonedTime(parsedStart, TIME_ZONE);
+    const endDateUTC = fromZonedTime(parsedEnd, TIME_ZONE);
+
+    // Step 3: system is already in UTC
+    const now = new Date();
 
     if (availabilityId) {
-      const availabilityCheck = await database
+      const [availability] = await database
         .select({ count: count() })
         .from(artistAvailabilities)
-        .where(and(eq(artistAvailabilities.id, availabilityId), gt(artistAvailabilities.endDate, new Date())));
+        .where(and(eq(artistAvailabilities.id, availabilityId), eq(artistAvailabilities.artistId, artistId), gt(artistAvailabilities.endDate, now)));
 
-      if (availabilityCheck[0].count === 0) {
+      if (availability.count === 0) {
         throw new AppError('Disponibilità selezionata non trovata o scaduta.');
       }
     } else {
-      const availabilityStartDate = parse(`${availability.date} ${availability.startTime}`, 'yyyy-MM-dd HH:mm', new Date());
+      if (endDateUTC <= startDateUTC) {
+        throw new AppError("L'orario di fine deve essere successivo all'orario di inizio.");
+      }
 
-      if (isBefore(availabilityStartDate, new Date())) {
-        throw new AppError('Nuova disponibilità inserita scaduta.');
+      if (isBefore(startDateUTC, now)) {
+        throw new AppError('Nuova disponibilità inserita già iniziata e quindi scaduta.');
       }
     }
 
@@ -97,23 +108,13 @@ export const createEvent = async (data: EventFormSchema): Promise<ServerActionRe
       }
 
       if (!availabilityId) {
-        const { date, startTime, endTime } = availability;
-
-        // Step 1: Parse as naive date (no timezone interpretation yet)
-        const parsedStart = parse(`${date} ${startTime}`, 'yyyy-MM-dd HH:mm', new Date());
-        const parsedEnd = parse(`${date} ${endTime}`, 'yyyy-MM-dd HH:mm', new Date());
-
-        // Step 2: Interpret as Europe/Rome and convert to UTC
-        const startDate = fromZonedTime(parsedStart, TIME_ZONE);
-        const endDate = fromZonedTime(parsedEnd, TIME_ZONE);
-
         const [newAvailability] = await tx
           .insert(artistAvailabilities)
           .values({
             artistId: artistId,
-            startDate: startDate,
-            endDate: endDate,
-            status: validation.data.status === 'confirmed' ? 'booked' : 'available',
+            startDate: startDateUTC,
+            endDate: endDateUTC,
+            status: 'available', // db trigger will book it if event confirmed
           })
           .returning({ id: artistAvailabilities.id });
 
@@ -123,6 +124,10 @@ export const createEvent = async (data: EventFormSchema): Promise<ServerActionRe
           throw new AppError('Inserimento nuova disponibilità non riuscito.');
         }
       }
+
+      // tecnical rider has both url & name check
+      const tr = validation.data.tecnicalRiderDocument;
+      const validTecnicalRider = tr && tr.url.trim() !== '' && tr.name.trim() !== '';
 
       const [eventResult] = await tx
         .insert(events)
@@ -157,8 +162,8 @@ export const createEvent = async (data: EventFormSchema): Promise<ServerActionRe
 
           soundCheckStart: validation.data.soundCheckStart || null,
           soundCheckEnd: validation.data.soundCheckEnd || null,
-          tecnicalRiderUrl: validation.data.tecnicalRiderDocument ? validation.data.tecnicalRiderDocument.url : null,
-          tecnicalRiderName: validation.data.tecnicalRiderDocument ? validation.data.tecnicalRiderDocument.name : null,
+          tecnicalRiderUrl: validTecnicalRider ? validation.data.tecnicalRiderDocument!.url : null,
+          tecnicalRiderName: validTecnicalRider ? validation.data.tecnicalRiderDocument!.name : null,
 
           contractSigning: validation.data.contractSigning,
           depositInvoiceIssuing: validation.data.depositInvoiceIssuing,
@@ -177,6 +182,8 @@ export const createEvent = async (data: EventFormSchema): Promise<ServerActionRe
       if (!newEventId) {
         throw new AppError('Inserimento evento non riuscito.');
       }
+
+      const writerId = session.user.id;
 
       const noteInserts = (validation.data.notes || []).map((content: string) => ({
         writerId: writerId,

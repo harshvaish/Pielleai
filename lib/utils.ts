@@ -1,18 +1,7 @@
 import { clsx, type ClassValue } from 'clsx';
 import { View } from 'react-big-calendar';
 import { twMerge } from 'tailwind-merge';
-import {
-  format,
-  startOfWeek,
-  endOfWeek,
-  isBefore,
-  startOfDay,
-  startOfISOWeek,
-  endOfISOWeek,
-  startOfMonth,
-  endOfMonth,
-  endOfDay,
-} from 'date-fns';
+import { format, startOfWeek, endOfWeek, isBefore, startOfDay, startOfISOWeek, endOfISOWeek, startOfMonth, endOfMonth, endOfDay } from 'date-fns';
 import { it } from 'date-fns/locale';
 import imageCompression from 'browser-image-compression';
 import { TimeRange } from './types';
@@ -23,8 +12,7 @@ export function cn(...inputs: ClassValue[]) {
 
 export const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
-export const areSame = (a: number[], b: number[]) =>
-  a.length === b.length && a.every((id) => b.includes(id));
+export const areSame = (a: number[], b: number[]) => a.length === b.length && a.every((id) => b.includes(id));
 
 // CALENDAR --------------------------------------------------------
 export function buildCalendarLabel(date: Date, view: View): string {
@@ -43,27 +31,15 @@ export function buildCalendarLabel(date: Date, view: View): string {
 
       if (sameMonth) {
         // 01-07 Gennaio 2025
-        return `${format(start, 'd', { locale: it })}-${format(
-          end,
-          'd MMMM yyyy',
-          { locale: it }
-        )}`.replace(/\b\w/g, (c) => c.toUpperCase());
+        return `${format(start, 'd', { locale: it })}-${format(end, 'd MMMM yyyy', { locale: it })}`.replace(/\b\w/g, (c) => c.toUpperCase());
       }
       // 31 Gennaio - 06 Febbraio 2026
       if (sameYear) {
-        return `${format(start, 'd MMMM', { locale: it })} - ${format(
-          end,
-          'dd MMMM yyyy',
-          { locale: it }
-        )}`.replace(/\b\w/g, (c) => c.toUpperCase());
+        return `${format(start, 'd MMMM', { locale: it })} - ${format(end, 'dd MMMM yyyy', { locale: it })}`.replace(/\b\w/g, (c) => c.toUpperCase());
       }
 
       // 31 Dicembre 2025 - 06 Gennaio 2026
-      return `${format(start, 'd MMMM yyyy', { locale: it })} - ${format(
-        end,
-        'dd MMMM yyyy',
-        { locale: it }
-      )}`.replace(/\b\w/g, (c) => c.toUpperCase());
+      return `${format(start, 'd MMMM yyyy', { locale: it })} - ${format(end, 'dd MMMM yyyy', { locale: it })}`.replace(/\b\w/g, (c) => c.toUpperCase());
     }
 
     case 'month':
@@ -199,10 +175,7 @@ export function getBetterAuthErrorMessage(code: string): string {
 // BETTER AUTH --------------------------------------------------------
 
 // AVAILABILITIES --------------------------------------------------------
-export function calculateRange(
-  date: Date,
-  view: View
-): { start: Date; end: Date } {
+export function calculateRange(date: Date, view: View): { start: Date; end: Date } {
   switch (view) {
     case 'day':
       return { start: startOfDay(date), end: endOfDay(date) };
@@ -218,12 +191,7 @@ export function calculateRange(
   }
 }
 
-export function isOverlapping(
-  aStart: string,
-  aEnd: string,
-  bStart: string,
-  bEnd: string
-) {
+export function isOverlapping(aStart: string, aEnd: string, bStart: string, bEnd: string) {
   return aStart < bEnd && bStart < aEnd;
 }
 
@@ -260,8 +228,7 @@ export function checkTimeRanges(
       if (isOverlapping(startA, endA, startB, endB)) {
         return {
           success: false,
-          message:
-            'Alcune disponibilità sono in conflitto di orario, rimuovi il conflitto per procedere.',
+          message: 'Alcune disponibilità sono in conflitto di orario, rimuovi il conflitto per procedere.',
         };
       }
     }

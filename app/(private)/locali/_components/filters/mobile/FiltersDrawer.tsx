@@ -2,35 +2,22 @@
 
 import { useState, useTransition } from 'react';
 
-import {
-  Drawer,
-  DrawerContent,
-  DrawerTitle,
-  DrawerTrigger,
-} from '@/components/ui/drawer';
+import { Drawer, DrawerContent, DrawerTitle, DrawerTrigger } from '@/components/ui/drawer';
 import { VenueManagerSelectData, VenuesTableFilters } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { ListFilter, X } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { useRouter } from 'next/navigation';
-import VenueManagerSelect from './VenueManagerSelect';
+import VenueManagerSelect from '../../../../_components/filters/mobile/VenueManagerSelect';
 
-export default function FiltersDrawer({
-  filters,
-  venueManagers,
-}: {
-  filters: VenuesTableFilters;
-  venueManagers: VenueManagerSelectData[];
-}) {
+export default function FiltersDrawer({ filters, venueManagers }: { filters: VenuesTableFilters; venueManagers: VenueManagerSelectData[] }) {
   const router = useRouter();
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [isPending, startTransition] = useTransition();
 
   const [name, setName] = useState<string>(filters.name || '');
   const [address, setAddress] = useState<string>(filters.address || '');
-  const [managerIds, setManagerIds] = useState<string[]>(
-    filters.managerIds || []
-  );
+  const [managerIds, setManagerIds] = useState<string[]>(filters.managerIds || []);
 
   const resetHandler = () => {
     setName('');

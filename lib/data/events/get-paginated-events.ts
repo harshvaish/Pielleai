@@ -1,12 +1,12 @@
 'server only';
 
-import { EventStatus, PAGINATED_TABLE_ROWS_X_PAGE } from '@/lib/constants';
+import { PAGINATED_TABLE_ROWS_X_PAGE } from '@/lib/constants';
 import { database } from '@/lib/database/connection';
 import { artists, events, artistAvailabilities, venues, eventNotes, profiles, users, moCoordinators } from '@/lib/database/schema';
-import { Event, EventNote } from '@/lib/types';
-import { count, desc, eq, inArray } from 'drizzle-orm';
+import { Event, EventNote, EventsTableFilters } from '@/lib/types';
+import { and, count, desc, eq, gt, inArray, lt } from 'drizzle-orm';
 
-export async function getPaginatedEvents({ currentPage, filterStatus }: { currentPage: number; filterStatus: EventStatus[] }): Promise<{
+export async function getPaginatedEvents({ currentPage, status, artistIds, artistManagerIds, venueIds, startDate, endDate }: EventsTableFilters): Promise<{
   data: Event[];
   totalPages: number;
   currentPage: number;
@@ -15,6 +15,15 @@ export async function getPaginatedEvents({ currentPage, filterStatus }: { curren
   const offset = (currentPage - 1) * limit;
 
   try {
+    // Build reusable filters
+    const filters = and(
+      status.length > 0 ? inArray(events.status, status) : undefined,
+      artistIds.length > 0 ? inArray(events.artistId, artistIds.map(Number)) : undefined,
+      artistManagerIds.length > 0 ? inArray(events.artistManagerProfileId, artistManagerIds.map(Number)) : undefined,
+      venueIds.length > 0 ? inArray(events.venueId, venueIds.map(Number)) : undefined,
+      startDate && endDate ? and(lt(artistAvailabilities.startDate, endDate), gt(artistAvailabilities.endDate, startDate)) : undefined
+    );
+
     // Get paginated events
     const eventsResult = await database
       .select({
@@ -112,7 +121,7 @@ export async function getPaginatedEvents({ currentPage, filterStatus }: { curren
       .leftJoin(profiles, eq(events.artistManagerProfileId, profiles.id))
       .leftJoin(users, eq(profiles.userId, users.id))
       .leftJoin(moCoordinators, eq(events.moCoordinatorId, moCoordinators.id))
-      .where(filterStatus.length > 0 ? inArray(events.status, filterStatus) : undefined)
+      .where(filters)
       .orderBy(desc(events.createdAt))
       .limit(limit)
       .offset(offset);
@@ -131,7 +140,7 @@ export async function getPaginatedEvents({ currentPage, filterStatus }: { curren
         .where(inArray(eventNotes.eventId, eventIds))
         .orderBy(eventNotes.createdAt),
 
-      database.select({ eventCount: count() }).from(events),
+      database.select({ eventCount: count() }).from(events).innerJoin(artistAvailabilities, eq(events.availabilityId, artistAvailabilities.id)).where(filters),
     ]);
 
     // Group notes by eventId

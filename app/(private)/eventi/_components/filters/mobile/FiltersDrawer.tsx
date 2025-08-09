@@ -3,47 +3,57 @@
 import { useState, useTransition } from 'react';
 
 import { Drawer, DrawerContent, DrawerTitle, DrawerTrigger } from '@/components/ui/drawer';
-import { ArtistSelectData, ArtistManagersTableFilters } from '@/lib/types';
+import { ArtistSelectData, EventsTableFilters, ArtistManagerSelectData, VenueSelectData } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { ListFilter, X } from 'lucide-react';
-import { Input } from '@/components/ui/input';
 import { useRouter } from 'next/navigation';
 import ArtistSelect from '@/app/(private)/_components/filters/mobile/ArtistSelect';
+import ArtistManagerSelect from '@/app/(private)/_components/filters/mobile/ArtistManagerSelect';
+import VenueSelect from '@/app/(private)/_components/filters/mobile/VenueSelect';
 
-export default function FiltersDrawer({ filters, artists }: { filters: ArtistManagersTableFilters; artists: ArtistSelectData[] }) {
+type FiltersDrawerProps = {
+  filters: EventsTableFilters;
+  artists: ArtistSelectData[];
+  artistManagers: ArtistManagerSelectData[];
+  venues: VenueSelectData[];
+};
+
+export default function FiltersDrawer({ filters, artists, artistManagers, venues }: FiltersDrawerProps) {
   const router = useRouter();
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [isPending, startTransition] = useTransition();
 
-  const [fullName, setFullName] = useState<string>(filters.fullName || '');
-  const [email, setEmail] = useState<string>(filters.email || '');
+  const active = filters.artistIds.length + filters.artistManagerIds.length + filters.venueIds.length > 0;
+
   const [artistIds, setArtistIds] = useState<string[]>(filters.artistIds || []);
+  const [artistManagerIds, setArtistManagerIds] = useState<string[]>(filters.artistManagerIds || []);
+  const [venueIds, setVenueIds] = useState<string[]>(filters.venueIds || []);
 
   const resetHandler = () => {
-    setFullName('');
-    setEmail('');
     setArtistIds([]);
+    setArtistManagerIds([]);
+    setVenueIds([]);
   };
 
   const submitHandler = async () => {
     const params = new URLSearchParams();
 
-    if (fullName.trim().length > 0) {
-      params.set('fullName', fullName.trim());
-    } else {
-      params.delete('fullName');
-    }
-
-    if (email.trim().length > 0) {
-      params.set('email', email.trim());
-    } else {
-      params.delete('email');
-    }
-
     if (artistIds.length > 0) {
       params.set('artist', artistIds.join(','));
     } else {
       params.delete('artist');
+    }
+
+    if (artistManagerIds.length > 0) {
+      params.set('manager', artistManagerIds.join(','));
+    } else {
+      params.delete('manager');
+    }
+
+    if (venueIds.length > 0) {
+      params.set('venue', venueIds.join(','));
+    } else {
+      params.delete('venue');
     }
 
     params.set('page', '1');
@@ -61,7 +71,7 @@ export default function FiltersDrawer({ filters, artists }: { filters: ArtistMan
     >
       <DrawerTrigger asChild>
         <Button
-          variant='secondary'
+          variant={active ? 'secondary' : 'outline'}
           size='sm'
         >
           <ListFilter />
@@ -84,30 +94,29 @@ export default function FiltersDrawer({ filters, artists }: { filters: ArtistMan
           </div>
 
           <div className='flex flex-col'>
-            <div className='text-sm font-semibold mb-2'>Nome completo</div>
-            <Input
-              placeholder='Mario Rossi'
-              value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
-            />
-          </div>
-
-          <div className='flex flex-col'>
-            <div className='text-sm font-semibold mb-2'>Email</div>
-            <Input
-              type='email'
-              placeholder='info@eaglebooking.it'
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
-          </div>
-
-          <div className='flex flex-col'>
             <div className='text-sm font-semibold mb-2'>Artisti</div>
             <ArtistSelect
               initialValue={artistIds}
               artists={artists}
               onConfirm={setArtistIds}
+            />
+          </div>
+
+          <div className='flex flex-col'>
+            <div className='text-sm font-semibold mb-2'>Manager artisti</div>
+            <ArtistManagerSelect
+              initialValue={artistManagerIds}
+              artistManagers={artistManagers}
+              onConfirm={setArtistManagerIds}
+            />
+          </div>
+
+          <div className='flex flex-col'>
+            <div className='text-sm font-semibold mb-2'>Locali</div>
+            <VenueSelect
+              initialValue={venueIds}
+              venues={venues}
+              onConfirm={setVenueIds}
             />
           </div>
 

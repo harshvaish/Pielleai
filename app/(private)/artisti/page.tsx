@@ -1,11 +1,4 @@
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { getLanguages } from '@/lib/data/get-languages';
 import { getCountries } from '@/lib/data/get-countries';
 import { notFound } from 'next/navigation';
@@ -13,16 +6,16 @@ import { NEW_USER_TIME } from '@/lib/constants';
 import { TablePagination } from '../_components/TablePagination';
 import UserBadge from '../_components/Badges/UserBadge';
 import StatusBadge from '../_components/Badges/StatusBadge';
-import FilterInput from '../_components/FilterInput';
+import FilterInput from '../_components/filters/desktop/FilterInput';
 import { getPaginatedArtists } from '@/lib/data/artists/get-paginated-artists';
 import { getZones } from '@/lib/data/artists/get-zones';
 import { getArtistManagers } from '@/lib/data/artist-managers/get-artist-managers';
 import ZonesBadge from '../_components/Badges/ZonesBadge';
 import ManagersBadge from '../_components/Badges/ManagersBadge';
-import ArtistManagerFilter from './_components/filters/desktop/ArtistManagerFilter';
+import ArtistManagerFilter from '../_components/filters/desktop/ArtistManagerFilter';
 import { ArtistsTableFilters } from '@/lib/types';
 import FiltersButton from './_components/filters/FiltersButton';
-import ZoneFilter from './_components/filters/desktop/ZoneFilter';
+import ZoneFilter from '../_components/filters/desktop/ZoneFilter';
 import CreateButton from './_components/create/CreateButton';
 
 export default async function ArtistsPage({
@@ -52,13 +45,7 @@ export default async function ArtistsPage({
     zoneIds: sp?.zone ? sp.zone.split(',') : [],
   };
 
-  const [
-    { data: artists, totalPages },
-    languages,
-    countries,
-    artistManagers,
-    zones,
-  ] = await Promise.all([
+  const [{ data: artists, totalPages }, languages, countries, artistManagers, zones] = await Promise.all([
     getPaginatedArtists(filters),
     getLanguages(),
     getCountries(),
@@ -129,17 +116,11 @@ export default async function ArtistsPage({
               </TableHead>
               <TableHead>
                 <div>Manager</div>
-                <div className='hidden md:block'>
-                  {showFilters && (
-                    <ArtistManagerFilter artistManagers={artistManagers} />
-                  )}
-                </div>
+                <div className='hidden md:block'>{showFilters && <ArtistManagerFilter artistManagers={artistManagers} />}</div>
               </TableHead>
               <TableHead>
                 <div>Area di interesse</div>
-                <div className='hidden md:block'>
-                  {showFilters && <ZoneFilter zones={zones} />}
-                </div>
+                <div className='hidden md:block'>{showFilters && <ZoneFilter zones={zones} />}</div>
               </TableHead>
             </TableRow>
           </TableHeader>
@@ -147,15 +128,9 @@ export default async function ArtistsPage({
           <TableBody>
             {artists.map((artist, index) => {
               const isDisabled = artist.status === 'disabled';
-              const isNew =
-                new Date().getTime() - new Date(artist.createdAt).getTime() <
-                NEW_USER_TIME;
+              const isNew = new Date().getTime() - new Date(artist.createdAt).getTime() < NEW_USER_TIME;
 
-              const badgeStatus = isDisabled
-                ? 'disabled'
-                : isNew
-                  ? 'new'
-                  : undefined;
+              const badgeStatus = isDisabled ? 'disabled' : isNew ? 'new' : undefined;
 
               return (
                 <TableRow
@@ -193,9 +168,7 @@ export default async function ArtistsPage({
       ) : (
         <section className='max-h-80 flex flex-col justify-center items-center bg-white rounded-2xl p-8'>
           <h2 className='text-base font-bold'>Nessun artista</h2>
-          <div className='text-sm font-medium text-zinc-400'>
-            Aggiungine uno per vederlo nella lista
-          </div>
+          <div className='text-sm font-medium text-zinc-400'>Aggiungine uno per vederlo nella lista</div>
         </section>
       )}
       {artists.length > 0 && (

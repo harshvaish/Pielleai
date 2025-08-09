@@ -44,7 +44,7 @@ export const eventFormSchema = z.object({
 
   expenseReimbursement: z.number('Campo malformato.').positive('Può contenere solo numeri positivi.').optional(),
 
-  bookingPercentage: z.number('Campo malformato.').min(0, 'Minimo 0.').max(100, 'Massimo 100.').positive('Può contenere solo numeri positivi.').optional(),
+  bookingPercentage: z.number('Campo malformato.').min(0, 'Minimo 0.').max(100, 'Massimo 100.').optional(),
 
   supplierCost: z.number('Campo malformato.').positive('Può contenere solo numeri positivi.').optional(),
 

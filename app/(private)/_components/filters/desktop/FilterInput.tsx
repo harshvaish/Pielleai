@@ -6,23 +6,16 @@ import { Input } from '@/components/ui/input';
 import { Search } from 'lucide-react';
 import { HTMLInputTypeAttribute, useState, useTransition } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { cn } from '@/lib/utils';
 
-export default function FilterInput({
-  paramKey,
-  defaultValue,
-  type = 'text',
-  placeholder = 'Cerca',
-}: {
-  paramKey: string;
-  defaultValue: string;
-  type?: HTMLInputTypeAttribute;
-  placeholder?: string;
-}) {
+export default function FilterInput({ paramKey, defaultValue, type = 'text', placeholder = 'Cerca' }: { paramKey: string; defaultValue: string; type?: HTMLInputTypeAttribute; placeholder?: string }) {
   const router = useRouter();
   const searchParams = useSearchParams();
 
   const [value, setValue] = useState<string>(defaultValue);
   const [isPending, startTransition] = useTransition();
+
+  const active = defaultValue.trim().length > 0;
 
   const applyFilter = () => {
     if (!value || !value.trim().length) return;
@@ -52,7 +45,7 @@ export default function FilterInput({
         name={paramKey}
         value={value}
         onChange={(event) => setValue(event.currentTarget.value)}
-        className='bg-white pr-10'
+        className={cn('pr-10', active ? 'bg-zinc-300' : 'bg-white')}
         placeholder={placeholder}
         autoComplete='off'
         onKeyDown={(e) => {

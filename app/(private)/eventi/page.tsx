@@ -1,5 +1,3 @@
-import { Button } from '@/components/ui/button';
-import { ChevronDown, ChevronsUpDown, ListFilter } from 'lucide-react';
 import { getArtists } from '@/lib/data/artists/get-artists';
 import { getVenues } from '@/lib/data/venues/get-venues';
 import { notFound } from 'next/navigation';
@@ -8,8 +6,14 @@ import { getMoCoordinators } from '@/lib/data/get-mo-coordinators';
 import { getPaginatedEvents } from '@/lib/data/events/get-paginated-events';
 import { TablePagination } from '../_components/TablePagination';
 import EventTile from './_components/EventTile/EventTile';
-import { EventStatus } from '@/lib/constants';
+import { EventStatus, TIME_ZONE } from '@/lib/constants';
 import StatusFilterButton from './_components/filters/StatusFilterButton';
+import FiltersButton from './_components/filters/FiltersButton';
+import { EventsTableFilters } from '@/lib/types';
+import { getArtistManagers } from '@/lib/data/artist-managers/get-artist-managers';
+import { parse } from 'date-fns';
+import { fromZonedTime } from 'date-fns-tz';
+import DatesFilterButton from './_components/filters/DatesFilterButton';
 
 export default async function EventsPage({
   searchParams,
@@ -17,18 +21,35 @@ export default async function EventsPage({
   searchParams?: Promise<{
     page?: string;
     status?: string;
+    artist?: string;
+    manager?: string;
+    venue?: string;
+    start?: string;
+    end?: string;
   }>;
 }) {
   const sp = await searchParams;
 
   const currentPage = Number(sp?.page ?? '1');
+  const { startUtc, endUtc } = toUTCRange(sp?.start, sp?.end);
 
-  const filters = {
+  const filters: EventsTableFilters = {
     currentPage: currentPage,
-    filterStatus: (sp?.status ? sp.status.split(',') : []) as EventStatus[],
+    status: (sp?.status ? sp.status.split(',') : []) as EventStatus[],
+    artistIds: sp?.artist ? sp.artist.split(',') : [],
+    artistManagerIds: sp?.manager ? sp.manager.split(',') : [],
+    venueIds: sp?.venue ? sp.venue.split(',') : [],
+    startDate: startUtc,
+    endDate: endUtc,
   };
 
-  const [{ data: events, totalPages }, artists, venues, moCoordinators] = await Promise.all([getPaginatedEvents(filters), getArtists(), getVenues(), getMoCoordinators()]).catch((error) => {
+  const [{ data: events, totalPages }, artists, artistManagers, venues, moCoordinators] = await Promise.all([
+    getPaginatedEvents(filters),
+    getArtists(),
+    getArtistManagers(),
+    getVenues(),
+    getMoCoordinators(),
+  ]).catch((error) => {
     console.error('❌ Error fetching:', error);
     notFound();
   });
@@ -38,7 +59,6 @@ export default async function EventsPage({
       <div className='flex justify-between items-center'>
         <h1 className='text-xl md:text-2xl font-bold'>Eventi</h1>
         <div className='flex items-center gap-4'>
-          {/* <ToggleFiltersButton showFilters={showFilters} /> */}
           <CreateButton
             artists={artists}
             venues={venues}
@@ -71,18 +91,13 @@ export default async function EventsPage({
           />
         </div>
         <div className='flex items-center gap-1'>
-          <div>
-            Ordina{' '}
-            <Button variant='ghost'>
-              Pìù recente <ChevronDown />
-            </Button>
-          </div>
-          <Button variant='outline'>
-            Filtri <ListFilter />
-          </Button>
-          <Button variant='outline'>
-            Data <ChevronsUpDown />
-          </Button>
+          <FiltersButton
+            filters={filters}
+            artists={artists}
+            artistManagers={artistManagers}
+            venues={venues}
+          />
+          <DatesFilterButton filters={filters} />
         </div>
       </div>
 
@@ -113,4 +128,21 @@ export default async function EventsPage({
       )}
     </div>
   );
+}
+
+export function toUTCRange(start?: string, end?: string) {
+  let startUtc: Date | null = null;
+  let endUtc: Date | null = null;
+
+  if (!start || !end || start > end) {
+    return { startUtc, endUtc };
+  }
+
+  const dStart = parse(`${start} 00:00`, 'yyyy-MM-dd HH:mm', new Date());
+  startUtc = fromZonedTime(dStart, TIME_ZONE);
+
+  const dEnd = parse(`${end} 23:59:59.999`, 'yyyy-MM-dd HH:mm:ss.SSS', new Date());
+  endUtc = fromZonedTime(dEnd, TIME_ZONE);
+
+  return { startUtc, endUtc };
 }

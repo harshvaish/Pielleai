@@ -2,26 +2,15 @@
 
 import { useState, useTransition } from 'react';
 
-import {
-  Drawer,
-  DrawerContent,
-  DrawerTitle,
-  DrawerTrigger,
-} from '@/components/ui/drawer';
+import { Drawer, DrawerContent, DrawerTitle, DrawerTrigger } from '@/components/ui/drawer';
 import { VenueManagersTableFilters, VenueSelectData } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { ListFilter, X } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { useRouter } from 'next/navigation';
-import VenueSelect from './VenueSelect';
+import VenueSelect from '@/app/(private)/_components/filters/mobile/VenueSelect';
 
-export default function FiltersDrawer({
-  filters,
-  venues,
-}: {
-  filters: VenueManagersTableFilters;
-  venues: VenueSelectData[];
-}) {
+export default function FiltersDrawer({ filters, venues }: { filters: VenueManagersTableFilters; venues: VenueSelectData[] }) {
   const router = useRouter();
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [isPending, startTransition] = useTransition();

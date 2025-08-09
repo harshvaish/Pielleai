@@ -1,4 +1,4 @@
-import { pgTable, foreignKey, unique, text, timestamp, check, serial, integer, boolean, date, varchar, uuid, numeric, time, primaryKey, pgEnum } from 'drizzle-orm/pg-core';
+import { pgTable, foreignKey, unique, text, timestamp, check, serial, integer, boolean, date, varchar, uuid, uniqueIndex, numeric, time, primaryKey, pgEnum } from 'drizzle-orm/pg-core';
 import { sql } from 'drizzle-orm';
 
 export const availabilityStatus = pgEnum('availability_status', ['available', 'booked', 'expired']);
@@ -511,6 +511,9 @@ export const events = pgTable(
     previousStatus: eventStatus('previous_status'),
   },
   (table) => [
+    uniqueIndex('ux_events_one_confirmed_per_availability')
+      .using('btree', table.availabilityId.asc().nullsLast().op('int4_ops'))
+      .where(sql`(status = 'confirmed'::event_status)`),
     foreignKey({
       columns: [table.artistId],
       foreignColumns: [artists.id],

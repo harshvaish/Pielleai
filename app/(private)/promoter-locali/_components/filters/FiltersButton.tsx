@@ -8,15 +8,7 @@ import { useTransition } from 'react';
 import { VenueSelectData, VenueManagersTableFilters } from '@/lib/types';
 import FiltersDrawer from './mobile/FiltersDrawer';
 
-export default function FiltersButton({
-  filters,
-  showFilters,
-  venues,
-}: {
-  filters: VenueManagersTableFilters;
-  showFilters: boolean;
-  venues: VenueSelectData[];
-}) {
+export default function FiltersButton({ filters, showFilters, venues }: { filters: VenueManagersTableFilters; showFilters: boolean; venues: VenueSelectData[] }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const isDesktop = useMediaQuery('(min-width: 768px)');

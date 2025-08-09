@@ -1,3 +1,6 @@
+Golden Rule:
+Always treat user inputs as being in a specific timezone (e.g. Europe/Rome), and convert them to UTC before storing.
+
 - change email sender in send-reset-password-email
 - check zod v4 use everywhere
 - security check on routes and funcions?
@@ -25,6 +28,11 @@
 - custom select and button in form UI
 - format function, add locale everiwhere
 - transitions sui filtri
+- aggiungere sulle tabelle db gli index (
+  create index if not exists idx_events_availability_id on public.events (availability_id);
+  create index if not exists idx_events_status on public.events (status);
+  )
+- check optional values inside schemas (take example in event schema)
 
 - managers possono essere visualizzati anche se non ancora approvati?
 - in tabella no, mettere sezione accetta anche su relativa pgina

@@ -8,15 +8,7 @@ import { useTransition } from 'react';
 import { ArtistSelectData, ArtistManagersTableFilters } from '@/lib/types';
 import FiltersDrawer from './mobile/FiltersDrawer';
 
-export default function FiltersButton({
-  filters,
-  showFilters,
-  artists,
-}: {
-  filters: ArtistManagersTableFilters;
-  showFilters: boolean;
-  artists: ArtistSelectData[];
-}) {
+export default function FiltersButton({ filters, showFilters, artists }: { filters: ArtistManagersTableFilters; showFilters: boolean; artists: ArtistSelectData[] }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const isDesktop = useMediaQuery('(min-width: 768px)');

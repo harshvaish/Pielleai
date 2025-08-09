@@ -423,3 +423,13 @@ export type Event = {
 
   notes: EventNote[];
 };
+
+export type EventsTableFilters = {
+  currentPage: number;
+  status: EventStatus[];
+  artistIds: string[];
+  artistManagerIds: string[];
+  venueIds: string[];
+  startDate: Date | null;
+  endDate: Date | null;
+};

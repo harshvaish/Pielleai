@@ -241,7 +241,7 @@ export default function CreateEventForm({
                   <div className='text-sm font-semibold mb-2'>Cachet lordo</div>
                   <Input
                     {...methods.register('moCost', {
-                      valueAsNumber: true,
+                      setValueAs: (v) => (v === '' ? undefined : parseFloat(v)),
                     })}
                     placeholder='1000'
                     type='number'
@@ -256,7 +256,7 @@ export default function CreateEventForm({
                   <div className='text-sm font-semibold mb-2'>Fee promoter</div>
                   <Input
                     {...methods.register('venueManagerCost', {
-                      valueAsNumber: true,
+                      setValueAs: (v) => (v === '' ? undefined : parseFloat(v)),
                     })}
                     placeholder='1000'
                     type='number'
@@ -273,7 +273,7 @@ export default function CreateEventForm({
                   <div className='text-sm font-semibold mb-2'>Acconto</div>
                   <Input
                     {...methods.register('depositCost', {
-                      valueAsNumber: true,
+                      setValueAs: (v) => (v === '' ? undefined : parseFloat(v)),
                     })}
                     placeholder='1000'
                     type='number'
@@ -300,7 +300,7 @@ export default function CreateEventForm({
                   <div className='text-sm font-semibold mb-2'>Rimborso spese</div>
                   <Input
                     {...methods.register('expenseReimbursement', {
-                      valueAsNumber: true,
+                      setValueAs: (v) => (v === '' ? undefined : parseFloat(v)),
                     })}
                     placeholder='1000'
                     type='number'
@@ -315,7 +315,7 @@ export default function CreateEventForm({
                   <div className='text-sm font-semibold mb-2'>Percentuale booking</div>
                   <Input
                     {...methods.register('bookingPercentage', {
-                      valueAsNumber: true,
+                      setValueAs: (v) => (v === '' ? undefined : parseFloat(v)),
                     })}
                     placeholder='30%'
                     type='number'
@@ -332,7 +332,7 @@ export default function CreateEventForm({
                   <div className='text-sm font-semibold mb-2'>Fornitore</div>
                   <Input
                     {...methods.register('supplierCost', {
-                      valueAsNumber: true,
+                      setValueAs: (v) => (v === '' ? undefined : parseFloat(v)),
                     })}
                     placeholder='1000'
                     type='number'
@@ -347,7 +347,7 @@ export default function CreateEventForm({
                   <div className='text-sm font-semibold mb-2'>Spese anticipate da Milano Ovest per Artista</div>
                   <Input
                     {...methods.register('moArtistAdvancedExpenses', {
-                      valueAsNumber: true,
+                      setValueAs: (v) => (v === '' ? undefined : parseFloat(v)),
                     })}
                     placeholder='1000'
                     type='number'
@@ -364,7 +364,7 @@ export default function CreateEventForm({
                   <div className='text-sm font-semibold mb-2'>Netto artista</div>
                   <Input
                     {...methods.register('artistNetCost', {
-                      valueAsNumber: true,
+                      setValueAs: (v) => (v === '' ? undefined : parseFloat(v)),
                     })}
                     placeholder='1000'
                     type='number'
@@ -379,7 +379,7 @@ export default function CreateEventForm({
                   <div className='text-sm font-semibold mb-2'>Anticipo artista</div>
                   <Input
                     {...methods.register('artistUpfrontCost', {
-                      valueAsNumber: true,
+                      setValueAs: (v) => (v === '' ? undefined : parseFloat(v)),
                     })}
                     placeholder='1000'
                     type='number'
@@ -472,7 +472,7 @@ export default function CreateEventForm({
                   <div className='text-sm font-semibold mb-2'>Incasso totale</div>
                   <Input
                     {...methods.register('totalCost', {
-                      valueAsNumber: true,
+                      setValueAs: (v) => (v === '' ? undefined : parseFloat(v)),
                     })}
                     placeholder='1000'
                     type='number'
@@ -487,7 +487,7 @@ export default function CreateEventForm({
                   <div className='text-sm font-semibold mb-2'>Saldo trasporti</div>
                   <Input
                     {...methods.register('transportationsCost', {
-                      valueAsNumber: true,
+                      setValueAs: (v) => (v === '' ? undefined : parseFloat(v)),
                     })}
                     placeholder='1000'
                     type='number'
@@ -503,7 +503,7 @@ export default function CreateEventForm({
                 <div className='text-sm font-semibold mb-2'>Saldo cassa</div>
                 <Input
                   {...methods.register('cashBalanceCost', {
-                    valueAsNumber: true,
+                    setValueAs: (v) => (v === '' ? undefined : parseFloat(v)),
                   })}
                   placeholder='1000'
                   type='number'

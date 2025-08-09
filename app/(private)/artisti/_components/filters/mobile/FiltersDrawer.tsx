@@ -2,35 +2,22 @@
 
 import { useState, useTransition } from 'react';
 
-import {
-  Drawer,
-  DrawerContent,
-  DrawerTitle,
-  DrawerTrigger,
-} from '@/components/ui/drawer';
+import { Drawer, DrawerContent, DrawerTitle, DrawerTrigger } from '@/components/ui/drawer';
 import { ArtistsTableFilters, ArtistManagerSelectData } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { ListFilter, X } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { useRouter } from 'next/navigation';
-import ArtistManagerSelect from './ArtistManagerSelect';
+import ArtistManagerSelect from '@/app/(private)/_components/filters/mobile/ArtistManagerSelect';
 
-export default function FiltersDrawer({
-  filters,
-  artistManagers,
-}: {
-  filters: ArtistsTableFilters;
-  artistManagers: ArtistManagerSelectData[];
-}) {
+export default function FiltersDrawer({ filters, artistManagers }: { filters: ArtistsTableFilters; artistManagers: ArtistManagerSelectData[] }) {
   const router = useRouter();
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [isPending, startTransition] = useTransition();
 
   const [fullName, setFullName] = useState<string>(filters.fullName || '');
   const [email, setEmail] = useState<string>(filters.email || '');
-  const [managerIds, setManagerIds] = useState<string[]>(
-    filters.managerIds || []
-  );
+  const [managerIds, setManagerIds] = useState<string[]>(filters.managerIds || []);
 
   const resetHandler = () => {
     setFullName('');

@@ -1,11 +1,4 @@
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { getPaginatedArtistManagers } from '@/lib/data/artist-managers/get-paginated-artist-managers';
 import { getLanguages } from '@/lib/data/get-languages';
 import { getCountries } from '@/lib/data/get-countries';
@@ -14,10 +7,10 @@ import { TablePagination } from '../_components/TablePagination';
 import UserBadge from '../_components/Badges/UserBadge';
 import StatusBadge from '../_components/Badges/StatusBadge';
 import { NEW_USER_TIME } from '@/lib/constants';
-import FilterInput from '../_components/FilterInput';
+import FilterInput from '../_components/filters/desktop/FilterInput';
 import ArtistsBadge from '../_components/Badges/ArtistsBadge';
 import { getArtists } from '@/lib/data/artists/get-artists';
-import ArtistFilter from './_components/filters/desktop/ArtistFilter';
+import ArtistFilter from '../_components/filters/desktop/ArtistFilter';
 import FiltersButton from './_components/filters/FiltersButton';
 import { ArtistManagersTableFilters } from '@/lib/types';
 import CreateButton from './_components/create/CreateButton';
@@ -49,16 +42,10 @@ export default async function ArtistManagersPage({
     company: sp?.company || '',
   };
 
-  const [{ data: managers, totalPages }, languages, countries, artists] =
-    await Promise.all([
-      getPaginatedArtistManagers(filters),
-      getLanguages(),
-      getCountries(),
-      getArtists(),
-    ]).catch((error) => {
-      console.error('❌ Error fetching:', error);
-      notFound();
-    });
+  const [{ data: managers, totalPages }, languages, countries, artists] = await Promise.all([getPaginatedArtistManagers(filters), getLanguages(), getCountries(), getArtists()]).catch((error) => {
+    console.error('❌ Error fetching:', error);
+    notFound();
+  });
 
   return (
     <div className='h-full grid grid-rows-[min-content_1fr_min-content] gap-4'>
@@ -118,9 +105,7 @@ export default async function ArtistManagersPage({
               </TableHead>
               <TableHead>
                 <div>Artisti</div>
-                <div className='hidden md:block'>
-                  {showFilters && <ArtistFilter artists={artists} />}
-                </div>
+                <div className='hidden md:block'>{showFilters && <ArtistFilter artists={artists} />}</div>
               </TableHead>
               <TableHead>
                 <div>Ragione sociale</div>
@@ -139,15 +124,9 @@ export default async function ArtistManagersPage({
           <TableBody>
             {managers.map((manager, index) => {
               const isDisabled = manager.status === 'disabled';
-              const isNew =
-                new Date().getTime() - new Date(manager.createdAt).getTime() <
-                NEW_USER_TIME;
+              const isNew = new Date().getTime() - new Date(manager.createdAt).getTime() < NEW_USER_TIME;
 
-              const badgeStatus = isDisabled
-                ? 'disabled'
-                : isNew
-                  ? 'new'
-                  : undefined;
+              const badgeStatus = isDisabled ? 'disabled' : isNew ? 'new' : undefined;
 
               return (
                 <TableRow
@@ -180,9 +159,7 @@ export default async function ArtistManagersPage({
       ) : (
         <section className='max-h-80 flex flex-col justify-center items-center bg-white rounded-2xl p-8'>
           <h2 className='text-base font-bold'>Nessun manager artista</h2>
-          <div className='text-sm font-medium text-zinc-400'>
-            Aggiungine uno per vederlo nella lista
-          </div>
+          <div className='text-sm font-medium text-zinc-400'>Aggiungine uno per vederlo nella lista</div>
         </section>
       )}
       {managers.length > 0 && (
