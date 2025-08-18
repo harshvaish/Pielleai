@@ -20,6 +20,8 @@ export const eventFormSchema = z.object({
 
   venueId: z.number("Seleziona un'opzione valida.").min(1, 'Campo obbligatorio.').positive("Seleziona un'opzione valida."),
 
+  tourManagerEmail: z.preprocess((val) => (typeof val === 'string' && val.trim() !== '' ? val : undefined), z.email('Formato non valido. (Es. info@eaglebooking.it)').optional()),
+
   administrationEmail: z.preprocess((val) => (typeof val === 'string' && val.trim() !== '' ? val : undefined), z.email('Formato non valido. (Es. info@eaglebooking.it)').optional()),
 
   payrollConsultantEmail: z.preprocess((val) => (typeof val === 'string' && val.trim() !== '' ? val : undefined), z.email('Formato non valido. (Es. info@eaglebooking.it)').optional()),

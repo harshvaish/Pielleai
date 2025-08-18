@@ -50,6 +50,8 @@ export const artistAvailabilities = pgTable(
     status: availabilityStatus().default('available').notNull(),
     createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
     updatedAt: timestamp('updated_at', { mode: 'string' }).defaultNow().notNull(),
+    // TODO: failed to parse database type 'tsrange'
+    // timeRange: unknown("time_range").generatedAlwaysAs(sql`tsrange(start_date, end_date, '[)'::text)`),
   },
   (table) => [
     foreignKey({
@@ -509,6 +511,7 @@ export const events = pgTable(
     createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
     updatedAt: timestamp('updated_at', { mode: 'string' }).defaultNow().notNull(),
     previousStatus: eventStatus('previous_status'),
+    tourManagerEmail: text('tour_manager_email'),
   },
   (table) => [
     uniqueIndex('ux_events_one_confirmed_per_availability')
@@ -527,7 +530,7 @@ export const events = pgTable(
     foreignKey({
       columns: [table.artistManagerProfileId],
       foreignColumns: [profiles.id],
-      name: 'fk_events_manager',
+      name: 'fk_events_manager_profile',
     }).onDelete('restrict'),
     foreignKey({
       columns: [table.moCoordinatorId],

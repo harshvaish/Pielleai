@@ -44,10 +44,11 @@ export default function CreateEventForm({
     defaultValues: {
       artistId: undefined,
       status: 'proposed',
-      artistManagerProfileId: undefined,
       availability: undefined,
       venueId: undefined,
 
+      artistManagerProfileId: undefined,
+      tourManagerEmail: '',
       administrationEmail: '',
       payrollConsultantEmail: '',
       notes: [],
@@ -93,8 +94,12 @@ export default function CreateEventForm({
   const {
     handleSubmit,
     control,
+    watch,
     formState: { errors },
   } = methods;
+
+  const selectedVenueId = watch('venueId');
+  const selectedVenue = venues.find((venue) => venue.id == selectedVenueId);
 
   const onSubmit = async (data: EventFormSchema) => {
     setIsLoading(true);
@@ -173,15 +178,25 @@ export default function CreateEventForm({
           </div>
 
           <div className='flex flex-col'>
-            <div className='text-sm font-semibold mb-2'>Locale</div>
-            <VenueSelect venues={venues} />
-            {errors.venueId && <p className='text-xs text-destructive mt-2'>{errors.venueId.message}</p>}
-          </div>
-
-          <div className='flex flex-col'>
             <div className='text-sm font-semibold mb-2'>Data</div>
             <ArtistAvailabilitySelect />
             {errors.availability && <p className='text-xs text-destructive mt-2'>{errors.availability.message}</p>}
+          </div>
+
+          <div className='grid sm:grid-cols-2 gap-4'>
+            <div className='flex flex-col'>
+              <div className='text-sm font-semibold mb-2'>Locale</div>
+              <VenueSelect venues={venues} />
+              {errors.venueId && <p className='text-xs text-destructive mt-2'>{errors.venueId.message}</p>}
+            </div>
+
+            <div className='flex flex-col'>
+              <div className='text-sm font-semibold mb-2'>Indirizzo del locale</div>
+
+              <div className='h-10 flex items-center text-sm'>
+                {selectedVenue?.address ? <span className='truncate'>{selectedVenue?.address}</span> : <span className='text-zinc-500'>Seleziona un locale</span>}
+              </div>
+            </div>
           </div>
 
           <Tabs
@@ -203,6 +218,17 @@ export default function CreateEventForm({
                 <div className='text-sm font-semibold mb-2'>Manager artista</div>
                 <ArtistManagerSelect />
                 {errors.artistManagerProfileId && <p className='text-xs text-destructive mt-2'>{errors.artistManagerProfileId.message}</p>}
+              </div>
+
+              <div className='flex flex-col'>
+                <div className='text-sm font-semibold mb-2'>Tour manager</div>
+                <Input
+                  type='email'
+                  {...methods.register('tourManagerEmail')}
+                  placeholder='tour.manager@eaglebooking.it'
+                  className={errors.tourManagerEmail ? 'border-destructive text-destructive' : ''}
+                />
+                {errors.tourManagerEmail && <p className='text-xs text-destructive mt-2'>{errors.tourManagerEmail.message}</p>}
               </div>
 
               <div className='flex flex-col'>
@@ -253,18 +279,17 @@ export default function CreateEventForm({
                 </div>
 
                 <div className='flex flex-col'>
-                  <div className='text-sm font-semibold mb-2'>Fee promoter</div>
-                  <Input
-                    {...methods.register('venueManagerCost', {
-                      setValueAs: (v) => (v === '' ? undefined : parseFloat(v)),
-                    })}
-                    placeholder='1000'
-                    type='number'
-                    min={0}
-                    step={0.01}
-                    className={errors.venueManagerCost ? 'border-destructive text-destructive' : ''}
-                  />
-                  {errors.venueManagerCost && <p className='text-xs text-destructive mt-2'>{errors.venueManagerCost.message}</p>}
+                  <div className='text-sm font-semibold mb-2'>Nome promoter</div>
+
+                  <div className='h-10 flex items-center text-sm'>
+                    {selectedVenue?.manager?.name ? (
+                      <span className='truncate'>
+                        {selectedVenue?.manager?.name} {selectedVenue?.manager?.surname}
+                      </span>
+                    ) : (
+                      <span className='text-zinc-500'>Seleziona un locale</span>
+                    )}
+                  </div>
                 </div>
               </div>
 
@@ -285,6 +310,23 @@ export default function CreateEventForm({
                 </div>
 
                 <div className='flex flex-col'>
+                  <div className='text-sm font-semibold mb-2'>Fee promoter</div>
+                  <Input
+                    {...methods.register('venueManagerCost', {
+                      setValueAs: (v) => (v === '' ? undefined : parseFloat(v)),
+                    })}
+                    placeholder='1000'
+                    type='number'
+                    min={0}
+                    step={0.01}
+                    className={errors.venueManagerCost ? 'border-destructive text-destructive' : ''}
+                  />
+                  {errors.venueManagerCost && <p className='text-xs text-destructive mt-2'>{errors.venueManagerCost.message}</p>}
+                </div>
+              </div>
+
+              <div className='grid sm:grid-cols-2 gap-4'>
+                <div className='flex flex-col'>
                   <div className='text-sm font-semibold mb-2'>Numero fattura acconto</div>
                   <Input
                     {...methods.register('depositInvoiceNumber')}
@@ -293,9 +335,7 @@ export default function CreateEventForm({
                   />
                   {errors.depositInvoiceNumber && <p className='text-xs text-destructive mt-2'>{errors.depositInvoiceNumber.message}</p>}
                 </div>
-              </div>
 
-              <div className='grid sm:grid-cols-2 gap-4'>
                 <div className='flex flex-col'>
                   <div className='text-sm font-semibold mb-2'>Rimborso spese</div>
                   <Input
@@ -310,7 +350,9 @@ export default function CreateEventForm({
                   />
                   {errors.expenseReimbursement && <p className='text-xs text-destructive mt-2'>{errors.expenseReimbursement.message}</p>}
                 </div>
+              </div>
 
+              <div className='grid sm:grid-cols-2 gap-4'>
                 <div className='flex flex-col'>
                   <div className='text-sm font-semibold mb-2'>Percentuale booking</div>
                   <Input
@@ -325,9 +367,7 @@ export default function CreateEventForm({
                   />
                   {errors.bookingPercentage && <p className='text-xs text-destructive mt-2'>{errors.bookingPercentage.message}</p>}
                 </div>
-              </div>
 
-              <div className='grid sm:grid-cols-2 gap-4'>
                 <div className='flex flex-col'>
                   <div className='text-sm font-semibold mb-2'>Fornitore</div>
                   <Input
@@ -342,21 +382,21 @@ export default function CreateEventForm({
                   />
                   {errors.supplierCost && <p className='text-xs text-destructive mt-2'>{errors.supplierCost.message}</p>}
                 </div>
+              </div>
 
-                <div className='flex flex-col'>
-                  <div className='text-sm font-semibold mb-2'>Spese anticipate da Milano Ovest per Artista</div>
-                  <Input
-                    {...methods.register('moArtistAdvancedExpenses', {
-                      setValueAs: (v) => (v === '' ? undefined : parseFloat(v)),
-                    })}
-                    placeholder='1000'
-                    type='number'
-                    min={0}
-                    step={0.01}
-                    className={errors.moArtistAdvancedExpenses ? 'border-destructive text-destructive' : ''}
-                  />
-                  {errors.moArtistAdvancedExpenses && <p className='text-xs text-destructive mt-2'>{errors.moArtistAdvancedExpenses.message}</p>}
-                </div>
+              <div className='flex flex-col'>
+                <div className='text-sm font-semibold mb-2'>Spese anticipate da Milano Ovest per Artista</div>
+                <Input
+                  {...methods.register('moArtistAdvancedExpenses', {
+                    setValueAs: (v) => (v === '' ? undefined : parseFloat(v)),
+                  })}
+                  placeholder='1000'
+                  type='number'
+                  min={0}
+                  step={0.01}
+                  className={errors.moArtistAdvancedExpenses ? 'border-destructive text-destructive' : ''}
+                />
+                {errors.moArtistAdvancedExpenses && <p className='text-xs text-destructive mt-2'>{errors.moArtistAdvancedExpenses.message}</p>}
               </div>
 
               <div className='grid sm:grid-cols-2 gap-4'>

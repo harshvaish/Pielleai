@@ -42,3 +42,7 @@ Always treat user inputs as being in a specific timezone (e.g. Europe/Rome), and
 
 - se cancello disponibilità di un artista che è collegata ad un evento?
   --- si può cancellare solo se ha collegati proposti, rifiutati
+
+input - text-sm font-normal
+placeholder - text-zinc-500
+value

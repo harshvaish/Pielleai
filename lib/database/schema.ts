@@ -483,9 +483,10 @@ export const events = pgTable(
     performance: boolean().default(false).notNull(),
     postDateFeedback: boolean('post_date_feedback').default(false).notNull(),
     bordereau: boolean().default(false).notNull(),
-    previousStatus: eventStatus('previous_status'),
     createdAt: timestamp('created_at').defaultNow().notNull(),
     updatedAt: timestamp('updated_at').defaultNow().notNull(),
+    previousStatus: eventStatus('previous_status'),
+    tourManagerEmail: text('tour_manager_email'),
   },
   (table) => [
     uniqueIndex('ux_events_one_confirmed_per_availability')
@@ -504,7 +505,7 @@ export const events = pgTable(
     foreignKey({
       columns: [table.artistManagerProfileId],
       foreignColumns: [profiles.id],
-      name: 'fk_events_manager',
+      name: 'fk_events_manager_profile',
     }).onDelete('restrict'),
     foreignKey({
       columns: [table.moCoordinatorId],

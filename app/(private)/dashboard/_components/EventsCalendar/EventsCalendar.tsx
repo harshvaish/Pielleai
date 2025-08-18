@@ -5,20 +5,22 @@ import 'react-big-calendar/lib/css/react-big-calendar.css';
 import '@/app/(private)/_components/Calendar/calendar-overrides.css';
 
 import { format, getDay, parse, startOfWeek } from 'date-fns';
-import { CALENDAR_VIEWS } from '@/lib/constants';
-import { Toolbar } from './Toolbar';
-import WeekHeader from './WeekHeader';
-import MonthHeader from './MonthHeader';
+import { CALENDAR_VIEWS, TIME_ZONE } from '@/lib/constants';
 import ShowMore from './ShowMore';
 import { useEffect, useState } from 'react';
-import { ArtistAvailability, CalendarAvailability } from '@/lib/types';
+import { CalendarEvent } from '@/lib/types';
 import useSWR from 'swr';
-import { notFound, useParams } from 'next/navigation';
 import { calculateRange, fetcher } from '@/lib/utils';
 import { toast } from 'sonner';
 import { it } from 'date-fns/locale';
 import { Skeleton } from '@/components/ui/skeleton';
-import Event from './Event';
+import WeekEvent from './WeekEvent';
+import MonthEvent from './MonthEvent';
+import { toZonedTime } from 'date-fns-tz';
+import ConfirmDialog from '@/app/_components/ConfirmDialog';
+import MonthHeader from '@/app/(private)/_components/Calendar/MonthHeader';
+import WeekHeader from '@/app/(private)/_components/Calendar/WeekHeader';
+import EventContent from './EventContent';
 
 const locales = { it };
 
@@ -30,19 +32,17 @@ export const localizer = dateFnsLocalizer({
   locales,
 });
 
-export default function AvailabilitiesCalendar() {
-  const { slug } = useParams();
-  if (!slug || typeof slug !== 'string') notFound();
-
+export default function EventsCalendar() {
   const [date, setDate] = useState<Date>(new Date());
   const [view, setView] = useState<View>('week');
   const [range, setRange] = useState<{ start: Date; end: Date }>(() => calculateRange(new Date(), 'week'));
-  const [availabilities, setAvailabilities] = useState<CalendarAvailability[]>([]);
+  const [events, setEvents] = useState<CalendarEvent[]>([]);
+  const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
 
   const startDate = format(range.start, 'yyyy-MM-dd');
   const endDate = format(range.end, 'yyyy-MM-dd');
 
-  const fetchUrl = `/api/artist-availabilities/range?artist=${slug}&start=${startDate}&end=${endDate}`;
+  const fetchUrl = `/api/calendar-events/range?start=${startDate}&end=${endDate}`;
 
   const { data, error, isLoading } = useSWR(fetchUrl, fetcher, {
     keepPreviousData: true,
@@ -58,26 +58,22 @@ export default function AvailabilitiesCalendar() {
     setRange(calculateRange(date, nextView));
   };
 
-  const eventPropGetter = ({ status }: CalendarAvailability) => {
+  const eventPropGetter = ({ status }: CalendarEvent) => {
     return {
-      className: status ?? 'draft',
+      className: status,
     };
   };
 
   useEffect(() => {
-    if (!data?.availabilities) return;
+    if (!data?.events) return;
 
-    setAvailabilities(
-      data.availabilities.map((a: ArtistAvailability) => ({
-        start: new Date(a.startDate),
-        end: new Date(a.endDate),
-        status: a.status,
-      }))
-    );
+    console.dir(data.events, { depth: null });
+
+    setEvents(data.events.map((event: CalendarEvent) => ({ ...event, start: toZonedTime(event.start, TIME_ZONE), end: toZonedTime(event.end, TIME_ZONE) })));
   }, [data]);
 
   useEffect(() => {
-    if (error) toast.error('Recupero disponibilità artista non riuscito.');
+    if (error) toast.error('Recupero eventi calendario non riuscito.');
   }, [error]);
 
   return (
@@ -95,24 +91,34 @@ export default function AvailabilitiesCalendar() {
         toolbar={true}
         showAllEvents={false} // if true showMore is not visible
         components={{
-          toolbar: Toolbar,
+          // toolbar: Toolbar,
           day: {
-            event: Event,
+            event: WeekEvent,
           },
           week: {
             header: WeekHeader,
-            event: Event,
+            event: WeekEvent,
           },
           month: {
             header: MonthHeader,
-            event: Event,
+            event: MonthEvent,
           },
           showMore: ShowMore,
         }}
-        events={availabilities}
+        events={events}
         style={{ minHeight: '600px' }}
         eventPropGetter={eventPropGetter}
+        onSelectEvent={(ev) => setSelectedEvent(ev as CalendarEvent)}
       />
+
+      <ConfirmDialog
+        open={!!selectedEvent}
+        onOpenChange={(open) => !open && setSelectedEvent(null)}
+        title={`Evento #${selectedEvent?.id}`}
+        description="Consulta i dati principali dell'evento, per vederne tutti i dettagli o per fare modifiche vai alla sezione eventi."
+      >
+        {selectedEvent && <EventContent event={selectedEvent} />}
+      </ConfirmDialog>
     </div>
   );
 }

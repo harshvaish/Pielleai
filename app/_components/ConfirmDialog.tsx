@@ -52,11 +52,11 @@ export default function ConfirmDialog({
       open={open}
       onOpenChange={onOpenChange}
     >
-      <DialogContent>
+      <DialogContent className='grid grid-rows-[min-content_min-content_1fr]'>
         <DialogTitle className={isTitleHidden ? 'hidden' : ''}>{title}</DialogTitle>
         <DialogDescription className={isDescriptionHidden ? 'hidden' : ''}>{description}</DialogDescription>
         {children ? (
-          children
+          <div className='h-full overflow-y-auto'>{children}</div>
         ) : (
           <DialogFooter className='flex justify-end gap-2 mt-2'>
             <Button
@@ -85,11 +85,11 @@ export default function ConfirmDialog({
       onOpenChange={onOpenChange}
     >
       <DrawerContent>
-        <div className='py-8 px-4'>
+        <div className='grid grid-rows-[min-content_min-content_400px] py-8 px-4'>
           <DrawerTitle className={cn('mb-2', isTitleHidden && 'hidden')}>{title}</DrawerTitle>
           <DrawerDescription className={cn('mb-6', isDescriptionHidden && 'hidden')}>{description}</DrawerDescription>
           {children ? (
-            children
+            <div className='h-full overflow-y-auto'>{children}</div>
           ) : (
             <DrawerFooter className='grid grid-cols-2 gap-2 p-0'>
               <Button

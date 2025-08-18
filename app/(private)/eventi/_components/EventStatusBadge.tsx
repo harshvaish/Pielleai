@@ -6,7 +6,7 @@ import { JSX } from 'react';
 type EventStatusBadgeProps = {
   status: EventStatus;
   variant?: 'primary' | 'secondary';
-  size?: 'default' | 'sm';
+  size?: 'lg' | 'md' | 'sm';
 };
 
 const styles: Record<EventStatus, { label: string; text: string; bg: string; icon: JSX.Element }> = {
@@ -62,15 +62,19 @@ const styles: Record<EventStatus, { label: string; text: string; bg: string; ico
   },
 };
 
-export default function EventStatusBadge({ status, variant = 'primary', size = 'default' }: EventStatusBadgeProps) {
+const sizes: Record<'sm' | 'md' | 'lg', string> = {
+  sm: 'text-xs px-1.5 py-0.5 gap-1',
+  md: 'text-sm px-2 py-1 gap-2',
+  lg: 'text-base px-3 py-1.5 gap-2.5',
+};
+
+export default function EventStatusBadge({ status, variant = 'primary', size = 'md' }: EventStatusBadgeProps) {
   const style = styles[status];
 
   return (
-    <div
-      className={cn('inline-flex items-center gap-2 font-medium rounded-md', style.text, variant === 'primary' ? style.bg : 'bg-white', size === 'sm' ? 'text-xs px-1 py-0.5' : 'text-sm px-2 py-1')}
-    >
+    <div className={cn('min-w-min inline-flex flex-nowrap items-center font-medium rounded-md', style.text, variant === 'primary' ? style.bg : 'bg-white', sizes[size])}>
       {style.icon}
-      <span>{style.label}</span>
+      <span className='whitespace-nowrap'>{style.label}</span>
     </div>
   );
 }

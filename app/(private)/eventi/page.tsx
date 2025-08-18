@@ -3,17 +3,16 @@ import { getVenues } from '@/lib/data/venues/get-venues';
 import { notFound } from 'next/navigation';
 import CreateButton from './_components/create/CreateButton';
 import { getMoCoordinators } from '@/lib/data/get-mo-coordinators';
-import { getPaginatedEvents } from '@/lib/data/events/get-paginated-events';
+import { getEvents } from '@/lib/data/events/get-events';
 import { TablePagination } from '../_components/TablePagination';
 import EventTile from './_components/EventTile/EventTile';
-import { EventStatus, TIME_ZONE } from '@/lib/constants';
+import { EventStatus } from '@/lib/constants';
 import StatusFilterButton from './_components/filters/StatusFilterButton';
 import FiltersButton from './_components/filters/FiltersButton';
 import { EventsTableFilters } from '@/lib/types';
 import { getArtistManagers } from '@/lib/data/artist-managers/get-artist-managers';
-import { parse } from 'date-fns';
-import { fromZonedTime } from 'date-fns-tz';
 import DatesFilterButton from './_components/filters/DatesFilterButton';
+import { toUTCRange } from '@/lib/utils';
 
 export default async function EventsPage({
   searchParams,
@@ -44,7 +43,7 @@ export default async function EventsPage({
   };
 
   const [{ data: events, totalPages }, artists, artistManagers, venues, moCoordinators] = await Promise.all([
-    getPaginatedEvents(filters),
+    getEvents(filters),
     getArtists(),
     getArtistManagers(),
     getVenues(),
@@ -67,8 +66,8 @@ export default async function EventsPage({
         </div>
       </div>
 
-      <div className='flex justify-between items-center'>
-        <div className='bg-white flex items-center gap-1 p-1 rounded-2xl'>
+      <div className='w-full flex flex-col lg:flex-row justify-between items-end lg:items-center gap-4 overflow-hidden'>
+        <div className='max-w-full bg-white flex items-center gap-1 p-1 rounded-2xl overflow-auto'>
           <StatusFilterButton
             status='proposed'
             label='Proposto'
@@ -115,7 +114,7 @@ export default async function EventsPage({
           ))}
         </div>
       ) : (
-        <section className='max-h-80 flex flex-col justify-center items-center bg-white rounded-2xl p-8'>
+        <section className='flex flex-col justify-center items-center bg-white rounded-2xl p-8'>
           <h2 className='text-base font-bold'>Nessun evento</h2>
           <div className='text-sm font-medium text-zinc-400'>Aggiungine uno per vederlo nella lista</div>
         </section>
@@ -128,21 +127,4 @@ export default async function EventsPage({
       )}
     </div>
   );
-}
-
-export function toUTCRange(start?: string, end?: string) {
-  let startUtc: Date | null = null;
-  let endUtc: Date | null = null;
-
-  if (!start || !end || start > end) {
-    return { startUtc, endUtc };
-  }
-
-  const dStart = parse(`${start} 00:00`, 'yyyy-MM-dd HH:mm', new Date());
-  startUtc = fromZonedTime(dStart, TIME_ZONE);
-
-  const dEnd = parse(`${end} 23:59:59.999`, 'yyyy-MM-dd HH:mm:ss.SSS', new Date());
-  endUtc = fromZonedTime(dEnd, TIME_ZONE);
-
-  return { startUtc, endUtc };
 }

@@ -27,10 +27,13 @@ export type UserToApprove = {
 /* ------------------------------------------------- */
 export interface CalendarEvent extends RbcEvent {
   id: number;
-  artistName: string;
-  artistManagerName: string;
-  venueName: string;
+  artist: ArtistSelectData;
+  venue: VenueSelectData;
+  artistManager: ArtistManagerSelectData | null;
   status: EventStatus;
+
+  start: Date;
+  end: Date;
 }
 
 export interface CalendarAvailability extends RbcEvent {
@@ -327,7 +330,7 @@ export type VenueData = {
 
 export type VenueTableData = Pick<VenueData, 'id' | 'slug' | 'status' | 'avatarUrl' | 'name' | 'company' | 'taxCode' | 'address' | 'manager' | 'type' | 'capacity'>;
 
-export type VenueSelectData = Pick<VenueData, 'id' | 'slug' | 'status' | 'avatarUrl' | 'name'>;
+export type VenueSelectData = Pick<VenueData, 'id' | 'slug' | 'status' | 'avatarUrl' | 'name' | 'address' | 'manager'>;
 
 export type VenueListData = Pick<VenueData, 'id' | 'slug' | 'status' | 'avatarUrl' | 'name' | 'company' | 'taxCode' | 'address' | 'type' | 'capacity'>;
 
@@ -425,7 +428,16 @@ export type Event = {
 };
 
 export type EventsTableFilters = {
-  currentPage: number;
+  currentPage: number | null;
+  status: EventStatus[];
+  artistIds: string[];
+  artistManagerIds: string[];
+  venueIds: string[];
+  startDate: Date | null;
+  endDate: Date | null;
+};
+
+export type EventsCalendarFilters = {
   status: EventStatus[];
   artistIds: string[];
   artistManagerIds: string[];

@@ -1,11 +1,6 @@
 'use client';
 
-import {
-  Calendar as BigCalendar,
-  dateFnsLocalizer,
-  EventPropGetter,
-  View,
-} from 'react-big-calendar';
+import { Calendar as BigCalendar, dateFnsLocalizer, EventPropGetter, View } from 'react-big-calendar';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import './calendar-overrides.css';
 

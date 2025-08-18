@@ -6,13 +6,15 @@ import { artists, events, artistAvailabilities, venues, eventNotes, profiles, us
 import { Event, EventNote, EventsTableFilters } from '@/lib/types';
 import { and, count, desc, eq, gt, inArray, lt } from 'drizzle-orm';
 
-export async function getPaginatedEvents({ currentPage, status, artistIds, artistManagerIds, venueIds, startDate, endDate }: EventsTableFilters): Promise<{
+export async function getEvents({ currentPage, status, artistIds, artistManagerIds, venueIds, startDate, endDate }: EventsTableFilters): Promise<{
   data: Event[];
   totalPages: number;
   currentPage: number;
 }> {
   const limit = PAGINATED_TABLE_ROWS_X_PAGE;
-  const offset = (currentPage - 1) * limit;
+  const isPaginated = Number.isInteger(currentPage) && (currentPage as number) > 0;
+  const safePage = isPaginated ? (currentPage as number) : 1;
+  const offset = (safePage - 1) * limit;
 
   try {
     // Build reusable filters
@@ -24,8 +26,8 @@ export async function getPaginatedEvents({ currentPage, status, artistIds, artis
       startDate && endDate ? and(lt(artistAvailabilities.startDate, endDate), gt(artistAvailabilities.endDate, startDate)) : undefined
     );
 
-    // Get paginated events
-    const eventsResult = await database
+    // Base query
+    let baseQuery = database
       .select({
         id: events.id,
 
@@ -122,34 +124,38 @@ export async function getPaginatedEvents({ currentPage, status, artistIds, artis
       .leftJoin(users, eq(profiles.userId, users.id))
       .leftJoin(moCoordinators, eq(events.moCoordinatorId, moCoordinators.id))
       .where(filters)
-      .orderBy(desc(events.createdAt))
-      .limit(limit)
-      .offset(offset);
+      .orderBy(desc(events.createdAt));
+
+    // Apply pagination only if requested
+    if (isPaginated) {
+      // @ts-expect-error drizzle typing allows chaining here at runtime
+      baseQuery = baseQuery.limit(limit).offset(offset);
+    }
+
+    const eventsResult = await baseQuery;
 
     const eventIds = eventsResult.map((e) => e.id);
 
     const [notesResult, [{ eventCount }]] = await Promise.all([
-      database
-        .select({
-          id: eventNotes.id,
-          eventId: eventNotes.eventId,
-          content: eventNotes.content,
-          createdAt: eventNotes.createdAt,
-        })
-        .from(eventNotes)
-        .where(inArray(eventNotes.eventId, eventIds))
-        .orderBy(eventNotes.createdAt),
-
+      eventIds.length
+        ? database
+            .select({
+              id: eventNotes.id,
+              eventId: eventNotes.eventId,
+              content: eventNotes.content,
+              createdAt: eventNotes.createdAt,
+            })
+            .from(eventNotes)
+            .where(inArray(eventNotes.eventId, eventIds))
+            .orderBy(eventNotes.createdAt)
+        : Promise.resolve([] as Array<{ id: number; eventId: number; content: string; createdAt: Date }>),
       database.select({ eventCount: count() }).from(events).innerJoin(artistAvailabilities, eq(events.availabilityId, artistAvailabilities.id)).where(filters),
     ]);
 
     // Group notes by eventId
     const notesByEvent: Record<number, EventNote[]> = {};
-
     for (const row of notesResult) {
-      if (!notesByEvent[row.eventId]) {
-        notesByEvent[row.eventId] = [];
-      }
+      if (!notesByEvent[row.eventId]) notesByEvent[row.eventId] = [];
       notesByEvent[row.eventId].push({
         id: row.id,
         content: row.content,
@@ -157,30 +163,25 @@ export async function getPaginatedEvents({ currentPage, status, artistIds, artis
       });
     }
 
-    // Merge artist + managers + zones
+    // Merge and nullify missing relations
     const mergedResult: Event[] = eventsResult.map((event) => {
       const newObj = {
         ...event,
         notes: notesByEvent[event.id] || [],
-      };
+      } as Event;
 
-      if (!event.artistManager?.id) {
-        (newObj as Event).artistManager = null;
-      }
+      if (!event.artistManager?.id) newObj.artistManager = null;
+      if (!event.moCoordinator?.id) newObj.moCoordinator = null;
 
-      if (!event.moCoordinator?.id) {
-        (newObj as Event).moCoordinator = null;
-      }
-
-      return newObj as Event;
+      return newObj;
     });
 
-    const totalPages = Math.ceil(Number(eventCount) / limit);
+    const totalPages = isPaginated ? Math.max(1, Math.ceil(Number(eventCount) / limit)) : 1;
 
     return {
       data: mergedResult,
       totalPages,
-      currentPage,
+      currentPage: safePage,
     };
   } catch (error) {
     console.error('[getPaginatedEvents] - Error:', error);

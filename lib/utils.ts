@@ -1,10 +1,12 @@
 import { clsx, type ClassValue } from 'clsx';
 import { View } from 'react-big-calendar';
 import { twMerge } from 'tailwind-merge';
-import { format, startOfWeek, endOfWeek, isBefore, startOfDay, startOfISOWeek, endOfISOWeek, startOfMonth, endOfMonth, endOfDay } from 'date-fns';
+import { format, startOfWeek, endOfWeek, isBefore, startOfDay, startOfISOWeek, endOfISOWeek, startOfMonth, endOfMonth, endOfDay, parse } from 'date-fns';
 import { it } from 'date-fns/locale';
 import imageCompression from 'browser-image-compression';
 import { TimeRange } from './types';
+import { fromZonedTime } from 'date-fns-tz';
+import { TIME_ZONE } from './constants';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -47,6 +49,23 @@ export function buildCalendarLabel(date: Date, view: View): string {
       // Gennaio 2025
       return format(date, 'MMMM yyyy', { locale: it });
   }
+}
+
+export function toUTCRange(start?: string, end?: string) {
+  let startUtc: Date | null = null;
+  let endUtc: Date | null = null;
+
+  if (!start || !end || start > end) {
+    return { startUtc, endUtc };
+  }
+
+  const dStart = parse(`${start} 00:00`, 'yyyy-MM-dd HH:mm', new Date());
+  startUtc = fromZonedTime(dStart, TIME_ZONE);
+
+  const dEnd = parse(`${end} 23:59:59.999`, 'yyyy-MM-dd HH:mm:ss.SSS', new Date());
+  endUtc = fromZonedTime(dEnd, TIME_ZONE);
+
+  return { startUtc, endUtc };
 }
 // CALENDAR --------------------------------------------------------
 

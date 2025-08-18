@@ -1,7 +1,7 @@
 'server only';
 
 import { database } from '@/lib/database/connection';
-import { venues } from '@/lib/database/schema';
+import { profiles, users, venues } from '@/lib/database/schema';
 import { VenueSelectData } from '@/lib/types';
 import { asc, eq } from 'drizzle-orm';
 
@@ -15,8 +15,20 @@ export async function getVenues(): Promise<VenueSelectData[]> {
         profileId: venues.id,
         avatarUrl: venues.avatarUrl,
         name: venues.name,
+        address: venues.address,
+
+        manager: {
+          id: users.id,
+          profileId: profiles.id,
+          status: users.status,
+          avatarUrl: profiles.avatarUrl,
+          name: profiles.name,
+          surname: profiles.surname,
+        },
       })
       .from(venues)
+      .innerJoin(profiles, eq(venues.managerProfileId, profiles.id))
+      .innerJoin(users, eq(profiles.userId, users.id))
       .where(eq(venues.status, 'active'))
       .orderBy(asc(venues.name));
 

@@ -1,3 +1,5 @@
+'use client';
+
 import { ArtistSelectData, Event, MoCoordinator, VenueSelectData } from '@/lib/types';
 import EventStatusBadge from '../EventStatusBadge';
 import { it } from 'date-fns/locale';
@@ -10,8 +12,10 @@ import UpdateEventStatusButton from './UpdateEventStatusButton';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import DeleteEventButton from './DeleteEventButton';
 import UpdateEventButton from '../update/UpdateEventButton';
-import { ChevronDown } from 'lucide-react';
+import { CalendarDays, ChevronDown, Clock, Ellipsis } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Separator } from '@/components/ui/separator';
+import { useMediaQuery } from '@/lib/hooks/useMediaQuery';
 
 type EventTileProps = {
   event: Event;
@@ -21,10 +25,159 @@ type EventTileProps = {
 };
 
 export default function EventTile({ event, artists, venues, moCoordinators }: EventTileProps) {
+  const isDesktop = useMediaQuery('(min-width: 1280px)');
+
+  const eventDate = format(event.availability.startDate, 'dd MMM yy', { locale: it });
+  const eventStartTime = format(event.availability.startDate, 'HH:mm', { locale: it });
+  const eventEndTime = format(event.availability.endDate, 'HH:mm', { locale: it });
+
+  if (!isDesktop)
+    return (
+      <div
+        key={event.id}
+        className='space-y-3 bg-zinc-50 rounded-2xl p-2 md:p-4'
+      >
+        <div className='flex justify-between items-center gap-4'>
+          <EventStatusBadge status={event.status} />
+
+          <Popover>
+            <PopoverTrigger className='h-10 w-10 flex justify-center items-center bg-zinc-100 rounded-md'>
+              <Ellipsis className='size-4 text-zinc-700' />
+            </PopoverTrigger>
+            <PopoverContent
+              align='end'
+              className='w-48 space-y-2'
+            >
+              <UpdateEventButton
+                event={event}
+                artists={artists}
+                venues={venues}
+                moCoordinators={moCoordinators}
+              />
+              <DeleteEventButton event={event} />
+            </PopoverContent>
+          </Popover>
+        </div>
+
+        <ArtistsBadge artists={[event.artist]} />
+
+        <div className='flex justify-between items-center gap-2'>
+          <div className='flex items-center gap-1 text-sm text-zinc-700'>
+            <CalendarDays className='size-3 text-zinc-700' />
+            <span>{eventDate}</span>
+          </div>
+
+          <div className='flex items-center gap-1 text-sm text-zinc-700'>
+            <Clock className='size-3 text-zinc-700' />
+            <span>
+              {eventStartTime} - {eventEndTime}
+            </span>
+          </div>
+        </div>
+
+        <Separator />
+
+        <div className='flex justify-between items-center gap-4'>
+          <div className='flex items-center gap-1'>
+            <Image
+              className='w-4 h-4'
+              src='/images/navbar-icons/venues.svg'
+              alt='icona geolocalizzazione'
+              width={16}
+              height={16}
+              loading='lazy'
+            />
+            <span className='text-xs text-zinc-600'>Locale</span>
+          </div>
+          <VenuesBadge venues={[event.venue]} />
+        </div>
+
+        {event.artistManager && (
+          <div className='flex justify-between items-center gap-4'>
+            <div className='flex items-center gap-1'>
+              <Image
+                className='w-4 h-4'
+                src='/images/navbar-icons/manager-artists.svg'
+                alt='icona valigetta'
+                width={16}
+                height={16}
+                loading='lazy'
+              />
+              <span className='text-xs text-zinc-600'>Manager</span>
+            </div>
+
+            <ManagersBadge
+              managers={[event.artistManager]}
+              pathSegment='manager-artisti'
+            />
+          </div>
+        )}
+
+        <div className='flex justify-between items-center gap-4'>
+          <div className='flex items-center gap-1'>
+            <Image
+              className='w-4 h-4'
+              src='/images/navbar-icons/manager-artists.svg'
+              alt='icona valigetta'
+              width={16}
+              height={16}
+              loading='lazy'
+            />
+            <span className='text-xs text-zinc-600'>Tour manager</span>
+          </div>
+          <span className='text-xs text-zinc-500 font-semibold'>
+            {event.tourManagerName} {event.tourManagerSurname}
+          </span>
+        </div>
+
+        {event.administrationEmail && (
+          <div className='flex justify-between items-center gap-4'>
+            <div className='flex items-center gap-1'>
+              <Image
+                className='w-4 h-4'
+                src='/images/navbar-icons/manager-venues.svg'
+                alt='icona con tre pallini'
+                width={16}
+                height={16}
+                loading='lazy'
+              />
+              <span className='text-xs text-zinc-600'>Amministrazione</span>
+            </div>
+            <span className='text-xs text-zinc-500 font-semibold'>{event.administrationEmail}</span>
+          </div>
+        )}
+
+        <Separator />
+
+        <div className='grid grid-cols-2 gap-2'>
+          {event.status === 'proposed' && (
+            <>
+              <UpdateEventStatusButton
+                event={event}
+                newStatus='pre-confirmed'
+                buttonLabel='Accetta'
+                buttonVariant='success'
+                dialogTitle='Vuoi accettare questa richiesta?'
+                dialogDescription="Accettando, l'evento sarà inoltrato al manager dell'artista per la conferma finale. Confermi di voler procedere?"
+              />
+              <UpdateEventStatusButton
+                event={event}
+                newStatus='rejected'
+                buttonLabel='Rifiuta'
+                buttonVariant='destructive'
+                dialogTitle='Vuoi rifiutare questa richiesta?'
+                dialogDescription="Sei sicuro di voler rifiutare questa richiesta? L'organizzatore dell'evento riceverà una notifica."
+              />
+            </>
+          )}
+        </div>
+      </div>
+    );
+
   return (
     <div
       key={event.id}
-      className='max-h-max flex justify-between items-center gap-4 bg-white rounded-2xl p-6'
+      className='max-h-max flex justify-between items-center gap-4 bg-zinc-50 rounded-2xl p-6'
     >
       <div className='flex items-center gap-4'>
         {/* time info */}
@@ -41,7 +194,7 @@ export default function EventTile({ event, artists, venues, moCoordinators }: Ev
           <div>
             <ArtistsBadge artists={[event.artist]} />
           </div>
-          <div className='grid grid-cols-2 gap-2'>
+          <div className='grid grid-cols-2 gap-4'>
             <div className='flex items-center gap-4'>
               <div className='flex items-center gap-1'>
                 <Image

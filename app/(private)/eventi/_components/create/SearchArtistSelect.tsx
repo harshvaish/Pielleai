@@ -40,12 +40,12 @@ export default function SearchArtistSelect({
           <Button
             variant='outline'
             size='sm'
-            className={cn('min-w-40 justify-start', hasError && 'border-destructive')}
+            className={cn('min-w-40 justify-start text-sm font-normal', hasError && 'border-destructive')}
           >
             {selectedArtist ? (
               selectedArtist.stageName
             ) : (
-              <span className='flex justify-start items-center gap-2 text-sm font-medium text-zinc-500'>
+              <span className='flex justify-start items-center gap-2 text-zinc-500'>
                 Seleziona artista <ChevronDown className={cn('transition-transform', open ? 'rotate-180' : '')} />
               </span>
             )}
