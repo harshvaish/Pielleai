@@ -12,7 +12,11 @@ import { toast } from 'sonner';
 import { SpinnerLoading } from '@/app/_components/SpinnerLoading';
 import { cn } from '@/lib/utils';
 
-export default function UserToApproveTile({ user }: { user: UserToApprove }) {
+type UserToApproveTileProps = {
+  user: UserToApprove;
+};
+
+export default function UserToApproveTile({ user }: UserToApproveTileProps) {
   const router = useRouter();
   const [loadingStatus, setLoadingStatus] = useState<null | UserStatus>(null);
 
@@ -33,29 +37,27 @@ export default function UserToApproveTile({ user }: { user: UserToApprove }) {
   return (
     <div
       className={cn(
-        'flex justify-between items-center py-4 px-6 border-b border-zinc-50 rounded-2xl transition-colors',
+        'md:flex md:justify-between md:items-center gap-2 space-y-4 md:space-y-0 px-2 md:px-4 py-4 md:py-8 border-b border-zinc-100 rounded-2xl transition-colors hover:bg-zinc-50',
         loadingStatus && 'bg-zinc-100'
       )}
     >
-      <div>
-        <div className='flex gap-4 mb-2'>
+      <div className='space-y-2'>
+        <div className='flex justify-between md:justify-start items-center gap-4 mb-2'>
           <div className='text-lg font-semibold'>
             {user.name} {user.surname}
           </div>
           <UserRoleBadge role={user.role} />
         </div>
-        <div className='flex gap-4'>
-          <div className='flex gap-1 items-center text-xs text-zinc-600 font-medium'>
+        <div className='flex justify-between md:justify-start items-center gap-4'>
+          <div className='flex gap-1 items-center text-xs text-zinc-500 font-medium'>
             <Mail className='size-3' />
             <span>Indirizzo email</span>
           </div>
-          <span className='text-xs text-zinc-600 font-medium'>
-            {user.email}
-          </span>
+          <span className='text-xs text-zinc-500 font-medium'>{user.email}</span>
         </div>
       </div>
 
-      <div className='flex flex-nowrap gap-4'>
+      <div className='grid grid-cols-2 gap-4'>
         <Button
           variant='success'
           size='sm'

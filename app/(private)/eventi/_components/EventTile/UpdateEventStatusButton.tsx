@@ -6,7 +6,7 @@ import { EventStatus } from '@/lib/constants';
 import { updateEventStatus } from '@/lib/server-actions/events/update-event-status';
 import { Event } from '@/lib/types';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { ReactNode, useState } from 'react';
 import { toast } from 'sonner';
 
 type UpdateEventStatusButtonProps = {
@@ -16,9 +16,10 @@ type UpdateEventStatusButtonProps = {
   buttonVariant: 'link' | 'default' | 'success' | 'destructive' | 'outline' | 'secondary' | 'ghost' | null | undefined;
   dialogTitle: string;
   dialogDescription: string;
+  icon?: ReactNode;
 };
 
-export default function UpdateEventStatusButton({ event, newStatus, buttonLabel, buttonVariant, dialogTitle, dialogDescription }: UpdateEventStatusButtonProps) {
+export default function UpdateEventStatusButton({ event, newStatus, buttonLabel, buttonVariant, dialogTitle, dialogDescription, icon }: UpdateEventStatusButtonProps) {
   const router = useRouter();
   const [loading, setLoading] = useState<boolean>(false);
   const [dialogOpen, setDialogOpen] = useState<boolean>(false);
@@ -46,7 +47,7 @@ export default function UpdateEventStatusButton({ event, newStatus, buttonLabel,
         onClick={() => setDialogOpen(true)}
         disabled={loading}
       >
-        {buttonLabel}
+        {icon} {buttonLabel}
       </Button>
 
       <ConfirmDialog

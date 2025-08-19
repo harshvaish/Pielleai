@@ -78,7 +78,7 @@ export default function FiltersDrawer({ filters, artists }: { filters: ArtistMan
               className='text-destructive'
               onClick={resetHandler}
             >
-              Resetta
+              Pulisci
               <X />
             </Button>
           </div>

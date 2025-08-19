@@ -46,3 +46,8 @@ Always treat user inputs as being in a specific timezone (e.g. Europe/Rome), and
 input - text-sm font-normal
 placeholder - text-zinc-500
 value
+
+dashboard--
+
+calendario toolbar,
+event content

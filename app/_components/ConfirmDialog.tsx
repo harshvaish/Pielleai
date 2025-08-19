@@ -52,7 +52,7 @@ export default function ConfirmDialog({
       open={open}
       onOpenChange={onOpenChange}
     >
-      <DialogContent className='grid grid-rows-[min-content_min-content_1fr]'>
+      <DialogContent className='grid grid-rows-[min-content_min-content_1fr] overflow-hidden'>
         <DialogTitle className={isTitleHidden ? 'hidden' : ''}>{title}</DialogTitle>
         <DialogDescription className={isDescriptionHidden ? 'hidden' : ''}>{description}</DialogDescription>
         {children ? (
@@ -85,7 +85,7 @@ export default function ConfirmDialog({
       onOpenChange={onOpenChange}
     >
       <DrawerContent>
-        <div className='grid grid-rows-[min-content_min-content_400px] py-8 px-4'>
+        <div className='h-full grid grid-rows-[min-content_min-content_1fr] py-8 px-4 overflow-hidden'>
           <DrawerTitle className={cn('mb-2', isTitleHidden && 'hidden')}>{title}</DrawerTitle>
           <DrawerDescription className={cn('mb-6', isDescriptionHidden && 'hidden')}>{description}</DrawerDescription>
           {children ? (

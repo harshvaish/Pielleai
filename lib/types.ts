@@ -440,7 +440,6 @@ export type EventsTableFilters = {
 export type EventsCalendarFilters = {
   status: EventStatus[];
   artistIds: string[];
-  artistManagerIds: string[];
   venueIds: string[];
   startDate: Date | null;
   endDate: Date | null;

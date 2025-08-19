@@ -10,10 +10,7 @@ type ChangePasswordButton = {
   email: string;
 };
 
-export default function ChangePasswordButton({
-  userId,
-  email,
-}: ChangePasswordButton) {
+export default function ChangePasswordButton({ userId, email }: ChangePasswordButton) {
   const [isOpen, setIsOpen] = useState<boolean>(false);
 
   return (
@@ -30,8 +27,6 @@ export default function ChangePasswordButton({
         onOpenChange={setIsOpen}
         title='Cambio password'
         description='Inserisci la vecchia e la nuova password per aggiornare le credenziali.'
-        isTitleHidden
-        isDescriptionHidden
       >
         <ChangePasswordForm
           userId={userId}

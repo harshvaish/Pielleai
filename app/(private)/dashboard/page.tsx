@@ -34,8 +34,8 @@ export default async function DashboardPage() {
       {usersToApprove.length > 0 && (
         <section className='bg-white p-4 rounded-2xl'>
           <h2 className='text-base font-bold'>Richieste registrazione</h2>
-          <Separator className='bg-zinc-50 my-4' />
-          <div className='max-h-80 overflow-y-auto'>
+          <Separator className='my-4' />
+          <div className='max-h-80 space-y-4 overflow-y-auto'>
             {usersToApprove.map((user) => (
               <UserToApproveTile
                 key={user.id}
@@ -60,8 +60,8 @@ export default async function DashboardPage() {
               <ChevronRight className='size-4' />
             </Link>
           </div>
-          <Separator className='bg-zinc-50 my-4' />
-          <div className='max-h-80 overflow-y-auto space-y-4'>
+          <Separator className='my-4' />
+          <div className='max-h-80 space-y-4 overflow-y-auto'>
             {eventResponse.data.map((event) => (
               <EventTile
                 key={event.id}
@@ -76,7 +76,10 @@ export default async function DashboardPage() {
       )}
       {/* calendar section */}
       <section className='bg-white p-4 rounded-2xl'>
-        <EventsCalendar />
+        <EventsCalendar
+          artists={artists}
+          venues={venues}
+        />
       </section>
     </>
   );

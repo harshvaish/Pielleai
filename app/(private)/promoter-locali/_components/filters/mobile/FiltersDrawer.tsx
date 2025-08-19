@@ -78,8 +78,8 @@ export default function FiltersDrawer({ filters, venues }: { filters: VenueManag
               className='text-destructive'
               onClick={resetHandler}
             >
-              Resetta
               <X />
+              Pulisci
             </Button>
           </div>
 

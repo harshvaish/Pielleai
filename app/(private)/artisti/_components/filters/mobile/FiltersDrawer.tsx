@@ -78,8 +78,8 @@ export default function FiltersDrawer({ filters, artistManagers }: { filters: Ar
               className='text-destructive'
               onClick={resetHandler}
             >
-              Resetta
               <X />
+              Pulisci
             </Button>
           </div>
 

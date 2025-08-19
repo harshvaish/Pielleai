@@ -5,13 +5,12 @@ import { artists, events, artistAvailabilities, venues, profiles, users } from '
 import { CalendarEvent, EventsCalendarFilters } from '@/lib/types';
 import { and, desc, eq, gt, inArray, lt } from 'drizzle-orm';
 
-export async function getCalendarEvents({ status, artistIds, artistManagerIds, venueIds, startDate, endDate }: EventsCalendarFilters): Promise<CalendarEvent[]> {
+export async function getCalendarEvents({ status, artistIds, venueIds, startDate, endDate }: EventsCalendarFilters): Promise<CalendarEvent[]> {
   try {
     // Build reusable filters
     const filters = and(
       status.length > 0 ? inArray(events.status, status) : undefined,
       artistIds.length > 0 ? inArray(events.artistId, artistIds.map(Number)) : undefined,
-      artistManagerIds.length > 0 ? inArray(events.artistManagerProfileId, artistManagerIds.map(Number)) : undefined,
       venueIds.length > 0 ? inArray(events.venueId, venueIds.map(Number)) : undefined,
       startDate && endDate ? and(lt(artistAvailabilities.startDate, endDate), gt(artistAvailabilities.endDate, startDate)) : undefined
     );

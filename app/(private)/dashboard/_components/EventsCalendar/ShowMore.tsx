@@ -38,7 +38,7 @@ export default function ShowMore({ slotDate, events }: ShowMoreProps<CalendarEve
           return (
             <div
               key={index}
-              className={cn('rbc-event', event.status)}
+              className={cn('mb-4 rounded-xl', event.status)}
             >
               <EventContent event={event} />
             </div>

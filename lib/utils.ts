@@ -16,6 +16,14 @@ export const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 export const areSame = (a: number[], b: number[]) => a.length === b.length && a.every((id) => b.includes(id));
 
+export const splitCsv = (v: string | null | undefined) =>
+  v
+    ? v
+        .split(',')
+        .map((s) => s.trim())
+        .filter(Boolean)
+    : [];
+
 // CALENDAR --------------------------------------------------------
 export function buildCalendarLabel(date: Date, view: View): string {
   switch (view) {

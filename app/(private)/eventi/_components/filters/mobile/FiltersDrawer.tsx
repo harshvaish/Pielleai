@@ -88,8 +88,8 @@ export default function FiltersDrawer({ filters, artists, artistManagers, venues
               className='text-destructive'
               onClick={resetHandler}
             >
-              Resetta
               <X />
+              Pulisci
             </Button>
           </div>
 

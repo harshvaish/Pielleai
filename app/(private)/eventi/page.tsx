@@ -1,6 +1,5 @@
 import { getArtists } from '@/lib/data/artists/get-artists';
 import { getVenues } from '@/lib/data/venues/get-venues';
-import { notFound } from 'next/navigation';
 import CreateButton from './_components/create/CreateButton';
 import { getMoCoordinators } from '@/lib/data/get-mo-coordinators';
 import { getEvents } from '@/lib/data/events/get-events';
@@ -12,11 +11,9 @@ import FiltersButton from './_components/filters/FiltersButton';
 import { EventsTableFilters } from '@/lib/types';
 import { getArtistManagers } from '@/lib/data/artist-managers/get-artist-managers';
 import DatesFilterButton from './_components/filters/DatesFilterButton';
-import { toUTCRange } from '@/lib/utils';
+import { splitCsv, toUTCRange } from '@/lib/utils';
 
-export default async function EventsPage({
-  searchParams,
-}: {
+type EventsPageProps = {
   searchParams?: Promise<{
     page?: string;
     status?: string;
@@ -26,7 +23,9 @@ export default async function EventsPage({
     start?: string;
     end?: string;
   }>;
-}) {
+};
+
+export default async function EventsPage({ searchParams }: EventsPageProps) {
   const sp = await searchParams;
 
   const currentPage = Number(sp?.page ?? '1');
@@ -34,24 +33,15 @@ export default async function EventsPage({
 
   const filters: EventsTableFilters = {
     currentPage: currentPage,
-    status: (sp?.status ? sp.status.split(',') : []) as EventStatus[],
-    artistIds: sp?.artist ? sp.artist.split(',') : [],
-    artistManagerIds: sp?.manager ? sp.manager.split(',') : [],
-    venueIds: sp?.venue ? sp.venue.split(',') : [],
+    status: splitCsv(sp?.status) as EventStatus[],
+    artistIds: splitCsv(sp?.artist),
+    artistManagerIds: splitCsv(sp?.manager),
+    venueIds: splitCsv(sp?.venue),
     startDate: startUtc,
     endDate: endUtc,
   };
 
-  const [{ data: events, totalPages }, artists, artistManagers, venues, moCoordinators] = await Promise.all([
-    getEvents(filters),
-    getArtists(),
-    getArtistManagers(),
-    getVenues(),
-    getMoCoordinators(),
-  ]).catch((error) => {
-    console.error('❌ Error fetching:', error);
-    notFound();
-  });
+  const [{ data: events, totalPages }, artists, artistManagers, venues, moCoordinators] = await Promise.all([getEvents(filters), getArtists(), getArtistManagers(), getVenues(), getMoCoordinators()]);
 
   return (
     <div className='h-full grid grid-rows-[min-content_min-content_1fr_min-content] gap-4'>
@@ -102,7 +92,7 @@ export default async function EventsPage({
 
       {/* events table section */}
       {events.length > 0 ? (
-        <div className='max-h-full flex flex-col gap-4 overflow-auto'>
+        <div className='max-h-full flex flex-col gap-4 bg-white p-4 overflow-auto rounded-2xl'>
           {events.map((event) => (
             <EventTile
               key={event.id}

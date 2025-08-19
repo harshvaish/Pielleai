@@ -4,7 +4,11 @@ import EventStatusBadge from '@/app/(private)/eventi/_components/EventStatusBadg
 import { CalendarEvent } from '@/lib/types';
 import Image from 'next/image';
 
-export default function WeekEvent({ event }: { event: CalendarEvent }) {
+type WeekEventProps = {
+  event: CalendarEvent;
+};
+
+export default function WeekEvent({ event }: WeekEventProps) {
   return (
     <div className='space-y-2 p-1'>
       <EventStatusBadge

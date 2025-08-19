@@ -81,3 +81,10 @@ export type AvailabilityStatus = (typeof AVAILABILITY_STATUS)[number];
 
 export const EVENTS_STATUS = ['proposed', 'pre-confirmed', 'confirmed', 'conflict', 'rejected'] as const;
 export type EventStatus = (typeof EVENTS_STATUS)[number];
+export const EVENT_STATUS_LABELS: Record<EventStatus, string> = {
+  'proposed': 'Proposto',
+  'pre-confirmed': 'Pre confermato',
+  'confirmed': 'Confermato',
+  'conflict': 'Conflitto',
+  'rejected': 'Rifiutato',
+};

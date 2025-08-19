@@ -6,10 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
 import { useState } from 'react';
 import InputPassword from '../InputPassword';
-import {
-  ChangePasswordSchema,
-  changePasswordSchema,
-} from '@/lib/validation/changePasswordSchema';
+import { ChangePasswordSchema, changePasswordSchema } from '@/lib/validation/changePasswordSchema';
 import { signIn } from '@/lib/auth-client';
 import { updateUserPassword } from '@/lib/server-actions/users/update-user-password';
 
@@ -19,11 +16,7 @@ type ChangePasswordFormProps = {
   closeDialog: () => void;
 };
 
-export default function ChangePasswordForm({
-  userId,
-  email,
-  closeDialog,
-}: ChangePasswordFormProps) {
+export default function ChangePasswordForm({ userId, email, closeDialog }: ChangePasswordFormProps) {
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
   const methods = useForm({
@@ -76,21 +69,13 @@ export default function ChangePasswordForm({
         className='flex flex-col gap-4'
         onSubmit={methods.handleSubmit(onSubmit)}
       >
-        <div className='text-xl text-center font-bold mb-4'>
-          Cambio password
-        </div>
-
         <div className='flex flex-col'>
           <div className='text-sm font-semibold mb-2'>Vecchia password</div>
           <InputPassword
             {...register('oldPassword')}
             error={!!errors.oldPassword}
           />
-          {errors.oldPassword && (
-            <p className='text-xs text-destructive mt-2'>
-              {errors.oldPassword.message as string}
-            </p>
-          )}
+          {errors.oldPassword && <p className='text-xs text-destructive mt-2'>{errors.oldPassword.message as string}</p>}
         </div>
 
         <div className='flex flex-col'>
@@ -99,26 +84,16 @@ export default function ChangePasswordForm({
             {...register('newPassword')}
             error={!!errors.newPassword}
           />
-          {errors.newPassword && (
-            <p className='text-xs text-destructive mt-2'>
-              {errors.newPassword.message as string}
-            </p>
-          )}
+          {errors.newPassword && <p className='text-xs text-destructive mt-2'>{errors.newPassword.message as string}</p>}
         </div>
 
         <div className='flex flex-col'>
-          <div className='text-sm font-semibold mb-2'>
-            Conferma nuova password
-          </div>
+          <div className='text-sm font-semibold mb-2'>Conferma nuova password</div>
           <InputPassword
             {...register('newPasswordConfirm')}
             error={!!errors.newPasswordConfirm}
           />
-          {errors.newPasswordConfirm && (
-            <p className='text-xs text-destructive mt-2'>
-              {errors.newPasswordConfirm.message as string}
-            </p>
-          )}
+          {errors.newPasswordConfirm && <p className='text-xs text-destructive mt-2'>{errors.newPasswordConfirm.message as string}</p>}
         </div>
 
         <div className='grid grid-cols-2 md:flex justify-end gap-4 mt-4'>

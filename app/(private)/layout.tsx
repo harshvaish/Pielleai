@@ -31,7 +31,7 @@ export default async function PrivateLayout({
   return (
     <>
       <Header />
-      <div className='flex-grow grid md:grid-cols-[1fr_4fr] md:gap-8 p-4 md:p-8 overflow-hidden'>
+      <div className='flex-grow grid md:grid-cols-[max-content_1fr] md:gap-8 p-4 md:p-8 overflow-hidden'>
         {/* sidebar */}
         <nav className='hidden w-60 max-h-max md:flex flex-col gap-1 bg-white p-4 rounded-2xl'>
           {NAVBAR_LINKS.map((link) => (
@@ -55,9 +55,7 @@ export default async function PrivateLayout({
             </Fragment>
           ))}
         </nav>
-        <main className='flex flex-col gap-3 md:gap-6 overflow-y-auto'>
-          {children}
-        </main>
+        <main className='flex flex-col gap-3 md:gap-6 overflow-y-auto'>{children}</main>
       </div>
     </>
   );
