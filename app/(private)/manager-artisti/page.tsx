@@ -2,63 +2,54 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { getPaginatedArtistManagers } from '@/lib/data/artist-managers/get-paginated-artist-managers';
 import { getLanguages } from '@/lib/data/get-languages';
 import { getCountries } from '@/lib/data/get-countries';
-import { notFound } from 'next/navigation';
 import { TablePagination } from '../_components/TablePagination';
 import UserBadge from '../_components/Badges/UserBadge';
 import StatusBadge from '../_components/Badges/StatusBadge';
 import { NEW_USER_TIME } from '@/lib/constants';
-import FilterInput from '../_components/filters/desktop/FilterInput';
 import ArtistsBadge from '../_components/Badges/ArtistsBadge';
 import { getArtists } from '@/lib/data/artists/get-artists';
-import ArtistFilter from '../_components/filters/desktop/ArtistFilter';
 import FiltersButton from './_components/filters/FiltersButton';
 import { ArtistManagersTableFilters } from '@/lib/types';
 import CreateButton from './_components/create/CreateButton';
+import { splitCsv } from '@/lib/utils';
 
-export default async function ArtistManagersPage({
-  searchParams,
-}: {
+type ArtistManagersPageProps = {
   searchParams?: Promise<{
     page?: string;
-    showFilters?: string;
     fullName?: string;
     email?: string;
     phone?: string;
     artist?: string;
     company?: string;
   }>;
-}) {
+};
+
+export default async function ArtistManagersPage({ searchParams }: ArtistManagersPageProps) {
   const sp = await searchParams;
 
   const currentPage = Number(sp?.page ?? '1');
-  const showFilters = sp?.showFilters === 'true';
 
   const filters: ArtistManagersTableFilters = {
     currentPage: currentPage,
     fullName: sp?.fullName || '',
     email: sp?.email || '',
     phone: sp?.phone || '',
-    artistIds: sp?.artist ? sp.artist.split(',') : [],
+    artistIds: splitCsv(sp?.artist),
     company: sp?.company || '',
   };
 
-  const [{ data: managers, totalPages }, languages, countries, artists] = await Promise.all([getPaginatedArtistManagers(filters), getLanguages(), getCountries(), getArtists()]).catch((error) => {
-    console.error('❌ Error fetching:', error);
-    notFound();
-  });
+  const [{ data: managers, totalPages }, languages, countries, artists] = await Promise.all([getPaginatedArtistManagers(filters), getLanguages(), getCountries(), getArtists()]);
 
   return (
     <div className='h-full grid grid-rows-[min-content_1fr_min-content] gap-4'>
       <div className='md:flex justify-between items-center gap-2'>
         <h1 className='text-2xl font-bold'>Manager Artisti</h1>
-        <div className='flex items-center gap-2 md:gap-4 mt-2 md:mt-0'>
-          {(managers.length > 0 || showFilters) && (
-            <FiltersButton
-              filters={filters}
-              showFilters={showFilters}
-              artists={artists}
-            />
-          )}
+        <div className='flex items-center gap-2 mt-2 md:mt-0'>
+          <FiltersButton
+            filters={filters}
+            artists={artists}
+          />
+
           <CreateButton
             languages={languages}
             countries={countries}
@@ -70,54 +61,11 @@ export default async function ArtistManagersPage({
         <Table className='w-full'>
           <TableHeader className='bg-zinc-50'>
             <TableRow>
-              <TableHead>
-                <div>Nome completo</div>
-                <div className='hidden md:block'>
-                  {showFilters && (
-                    <FilterInput
-                      paramKey='fullName'
-                      defaultValue={filters.fullName}
-                    />
-                  )}
-                </div>
-              </TableHead>
-              <TableHead>
-                <div>Email</div>
-                <div className='hidden md:block'>
-                  {showFilters && (
-                    <FilterInput
-                      paramKey='email'
-                      defaultValue={filters.email}
-                    />
-                  )}
-                </div>
-              </TableHead>
-              <TableHead>
-                <div>Numero di telefono</div>
-                <div className='hidden md:block'>
-                  {showFilters && (
-                    <FilterInput
-                      paramKey='phone'
-                      defaultValue={filters.phone}
-                    />
-                  )}
-                </div>
-              </TableHead>
-              <TableHead>
-                <div>Artisti</div>
-                <div className='hidden md:block'>{showFilters && <ArtistFilter artists={artists} />}</div>
-              </TableHead>
-              <TableHead>
-                <div>Ragione sociale</div>
-                <div className='hidden md:block'>
-                  {showFilters && (
-                    <FilterInput
-                      paramKey='company'
-                      defaultValue={filters.company}
-                    />
-                  )}
-                </div>
-              </TableHead>
+              <TableHead>Nome completo</TableHead>
+              <TableHead>Email</TableHead>
+              <TableHead>Numero di telefono</TableHead>
+              <TableHead>Artisti</TableHead>
+              <TableHead>Ragione sociale</TableHead>
             </TableRow>
           </TableHeader>
 

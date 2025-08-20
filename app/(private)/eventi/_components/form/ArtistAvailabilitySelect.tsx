@@ -109,7 +109,7 @@ export default function ArtistAvailabilitySelect() {
         type='button'
         size='sm'
         variant='outline'
-        className={cn('justify-start text-sm', selectedAvailability ? 'font-medium' : 'text-zinc-500 font-normal', errors.availability && 'border-destructive')}
+        className={cn('justify-start text-sm font-normal', selectedAvailability ?? 'text-zinc-400', errors.availability && 'border-destructive')}
         onClick={() => setIsDialogOpen(true)}
         disabled={!selectedArtistId}
       >

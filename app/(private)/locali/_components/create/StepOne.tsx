@@ -1,14 +1,9 @@
 import { useFormContext, Controller } from 'react-hook-form';
-import AvatarUploadInput from '@/app/(private)/_components/AvatarUploadInput';
+import AvatarUploadInput from '@/app/(private)/_components/form/AvatarUploadInput';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import { cn, fetcher } from '@/lib/utils';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-} from '@/components/ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger } from '@/components/ui/select';
 import { VENUE_TYPES, VenueType } from '@/lib/constants';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import useSWR from 'swr';
@@ -18,13 +13,7 @@ import { toast } from 'sonner';
 import { Checkbox } from '@/components/ui/checkbox';
 import Image from 'next/image';
 
-export default function StepOne({
-  countries,
-  venueManagers,
-}: {
-  countries: Country[];
-  venueManagers: VenueManagerSelectData[];
-}) {
+export default function StepOne({ countries, venueManagers }: { countries: Country[]; venueManagers: VenueManagerSelectData[] }) {
   const {
     register,
     control,
@@ -36,12 +25,7 @@ export default function StepOne({
   const selectedCountryId = watch('countryId');
   const selectedSubdivisionId = watch('subdivisionId');
 
-  const { data, error, isLoading } = useSWR(
-    selectedCountryId
-      ? `/api/country-subdivisions?country=${selectedCountryId}`
-      : null,
-    fetcher
-  );
+  const { data, error, isLoading } = useSWR(selectedCountryId ? `/api/country-subdivisions?country=${selectedCountryId}` : null, fetcher);
 
   const subdivisions: Subdivision[] = useMemo(() => {
     return data?.subdivisions ?? [];
@@ -56,20 +40,12 @@ export default function StepOne({
   useEffect(() => {
     if (!selectedCountryId || isLoading || !subdivisions.length) return;
 
-    const isValid = subdivisions.some(
-      (sub) => sub.id === selectedSubdivisionId
-    );
+    const isValid = subdivisions.some((sub) => sub.id === selectedSubdivisionId);
 
     if (!isValid) {
       resetField('subdivisionId', { defaultValue: 0 });
     }
-  }, [
-    selectedCountryId,
-    selectedSubdivisionId,
-    subdivisions,
-    isLoading,
-    resetField,
-  ]);
+  }, [selectedCountryId, selectedSubdivisionId, subdivisions, isLoading, resetField]);
 
   useEffect(() => {
     if (error) {
@@ -94,11 +70,7 @@ export default function StepOne({
               />
             )}
           />
-          {errors.avatarUrl && (
-            <p className='text-xs text-destructive mt-2'>
-              {errors.avatarUrl.message as string}
-            </p>
-          )}
+          {errors.avatarUrl && <p className='text-xs text-destructive mt-2'>{errors.avatarUrl.message as string}</p>}
         </div>
         <div className='flex flex-col'>
           <label
@@ -114,11 +86,7 @@ export default function StepOne({
             className={errors.name ? 'border-destructive text-destructive' : ''}
             autoComplete='name'
           />
-          {errors.name && (
-            <p className='text-xs text-destructive mt-2'>
-              {errors.name.message as string}
-            </p>
-          )}
+          {errors.name && <p className='text-xs text-destructive mt-2'>{errors.name.message as string}</p>}
         </div>
       </div>
 
@@ -139,10 +107,7 @@ export default function StepOne({
                 <label
                   key={type}
                   htmlFor={`venue-type-${type}`}
-                  className={cn(
-                    'h-10 flex items-center gap-2 text-sm p-2 rounded-xl capitalize border hover:cursor-pointer',
-                    errors.type && 'border-destructive text-destructive'
-                  )}
+                  className={cn('h-10 flex items-center gap-2 text-sm p-2 rounded-xl capitalize border hover:cursor-pointer', errors.type && 'border-destructive text-destructive')}
                 >
                   <RadioGroupItem
                     id={`venue-type-${type}`}
@@ -156,11 +121,7 @@ export default function StepOne({
             </RadioGroup>
           )}
         />
-        {errors.type && (
-          <p className='text-xs text-destructive mt-2'>
-            {errors.type.message as string}
-          </p>
-        )}
+        {errors.type && <p className='text-xs text-destructive mt-2'>{errors.type.message as string}</p>}
       </div>
 
       <Separator className='my-4' />
@@ -181,15 +142,9 @@ export default function StepOne({
           type='number'
           min={0}
           step={1}
-          className={
-            errors.capacity ? 'border-destructive text-destructive' : ''
-          }
+          className={errors.capacity ? 'border-destructive text-destructive' : ''}
         />
-        {errors.capacity && (
-          <p className='text-xs text-destructive mt-2'>
-            {errors.capacity.message as string}
-          </p>
-        )}
+        {errors.capacity && <p className='text-xs text-destructive mt-2'>{errors.capacity.message as string}</p>}
       </div>
 
       <Separator className='my-4' />
@@ -205,16 +160,10 @@ export default function StepOne({
           id='address'
           {...register('address')}
           placeholder='Via Duomo 1'
-          className={
-            errors.address ? 'border-destructive text-destructive' : ''
-          }
+          className={errors.address ? 'border-destructive text-destructive' : ''}
           autoComplete='street-address'
         />
-        {errors.address && (
-          <p className='text-xs text-destructive mt-2'>
-            {errors.address.message as string}
-          </p>
-        )}
+        {errors.address && <p className='text-xs text-destructive mt-2'>{errors.address.message as string}</p>}
       </div>
 
       <div className='grid grid-cols-2 gap-4'>
@@ -236,14 +185,10 @@ export default function StepOne({
               >
                 <SelectTrigger
                   id='countryId'
-                  className={cn(
-                    'w-full',
-                    errors.countryId && 'border-destructive text-destructive'
-                  )}
+                  className={cn('w-full', errors.countryId && 'border-destructive text-destructive')}
                   size='sm'
                 >
-                  {countries.find((c) => c.id == field.value)?.name ||
-                    'seleziona stato'}
+                  {countries.find((c) => c.id == field.value)?.name || 'seleziona stato'}
                 </SelectTrigger>
                 <SelectContent>
                   {countries.map((country) => (
@@ -258,11 +203,7 @@ export default function StepOne({
               </Select>
             )}
           />
-          {errors.countryId && (
-            <p className='text-xs text-destructive mt-2'>
-              {errors.countryId.message as string}
-            </p>
-          )}
+          {errors.countryId && <p className='text-xs text-destructive mt-2'>{errors.countryId.message as string}</p>}
         </div>
 
         <div className='flex flex-col'>
@@ -283,15 +224,10 @@ export default function StepOne({
               >
                 <SelectTrigger
                   id='subdivisionId'
-                  className={cn(
-                    'w-full',
-                    errors.subdivisionId &&
-                      'border-destructive text-destructive'
-                  )}
+                  className={cn('w-full', errors.subdivisionId && 'border-destructive text-destructive')}
                   size='sm'
                 >
-                  {subdivisions.find((s) => s.id == field.value)?.name ||
-                    subdivisionPlaceholder}
+                  {subdivisions.find((s) => s.id == field.value)?.name || subdivisionPlaceholder}
                 </SelectTrigger>
                 <SelectContent>
                   {subdivisions.map((subdivision: Subdivision) => (
@@ -306,11 +242,7 @@ export default function StepOne({
               </Select>
             )}
           />
-          {errors.subdivisionId && (
-            <p className='text-xs text-destructive mt-2'>
-              {errors.subdivisionId.message as string}
-            </p>
-          )}
+          {errors.subdivisionId && <p className='text-xs text-destructive mt-2'>{errors.subdivisionId.message as string}</p>}
         </div>
       </div>
 
@@ -328,11 +260,7 @@ export default function StepOne({
             placeholder='Milano'
             className={errors.city ? 'border-destructive text-destructive' : ''}
           />
-          {errors.city && (
-            <p className='text-xs text-destructive mt-2'>
-              {errors.city.message as string}
-            </p>
-          )}
+          {errors.city && <p className='text-xs text-destructive mt-2'>{errors.city.message as string}</p>}
         </div>
 
         <div className='flex flex-col'>
@@ -350,15 +278,9 @@ export default function StepOne({
               },
             })}
             placeholder='20100'
-            className={
-              errors.zipCode ? 'border-destructive text-destructive' : ''
-            }
+            className={errors.zipCode ? 'border-destructive text-destructive' : ''}
           />
-          {errors.zipCode && (
-            <p className='text-xs text-destructive mt-2'>
-              {errors.zipCode.message as string}
-            </p>
-          )}
+          {errors.zipCode && <p className='text-xs text-destructive mt-2'>{errors.zipCode.message as string}</p>}
         </div>
       </div>
 
@@ -381,19 +303,12 @@ export default function StepOne({
             >
               <SelectTrigger
                 id='venueManagerId'
-                className={cn(
-                  'w-full',
-                  errors.venueManagerId && 'border-destructive text-destructive'
-                )}
+                className={cn('w-full', errors.venueManagerId && 'border-destructive text-destructive')}
                 size='sm'
               >
                 {(() => {
-                  const selected = venueManagers.find(
-                    (manager) => manager.profileId === field.value
-                  );
-                  return selected
-                    ? `${selected.name} ${selected.surname}`
-                    : 'Seleziona un promoter';
+                  const selected = venueManagers.find((manager) => manager.profileId === field.value);
+                  return selected ? `${selected.name} ${selected.surname}` : 'Seleziona un promoter';
                 })()}
               </SelectTrigger>
               <SelectContent>
@@ -419,11 +334,7 @@ export default function StepOne({
             </Select>
           )}
         />
-        {errors.venueManagerId && (
-          <p className='text-xs text-destructive mt-2'>
-            {errors.venueManagerId.message as string}
-          </p>
-        )}
+        {errors.venueManagerId && <p className='text-xs text-destructive mt-2'>{errors.venueManagerId.message as string}</p>}
       </div>
 
       <Separator className='my-4' />
@@ -443,27 +354,13 @@ export default function StepOne({
           />
           <label
             htmlFor='acceptTerms'
-            className={cn(
-              'text-xs font-normal',
-              errors.acceptTerms && 'text-destructive'
-            )}
+            className={cn('text-xs font-normal', errors.acceptTerms && 'text-destructive')}
           >
-            Accetto i{' '}
-            <span className='underline underline-offset-2 hover:cursor-pointer'>
-              Termini e le Condizioni
-            </span>{' '}
-            e l&apos;{' '}
-            <span className='underline underline-offset-2 hover:cursor-pointer'>
-              Informativa sulla Privacy
-            </span>{' '}
-            della piattaforma.
+            Accetto i <span className='underline underline-offset-2 hover:cursor-pointer'>Termini e le Condizioni</span> e l&apos;{' '}
+            <span className='underline underline-offset-2 hover:cursor-pointer'>Informativa sulla Privacy</span> della piattaforma.
           </label>
         </div>
-        {errors.acceptTerms && (
-          <p className='text-xs text-destructive mt-2'>
-            {errors.acceptTerms.message as string}
-          </p>
-        )}
+        {errors.acceptTerms && <p className='text-xs text-destructive mt-2'>{errors.acceptTerms.message as string}</p>}
       </div>
     </>
   );

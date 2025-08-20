@@ -15,11 +15,11 @@ type UpdateEventButtonProps = {
 };
 
 export default function UpdateEventButton({ event, artists, venues, moCoordinators }: UpdateEventButtonProps) {
-  const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
+  const [open, setOpen] = useState<boolean>(false);
   return (
     <Dialog
-      open={isDialogOpen}
-      onOpenChange={setIsDialogOpen}
+      open={open}
+      onOpenChange={setOpen}
       modal
     >
       <DialogTrigger asChild>
@@ -39,7 +39,7 @@ export default function UpdateEventButton({ event, artists, venues, moCoordinato
           artists={artists}
           venues={venues}
           moCoordinators={moCoordinators}
-          closeDialog={() => setIsDialogOpen(false)}
+          closeDialog={() => setOpen(false)}
         />
       </DialogContent>
     </Dialog>

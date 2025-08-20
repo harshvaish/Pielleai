@@ -11,8 +11,7 @@ import VenueSelect from '@/app/(private)/_components/filters/mobile/VenueSelect'
 import ArtistSelect from '@/app/(private)/_components/filters/mobile/ArtistSelect';
 import { Checkbox } from '@/components/ui/checkbox';
 import ResponsivePopover from '@/app/_components/ResponsivePopover';
-import { Separator } from '@/components/ui/separator';
-import EventStatusBadge from '@/app/(private)/eventi/_components/EventStatusBadge';
+import EventStatusBadge from '@/app/(private)/_components/Badges/EventStatusBadge';
 
 type FiltersButtonProps = {
   filters: EventsCalendarFilters;
@@ -25,7 +24,7 @@ export function FiltersButton({ filters, artists, venues }: FiltersButtonProps) 
   const [open, setOpen] = useState<boolean>(false);
   const [isPending, startTransition] = useTransition();
 
-  const active = filters.artistIds.length + filters.venueIds.length + filters.status.length > 0;
+  const active = Boolean(filters.artistIds && filters.venueIds && filters.status);
 
   const [artistIds, setArtistIds] = useState<string[]>(filters.artistIds || []);
   const [venueIds, setVenueIds] = useState<string[]>(filters.venueIds || []);
@@ -74,7 +73,7 @@ export function FiltersButton({ filters, artists, venues }: FiltersButtonProps) 
         <Button
           size='sm'
           variant={active ? 'secondary' : 'outline'}
-          onClick={() => setOpen(true)}
+          disabled={isPending}
         >
           <ListFilter className='size-4' />
           Filtri
@@ -130,8 +129,6 @@ export function FiltersButton({ filters, artists, venues }: FiltersButtonProps) 
             );
           })}
         </div>
-
-        <Separator />
 
         <div className='grid grid-cols-2 gap-2'>
           <Button

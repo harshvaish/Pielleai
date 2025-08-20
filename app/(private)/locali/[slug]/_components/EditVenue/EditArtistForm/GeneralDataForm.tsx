@@ -4,32 +4,19 @@ import { Controller, FormProvider, useForm } from 'react-hook-form';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import { cn, fetcher } from '@/lib/utils';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-} from '@/components/ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger } from '@/components/ui/select';
 import { VENUE_TYPES, VenueType } from '@/lib/constants';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import useSWR from 'swr';
-import {
-  Country,
-  Subdivision,
-  VenueData,
-  VenueManagerSelectData,
-} from '@/lib/types';
+import { Country, Subdivision, VenueData, VenueManagerSelectData } from '@/lib/types';
 import { toast } from 'sonner';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { X } from 'lucide-react';
-import AvatarUploadInput from '@/app/(private)/_components/AvatarUploadInput';
-import {
-  EditVenueS1FormSchema,
-  editVenueS1FormSchema,
-} from '@/lib/validation/venueFormSchema';
+import AvatarUploadInput from '@/app/(private)/_components/form/AvatarUploadInput';
+import { EditVenueS1FormSchema, editVenueS1FormSchema } from '@/lib/validation/venueFormSchema';
 import Image from 'next/image';
 import { editVenueGeneralData } from '@/lib/server-actions/venues/edit-venue-general-data';
 
@@ -78,12 +65,7 @@ export default function GeneralDataForm({
   const selectedCountryId = methods.watch('countryId');
   const selectedSubdivisionId = methods.watch('subdivisionId');
 
-  const { data, error, isLoading } = useSWR(
-    selectedCountryId
-      ? `/api/country-subdivisions?country=${selectedCountryId}`
-      : null,
-    fetcher
-  );
+  const { data, error, isLoading } = useSWR(selectedCountryId ? `/api/country-subdivisions?country=${selectedCountryId}` : null, fetcher);
 
   const subdivisions: Subdivision[] = useMemo(() => {
     return data?.subdivisions ?? [];
@@ -121,20 +103,12 @@ export default function GeneralDataForm({
   useEffect(() => {
     if (!selectedCountryId || isLoading || !subdivisions.length) return;
 
-    const isValid = subdivisions.some(
-      (sub) => sub.id === selectedSubdivisionId
-    );
+    const isValid = subdivisions.some((sub) => sub.id === selectedSubdivisionId);
 
     if (!isValid) {
       methods.resetField('subdivisionId', { defaultValue: 0 });
     }
-  }, [
-    selectedCountryId,
-    selectedSubdivisionId,
-    subdivisions,
-    isLoading,
-    methods,
-  ]);
+  }, [selectedCountryId, selectedSubdivisionId, subdivisions, isLoading, methods]);
 
   useEffect(() => {
     if (error) {
@@ -163,11 +137,7 @@ export default function GeneralDataForm({
                 />
               )}
             />
-            {errors.avatarUrl && (
-              <p className='text-xs text-destructive mt-2'>
-                {errors.avatarUrl.message as string}
-              </p>
-            )}
+            {errors.avatarUrl && <p className='text-xs text-destructive mt-2'>{errors.avatarUrl.message as string}</p>}
           </div>
           <div className='flex flex-col'>
             <label
@@ -180,16 +150,10 @@ export default function GeneralDataForm({
               id='name'
               {...register('name')}
               placeholder='La madunina'
-              className={
-                errors.name ? 'border-destructive text-destructive' : ''
-              }
+              className={errors.name ? 'border-destructive text-destructive' : ''}
               autoComplete='name'
             />
-            {errors.name && (
-              <p className='text-xs text-destructive mt-2'>
-                {errors.name.message as string}
-              </p>
-            )}
+            {errors.name && <p className='text-xs text-destructive mt-2'>{errors.name.message as string}</p>}
           </div>
         </div>
 
@@ -210,10 +174,7 @@ export default function GeneralDataForm({
                   <label
                     key={type}
                     htmlFor={`venue-type-${type}`}
-                    className={cn(
-                      'h-10 flex items-center gap-2 text-sm p-2 rounded-xl capitalize border hover:cursor-pointer',
-                      errors.type && 'border-destructive text-destructive'
-                    )}
+                    className={cn('h-10 flex items-center gap-2 text-sm p-2 rounded-xl capitalize border hover:cursor-pointer', errors.type && 'border-destructive text-destructive')}
                   >
                     <RadioGroupItem
                       id={`venue-type-${type}`}
@@ -227,11 +188,7 @@ export default function GeneralDataForm({
               </RadioGroup>
             )}
           />
-          {errors.type && (
-            <p className='text-xs text-destructive mt-2'>
-              {errors.type.message as string}
-            </p>
-          )}
+          {errors.type && <p className='text-xs text-destructive mt-2'>{errors.type.message as string}</p>}
         </div>
 
         <Separator className='my-4' />
@@ -252,15 +209,9 @@ export default function GeneralDataForm({
             type='number'
             min={0}
             step={1}
-            className={
-              errors.capacity ? 'border-destructive text-destructive' : ''
-            }
+            className={errors.capacity ? 'border-destructive text-destructive' : ''}
           />
-          {errors.capacity && (
-            <p className='text-xs text-destructive mt-2'>
-              {errors.capacity.message as string}
-            </p>
-          )}
+          {errors.capacity && <p className='text-xs text-destructive mt-2'>{errors.capacity.message as string}</p>}
         </div>
 
         <Separator className='my-4' />
@@ -276,16 +227,10 @@ export default function GeneralDataForm({
             id='address'
             {...register('address')}
             placeholder='Via Duomo 1'
-            className={
-              errors.address ? 'border-destructive text-destructive' : ''
-            }
+            className={errors.address ? 'border-destructive text-destructive' : ''}
             autoComplete='street-address'
           />
-          {errors.address && (
-            <p className='text-xs text-destructive mt-2'>
-              {errors.address.message as string}
-            </p>
-          )}
+          {errors.address && <p className='text-xs text-destructive mt-2'>{errors.address.message as string}</p>}
         </div>
 
         <div className='grid grid-cols-2 gap-4'>
@@ -307,14 +252,10 @@ export default function GeneralDataForm({
                 >
                   <SelectTrigger
                     id='countryId'
-                    className={cn(
-                      'w-full',
-                      errors.countryId && 'border-destructive text-destructive'
-                    )}
+                    className={cn('w-full', errors.countryId && 'border-destructive text-destructive')}
                     size='sm'
                   >
-                    {countries.find((c) => c.id == field.value)?.name ||
-                      'seleziona stato'}
+                    {countries.find((c) => c.id == field.value)?.name || 'seleziona stato'}
                   </SelectTrigger>
                   <SelectContent>
                     {countries.map((country) => (
@@ -329,11 +270,7 @@ export default function GeneralDataForm({
                 </Select>
               )}
             />
-            {errors.countryId && (
-              <p className='text-xs text-destructive mt-2'>
-                {errors.countryId.message as string}
-              </p>
-            )}
+            {errors.countryId && <p className='text-xs text-destructive mt-2'>{errors.countryId.message as string}</p>}
           </div>
 
           <div className='flex flex-col'>
@@ -354,15 +291,10 @@ export default function GeneralDataForm({
                 >
                   <SelectTrigger
                     id='subdivisionId'
-                    className={cn(
-                      'w-full',
-                      errors.subdivisionId &&
-                        'border-destructive text-destructive'
-                    )}
+                    className={cn('w-full', errors.subdivisionId && 'border-destructive text-destructive')}
                     size='sm'
                   >
-                    {subdivisions.find((s) => s.id == field.value)?.name ||
-                      subdivisionPlaceholder}
+                    {subdivisions.find((s) => s.id == field.value)?.name || subdivisionPlaceholder}
                   </SelectTrigger>
                   <SelectContent>
                     {subdivisions.map((subdivision: Subdivision) => (
@@ -377,11 +309,7 @@ export default function GeneralDataForm({
                 </Select>
               )}
             />
-            {errors.subdivisionId && (
-              <p className='text-xs text-destructive mt-2'>
-                {errors.subdivisionId.message as string}
-              </p>
-            )}
+            {errors.subdivisionId && <p className='text-xs text-destructive mt-2'>{errors.subdivisionId.message as string}</p>}
           </div>
         </div>
 
@@ -397,15 +325,9 @@ export default function GeneralDataForm({
               id='city'
               {...register('city')}
               placeholder='Milano'
-              className={
-                errors.city ? 'border-destructive text-destructive' : ''
-              }
+              className={errors.city ? 'border-destructive text-destructive' : ''}
             />
-            {errors.city && (
-              <p className='text-xs text-destructive mt-2'>
-                {errors.city.message as string}
-              </p>
-            )}
+            {errors.city && <p className='text-xs text-destructive mt-2'>{errors.city.message as string}</p>}
           </div>
 
           <div className='flex flex-col'>
@@ -423,15 +345,9 @@ export default function GeneralDataForm({
                 },
               })}
               placeholder='20100'
-              className={
-                errors.zipCode ? 'border-destructive text-destructive' : ''
-              }
+              className={errors.zipCode ? 'border-destructive text-destructive' : ''}
             />
-            {errors.zipCode && (
-              <p className='text-xs text-destructive mt-2'>
-                {errors.zipCode.message as string}
-              </p>
-            )}
+            {errors.zipCode && <p className='text-xs text-destructive mt-2'>{errors.zipCode.message as string}</p>}
           </div>
         </div>
 
@@ -454,20 +370,12 @@ export default function GeneralDataForm({
               >
                 <SelectTrigger
                   id='venueManagerId'
-                  className={cn(
-                    'w-full',
-                    errors.venueManagerId &&
-                      'border-destructive text-destructive'
-                  )}
+                  className={cn('w-full', errors.venueManagerId && 'border-destructive text-destructive')}
                   size='sm'
                 >
                   {(() => {
-                    const selected = venueManagers.find(
-                      (manager) => manager.profileId === field.value
-                    );
-                    return selected
-                      ? `${selected.name} ${selected.surname}`
-                      : 'Seleziona un promoter';
+                    const selected = venueManagers.find((manager) => manager.profileId === field.value);
+                    return selected ? `${selected.name} ${selected.surname}` : 'Seleziona un promoter';
                   })()}
                 </SelectTrigger>
                 <SelectContent>
@@ -493,11 +401,7 @@ export default function GeneralDataForm({
               </Select>
             )}
           />
-          {errors.venueManagerId && (
-            <p className='text-xs text-destructive mt-2'>
-              {errors.venueManagerId.message as string}
-            </p>
-          )}
+          {errors.venueManagerId && <p className='text-xs text-destructive mt-2'>{errors.venueManagerId.message as string}</p>}
         </div>
 
         <div className='flex justify-between mt-4'>

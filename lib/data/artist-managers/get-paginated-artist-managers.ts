@@ -2,27 +2,11 @@
 
 import { PAGINATED_TABLE_ROWS_X_PAGE } from '@/lib/constants';
 import { database } from '@/lib/database/connection';
-import {
-  artists,
-  managerArtists,
-  profiles,
-  users,
-} from '@/lib/database/schema';
-import {
-  ArtistManagerTableData,
-  ArtistManagersTableFilters,
-  ArtistSelectData,
-} from '@/lib/types';
-import { and, count, eq, ilike, inArray } from 'drizzle-orm';
+import { artists, managerArtists, profiles, users } from '@/lib/database/schema';
+import { ArtistManagerTableData, ArtistManagersTableFilters, ArtistSelectData } from '@/lib/types';
+import { and, count, eq, ilike, inArray, or } from 'drizzle-orm';
 
-export async function getPaginatedArtistManagers({
-  currentPage,
-  fullName,
-  email,
-  phone,
-  artistIds,
-  company,
-}: ArtistManagersTableFilters): Promise<{
+export async function getPaginatedArtistManagers({ currentPage, fullName, email, phone, artistIds, company }: ArtistManagersTableFilters): Promise<{
   data: ArtistManagerTableData[];
   totalPages: number;
   currentPage: number;
@@ -40,9 +24,7 @@ export async function getPaginatedArtistManagers({
         .from(managerArtists)
         .where(inArray(managerArtists.artistId, artistIds.map(Number)));
 
-      artistFilteredManagerIds = [
-        ...new Set(managerResults.map((r) => r.managerProfileId)),
-      ];
+      artistFilteredManagerIds = [...new Set(managerResults.map((r) => r.managerProfileId))];
 
       if (artistFilteredManagerIds.length === 0) {
         return {
@@ -52,6 +34,17 @@ export async function getPaginatedArtistManagers({
         };
       }
     }
+
+    // Build reusable filters
+    const filters = and(
+      eq(users.role, 'artist-manager'),
+      inArray(users.status, ['active', 'disabled']),
+      or(fullName ? ilike(profiles.name, `%${fullName}%`) : undefined, fullName ? ilike(profiles.surname, `%${fullName}%`) : undefined),
+      email ? ilike(users.email, `%${email}%`) : undefined,
+      phone ? ilike(profiles.phone, `%${phone}%`) : undefined,
+      artistFilteredManagerIds ? inArray(profiles.id, artistFilteredManagerIds) : undefined,
+      company ? ilike(profiles.company, `%${company}%`) : undefined
+    );
 
     // Get paginated data
     const managersResult = await database
@@ -69,19 +62,7 @@ export async function getPaginatedArtistManagers({
       })
       .from(users)
       .innerJoin(profiles, eq(users.id, profiles.userId))
-      .where(
-        and(
-          eq(users.role, 'artist-manager'),
-          fullName ? ilike(profiles.name, `%${fullName}%`) : undefined,
-          fullName ? ilike(profiles.surname, `%${fullName}%`) : undefined,
-          email ? ilike(users.email, `%${email}%`) : undefined,
-          phone ? ilike(profiles.phone, `%${phone}%`) : undefined,
-          artistFilteredManagerIds
-            ? inArray(profiles.id, artistFilteredManagerIds)
-            : undefined,
-          company ? ilike(profiles.company, `%${company}%`) : undefined
-        )
-      )
+      .where(filters)
       .limit(limit)
       .offset(offset);
 
@@ -103,23 +84,7 @@ export async function getPaginatedArtistManagers({
         .innerJoin(artists, eq(managerArtists.artistId, artists.id))
         .where(inArray(managerArtists.managerProfileId, managerProfilesIds)),
 
-      database
-        .select({ userCount: count() })
-        .from(users)
-        .innerJoin(profiles, eq(users.id, profiles.userId))
-        .where(
-          and(
-            eq(users.role, 'artist-manager'),
-            fullName ? ilike(profiles.name, `%${fullName}%`) : undefined,
-            fullName ? ilike(profiles.surname, `%${fullName}%`) : undefined,
-            email ? ilike(users.email, `%${email}%`) : undefined,
-            phone ? ilike(profiles.phone, `%${phone}%`) : undefined,
-            artistFilteredManagerIds
-              ? inArray(profiles.id, artistFilteredManagerIds)
-              : undefined,
-            company ? ilike(profiles.company, `%${company}%`) : undefined
-          )
-        ),
+      database.select({ userCount: count() }).from(users).innerJoin(profiles, eq(users.id, profiles.userId)).where(filters),
     ]);
 
     // Group artists by managerProfileId

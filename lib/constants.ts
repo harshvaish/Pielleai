@@ -62,7 +62,6 @@ export const AU_MAX_SIZE_MB = 5;
 export const AU_ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 
 // pdf upload
-export const PDFU_LOCAL_STORAGE_TTL = 2 * 60 * 60 * 1000; // 2hours;
 export const PDFU_MAX_SIZE_MB = 10;
 export const PDFU_ALLOWED_MIME_TYPES = ['application/pdf'];
 

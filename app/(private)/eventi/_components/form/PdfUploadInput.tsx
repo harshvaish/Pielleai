@@ -1,17 +1,16 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { PDFU_LOCAL_STORAGE_TTL } from '@/lib/constants';
 import { cn, getFileMagicNumber, isValidPdfMagicNumber } from '@/lib/utils';
 import { pdfUploadSchema } from '@/lib/validation/pdfUploadSchema';
 import { EventFormSchema } from '@/lib/validation/eventFormSchema';
 import { Trash2, Upload } from 'lucide-react';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { toast } from 'sonner';
 
 export default function PdfUploadInput() {
-  const [isUploading, setIsUploading] = useState<boolean>(false);
+  const [uploading, setUploading] = useState<boolean>(false);
 
   const {
     watch,
@@ -34,11 +33,10 @@ export default function PdfUploadInput() {
     }
 
     try {
-      setIsUploading(true);
+      setUploading(true);
       const magicNumber = await getFileMagicNumber(file);
 
       if (!isValidPdfMagicNumber(magicNumber)) {
-        setIsUploading(false);
         toast.error('Il contenuto del pdf non è valido.');
         return;
       }
@@ -46,7 +44,7 @@ export default function PdfUploadInput() {
     } catch {
       toast.error('Caricamento pdf non riuscito.');
     } finally {
-      setIsUploading(false);
+      setUploading(false);
     }
   };
 
@@ -86,25 +84,7 @@ export default function PdfUploadInput() {
     const url = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/${process.env.NEXT_PUBLIC_SUPABASE_BUCKET_NAME}/${path}`;
 
     setValue('tecnicalRiderDocument', { url, name: fileName });
-
-    // Also store locally for preview on next render
-    localStorage.setItem(
-      'cepu_temporary_url', // create event pdf upload
-      JSON.stringify({ name: fileName, url, timestamp: Date.now() })
-    );
   };
-
-  useEffect(() => {
-    const stored = localStorage.getItem('cepu_temporary_url');
-    if (stored) {
-      const { name, url, timestamp } = JSON.parse(stored);
-      if (Date.now() - timestamp < PDFU_LOCAL_STORAGE_TTL) {
-        setValue('tecnicalRiderDocument', { url, name });
-      } else {
-        localStorage.removeItem('cepu_temporary_url');
-      }
-    }
-  }, [setValue]);
 
   return (
     <div className='relative'>
@@ -119,32 +99,19 @@ export default function PdfUploadInput() {
         type='button'
         size='sm'
         variant='outline'
-        className={cn(
-          'w-full justify-start text-sm',
-          pdf && pdf.name ? 'font-normal' : 'text-zinc-500 font-light',
-          errors.tecnicalRiderDocument && 'border-destructive text-destructive'
-        )}
+        className={cn('w-full justify-start text-sm font-normal', errors.tecnicalRiderDocument && 'border-destructive text-destructive')}
         onClick={() => fileInputRef.current?.click()}
-        disabled={isUploading}
+        disabled={uploading}
       >
         <Upload />
-        <span className={cn('truncate', pdf && pdf.name && 'pe-6')}>
-          {isUploading
-            ? 'Caricamento...'
-            : pdf && pdf.name
-              ? pdf.name
-              : 'Carica pdf'}
-        </span>
+        <span className={cn('truncate', pdf && pdf.name ? 'pe-6' : 'text-zinc-400')}>{uploading ? 'Caricamento...' : pdf && pdf.name ? pdf.name : 'Carica pdf'}</span>
       </Button>
       {pdf && pdf.url && (
         <Button
           type='button'
           variant='ghost'
           size='icon'
-          className={cn(
-            'absolute right-0 top-1/2 -translate-y-1/2 w-10 h-10 flex justify-center items-center hover:cursor-pointer',
-            pdf && pdf.name && 'text-destructive'
-          )}
+          className={cn('absolute right-0 top-1/2 -translate-y-1/2 w-10 h-10 flex justify-center items-center hover:cursor-pointer', pdf && pdf.name && 'text-destructive')}
           onClick={onDeleteHandler}
         >
           <Trash2 />

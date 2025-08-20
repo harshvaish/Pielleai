@@ -1,7 +1,7 @@
 import ArtistsBadge from '@/app/(private)/_components/Badges/ArtistsBadge';
 import ManagersBadge from '@/app/(private)/_components/Badges/ManagersBadge';
 import VenuesBadge from '@/app/(private)/_components/Badges/VenuesBadge';
-import EventStatusBadge from '@/app/(private)/eventi/_components/EventStatusBadge';
+import EventStatusBadge from '@/app/(private)/_components/Badges/EventStatusBadge';
 import { CalendarEvent } from '@/lib/types';
 import { format } from 'date-fns';
 import { CalendarDays, Clock } from 'lucide-react';

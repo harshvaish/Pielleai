@@ -1,7 +1,7 @@
 'use client';
 
 import { ArtistSelectData, Event, MoCoordinator, VenueSelectData } from '@/lib/types';
-import EventStatusBadge from '../EventStatusBadge';
+import EventStatusBadge from '../../../_components/Badges/EventStatusBadge';
 import { it } from 'date-fns/locale';
 import { format } from 'date-fns';
 import ArtistsBadge from '../../../_components/Badges/ArtistsBadge';
@@ -37,7 +37,7 @@ export default function EventTile({ event, artists, venues, moCoordinators }: Ev
         key={event.id}
         className='max-h-max flex justify-between items-center gap-4 hover:bg-zinc-50 rounded-2xl p-6'
       >
-        <div className='flex items-center gap-4'>
+        <div className='grid grid-cols-[max-content_1fr] gap-4'>
           {/* time info */}
           <div className='w-40 flex flex-col gap-1 justify-center pe-4 border-r'>
             <EventStatusBadge status={event.status} />
@@ -205,23 +205,25 @@ export default function EventTile({ event, artists, venues, moCoordinators }: Ev
         </Popover>
       </div>
 
-      <ArtistsBadge artists={[event.artist]} />
+      <div className='flex flex-col sm:flex-row justify-between sm:items-end gap-4'>
+        <ArtistsBadge artists={[event.artist]} />
 
-      <div className='flex justify-between items-center gap-2'>
-        <div className='flex items-center gap-1 text-sm text-zinc-700'>
-          <CalendarDays className='size-3 text-zinc-700' />
-          <span>{eventDate}</span>
-        </div>
+        <div className='flex items-center gap-4'>
+          <div className='flex items-center gap-1 text-sm text-zinc-700'>
+            <CalendarDays className='size-3 text-zinc-700' />
+            <span>{eventDate}</span>
+          </div>
 
-        <div className='flex items-center gap-1 text-sm text-zinc-700'>
-          <Clock className='size-3 text-zinc-700' />
-          <span>
-            {eventStartTime} - {eventEndTime}
-          </span>
+          <div className='flex items-center gap-1 text-sm text-zinc-700'>
+            <Clock className='size-3 text-zinc-700' />
+            <span>
+              {eventStartTime} - {eventEndTime}
+            </span>
+          </div>
         </div>
       </div>
 
-      <Separator />
+      <Separator className='my-4' />
 
       <div className='flex justify-between items-center gap-4'>
         <div className='flex items-center gap-1'>
@@ -293,7 +295,7 @@ export default function EventTile({ event, artists, venues, moCoordinators }: Ev
         </div>
       )}
 
-      <Separator />
+      <Separator className='my-4' />
 
       <div className='grid grid-cols-2 gap-2'>
         {event.status === 'proposed' && (

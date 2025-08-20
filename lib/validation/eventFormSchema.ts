@@ -83,19 +83,15 @@ export const eventFormSchema = z.object({
 
   soundCheckEnd: z.preprocess((val) => (typeof val === 'string' && val.trim() !== '' ? val : undefined), z.string('Campo malformato.').optional()),
 
-  tecnicalRiderDocument: z.preprocess(
-    (val) => (typeof val === 'string' && val.trim() !== '' ? val : undefined),
-    z
-      .object(
-        {
-          url: z.url('Inserisci un file valido.').refine((url) => url.startsWith(`${process.env.NEXT_PUBLIC_SUPABASE_URL}`), 'Campo non valido.'),
-          name: z.string("Seleziona un'opzione valida."),
-        },
-        "Seleziona un'opzione valida."
-      )
-      .optional()
-  ),
-
+  tecnicalRiderDocument: z
+    .object(
+      {
+        url: z.url('Inserisci un file valido.').refine((url) => url.startsWith(`${process.env.NEXT_PUBLIC_SUPABASE_URL}`), 'Campo non valido.'),
+        name: z.string("Seleziona un'opzione valida."),
+      },
+      "Seleziona un'opzione valida."
+    )
+    .optional(),
   contractSigning: z.boolean({ message: "Seleziona un'opzione valida." }),
   depositInvoiceIssuing: z.boolean({ message: "Seleziona un'opzione valida." }),
   depositReceiptVerification: z.boolean({ message: "Seleziona un'opzione valida." }),

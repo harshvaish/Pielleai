@@ -4,23 +4,11 @@ import { Controller, FormProvider, useForm } from 'react-hook-form';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import { cn, fetcher } from '@/lib/utils';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-} from '@/components/ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger } from '@/components/ui/select';
 import { Gender, GENDERS } from '@/lib/constants';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import useSWR from 'swr';
-import {
-  ArtistManagerSelectData,
-  ArtistData,
-  Country,
-  Language,
-  Subdivision,
-  Zone,
-} from '@/lib/types';
+import { ArtistManagerSelectData, ArtistData, Country, Language, Subdivision, Zone } from '@/lib/types';
 import { toast } from 'sonner';
 import LanguagesSelect from '@/app/(private)/_components/LanguagesSelect';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -28,11 +16,8 @@ import { Button } from '@/components/ui/button';
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { X } from 'lucide-react';
-import AvatarUploadInput from '@/app/(private)/_components/AvatarUploadInput';
-import {
-  ArtistS1FormSchema,
-  artistS1FormSchema,
-} from '@/lib/validation/artistFormSchema';
+import AvatarUploadInput from '@/app/(private)/_components/form/AvatarUploadInput';
+import { ArtistS1FormSchema, artistS1FormSchema } from '@/lib/validation/artistFormSchema';
 import { Checkbox } from '@/components/ui/checkbox';
 import ArtistManagersSelect from '@/app/(private)/artisti/_components/create/ArtistManagersSelect';
 import { editArtistPersonalData } from '@/lib/server-actions/artists/edit-artist-personal-data';
@@ -104,12 +89,7 @@ export default function PersonalDataForm({
   const selectedCountryId = methods.watch('countryId');
   const selectedSubdivisionId = methods.watch('subdivisionId');
 
-  const { data, error, isLoading } = useSWR(
-    selectedCountryId
-      ? `/api/country-subdivisions?country=${selectedCountryId}`
-      : null,
-    fetcher
-  );
+  const { data, error, isLoading } = useSWR(selectedCountryId ? `/api/country-subdivisions?country=${selectedCountryId}` : null, fetcher);
 
   const subdivisions: Subdivision[] = useMemo(() => {
     return data?.subdivisions ?? [];
@@ -147,20 +127,12 @@ export default function PersonalDataForm({
   useEffect(() => {
     if (!selectedCountryId || isLoading || !subdivisions.length) return;
 
-    const isValid = subdivisions.some(
-      (sub) => sub.id === selectedSubdivisionId
-    );
+    const isValid = subdivisions.some((sub) => sub.id === selectedSubdivisionId);
 
     if (!isValid) {
       methods.resetField('subdivisionId', { defaultValue: 0 });
     }
-  }, [
-    selectedCountryId,
-    selectedSubdivisionId,
-    subdivisions,
-    isLoading,
-    methods,
-  ]);
+  }, [selectedCountryId, selectedSubdivisionId, subdivisions, isLoading, methods]);
 
   useEffect(() => {
     if (error) {
@@ -189,11 +161,7 @@ export default function PersonalDataForm({
                 />
               )}
             />
-            {errors.avatarUrl && (
-              <p className='text-xs text-destructive mt-2'>
-                {errors.avatarUrl.message as string}
-              </p>
-            )}
+            {errors.avatarUrl && <p className='text-xs text-destructive mt-2'>{errors.avatarUrl.message as string}</p>}
           </div>
           <div className='flex flex-col'>
             <label
@@ -206,16 +174,10 @@ export default function PersonalDataForm({
               id='name'
               {...register('name')}
               placeholder='Mario'
-              className={
-                errors.name ? 'border-destructive text-destructive' : ''
-              }
+              className={errors.name ? 'border-destructive text-destructive' : ''}
               autoComplete='name'
             />
-            {errors.name && (
-              <p className='text-xs text-destructive mt-2'>
-                {errors.name.message as string}
-              </p>
-            )}
+            {errors.name && <p className='text-xs text-destructive mt-2'>{errors.name.message as string}</p>}
           </div>
           <div className='flex flex-col'>
             <label
@@ -228,16 +190,10 @@ export default function PersonalDataForm({
               id='surname'
               {...register('surname')}
               placeholder='Rossi'
-              className={
-                errors.surname ? 'border-destructive text-destructive' : ''
-              }
+              className={errors.surname ? 'border-destructive text-destructive' : ''}
               autoComplete='family-name'
             />
-            {errors.surname && (
-              <p className='text-xs text-destructive mt-2'>
-                {errors.surname.message as string}
-              </p>
-            )}
+            {errors.surname && <p className='text-xs text-destructive mt-2'>{errors.surname.message as string}</p>}
           </div>
         </div>
 
@@ -252,15 +208,9 @@ export default function PersonalDataForm({
             id='stageName'
             {...register('stageName')}
             placeholder='Shiva'
-            className={
-              errors.stageName ? 'border-destructive text-destructive' : ''
-            }
+            className={errors.stageName ? 'border-destructive text-destructive' : ''}
           />
-          {errors.stageName && (
-            <p className='text-xs text-destructive mt-2'>
-              {errors.stageName.message as string}
-            </p>
-          )}
+          {errors.stageName && <p className='text-xs text-destructive mt-2'>{errors.stageName.message as string}</p>}
         </div>
 
         <div className='flex flex-col'>
@@ -274,16 +224,10 @@ export default function PersonalDataForm({
             id='phone'
             {...register('phone')}
             placeholder='+39 123456789'
-            className={
-              errors.phone ? 'border-destructive text-destructive' : ''
-            }
+            className={errors.phone ? 'border-destructive text-destructive' : ''}
             autoComplete='tel'
           />
-          {errors.phone && (
-            <p className='text-xs text-destructive mt-2'>
-              {errors.phone.message as string}
-            </p>
-          )}
+          {errors.phone && <p className='text-xs text-destructive mt-2'>{errors.phone.message as string}</p>}
         </div>
 
         <div className='flex flex-col'>
@@ -297,16 +241,10 @@ export default function PersonalDataForm({
             id='email'
             {...register('email')}
             placeholder='info@eaglebooking.it'
-            className={
-              errors.email ? 'border-destructive text-destructive' : ''
-            }
+            className={errors.email ? 'border-destructive text-destructive' : ''}
             autoComplete='email'
           />
-          {errors.email && (
-            <p className='text-xs text-destructive mt-2'>
-              {errors.email.message as string}
-            </p>
-          )}
+          {errors.email && <p className='text-xs text-destructive mt-2'>{errors.email.message as string}</p>}
         </div>
 
         <Separator className='my-4' />
@@ -325,20 +263,13 @@ export default function PersonalDataForm({
               render={({ field }) => (
                 <Input
                   id='birthDate'
-                  className={cn(
-                    'block w-full',
-                    errors.birthDate && 'border-destructive text-destructive'
-                  )}
+                  className={cn('block w-full', errors.birthDate && 'border-destructive text-destructive')}
                   type='date'
                   {...field}
                 />
               )}
             />
-            {errors.birthDate && (
-              <p className='text-xs text-destructive mt-2'>
-                {errors.birthDate.message as string}
-              </p>
-            )}
+            {errors.birthDate && <p className='text-xs text-destructive mt-2'>{errors.birthDate.message as string}</p>}
           </div>
 
           <div className='flex flex-col'>
@@ -352,15 +283,9 @@ export default function PersonalDataForm({
               id='birthPlace'
               {...register('birthPlace')}
               placeholder='Milano'
-              className={
-                errors.birthPlace ? 'border-destructive text-destructive' : ''
-              }
+              className={errors.birthPlace ? 'border-destructive text-destructive' : ''}
             />
-            {errors.birthPlace && (
-              <p className='text-xs text-destructive mt-2'>
-                {errors.birthPlace.message as string}
-              </p>
-            )}
+            {errors.birthPlace && <p className='text-xs text-destructive mt-2'>{errors.birthPlace.message as string}</p>}
           </div>
         </div>
 
@@ -383,11 +308,7 @@ export default function PersonalDataForm({
               />
             )}
           />
-          {errors.languages && (
-            <p className='text-xs text-destructive mt-2'>
-              {errors.languages.message as string}
-            </p>
-          )}
+          {errors.languages && <p className='text-xs text-destructive mt-2'>{errors.languages.message as string}</p>}
         </div>
 
         <Separator className='my-4' />
@@ -403,16 +324,10 @@ export default function PersonalDataForm({
             id='address'
             {...register('address')}
             placeholder='Via Duomo 1'
-            className={
-              errors.address ? 'border-destructive text-destructive' : ''
-            }
+            className={errors.address ? 'border-destructive text-destructive' : ''}
             autoComplete='street-address'
           />
-          {errors.address && (
-            <p className='text-xs text-destructive mt-2'>
-              {errors.address.message as string}
-            </p>
-          )}
+          {errors.address && <p className='text-xs text-destructive mt-2'>{errors.address.message as string}</p>}
         </div>
 
         <div className='grid grid-cols-2 gap-4'>
@@ -434,14 +349,10 @@ export default function PersonalDataForm({
                 >
                   <SelectTrigger
                     id='countryId'
-                    className={cn(
-                      'w-full',
-                      errors.countryId && 'border-destructive text-destructive'
-                    )}
+                    className={cn('w-full', errors.countryId && 'border-destructive text-destructive')}
                     size='sm'
                   >
-                    {countries.find((c) => c.id == field.value)?.name ||
-                      'seleziona stato'}
+                    {countries.find((c) => c.id == field.value)?.name || 'seleziona stato'}
                   </SelectTrigger>
                   <SelectContent>
                     {countries.map((country) => (
@@ -456,11 +367,7 @@ export default function PersonalDataForm({
                 </Select>
               )}
             />
-            {errors.countryId && (
-              <p className='text-xs text-destructive mt-2'>
-                {errors.countryId.message as string}
-              </p>
-            )}
+            {errors.countryId && <p className='text-xs text-destructive mt-2'>{errors.countryId.message as string}</p>}
           </div>
 
           <div className='flex flex-col'>
@@ -481,15 +388,10 @@ export default function PersonalDataForm({
                 >
                   <SelectTrigger
                     id='subdivisionId'
-                    className={cn(
-                      'w-full',
-                      errors.subdivisionId &&
-                        'border-destructive text-destructive'
-                    )}
+                    className={cn('w-full', errors.subdivisionId && 'border-destructive text-destructive')}
                     size='sm'
                   >
-                    {subdivisions.find((s) => s.id == field.value)?.name ||
-                      subdivisionPlaceholder}
+                    {subdivisions.find((s) => s.id == field.value)?.name || subdivisionPlaceholder}
                   </SelectTrigger>
                   <SelectContent>
                     {subdivisions.map((subdivision: Subdivision) => (
@@ -504,11 +406,7 @@ export default function PersonalDataForm({
                 </Select>
               )}
             />
-            {errors.subdivisionId && (
-              <p className='text-xs text-destructive mt-2'>
-                {errors.subdivisionId.message as string}
-              </p>
-            )}
+            {errors.subdivisionId && <p className='text-xs text-destructive mt-2'>{errors.subdivisionId.message as string}</p>}
           </div>
         </div>
 
@@ -524,15 +422,9 @@ export default function PersonalDataForm({
               id='city'
               {...register('city')}
               placeholder='Milano'
-              className={
-                errors.city ? 'border-destructive text-destructive' : ''
-              }
+              className={errors.city ? 'border-destructive text-destructive' : ''}
             />
-            {errors.city && (
-              <p className='text-xs text-destructive mt-2'>
-                {errors.city.message as string}
-              </p>
-            )}
+            {errors.city && <p className='text-xs text-destructive mt-2'>{errors.city.message as string}</p>}
           </div>
 
           <div className='flex flex-col'>
@@ -550,15 +442,9 @@ export default function PersonalDataForm({
                 },
               })}
               placeholder='20100'
-              className={
-                errors.zipCode ? 'border-destructive text-destructive' : ''
-              }
+              className={errors.zipCode ? 'border-destructive text-destructive' : ''}
             />
-            {errors.zipCode && (
-              <p className='text-xs text-destructive mt-2'>
-                {errors.zipCode.message as string}
-              </p>
-            )}
+            {errors.zipCode && <p className='text-xs text-destructive mt-2'>{errors.zipCode.message as string}</p>}
           </div>
         </div>
 
@@ -578,10 +464,7 @@ export default function PersonalDataForm({
                 {GENDERS.map((gender) => (
                   <label
                     key={gender}
-                    className={cn(
-                      'h-10 flex items-center gap-2 text-sm p-2 rounded-xl capitalize border hover:cursor-pointer',
-                      errors.gender && 'border-destructive text-destructive'
-                    )}
+                    className={cn('h-10 flex items-center gap-2 text-sm p-2 rounded-xl capitalize border hover:cursor-pointer', errors.gender && 'border-destructive text-destructive')}
                   >
                     <RadioGroupItem
                       value={gender}
@@ -593,19 +476,13 @@ export default function PersonalDataForm({
               </RadioGroup>
             )}
           />
-          {errors.gender && (
-            <p className='text-xs text-destructive mt-2'>
-              {errors.gender.message as string}
-            </p>
-          )}
+          {errors.gender && <p className='text-xs text-destructive mt-2'>{errors.gender.message as string}</p>}
         </div>
 
         <Separator className='my-4' />
 
         <div className='flex flex-col'>
-          <div className='block text-sm font-semibold mb-2'>
-            Aree di interesse
-          </div>
+          <div className='block text-sm font-semibold mb-2'>Aree di interesse</div>
           <Controller
             control={control}
             name='zones'
@@ -616,20 +493,13 @@ export default function PersonalDataForm({
                     <label
                       key={zone.id}
                       htmlFor={`zone-${zone.id}`}
-                      className={cn(
-                        'h-10 flex items-center gap-2 text-sm p-2 rounded-xl border cursor-pointer',
-                        errors.zones && 'border-destructive text-destructive'
-                      )}
+                      className={cn('h-10 flex items-center gap-2 text-sm p-2 rounded-xl border cursor-pointer', errors.zones && 'border-destructive text-destructive')}
                     >
                       <Checkbox
                         id={`zone-${zone.id}`}
                         checked={field.value.includes(zone.id)}
                         onCheckedChange={(checked) => {
-                          const newValue = checked
-                            ? [...field.value, zone.id]
-                            : field.value.filter(
-                                (id: number) => id !== zone.id
-                              );
+                          const newValue = checked ? [...field.value, zone.id] : field.value.filter((id: number) => id !== zone.id);
                           field.onChange(newValue);
                         }}
                       />
@@ -637,11 +507,7 @@ export default function PersonalDataForm({
                     </label>
                   ))}
                 </div>
-                {errors.zones && (
-                  <p className='text-xs text-destructive mt-2'>
-                    {errors.zones.message as string}
-                  </p>
-                )}
+                {errors.zones && <p className='text-xs text-destructive mt-2'>{errors.zones.message as string}</p>}
               </div>
             )}
           />
@@ -668,11 +534,7 @@ export default function PersonalDataForm({
               />
             )}
           />
-          {errors.artistManagers && (
-            <p className='text-xs text-destructive mt-2'>
-              {errors.artistManagers.message as string}
-            </p>
-          )}
+          {errors.artistManagers && <p className='text-xs text-destructive mt-2'>{errors.artistManagers.message as string}</p>}
         </div>
 
         <Separator className='my-4' />
@@ -689,18 +551,10 @@ export default function PersonalDataForm({
               id='tourManagerName'
               {...register('tourManagerName')}
               placeholder='Mario'
-              className={
-                errors.tourManagerName
-                  ? 'border-destructive text-destructive'
-                  : ''
-              }
+              className={errors.tourManagerName ? 'border-destructive text-destructive' : ''}
               autoComplete='name'
             />
-            {errors.tourManagerName && (
-              <p className='text-xs text-destructive mt-2'>
-                {errors.tourManagerName.message as string}
-              </p>
-            )}
+            {errors.tourManagerName && <p className='text-xs text-destructive mt-2'>{errors.tourManagerName.message as string}</p>}
           </div>
           <div className='flex flex-col'>
             <label
@@ -713,18 +567,10 @@ export default function PersonalDataForm({
               id='tourManagerSurname'
               {...register('tourManagerSurname')}
               placeholder='Rossi'
-              className={
-                errors.tourManagerSurname
-                  ? 'border-destructive text-destructive'
-                  : ''
-              }
+              className={errors.tourManagerSurname ? 'border-destructive text-destructive' : ''}
               autoComplete='family-name'
             />
-            {errors.tourManagerSurname && (
-              <p className='text-xs text-destructive mt-2'>
-                {errors.tourManagerSurname.message as string}
-              </p>
-            )}
+            {errors.tourManagerSurname && <p className='text-xs text-destructive mt-2'>{errors.tourManagerSurname.message as string}</p>}
           </div>
         </div>
 
@@ -740,18 +586,10 @@ export default function PersonalDataForm({
               id='tourManagerPhone'
               {...register('tourManagerPhone')}
               placeholder='+39 123456789'
-              className={
-                errors.tourManagerPhone
-                  ? 'border-destructive text-destructive'
-                  : ''
-              }
+              className={errors.tourManagerPhone ? 'border-destructive text-destructive' : ''}
               autoComplete='tel'
             />
-            {errors.tourManagerPhone && (
-              <p className='text-xs text-destructive mt-2'>
-                {errors.tourManagerPhone.message as string}
-              </p>
-            )}
+            {errors.tourManagerPhone && <p className='text-xs text-destructive mt-2'>{errors.tourManagerPhone.message as string}</p>}
           </div>
 
           <div className='flex flex-col'>
@@ -765,18 +603,10 @@ export default function PersonalDataForm({
               id='tourManagerEmail'
               {...register('tourManagerEmail')}
               placeholder='mario.rossi@eaglebooking.it'
-              className={
-                errors.tourManagerEmail
-                  ? 'border-destructive text-destructive'
-                  : ''
-              }
+              className={errors.tourManagerEmail ? 'border-destructive text-destructive' : ''}
               autoComplete='email'
             />
-            {errors.tourManagerEmail && (
-              <p className='text-xs text-destructive mt-2'>
-                {errors.tourManagerEmail.message as string}
-              </p>
-            )}
+            {errors.tourManagerEmail && <p className='text-xs text-destructive mt-2'>{errors.tourManagerEmail.message as string}</p>}
           </div>
         </div>
         <div className='flex justify-between mt-4'>

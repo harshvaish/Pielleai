@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { VenueSelectData } from '@/lib/types';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Check } from 'lucide-react';
+import { Check, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useEffect, useState } from 'react';
 import ResponsivePopover from '@/app/_components/ResponsivePopover';
@@ -17,7 +17,7 @@ export default function VenueSelect({ initialValue, venues, onConfirm }: { initi
     setValue((prev) => (prev.includes(id) ? prev.filter((v) => v !== id) : [...prev, id]));
   };
 
-  const resetFilter = () => {
+  const resetHandler = () => {
     setValue([]);
   };
 
@@ -82,10 +82,12 @@ export default function VenueSelect({ initialValue, venues, onConfirm }: { initi
           </CommandList>
           <div className='grid grid-cols-2 gap-2 p-2 border-t'>
             <Button
-              variant='outline'
-              onClick={resetFilter}
+              variant='ghost'
               size='sm'
+              className='text-destructive'
+              onClick={resetHandler}
             >
+              <X />
               Pulisci
             </Button>
             <Button

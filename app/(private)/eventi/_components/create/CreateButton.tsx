@@ -7,12 +7,19 @@ import { ArtistSelectData, MoCoordinator, VenueSelectData } from '@/lib/types';
 import { useState } from 'react';
 import CreateEventForm from './CreateEventForm';
 
-export default function CreateButton({ artists, venues, moCoordinators }: { artists: ArtistSelectData[]; venues: VenueSelectData[]; moCoordinators: MoCoordinator[] }) {
-  const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
+type CreateButtonProps = {
+  artists: ArtistSelectData[];
+  venues: VenueSelectData[];
+  moCoordinators: MoCoordinator[];
+};
+
+export default function CreateButton({ artists, venues, moCoordinators }: CreateButtonProps) {
+  const [open, setOpen] = useState<boolean>(false);
+
   return (
     <Dialog
-      open={isDialogOpen}
-      onOpenChange={setIsDialogOpen}
+      open={open}
+      onOpenChange={setOpen}
       modal
     >
       <DialogTrigger asChild>
@@ -29,7 +36,7 @@ export default function CreateButton({ artists, venues, moCoordinators }: { arti
           artists={artists}
           venues={venues}
           moCoordinators={moCoordinators}
-          closeDialog={() => setIsDialogOpen(false)}
+          closeDialog={() => setOpen(false)}
         />
       </DialogContent>
     </Dialog>

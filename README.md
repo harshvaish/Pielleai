@@ -8,7 +8,6 @@ Always treat user inputs as being in a specific timezone (e.g. Europe/Rome), and
 - add not found layouts
 - add metatags for each layout/page
 - check all restrict or cascade keys in db
-
 - switch socials to table
 - isArtist flag or component duplication
 - manager block button refactor
@@ -33,6 +32,8 @@ Always treat user inputs as being in a specific timezone (e.g. Europe/Rome), and
   create index if not exists idx_events_status on public.events (status);
   )
 - check optional values inside schemas (take example in event schema)
+- bottoni pulisci da controllare UI
+- general fetches in the pages: cache and errors?
 
 - managers possono essere visualizzati anche se non ancora approvati?
 - in tabella no, mettere sezione accetta anche su relativa pgina
@@ -48,6 +49,4 @@ placeholder - text-zinc-500
 value
 
 dashboard--
-
-calendario toolbar,
-event content
+events refactoring and then the others...

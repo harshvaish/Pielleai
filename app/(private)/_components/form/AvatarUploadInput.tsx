@@ -1,13 +1,8 @@
 'use client';
 
+import { SpinnerLoading } from '@/app/_components/SpinnerLoading';
 import { AU_LOCAL_STORAGE_TTL } from '@/lib/constants';
-import {
-  cn,
-  compressImage,
-  fileToBase64,
-  getFileMagicNumber,
-  isValidImageMagicNumber,
-} from '@/lib/utils';
+import { cn, compressImage, fileToBase64, getFileMagicNumber, isValidImageMagicNumber } from '@/lib/utils';
 import { avatarUploadSchema } from '@/lib/validation/avatarUploadSchema';
 import { Plus, UserRound } from 'lucide-react';
 import Image from 'next/image';
@@ -21,14 +16,10 @@ type AvatarUploadInputProps = {
   hasError: boolean;
 };
 
-export default function AvatarUploadInput({
-  localStorageKey,
-  value,
-  onChange,
-  hasError,
-}: AvatarUploadInputProps) {
+export default function AvatarUploadInput({ localStorageKey, value, onChange, hasError }: AvatarUploadInputProps) {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [preview, setPreview] = useState<string | null>(value ?? null);
+  const [uploading, setUploading] = useState<boolean>(false);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -41,7 +32,9 @@ export default function AvatarUploadInput({
     }
 
     try {
+      setUploading(true);
       const magicNumber = await getFileMagicNumber(file);
+
       if (!isValidImageMagicNumber(magicNumber)) {
         toast.error("Il contenuto dell'immagine non è valido.");
         return;
@@ -55,6 +48,8 @@ export default function AvatarUploadInput({
     } catch {
       toast.error('Caricamento immagine non riuscito.');
       setPreview(null);
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -93,10 +88,7 @@ export default function AvatarUploadInput({
     onChange(url);
 
     // Also store locally for preview on next render
-    localStorage.setItem(
-      localStorageKey,
-      JSON.stringify({ url, timestamp: Date.now() })
-    );
+    localStorage.setItem(localStorageKey, JSON.stringify({ url, timestamp: Date.now() }));
 
     setPreview(url);
   };
@@ -126,15 +118,15 @@ export default function AvatarUploadInput({
         accept='image/*'
         onChange={handleFileChange}
         className='hidden absolute -top-full -left-full'
+        disabled={uploading}
       />
       <div
-        className={cn(
-          'relative w-16 h-16 flex justify-center items-center bg-muted rounded-full group hover:cursor-pointer',
-          hasError && 'border border-destructive'
-        )}
+        className={cn('relative w-16 h-16 flex justify-center items-center bg-muted rounded-full group hover:cursor-pointer', hasError && 'border border-destructive')}
         onClick={() => fileInputRef.current?.click()}
       >
-        {preview ? (
+        {uploading ? (
+          <SpinnerLoading />
+        ) : preview ? (
           <Image
             src={preview}
             fill

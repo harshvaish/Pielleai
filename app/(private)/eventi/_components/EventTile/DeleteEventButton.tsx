@@ -3,20 +3,20 @@
 import ConfirmDialog from '@/app/_components/ConfirmDialog';
 import { Button } from '@/components/ui/button';
 import { deleteEvent } from '@/lib/server-actions/events/delete-event';
-import { EventTableData } from '@/lib/types';
+import { Event } from '@/lib/types';
 import { Trash2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
 type DeleteEventButtonProps = {
-  event: EventTableData;
+  event: Event;
 };
 
 export default function DeleteEventButton({ event }: DeleteEventButtonProps) {
   const router = useRouter();
   const [loading, setLoading] = useState<boolean>(false);
-  const [dialogOpen, setDialogOpen] = useState<boolean>(false);
+  const [open, setOpen] = useState<boolean>(false);
 
   const onConfirm = async () => {
     setLoading(true);
@@ -30,7 +30,7 @@ export default function DeleteEventButton({ event }: DeleteEventButtonProps) {
 
     router.refresh();
     setLoading(false);
-    setDialogOpen(false);
+    setOpen(false);
   };
 
   return (
@@ -39,15 +39,15 @@ export default function DeleteEventButton({ event }: DeleteEventButtonProps) {
         variant='ghost'
         size='xs'
         className='text-destructive'
-        onClick={() => setDialogOpen(true)}
+        onClick={() => setOpen(true)}
         disabled={loading}
       >
         <Trash2 /> Elimina
       </Button>
 
       <ConfirmDialog
-        open={dialogOpen}
-        onOpenChange={setDialogOpen}
+        open={open}
+        onOpenChange={setOpen}
         title="Sei sicuro di voler eliminare l'evento?"
         description="Attenzione: questa operazione è irreversibile. L'evento verrà eliminato definitivamente."
         confirmLabel='Elimina'

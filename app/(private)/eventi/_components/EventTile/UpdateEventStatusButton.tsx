@@ -22,7 +22,7 @@ type UpdateEventStatusButtonProps = {
 export default function UpdateEventStatusButton({ event, newStatus, buttonLabel, buttonVariant, dialogTitle, dialogDescription, icon }: UpdateEventStatusButtonProps) {
   const router = useRouter();
   const [loading, setLoading] = useState<boolean>(false);
-  const [dialogOpen, setDialogOpen] = useState<boolean>(false);
+  const [open, setOpen] = useState<boolean>(false);
 
   const onConfirm = async () => {
     setLoading(true);
@@ -36,7 +36,7 @@ export default function UpdateEventStatusButton({ event, newStatus, buttonLabel,
 
     router.refresh();
     setLoading(false);
-    setDialogOpen(false);
+    setOpen(false);
   };
 
   return (
@@ -44,15 +44,15 @@ export default function UpdateEventStatusButton({ event, newStatus, buttonLabel,
       <Button
         variant={buttonVariant}
         size='sm'
-        onClick={() => setDialogOpen(true)}
+        onClick={() => setOpen(true)}
         disabled={loading}
       >
         {icon} {buttonLabel}
       </Button>
 
       <ConfirmDialog
-        open={dialogOpen}
-        onOpenChange={setDialogOpen}
+        open={open}
+        onOpenChange={setOpen}
         title={dialogTitle}
         description={dialogDescription}
         confirmLabel={buttonLabel}

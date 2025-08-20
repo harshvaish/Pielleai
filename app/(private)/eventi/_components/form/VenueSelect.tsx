@@ -1,18 +1,15 @@
 'use client';
 
 import { Controller, useFormContext } from 'react-hook-form';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-} from '@/components/ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
 import { VenueSelectData } from '@/lib/types';
 import Image from 'next/image';
 import { EventFormSchema } from '@/lib/validation/eventFormSchema';
 
-export default function VenueSelect({ venues }: { venues: VenueSelectData[] }) {
+type VenueSelectProps = { venues: VenueSelectData[] };
+
+export default function VenueSelect({ venues }: VenueSelectProps) {
   const {
     watch,
     control,
@@ -32,10 +29,7 @@ export default function VenueSelect({ venues }: { venues: VenueSelectData[] }) {
           onValueChange={(v) => field.onChange(parseInt(v))}
         >
           <SelectTrigger
-            className={cn(
-              'w-full',
-              errors.venueId && 'border-destructive text-destructive'
-            )}
+            className={cn('w-full', errors.venueId && 'border-destructive text-destructive')}
             size='sm'
           >
             {selectedVenue ? selectedVenue.name : 'Seleziona un locale'}

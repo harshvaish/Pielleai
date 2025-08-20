@@ -28,10 +28,10 @@ export default function ResponsivePopover({ trigger, open, onOpenChange, title, 
     >
       <PopoverTrigger asChild>{trigger}</PopoverTrigger>
       <PopoverContent
-        className='min-w-xl h-full grid grid-rows-[min-content_min-content_1fr] overflow-hidden'
+        className='min-w-md h-full grid grid-rows-[min-content_min-content_1fr] overflow-hidden'
         align={align}
       >
-        {!isTitleHidden && <div className='text-2xl font-semibold'>{title}</div>}
+        {!isTitleHidden && <div className='text-xl font-semibold'>{title}</div>}
         {!isDescriptionHidden && <div className='text-sm text-zinc-500 mb-4'>{description}</div>}
 
         <div className='h-full overflow-y-auto'>{children}</div>

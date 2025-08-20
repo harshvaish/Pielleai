@@ -55,9 +55,7 @@ export default function EventNotesInput() {
             className={cn(error && 'text-destructive border-destructive')}
             onChange={(e) => setNewNote(e.target.value)}
           />
-          {error && (
-            <div className='text-xs text-destructive mt-2'>{error}</div>
-          )}
+          {error && <div className='text-xs text-destructive mt-2'>{error}</div>}
           <div className='flex justify-end items-center gap-2 mt-4'>
             <Button
               type='button'
@@ -96,11 +94,7 @@ export default function EventNotesInput() {
           </div>
         ))}
 
-      {!isInputVisible && notes.length === 0 && (
-        <div className='py-1 text-sm text-zinc-500'>
-          Premi il pulsante + per aggiungere una nota.
-        </div>
-      )}
+      {!isInputVisible && notes.length === 0 && <div className='py-1 text-sm text-zinc-400'>Premi il pulsante + per aggiungere una nota.</div>}
     </div>
   );
 }
