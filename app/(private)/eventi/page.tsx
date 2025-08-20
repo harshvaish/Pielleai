@@ -3,7 +3,7 @@ import { getVenues } from '@/lib/data/venues/get-venues';
 import CreateButton from './_components/create/CreateButton';
 import { getMoCoordinators } from '@/lib/data/get-mo-coordinators';
 import { getEvents } from '@/lib/data/events/get-events';
-import { TablePagination } from '../_components/TablePagination';
+import { TablePagination } from '../_components/form/TablePagination';
 import EventTile from './_components/EventTile/EventTile';
 import { EventStatus } from '@/lib/constants';
 import StatusFilterButton from './_components/filters/StatusFilterButton';

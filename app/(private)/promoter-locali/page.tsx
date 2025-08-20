@@ -3,7 +3,7 @@ import { getPaginatedVenueManagers } from '@/lib/data/venue-managers/get-paginat
 import { getLanguages } from '@/lib/data/get-languages';
 import { getCountries } from '@/lib/data/get-countries';
 import { notFound } from 'next/navigation';
-import { TablePagination } from '../_components/TablePagination';
+import { TablePagination } from '../_components/form/TablePagination';
 import UserBadge from '../_components/Badges/UserBadge';
 import StatusBadge from '../_components/Badges/StatusBadge';
 import { NEW_USER_TIME } from '@/lib/constants';

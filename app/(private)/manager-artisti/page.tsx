@@ -2,7 +2,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { getPaginatedArtistManagers } from '@/lib/data/artist-managers/get-paginated-artist-managers';
 import { getLanguages } from '@/lib/data/get-languages';
 import { getCountries } from '@/lib/data/get-countries';
-import { TablePagination } from '../_components/TablePagination';
+import { TablePagination } from '../_components/form/TablePagination';
 import UserBadge from '../_components/Badges/UserBadge';
 import StatusBadge from '../_components/Badges/StatusBadge';
 import { NEW_USER_TIME } from '@/lib/constants';

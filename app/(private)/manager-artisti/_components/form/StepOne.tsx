@@ -3,7 +3,7 @@ import AvatarUploadInput from '@/app/(private)/_components/form/AvatarUploadInpu
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import { cn, fetcher } from '@/lib/utils';
-import LanguagesSelect from '@/app/(private)/_components/LanguagesSelect';
+import LanguagesSelect from '@/app/(private)/_components/form/LanguagesSelect';
 import { Select, SelectContent, SelectItem, SelectTrigger } from '@/components/ui/select';
 import { Gender, GENDERS } from '@/lib/constants';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
@@ -54,7 +54,6 @@ export default function StepOne({ languages, countries }: { languages: Language[
 
   return (
     <>
-      <div className='text-xl text-center font-bold'>Dati personali</div>
       <div className='grid grid-cols-[auto_1fr_1fr] items-end gap-4'>
         <div className='flex flex-col'>
           <Controller

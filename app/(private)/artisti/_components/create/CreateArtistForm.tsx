@@ -2,13 +2,7 @@
 
 import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import {
-  ArtistFormSchema,
-  artistS1FormSchema,
-  artistS2FormSchema,
-  artistS3FormSchema,
-  artistFormSchema,
-} from '@/lib/validation/artistFormSchema';
+import { ArtistFormSchema, artistS1FormSchema, artistS2FormSchema, artistS3FormSchema, artistFormSchema } from '@/lib/validation/artistFormSchema';
 import { useState } from 'react';
 import StepOne from './StepOne';
 import StepTwo from './StepTwo';
@@ -16,26 +10,20 @@ import { toast } from 'sonner';
 import StepThree from './StepThree';
 import { ArrowLeft } from 'lucide-react';
 import { ArtistManagerSelectData, Country, Language, Zone } from '@/lib/types';
-import StepIndicator from '@/app/(private)/_components/StepIndicator';
+import StepIndicator from '@/app/(private)/_components/form/StepIndicator';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
 import { createArtist } from '@/lib/server-actions/artists/create-artist';
 
 function getFormFieldsForStep(step: number): Array<keyof ArtistFormSchema> {
   if (step === 1) {
-    return Object.keys(artistS1FormSchema.shape) as Array<
-      keyof ArtistFormSchema
-    >;
+    return Object.keys(artistS1FormSchema.shape) as Array<keyof ArtistFormSchema>;
   }
   if (step === 2) {
-    return Object.keys(artistS2FormSchema.shape) as Array<
-      keyof ArtistFormSchema
-    >;
+    return Object.keys(artistS2FormSchema.shape) as Array<keyof ArtistFormSchema>;
   }
   if (step === 3) {
-    return Object.keys(artistS3FormSchema.shape) as Array<
-      keyof ArtistFormSchema
-    >;
+    return Object.keys(artistS3FormSchema.shape) as Array<keyof ArtistFormSchema>;
   }
   return [];
 }
@@ -151,9 +139,7 @@ export default function CreateArtistForm({
           />
 
           <div className='text-[10px] font-medium text-zinc-400'>FASE 1</div>
-          <div className='text-xs font-semibold text-center'>
-            Dati personali
-          </div>
+          <div className='text-xs font-semibold text-center'>Dati personali</div>
         </div>
 
         <div className='h-1 w-full self-center bg-zinc-100 rounded-xl'></div>
@@ -166,9 +152,7 @@ export default function CreateArtistForm({
           />
 
           <div className='text-[10px] font-medium text-zinc-400'>FASE 2</div>
-          <div className='text-xs font-semibold text-center'>
-            Dati aziendali
-          </div>
+          <div className='text-xs font-semibold text-center'>Dati aziendali</div>
         </div>
 
         <div className='h-1 w-full self-center bg-zinc-100 rounded-xl'></div>
@@ -201,11 +185,7 @@ export default function CreateArtistForm({
             {step === 2 && <StepTwo countries={countries} />}
             {step === 3 && <StepThree />}
 
-            <div
-              className={`flex ${
-                step > 1 ? 'justify-between' : 'justify-end'
-              } mt-4`}
-            >
+            <div className={`flex ${step > 1 ? 'justify-between' : 'justify-end'} mt-4`}>
               {step > 1 && (
                 <div
                   onClick={onPrev}

@@ -2,55 +2,33 @@
 
 import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import {
-  ArtistManagerFormSchema,
-  artistManagerS1FormSchema,
-  artistManagerS2FormSchema,
-  artistManagerS3FormSchema,
-  artistManagerFormSchema,
-} from '@/lib/validation/artistManagerFormSchema';
+import { ArtistManagerFormSchema, artistManagerS1FormSchema, artistManagerS2FormSchema, artistManagerS3FormSchema, artistManagerFormSchema } from '@/lib/validation/artistManagerFormSchema';
 import { useState } from 'react';
-import StepOne from './StepOne';
-import StepTwo from './StepTwo';
+import StepOne from '../form/StepOne';
+import StepTwo from '../form/StepTwo';
 import { toast } from 'sonner';
-import StepThree from './StepThree';
+import StepThree from '../form/StepThree';
 import { ArrowLeft } from 'lucide-react';
 import { Country, Language } from '@/lib/types';
-import StepIndicator from '@/app/(private)/_components/StepIndicator';
+import StepIndicator from '@/app/(private)/_components/form/StepIndicator';
 import { Button } from '@/components/ui/button';
 import { createArtistManager } from '@/lib/server-actions/artist-managers/create-artist-manager';
 import { useRouter } from 'next/navigation';
 
-function getFormFieldsForStep(
-  step: number
-): Array<keyof ArtistManagerFormSchema> {
+function getFormFieldsForStep(step: number): Array<keyof ArtistManagerFormSchema> {
   if (step === 1) {
-    return Object.keys(artistManagerS1FormSchema.shape) as Array<
-      keyof ArtistManagerFormSchema
-    >;
+    return Object.keys(artistManagerS1FormSchema.shape) as Array<keyof ArtistManagerFormSchema>;
   }
   if (step === 2) {
-    return Object.keys(artistManagerS2FormSchema.shape) as Array<
-      keyof ArtistManagerFormSchema
-    >;
+    return Object.keys(artistManagerS2FormSchema.shape) as Array<keyof ArtistManagerFormSchema>;
   }
   if (step === 3) {
-    return Object.keys(artistManagerS3FormSchema.shape) as Array<
-      keyof ArtistManagerFormSchema
-    >;
+    return Object.keys(artistManagerS3FormSchema.shape) as Array<keyof ArtistManagerFormSchema>;
   }
   return [];
 }
 
-export default function CreateArtistManagerForm({
-  languages,
-  countries,
-  closeDialog,
-}: {
-  languages: Language[];
-  countries: Country[];
-  closeDialog: () => void;
-}) {
+export default function CreateArtistManagerForm({ languages, countries, closeDialog }: { languages: Language[]; countries: Country[]; closeDialog: () => void }) {
   const [step, setStep] = useState<number>(1);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const methods = useForm({
@@ -132,9 +110,7 @@ export default function CreateArtistManagerForm({
           />
 
           <div className='text-[10px] font-medium text-zinc-400'>FASE 1</div>
-          <div className='text-xs font-semibold text-center'>
-            Dati personali
-          </div>
+          <div className='text-xs font-semibold text-center'>Dati personali</div>
         </div>
         <div className='h-1 w-full self-center bg-zinc-100 rounded-xl'></div>
         {/* step 2 */}
@@ -145,9 +121,7 @@ export default function CreateArtistManagerForm({
           />
 
           <div className='text-[10px] font-medium text-zinc-400'>FASE 2</div>
-          <div className='text-xs font-semibold text-center'>
-            Dati aziendali
-          </div>
+          <div className='text-xs font-semibold text-center'>Dati aziendali</div>
         </div>
         <div className='h-1 w-full self-center bg-zinc-100 rounded-xl'></div>
         {/* step 3 */}
@@ -176,11 +150,7 @@ export default function CreateArtistManagerForm({
             {step === 2 && <StepTwo countries={countries} />}
             {step === 3 && <StepThree />}
 
-            <div
-              className={`flex ${
-                step > 1 ? 'justify-between' : 'justify-end'
-              } mt-4`}
-            >
+            <div className={`flex ${step > 1 ? 'justify-between' : 'justify-end'} mt-4`}>
               {step > 1 && (
                 <div
                   onClick={onPrev}

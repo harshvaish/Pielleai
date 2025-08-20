@@ -9,29 +9,24 @@ import { auth } from '@/lib/auth';
 import { getProfileNotes } from '@/lib/data/notes/get-profile-notes';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
-import EditArtistManagerButton from './_components/EditProfile/EditArtistManagerButton';
+import EditArtistManagerButton from './_components/update/EditArtistManagerButton';
 import { getLanguages } from '@/lib/data/get-languages';
 import { getCountries } from '@/lib/data/get-countries';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import PersonalDataTab from './_components/Tabs/PersonalDataTab';
+import PersonalDataTab from './_components/tabs/PersonalDataTab';
 import BillingDataTab from '../../_components/Tabs/BillingDataTab';
 import StatusBadge from '../../_components/Badges/StatusBadge';
 import NotesSection from '../../_components/Notes/NotesSection';
 import ToggleBlockButton from '../../_components/ToggleBlockButton';
-import ManagedArtistsTab from './_components/Tabs/ManagedArtistsTab';
-
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
+import ManagedArtistsTab from './_components/tabs/ManagedArtistsTab';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Ellipsis } from 'lucide-react';
+import { toZonedTime } from 'date-fns-tz';
+import { TIME_ZONE } from '@/lib/constants';
 
-export default async function ArtistManagerDetailPage({
-  params,
-}: {
-  params: Promise<{ uid: string }>;
-}) {
+type ArtistManagerDetailPageProps = { params: Promise<{ uid: string }> };
+
+export default async function ArtistManagerDetailPage({ params }: ArtistManagerDetailPageProps) {
   const p = await params;
   const { uid } = p;
 
@@ -50,14 +45,7 @@ export default async function ArtistManagerDetailPage({
     redirect('/accedi');
   }
 
-  const [userData, languages, countries] = await Promise.all([
-    getArtistManager(uid),
-    getLanguages(),
-    getCountries(),
-  ]).catch((error) => {
-    console.error('❌ Error fetching:', error);
-    notFound();
-  });
+  const [userData, languages, countries] = await Promise.all([getArtistManager(uid), getLanguages(), getCountries()]);
 
   if (!userData) notFound();
 
@@ -65,6 +53,8 @@ export default async function ArtistManagerDetailPage({
     receiverProfileId: userData.profileId,
   });
 
+  const createdAtZoned = format(toZonedTime(userData.createdAt, TIME_ZONE), 'dd/MM/yyyy, HH:mm');
+  const updatedAtZoned = format(toZonedTime(userData.updatedAt, TIME_ZONE), 'dd/MM/yyyy, HH:mm');
   const isDisabled = userData.status === 'disabled';
 
   return (
@@ -112,10 +102,7 @@ export default async function ArtistManagerDetailPage({
                 alt='Icona profilo manager artista'
                 width={60}
                 height={60}
-                className={cn(
-                  'shrink-0 w-[60px] h-[60px] rounded-full object-cover',
-                  isDisabled ? 'grayscale' : ''
-                )}
+                className={cn('shrink-0 w-[60px] h-[60px] rounded-full object-cover', isDisabled ? 'grayscale' : '')}
               />
 
               <div className='flex flex-col gap-1.5'>
@@ -123,52 +110,28 @@ export default async function ArtistManagerDetailPage({
                   {userData.name} {userData.surname}
                 </div>
                 <div className='flex items-center gap-2'>
-                  <Badge variant={isDisabled ? 'disabled' : 'emerald'}>
-                    Manager artista
-                  </Badge>
+                  <Badge variant={isDisabled ? 'disabled' : 'emerald'}>Manager artista</Badge>
                   {isDisabled && <StatusBadge status='disabled' />}
                 </div>
               </div>
             </div>
 
             <div className='max-w-full flex flex-col lg:items-end gap-0.5 overflow-x-auto'>
-              <div className='flex flex-col lg:flex-row text-sm font-semibold text-zinc-500 whitespace-nowrap'>
-                ID {userData.id}
-              </div>
-              <div className='text-xs font-semibold text-zinc-400'>
-                Data di creazione:{' '}
-                {format(userData.createdAt, 'dd/MM/yyyy, HH:mm')}
-              </div>
-              <div className='text-xs font-semibold text-zinc-400'>
-                Data di aggiornamento:{' '}
-                {format(userData.updatedAt, 'dd/MM/yyyy, HH:mm')}
-              </div>
+              <div className='flex flex-col lg:flex-row text-sm font-semibold text-zinc-500 whitespace-nowrap'>ID {userData.id}</div>
+              <div className='text-xs font-semibold text-zinc-400'>Data di creazione: {createdAtZoned}</div>
+              <div className='text-xs font-semibold text-zinc-400'>Data di aggiornamento: {updatedAtZoned}</div>
             </div>
           </div>
           <Separator className='my-6' />
           <div className='grid grid-cols-[minmax(200px,max-content)_max-content] gap-2 lg:gap-6 overflow-x-auto'>
             <span className='text-sm font-semibold text-zinc-600'>Email</span>
-            <span className='text-sm font-medium text-zinc-500'>
-              {userData.email}
-            </span>
-            <span className='text-sm font-semibold text-zinc-600'>
-              Numero di telefono
-            </span>
-            <span className='text-sm font-medium text-zinc-500'>
-              {userData.phone}
-            </span>
-            <span className='text-sm font-semibold text-zinc-600'>
-              Indirizzo PEC
-            </span>
-            <span className='text-sm font-medium text-zinc-500'>
-              {userData.billingPec}
-            </span>
-            <span className='text-sm font-semibold text-zinc-600'>
-              Ragione sociale
-            </span>
-            <span className='text-sm font-medium text-zinc-500'>
-              {userData.company}
-            </span>
+            <span className='text-sm font-medium text-zinc-500'>{userData.email}</span>
+            <span className='text-sm font-semibold text-zinc-600'>Numero di telefono</span>
+            <span className='text-sm font-medium text-zinc-500'>{userData.phone}</span>
+            <span className='text-sm font-semibold text-zinc-600'>Indirizzo PEC</span>
+            <span className='text-sm font-medium text-zinc-500'>{userData.billingPec}</span>
+            <span className='text-sm font-semibold text-zinc-600'>Ragione sociale</span>
+            <span className='text-sm font-medium text-zinc-500'>{userData.company}</span>
           </div>
         </section>
 
@@ -182,9 +145,7 @@ export default async function ArtistManagerDetailPage({
 
       <Tabs defaultValue='managed-artists'>
         <div className='flex justify-between items-center mb-2 overflow-hidden'>
-          <span className='hidden lg:block text-xl font-semibold'>
-            Dettagli
-          </span>
+          <span className='hidden lg:block text-xl font-semibold'>Dettagli</span>
           <TabsList className='w-full lg:max-w-max justify-start gap-4 bg-white p-1 rounded-xl overflow-x-auto'>
             <TabsTrigger value='managed-artists'>Artisti gestiti</TabsTrigger>
             <TabsTrigger value='billing-data'>Dati di fatturazione</TabsTrigger>

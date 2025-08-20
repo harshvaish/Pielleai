@@ -10,7 +10,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import useSWR from 'swr';
 import { Country, Language, Subdivision, VenueManagerData } from '@/lib/types';
 import { toast } from 'sonner';
-import LanguagesSelect from '@/app/(private)/_components/LanguagesSelect';
+import LanguagesSelect from '@/app/(private)/_components/form/LanguagesSelect';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
 import { useEffect, useMemo, useState } from 'react';

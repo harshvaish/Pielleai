@@ -9,16 +9,10 @@ import { toast } from 'sonner';
 import StepThree from './StepThree';
 import { ArrowLeft } from 'lucide-react';
 import { Country, VenueManagerSelectData } from '@/lib/types';
-import StepIndicator from '@/app/(private)/_components/StepIndicator';
+import StepIndicator from '@/app/(private)/_components/form/StepIndicator';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
-import {
-  venueFormSchema,
-  VenueFormSchema,
-  venueS1FormSchema,
-  venueS2FormSchema,
-  venueS3FormSchema,
-} from '@/lib/validation/venueFormSchema';
+import { venueFormSchema, VenueFormSchema, venueS1FormSchema, venueS2FormSchema, venueS3FormSchema } from '@/lib/validation/venueFormSchema';
 import { createVenue } from '@/lib/server-actions/venues/create-venue';
 
 function getFormFieldsForStep(step: number): Array<keyof VenueFormSchema> {
@@ -34,15 +28,7 @@ function getFormFieldsForStep(step: number): Array<keyof VenueFormSchema> {
   return [];
 }
 
-export default function CreateVenueForm({
-  countries,
-  venueManagers,
-  closeDialog,
-}: {
-  countries: Country[];
-  venueManagers: VenueManagerSelectData[];
-  closeDialog: () => void;
-}) {
+export default function CreateVenueForm({ countries, venueManagers, closeDialog }: { countries: Country[]; venueManagers: VenueManagerSelectData[]; closeDialog: () => void }) {
   const [step, setStep] = useState<number>(1);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const methods = useForm({
@@ -147,9 +133,7 @@ export default function CreateVenueForm({
           />
 
           <div className='text-[10px] font-medium text-zinc-400'>FASE 2</div>
-          <div className='text-xs font-semibold text-center'>
-            Dati di fatturazione
-          </div>
+          <div className='text-xs font-semibold text-center'>Dati di fatturazione</div>
         </div>
 
         <div className='h-1 w-full self-center bg-zinc-100 rounded-xl'></div>
@@ -180,11 +164,7 @@ export default function CreateVenueForm({
             {step === 2 && <StepTwo countries={countries} />}
             {step === 3 && <StepThree />}
 
-            <div
-              className={`flex ${
-                step > 1 ? 'justify-between' : 'justify-end'
-              } mt-4`}
-            >
+            <div className={`flex ${step > 1 ? 'justify-between' : 'justify-end'} mt-4`}>
               {step > 1 && (
                 <div
                   onClick={onPrev}

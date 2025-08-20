@@ -1,7 +1,7 @@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { getCountries } from '@/lib/data/get-countries';
 import { notFound } from 'next/navigation';
-import { TablePagination } from '../_components/TablePagination';
+import { TablePagination } from '../_components/form/TablePagination';
 import UserBadge from '../_components/Badges/UserBadge';
 import FilterInput from '../_components/filters/desktop/FilterInput';
 import { getVenueManagers } from '@/lib/data/venue-managers/get-venue-managers';

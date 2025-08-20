@@ -2,48 +2,29 @@
 
 import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import {
-  venueManagerFormSchema,
-  VenueManagerFormSchema,
-  venueManagerS1FormSchema,
-  venueManagerS2FormSchema,
-} from '@/lib/validation/venueManagerFormSchema';
+import { venueManagerFormSchema, VenueManagerFormSchema, venueManagerS1FormSchema, venueManagerS2FormSchema } from '@/lib/validation/venueManagerFormSchema';
 import { useState } from 'react';
 import StepOne from './StepOne';
 import { toast } from 'sonner';
 import StepTwo from './StepTwo';
 import { ArrowLeft } from 'lucide-react';
 import { Country, Language } from '@/lib/types';
-import StepIndicator from '@/app/(private)/_components/StepIndicator';
+import StepIndicator from '@/app/(private)/_components/form/StepIndicator';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
 import { createVenueManager } from '@/lib/server-actions/venue-managers/create-venue-manager';
 
-function getFormFieldsForStep(
-  step: number
-): Array<keyof VenueManagerFormSchema> {
+function getFormFieldsForStep(step: number): Array<keyof VenueManagerFormSchema> {
   if (step === 1) {
-    return Object.keys(venueManagerS1FormSchema.shape) as Array<
-      keyof VenueManagerFormSchema
-    >;
+    return Object.keys(venueManagerS1FormSchema.shape) as Array<keyof VenueManagerFormSchema>;
   }
   if (step === 2) {
-    return Object.keys(venueManagerS2FormSchema.shape) as Array<
-      keyof VenueManagerFormSchema
-    >;
+    return Object.keys(venueManagerS2FormSchema.shape) as Array<keyof VenueManagerFormSchema>;
   }
   return [];
 }
 
-export default function CreateVenueManagerForm({
-  languages,
-  countries,
-  closeDialog,
-}: {
-  languages: Language[];
-  countries: Country[];
-  closeDialog: () => void;
-}) {
+export default function CreateVenueManagerForm({ languages, countries, closeDialog }: { languages: Language[]; countries: Country[]; closeDialog: () => void }) {
   const [step, setStep] = useState<number>(1);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const methods = useForm({
@@ -108,9 +89,7 @@ export default function CreateVenueManagerForm({
           />
 
           <div className='text-[10px] font-medium text-zinc-400'>FASE 1</div>
-          <div className='text-xs font-semibold text-center'>
-            Dati personali
-          </div>
+          <div className='text-xs font-semibold text-center'>Dati personali</div>
         </div>
 
         <div className='h-1 w-full self-center bg-zinc-100 rounded-xl'></div>
@@ -141,11 +120,7 @@ export default function CreateVenueManagerForm({
             )}
             {step === 2 && <StepTwo />}
 
-            <div
-              className={`flex ${
-                step > 1 ? 'justify-between' : 'justify-end'
-              } mt-4`}
-            >
+            <div className={`flex ${step > 1 ? 'justify-between' : 'justify-end'} mt-4`}>
               {step > 1 && (
                 <div
                   onClick={onPrev}
