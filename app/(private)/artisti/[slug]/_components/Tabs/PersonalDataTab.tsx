@@ -1,17 +1,13 @@
 import { Separator } from '@/components/ui/separator';
 import { TabsContent } from '@/components/ui/tabs';
 import { ArtistData } from '@/lib/types';
-import ZonesBadge from '../../../../_components/Badges/ZonesBadge';
-import TourManagerBadge from '@/app/(private)/_components/Badges/TourManagerBadge';
-import ManagersBadge from '@/app/(private)/_components/Badges/ManagersBadge';
+import ZonesBadge from '../../../../_components/badges/ZonesBadge';
+import TourManagerBadge from '@/app/(private)/_components/badges/TourManagerBadge';
+import ManagersBadge from '@/app/(private)/_components/badges/ManagersBadge';
 
-export default function PersonalDataTab({
-  tabValue,
-  userData,
-}: {
-  tabValue: string;
-  userData: ArtistData;
-}) {
+type PersonalDataTabProps = { tabValue: string; userData: ArtistData };
+
+export default function PersonalDataTab({ tabValue, userData }: PersonalDataTabProps) {
   let languagesString = '';
 
   userData.languages.forEach((lang, index) => {
@@ -26,56 +22,32 @@ export default function PersonalDataTab({
       <div className='bg-white py-8 px-6 rounded-2xl overflow-x-hidden'>
         <div className='text-xl font-semibold mb-6'>Dati personali</div>
         <div className='grid grid-cols-[minmax(200px,max-content)_max-content] gap-6 overflow-x-auto'>
-          <span className='text-sm font-semibold text-zinc-600'>
-            Luogo di nascita
-          </span>
-          <span className='text-sm font-medium text-zinc-500'>
-            {userData.birthDate}
-          </span>
+          <span className='text-sm font-semibold text-zinc-600'>Luogo di nascita</span>
+          <span className='text-sm font-medium text-zinc-500'>{userData.birthDate}</span>
 
-          <span className='text-sm font-semibold text-zinc-600'>
-            Data di nascita
-          </span>
-          <span className='text-sm font-medium text-zinc-500'>
-            {userData.birthPlace}
-          </span>
+          <span className='text-sm font-semibold text-zinc-600'>Data di nascita</span>
+          <span className='text-sm font-medium text-zinc-500'>{userData.birthPlace}</span>
 
-          <span className='text-sm font-semibold text-zinc-600'>
-            Indirizzo di residenza
-          </span>
-          <span className='text-sm font-medium text-zinc-500'>
-            {userData.address}
-          </span>
+          <span className='text-sm font-semibold text-zinc-600'>Indirizzo di residenza</span>
+          <span className='text-sm font-medium text-zinc-500'>{userData.address}</span>
 
           <span className='text-sm font-semibold text-zinc-600'>CAP</span>
-          <span className='text-sm font-medium text-zinc-500'>
-            {userData.zipCode}
-          </span>
+          <span className='text-sm font-medium text-zinc-500'>{userData.zipCode}</span>
 
           <span className='text-sm font-semibold text-zinc-600'>Comune</span>
-          <span className='text-sm font-medium text-zinc-500'>
-            {userData.city}
-          </span>
+          <span className='text-sm font-medium text-zinc-500'>{userData.city}</span>
 
           <span className='text-sm font-semibold text-zinc-600'>Provincia</span>
-          <span className='text-sm font-medium text-zinc-500'>
-            {userData.subdivision.name}
-          </span>
+          <span className='text-sm font-medium text-zinc-500'>{userData.subdivision.name}</span>
 
           <span className='text-sm font-semibold text-zinc-600'>Stato</span>
-          <span className='text-sm font-medium text-zinc-500'>
-            {userData.country.name}
-          </span>
+          <span className='text-sm font-medium text-zinc-500'>{userData.country.name}</span>
 
           <span className='text-sm font-semibold text-zinc-600'>Sesso</span>
-          <span className='text-sm font-medium text-zinc-500'>
-            {userData.gender}
-          </span>
+          <span className='text-sm font-medium text-zinc-500'>{userData.gender}</span>
 
           <span className='text-sm font-semibold text-zinc-600'>Lingue</span>
-          <span className='text-sm font-medium text-zinc-500'>
-            {languagesString}
-          </span>
+          <span className='text-sm font-medium text-zinc-500'>{languagesString}</span>
         </div>
       </div>
       <div className='bg-white py-8 px-6 rounded-2xl'>

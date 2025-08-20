@@ -1,9 +1,10 @@
 import { CalendarAvailability } from '@/lib/types';
 import { format } from 'date-fns';
 
-export default function Event({ event }: { event: CalendarAvailability }) {
-  const start =
-    event.start instanceof Date ? format(event.start, 'HH:mm') : '00:00';
+type EventProps = { event: CalendarAvailability };
+
+export default function Event({ event }: EventProps) {
+  const start = event.start instanceof Date ? format(event.start, 'HH:mm') : '00:00';
   const end = event.end instanceof Date ? format(event.end, 'HH:mm') : '00:00';
 
   return (

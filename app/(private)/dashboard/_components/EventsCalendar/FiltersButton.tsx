@@ -7,11 +7,11 @@ import { useState, useTransition } from 'react';
 import { cn } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
 import { EVENTS_STATUS, EventStatus } from '@/lib/constants';
-import VenueSelect from '@/app/(private)/_components/filters/mobile/VenueSelect';
-import ArtistSelect from '@/app/(private)/_components/filters/mobile/ArtistSelect';
+import VenueSelect from '@/app/(private)/_components/filters/VenueSelect';
+import ArtistSelect from '@/app/(private)/_components/filters/ArtistSelect';
 import { Checkbox } from '@/components/ui/checkbox';
 import ResponsivePopover from '@/app/_components/ResponsivePopover';
-import EventStatusBadge from '@/app/(private)/_components/Badges/EventStatusBadge';
+import EventStatusBadge from '@/app/(private)/_components/badges/EventStatusBadge';
 
 type FiltersButtonProps = {
   filters: EventsCalendarFilters;
@@ -24,7 +24,7 @@ export function FiltersButton({ filters, artists, venues }: FiltersButtonProps) 
   const [open, setOpen] = useState<boolean>(false);
   const [isPending, startTransition] = useTransition();
 
-  const active = Boolean(filters.artistIds && filters.venueIds && filters.status);
+  const active = Boolean(filters.artistIds && filters.venueIds && filters.status.length);
 
   const [artistIds, setArtistIds] = useState<string[]>(filters.artistIds || []);
   const [venueIds, setVenueIds] = useState<string[]>(filters.venueIds || []);

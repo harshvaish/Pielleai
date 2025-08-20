@@ -6,9 +6,9 @@ import { ArtistManagerSelectData, ArtistSelectData, EventsTableFilters, VenueSel
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import ResponsivePopover from '@/app/_components/ResponsivePopover';
-import ArtistSelect from '@/app/(private)/_components/filters/mobile/ArtistSelect';
-import ArtistManagerSelect from '@/app/(private)/_components/filters/mobile/ArtistManagerSelect';
-import VenueSelect from '@/app/(private)/_components/filters/mobile/VenueSelect';
+import ArtistSelect from '@/app/(private)/_components/filters/ArtistSelect';
+import ArtistManagerSelect from '@/app/(private)/_components/filters/ArtistManagerSelect';
+import VenueSelect from '@/app/(private)/_components/filters/VenueSelect';
 
 type FiltersButtonProps = {
   filters: EventsTableFilters;
@@ -27,7 +27,7 @@ export default function FiltersButton({ filters, artists, artistManagers, venues
   const [artistManagerIds, setArtistManagerIds] = useState<string[]>(filters.artistManagerIds || []);
   const [venueIds, setVenueIds] = useState<string[]>(filters.venueIds || []);
 
-  const active = Boolean(filters.artistIds && filters.artistManagerIds && filters.venueIds);
+  const active = Boolean(filters.artistIds.length && filters.artistManagerIds.length && filters.venueIds.length);
 
   const resetHandler = () => {
     setArtistIds([]);

@@ -1,59 +1,201 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { useMediaQuery } from '@/lib/hooks/useMediaQuery';
-import { Search } from 'lucide-react';
+import { ListFilter, X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useTransition } from 'react';
+import { useState, useTransition } from 'react';
 import { VenueManagerSelectData, VenuesTableFilters } from '@/lib/types';
-import FiltersDrawer from './mobile/FiltersDrawer';
+import ResponsivePopover from '@/app/_components/ResponsivePopover';
+import { Input } from '@/components/ui/input';
+import VenueManagerSelect from '@/app/(private)/_components/filters/VenueManagerSelect';
+import VenueTypeSelect from '@/app/(private)/_components/filters/VenueTypeSelect';
 
-export default function FiltersButton({
-  filters,
-  showFilters,
-  venueManagers,
-}: {
+type FiltersButtonProps = {
   filters: VenuesTableFilters;
-  showFilters: boolean;
   venueManagers: VenueManagerSelectData[];
-}) {
-  const router = useRouter();
-  const [isPending, startTransition] = useTransition();
-  const isDesktop = useMediaQuery('(min-width: 768px)');
+};
 
-  const onClick = () => {
+export default function FiltersButton({ filters, venueManagers }: FiltersButtonProps) {
+  const router = useRouter();
+  const [open, setOpen] = useState<boolean>(false);
+  const [isPending, startTransition] = useTransition();
+
+  const active = Boolean(filters.name || filters.company || filters.taxCode || filters.address || filters.types.length || filters.managerIds.length || filters.capacity);
+
+  const [name, setName] = useState<string>(filters.name || '');
+  const [company, setcompany] = useState<string>(filters.company || '');
+  const [taxCode, setTaxCode] = useState<string>(filters.taxCode || '');
+  const [address, setAddress] = useState<string>(filters.address || '');
+  const [types, setTypes] = useState<string[]>(filters.types || []);
+  const [managerIds, setManagerIds] = useState<string[]>(filters.managerIds || []);
+  const [capacity, setCapacity] = useState<string>(filters.capacity || '');
+
+  const resetHandler = () => {
+    setName('');
+    setcompany('');
+    setTaxCode('');
+    setAddress('');
+    setTypes([]);
+    setManagerIds([]);
+    setCapacity('');
+  };
+
+  const submitHandler = async () => {
     const params = new URLSearchParams();
 
-    if (showFilters) {
-      params.delete('showFilters');
+    if (name.trim().length > 0) {
+      params.set('name', name.trim());
     } else {
-      params.set('showFilters', 'true');
+      params.delete('name');
     }
 
-    // Redirect to current route with new query params
+    if (company.trim().length > 0) {
+      params.set('company', company.trim());
+    } else {
+      params.delete('company');
+    }
+
+    if (taxCode.trim().length > 0) {
+      params.set('taxCode', taxCode.trim());
+    } else {
+      params.delete('taxCode');
+    }
+
+    if (types.length > 0) {
+      params.set('type', types.join(','));
+    } else {
+      params.delete('type');
+    }
+
+    if (managerIds.length > 0) {
+      params.set('manager', managerIds.join(','));
+    } else {
+      params.delete('manager');
+    }
+
+    if (capacity.trim().length > 0) {
+      params.set('capacity', capacity.trim());
+    } else {
+      params.delete('capacity');
+    }
+
+    params.set('page', '1');
+
     startTransition(() => {
       router.replace(`${window.location.pathname}?${params.toString()}`);
+      setOpen(false);
     });
   };
 
-  if (isDesktop)
-    return (
-      <Button
-        onClick={onClick}
-        disabled={isPending}
-        variant='secondary'
-        size='sm'
-        data-pending={isPending ? true : null}
-      >
-        <Search />
-        {showFilters ? 'Nascondi ricerca' : 'Mostra ricerca'}
-      </Button>
-    );
-
   return (
-    <FiltersDrawer
-      filters={filters}
-      venueManagers={venueManagers}
-    />
+    <ResponsivePopover
+      open={open}
+      onOpenChange={setOpen}
+      title='Filtri'
+      description='Inserisci i dati di tuo interesse per vedere la tabella fitrata.'
+      trigger={
+        <Button
+          disabled={isPending}
+          variant={active ? 'secondary' : 'outline'}
+          size='sm'
+        >
+          <ListFilter />
+          Filtri
+        </Button>
+      }
+    >
+      <div className='py-4 space-y-4'>
+        <div className='grid sm:grid-cols-2 gap-4'>
+          <div className='flex flex-col'>
+            <div className='text-sm font-semibold mb-2'>Nome</div>
+            <Input
+              placeholder='La Madunina'
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+            />
+          </div>
+
+          <div className='flex flex-col'>
+            <div className='text-sm font-semibold mb-2'>Ragione sociale</div>
+            <Input
+              type='company'
+              placeholder='Milano Ovest'
+              value={company}
+              onChange={(e) => setcompany(e.target.value)}
+            />
+          </div>
+        </div>
+
+        <div className='grid sm:grid-cols-2 gap-4'>
+          <div className='flex flex-col'>
+            <div className='text-sm font-semibold mb-2'>Partita IVA</div>
+            <Input
+              placeholder='0123456789'
+              value={taxCode}
+              onChange={(e) => setTaxCode(e.target.value)}
+            />
+          </div>
+
+          <div className='flex flex-col'>
+            <div className='text-sm font-semibold mb-2'>Indirizzo</div>
+            <Input
+              placeholder='Via Duomo 1'
+              value={address}
+              onChange={(e) => setAddress(e.target.value)}
+            />
+          </div>
+        </div>
+
+        <div className='grid sm:grid-cols-2 gap-4'>
+          <div className='flex flex-col'>
+            <div className='text-sm font-semibold mb-2'>Tipologia</div>
+            <VenueTypeSelect
+              initialValue={types}
+              onConfirm={setTypes}
+            />
+          </div>
+
+          <div className='flex flex-col'>
+            <div className='text-sm font-semibold mb-2'>Capienza minima</div>
+            <Input
+              type='number'
+              min={0}
+              step={1}
+              placeholder='1000'
+              value={capacity}
+              onChange={(e) => setCapacity(e.target.value)}
+            />
+          </div>
+        </div>
+
+        <div className='flex flex-col'>
+          <div className='text-sm font-semibold mb-2'>Manager</div>
+          <VenueManagerSelect
+            initialValue={managerIds}
+            venueManagers={venueManagers}
+            onConfirm={setManagerIds}
+          />
+        </div>
+
+        <div className='grid grid-cols-2 gap-4'>
+          <Button
+            variant='ghost'
+            size='sm'
+            className='text-destructive'
+            onClick={resetHandler}
+          >
+            <X />
+            Pulisci
+          </Button>
+          <Button
+            size='sm'
+            disabled={isPending}
+            onClick={submitHandler}
+          >
+            {isPending ? 'Filtro...' : 'Conferma'}
+          </Button>
+        </div>
+      </div>
+    </ResponsivePopover>
   );
 }

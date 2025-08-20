@@ -1,7 +1,9 @@
 import { TabsContent } from '@/components/ui/tabs';
 import AvailabilitiesCalendar from '../AvailabilitiesCalendar/AvailabilitiesCalendar';
 
-export default function AvailabilitiesTab({ tabValue }: { tabValue: string }) {
+type AvailabilitiesTabProps = { tabValue: string };
+
+export default function AvailabilitiesTab({ tabValue }: AvailabilitiesTabProps) {
   return (
     <TabsContent
       value={tabValue}

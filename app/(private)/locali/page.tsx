@@ -1,23 +1,17 @@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { getCountries } from '@/lib/data/get-countries';
-import { notFound } from 'next/navigation';
 import { TablePagination } from '../_components/form/TablePagination';
-import UserBadge from '../_components/Badges/UserBadge';
-import FilterInput from '../_components/filters/desktop/FilterInput';
+import UserBadge from '../_components/badges/UserBadge';
 import { getVenueManagers } from '@/lib/data/venue-managers/get-venue-managers';
 import { getPaginatedVenues } from '@/lib/data/venues/get-paginated-venues';
-import ManagersBadge from '../_components/Badges/ManagersBadge';
-import VenueTypeBadge from '../_components/Badges/VenueTypeBadge';
-import SearchVenueTypeSelect from '../_components/filters/desktop/VenueTypeFilter';
+import ManagersBadge from '../_components/badges/ManagersBadge';
+import VenueTypeBadge from '../_components/badges/VenueTypeBadge';
 import { VenueType } from '@/lib/constants';
-import SearchVenueManagerSelect from '../_components/filters/desktop/VenueManagerFilter';
 import { VenuesTableFilters } from '@/lib/types';
 import FiltersButton from './_components/filters/FiltersButton';
 import CreateButton from './_components/create/CreateButton';
 
-export default async function VenuesPage({
-  searchParams,
-}: {
+type VenuesPageProps = {
   searchParams?: Promise<{
     page?: string;
     showFilters?: string;
@@ -29,11 +23,12 @@ export default async function VenuesPage({
     manager?: string;
     capacity?: string;
   }>;
-}) {
+};
+
+export default async function VenuesPage({ searchParams }: VenuesPageProps) {
   const sp = await searchParams;
 
   const currentPage = Number(sp?.page ?? '1');
-  const showFilters = sp?.showFilters === 'true';
 
   const filters: VenuesTableFilters = {
     currentPage: currentPage,
@@ -46,23 +41,18 @@ export default async function VenuesPage({
     capacity: sp?.capacity || '',
   };
 
-  const [{ data: venues, totalPages }, countries, venueManagers] = await Promise.all([getPaginatedVenues(filters), getCountries(), getVenueManagers()]).catch((error) => {
-    console.error('❌ Error fetching:', error);
-    notFound();
-  });
+  const [{ data: venues, totalPages }, countries, venueManagers] = await Promise.all([getPaginatedVenues(filters), getCountries(), getVenueManagers()]);
 
   return (
     <div className='h-full grid grid-rows-[min-content_1fr_min-content] gap-4'>
       <div className='md:flex justify-between items-center gap-2'>
         <h1 className='text-2xl font-bold'>Locali</h1>
         <div className='flex items-center gap-2 md:gap-4 mt-2 md:mt-0'>
-          {(venues.length > 0 || showFilters) && (
-            <FiltersButton
-              filters={filters}
-              showFilters={showFilters}
-              venueManagers={venueManagers}
-            />
-          )}
+          <FiltersButton
+            filters={filters}
+            venueManagers={venueManagers}
+          />
+
           <CreateButton
             countries={countries}
             venueManagers={venueManagers}
@@ -74,71 +64,13 @@ export default async function VenuesPage({
         <Table className='w-full'>
           <TableHeader className='bg-zinc-50'>
             <TableRow>
-              <TableHead>
-                <div>Nome</div>
-                <div className='hidden md:block'>
-                  {showFilters && (
-                    <FilterInput
-                      paramKey='name'
-                      defaultValue={filters.name}
-                    />
-                  )}
-                </div>
-              </TableHead>
-              <TableHead>
-                <div>Ragione sociale</div>
-                <div className='hidden md:block'>
-                  {showFilters && (
-                    <FilterInput
-                      paramKey='company'
-                      defaultValue={filters.company}
-                    />
-                  )}
-                </div>
-              </TableHead>
-              <TableHead>
-                <div>Partita IVA</div>
-                <div className='hidden md:block'>
-                  {showFilters && (
-                    <FilterInput
-                      paramKey='taxCode'
-                      defaultValue={filters.taxCode}
-                    />
-                  )}
-                </div>
-              </TableHead>
-              <TableHead>
-                <div>Indirizzo</div>
-                <div className='hidden md:block'>
-                  {showFilters && (
-                    <FilterInput
-                      paramKey='address'
-                      defaultValue={filters.address}
-                    />
-                  )}
-                </div>
-              </TableHead>
-              <TableHead>
-                <div>Tipologia</div>
-                <div className='hidden md:block'>{showFilters && <SearchVenueTypeSelect />}</div>
-              </TableHead>
-              <TableHead>
-                <div>Promoter</div>
-                <div className='hidden md:block'>{showFilters && <SearchVenueManagerSelect venueManagers={venueManagers} />}</div>
-              </TableHead>
-              <TableHead>
-                <div>Capienza</div>
-                <div className='hidden md:block'>
-                  {showFilters && (
-                    <FilterInput
-                      paramKey='capacity'
-                      defaultValue={filters.capacity}
-                      type='number'
-                      placeholder='Valore minimo'
-                    />
-                  )}
-                </div>
-              </TableHead>
+              <TableHead>Nome</TableHead>
+              <TableHead>Ragione sociale</TableHead>
+              <TableHead>Partita IVA</TableHead>
+              <TableHead>Indirizzo</TableHead>
+              <TableHead>Tipologia</TableHead>
+              <TableHead>Promoter</TableHead>
+              <TableHead>Capienza</TableHead>
             </TableRow>
           </TableHeader>
 

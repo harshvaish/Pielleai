@@ -1,5 +1,5 @@
-import TourManagerBadge from '@/app/(private)/_components/Badges/TourManagerBadge';
-import UserBadge from '@/app/(private)/_components/Badges/UserBadge';
+import TourManagerBadge from '@/app/(private)/_components/badges/TourManagerBadge';
+import UserBadge from '@/app/(private)/_components/badges/UserBadge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { TabsContent } from '@/components/ui/tabs';
 import { ArtistListData, ArtistManagerData } from '@/lib/types';

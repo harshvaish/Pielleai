@@ -4,9 +4,9 @@ import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { venueManagerFormSchema, VenueManagerFormSchema, venueManagerS1FormSchema, venueManagerS2FormSchema } from '@/lib/validation/venueManagerFormSchema';
 import { useState } from 'react';
-import StepOne from './StepOne';
+import StepOne from '../form/StepOne';
 import { toast } from 'sonner';
-import StepTwo from './StepTwo';
+import StepTwo from '../form/StepTwo';
 import { ArrowLeft } from 'lucide-react';
 import { Country, Language } from '@/lib/types';
 import StepIndicator from '@/app/(private)/_components/form/StepIndicator';
@@ -24,9 +24,11 @@ function getFormFieldsForStep(step: number): Array<keyof VenueManagerFormSchema>
   return [];
 }
 
-export default function CreateVenueManagerForm({ languages, countries, closeDialog }: { languages: Language[]; countries: Country[]; closeDialog: () => void }) {
+type CreateVenueManagerFormProps = { languages: Language[]; countries: Country[]; closeDialog: () => void };
+
+export default function CreateVenueManagerForm({ languages, countries, closeDialog }: CreateVenueManagerFormProps) {
   const [step, setStep] = useState<number>(1);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(false);
   const methods = useForm({
     resolver: zodResolver(venueManagerFormSchema),
     defaultValues: {
@@ -63,7 +65,7 @@ export default function CreateVenueManagerForm({ languages, countries, closeDial
   const onPrev = () => setStep((prev) => prev - 1);
 
   const onSubmit = async (data: VenueManagerFormSchema) => {
-    setIsLoading(true);
+    setLoading(true);
     const response = await createVenueManager(data);
 
     if (response.success) {
@@ -74,7 +76,7 @@ export default function CreateVenueManagerForm({ languages, countries, closeDial
       toast.error(response.message);
     }
 
-    setIsLoading(false);
+    setLoading(false);
   };
 
   return (
@@ -139,10 +141,10 @@ export default function CreateVenueManagerForm({ languages, countries, closeDial
               ) : (
                 <Button
                   type='submit'
-                  disabled={isLoading}
+                  disabled={loading}
                   className='w-full md:w-auto'
                 >
-                  {isLoading ? 'Creazione utente...' : 'Crea utente'}
+                  {loading ? 'Creazione utente...' : 'Crea utente'}
                 </Button>
               )}
             </div>

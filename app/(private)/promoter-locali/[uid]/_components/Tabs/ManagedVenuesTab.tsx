@@ -1,25 +1,15 @@
-import UserBadge from '@/app/(private)/_components/Badges/UserBadge';
-import VenueTypeBadge from '@/app/(private)/_components/Badges/VenueTypeBadge';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
+import UserBadge from '@/app/(private)/_components/badges/UserBadge';
+import VenueTypeBadge from '@/app/(private)/_components/badges/VenueTypeBadge';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { TabsContent } from '@/components/ui/tabs';
 import { VenueListData, VenueManagerData } from '@/lib/types';
 import RemoveManagedVenueButton from '../RemoveManagedVenueButton';
 
-export default function ManagedVenuesTab({
-  tabValue,
-  data,
-}: {
-  tabValue: string;
-  data: VenueManagerData<VenueListData>;
-}) {
+type ManagedVenuesTabProps = { tabValue: string; data: VenueManagerData<VenueListData> };
+
+export default function ManagedVenuesTab({ tabValue, data }: ManagedVenuesTabProps) {
   const { venues } = data;
+
   return (
     <TabsContent value={tabValue}>
       {venues.length > 0 ? (
@@ -75,9 +65,7 @@ export default function ManagedVenuesTab({
       ) : (
         <section className='max-h-80 flex flex-col justify-center items-center bg-white rounded-2xl p-8'>
           <h2 className='text-base font-bold'>Nessun locale</h2>
-          <div className='text-sm font-medium text-zinc-400'>
-            Aggiungine uno per vederlo nella lista
-          </div>
+          <div className='text-sm font-medium text-zinc-400'>Aggiungine uno per vederlo nella lista</div>
         </section>
       )}
     </TabsContent>

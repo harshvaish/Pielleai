@@ -11,25 +11,19 @@ import { Badge } from '@/components/ui/badge';
 import { getLanguages } from '@/lib/data/get-languages';
 import { getCountries } from '@/lib/data/get-countries';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import PersonalDataTab from './_components/Tabs/PersonalDataTab';
-import StatusBadge from '../../_components/Badges/StatusBadge';
-import NotesSection from '../../_components/Notes/NotesSection';
+import PersonalDataTab from './_components/tabs/PersonalDataTab';
+import StatusBadge from '../../_components/badges/StatusBadge';
+import NotesSection from '../../_components/notes/NotesSection';
 import { getVenueManager } from '@/lib/data/venue-managers/get-venue-manager';
 import ToggleBlockButton from '../../_components/ToggleBlockButton';
-import EditVenueManagerButton from './_components/EditProfile/EditVenueManagerButton';
-import ManagedVenuesTab from './_components/Tabs/ManagedVenuesTab';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
+import UpdateButton from './_components/update/UpdateButton';
+import ManagedVenuesTab from './_components/tabs/ManagedVenuesTab';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Ellipsis } from 'lucide-react';
 
-export default async function VenueManagerDetailPage({
-  params,
-}: {
-  params: Promise<{ uid: string }>;
-}) {
+type VenueManagerDetailPageProps = { params: Promise<{ uid: string }> };
+
+export default async function VenueManagerDetailPage({ params }: VenueManagerDetailPageProps) {
   const p = await params;
   const { uid } = p;
 
@@ -48,14 +42,7 @@ export default async function VenueManagerDetailPage({
     redirect('/accedi');
   }
 
-  const [userData, languages, countries] = await Promise.all([
-    getVenueManager(uid),
-    getLanguages(),
-    getCountries(),
-  ]).catch((error) => {
-    console.error('❌ Error fetching:', error);
-    notFound();
-  });
+  const [userData, languages, countries] = await Promise.all([getVenueManager(uid), getLanguages(), getCountries()]);
 
   if (!userData) notFound();
 
@@ -75,7 +62,7 @@ export default async function VenueManagerDetailPage({
             <Ellipsis />
           </PopoverTrigger>
           <PopoverContent className='w-48 flex flex-col justify-start lg:hidden'>
-            <EditVenueManagerButton
+            <UpdateButton
               userData={userData}
               languages={languages}
               countries={countries}
@@ -92,7 +79,7 @@ export default async function VenueManagerDetailPage({
             userId={userData.id}
             userInitialStatus={userData.status}
           />
-          <EditVenueManagerButton
+          <UpdateButton
             userData={userData}
             languages={languages}
             countries={countries}
@@ -110,10 +97,7 @@ export default async function VenueManagerDetailPage({
                 alt='Icona profilo promoter locali'
                 width={60}
                 height={60}
-                className={cn(
-                  'shrink-0 w-[60px] h-[60px] rounded-full object-cover',
-                  isDisabled ? 'grayscale' : ''
-                )}
+                className={cn('shrink-0 w-[60px] h-[60px] rounded-full object-cover', isDisabled ? 'grayscale' : '')}
               />
 
               <div className='flex flex-col gap-1.5'>
@@ -121,40 +105,24 @@ export default async function VenueManagerDetailPage({
                   {userData.name} {userData.surname}
                 </div>
                 <div className='flex items-center gap-2'>
-                  <Badge variant={isDisabled ? 'disabled' : 'yellow'}>
-                    Promoter locali
-                  </Badge>
+                  <Badge variant={isDisabled ? 'disabled' : 'yellow'}>Promoter locali</Badge>
                   {isDisabled && <StatusBadge status='disabled' />}
                 </div>
               </div>
             </div>
 
             <div className='max-w-full flex flex-col lg:items-end gap-0.5 overflow-x-auto'>
-              <div className='flex flex-col lg:flex-row text-sm font-semibold text-zinc-500 whitespace-nowrap'>
-                ID: {userData.id}
-              </div>
-              <div className='text-xs font-semibold text-zinc-400'>
-                Data di creazione{' '}
-                {format(userData.createdAt, 'dd/MM/yyyy, HH:mm')}
-              </div>
-              <div className='text-xs font-semibold text-zinc-400'>
-                Data di aggiornamento{' '}
-                {format(userData.updatedAt, 'dd/MM/yyyy, HH:mm')}
-              </div>
+              <div className='flex flex-col lg:flex-row text-sm font-semibold text-zinc-500 whitespace-nowrap'>ID: {userData.id}</div>
+              <div className='text-xs font-semibold text-zinc-400'>Data di creazione {format(userData.createdAt, 'dd/MM/yyyy, HH:mm')}</div>
+              <div className='text-xs font-semibold text-zinc-400'>Data di aggiornamento {format(userData.updatedAt, 'dd/MM/yyyy, HH:mm')}</div>
             </div>
           </div>
           <Separator className='my-6' />
           <div className='grid grid-cols-[minmax(200px,max-content)_max-content] gap-2 lg:gap-6 overflow-x-auto'>
             <span className='text-sm font-semibold text-zinc-600'>Email</span>
-            <span className='text-sm font-medium text-zinc-500'>
-              {userData.email}
-            </span>
-            <span className='text-sm font-semibold text-zinc-600'>
-              Numero di telefono
-            </span>
-            <span className='text-sm font-medium text-zinc-500'>
-              {userData.phone}
-            </span>
+            <span className='text-sm font-medium text-zinc-500'>{userData.email}</span>
+            <span className='text-sm font-semibold text-zinc-600'>Numero di telefono</span>
+            <span className='text-sm font-medium text-zinc-500'>{userData.phone}</span>
           </div>
         </section>
 
@@ -166,23 +134,21 @@ export default async function VenueManagerDetailPage({
         />
       </div>
 
-      <Tabs defaultValue='managed-venues'>
+      <Tabs defaultValue='a'>
         <div className='flex justify-between items-center mb-2 overflow-hidden'>
-          <span className='hidden lg:block text-xl font-semibold'>
-            Dettagli
-          </span>
+          <span className='hidden lg:block text-xl font-semibold'>Dettagli</span>
           <TabsList className='w-full lg:max-w-max justify-start gap-4 bg-white p-1 rounded-xl overflow-x-auto'>
-            <TabsTrigger value='managed-venues'>Locali gestiti</TabsTrigger>
-            <TabsTrigger value='personal-data'>Dati personali</TabsTrigger>
+            <TabsTrigger value='a'>Locali gestiti</TabsTrigger>
+            <TabsTrigger value='b'>Dati personali</TabsTrigger>
           </TabsList>
         </div>
 
         <ManagedVenuesTab
-          tabValue='managed-venues'
+          tabValue='a'
           data={userData}
         />
         <PersonalDataTab
-          tabValue='personal-data'
+          tabValue='b'
           userData={userData}
         />
       </Tabs>

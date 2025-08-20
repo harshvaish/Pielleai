@@ -3,10 +3,10 @@ import { getPaginatedArtistManagers } from '@/lib/data/artist-managers/get-pagin
 import { getLanguages } from '@/lib/data/get-languages';
 import { getCountries } from '@/lib/data/get-countries';
 import { TablePagination } from '../_components/form/TablePagination';
-import UserBadge from '../_components/Badges/UserBadge';
-import StatusBadge from '../_components/Badges/StatusBadge';
+import UserBadge from '../_components/badges/UserBadge';
+import StatusBadge from '../_components/badges/StatusBadge';
 import { NEW_USER_TIME } from '@/lib/constants';
-import ArtistsBadge from '../_components/Badges/ArtistsBadge';
+import ArtistsBadge from '../_components/badges/ArtistsBadge';
 import { getArtists } from '@/lib/data/artists/get-artists';
 import FiltersButton from './_components/filters/FiltersButton';
 import { ArtistManagersTableFilters } from '@/lib/types';

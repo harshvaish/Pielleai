@@ -5,35 +5,31 @@ import Image from 'next/image';
 import { notFound, redirect } from 'next/navigation';
 import { headers } from 'next/headers';
 import { auth } from '@/lib/auth';
-import NotesSection from '../../_components/Notes/NotesSection';
+import NotesSection from '../../_components/notes/NotesSection';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { getLanguages } from '@/lib/data/get-languages';
 import { getCountries } from '@/lib/data/get-countries';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import PersonalDataTab from './_components/Tabs/PersonalDataTab';
-import StatusBadge from '../../_components/Badges/StatusBadge';
+import PersonalDataTab from './_components/tabs/PersonalDataTab';
+import StatusBadge from '../../_components/badges/StatusBadge';
 import { getArtist } from '@/lib/data/artists/get-artist';
 import { getArtistNotes } from '@/lib/data/notes/get-artist-notes';
-import BillingDataTab from '../../_components/Tabs/BillingDataTab';
-import SocialDataTab from '../../_components/Tabs/SocialDataTab';
+import BillingDataTab from '../../_components/tabs/BillingDataTab';
+import SocialDataTab from '../../_components/tabs/SocialDataTab';
 import ToggleArtistBlockButton from './_components/ToggleArtistBlockButton';
 import { getZones } from '@/lib/data/artists/get-zones';
 import { getArtistManagers } from '@/lib/data/artist-managers/get-artist-managers';
-import EditArtistButton from './_components/EditProfile/EditArtistButton';
-import AvailabilitiesTab from './_components/Tabs/AvailabilitiesTab';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
+import EditArtistButton from './_components/update/EditArtistButton';
+import AvailabilitiesTab from './_components/tabs/AvailabilitiesTab';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Ellipsis } from 'lucide-react';
 
-export default async function ArtistDetailPage({
-  params,
-}: {
+type ArtistDetailPageProps = {
   params: Promise<{ slug: string }>;
-}) {
+};
+
+export default async function ArtistDetailPage({ params }: ArtistDetailPageProps) {
   const p = await params;
   const { slug } = p;
 
@@ -52,17 +48,7 @@ export default async function ArtistDetailPage({
     redirect('/accedi');
   }
 
-  const [userData, languages, countries, zones, artistManagers] =
-    await Promise.all([
-      getArtist(slug),
-      getLanguages(),
-      getCountries(),
-      getZones(),
-      getArtistManagers(),
-    ]).catch((error) => {
-      console.error('❌ Error fetching:', error);
-      notFound();
-    });
+  const [userData, languages, countries, zones, artistManagers] = await Promise.all([getArtist(slug), getLanguages(), getCountries(), getZones(), getArtistManagers()]);
 
   if (!userData) notFound();
 
@@ -121,10 +107,7 @@ export default async function ArtistDetailPage({
                 alt='Icona profilo artista'
                 width={60}
                 height={60}
-                className={cn(
-                  'shrink-0 w-[60px] h-[60px] rounded-full object-cover',
-                  isDisabled ? 'grayscale' : ''
-                )}
+                className={cn('shrink-0 w-[60px] h-[60px] rounded-full object-cover', isDisabled ? 'grayscale' : '')}
               />
 
               <div className='flex flex-col gap-1.5'>
@@ -132,52 +115,28 @@ export default async function ArtistDetailPage({
                   {userData.name} {userData.surname}
                 </div>
                 <div className='flex items-center gap-2'>
-                  <Badge variant={isDisabled ? 'disabled' : 'orange'}>
-                    Artista
-                  </Badge>
+                  <Badge variant={isDisabled ? 'disabled' : 'orange'}>Artista</Badge>
                   {isDisabled && <StatusBadge status='disabled' />}
                 </div>
               </div>
             </div>
 
             <div className='max-w-full flex flex-col lg:items-end gap-0.5 overflow-x-auto'>
-              <div className='flex flex-col lg:flex-row text-sm font-semibold text-zinc-500 whitespace-nowrap'>
-                ID: {userData.id}
-              </div>
-              <div className='text-xs font-semibold text-zinc-400'>
-                Data di creazione{' '}
-                {format(userData.createdAt, 'dd/MM/yyyy, HH:mm')}
-              </div>
-              <div className='text-xs font-semibold text-zinc-400'>
-                Data di aggiornamento{' '}
-                {format(userData.updatedAt, 'dd/MM/yyyy, HH:mm')}
-              </div>
+              <div className='flex flex-col lg:flex-row text-sm font-semibold text-zinc-500 whitespace-nowrap'>ID: {userData.id}</div>
+              <div className='text-xs font-semibold text-zinc-400'>Data di creazione {format(userData.createdAt, 'dd/MM/yyyy, HH:mm')}</div>
+              <div className='text-xs font-semibold text-zinc-400'>Data di aggiornamento {format(userData.updatedAt, 'dd/MM/yyyy, HH:mm')}</div>
             </div>
           </div>
           <Separator className='my-6' />
           <div className='grid grid-cols-[minmax(200px,max-content)_max-content] gap-2 lg:gap-6 overflow-x-auto'>
             <span className='text-sm font-semibold text-zinc-600'>Email</span>
-            <span className='text-sm font-medium text-zinc-500'>
-              {userData.email}
-            </span>
-            <span className='text-sm font-semibold text-zinc-600'>
-              Numero di telefono
-            </span>
-            <span className='text-sm font-medium text-zinc-500'>
-              {userData.phone}
-            </span>
-            <span className='text-sm font-semibold text-zinc-600'>
-              Indirizzo PEC
-            </span>
-            <span className='text-sm font-medium text-zinc-500'>
-              {userData.billingPec}
-            </span>
-            <span className='text-sm font-semibold text-zinc-600'>
-              Ragione sociale
-            </span>
-            <span className='text-sm font-medium text-zinc-500'>
-              {userData.company}
-            </span>
+            <span className='text-sm font-medium text-zinc-500'>{userData.email}</span>
+            <span className='text-sm font-semibold text-zinc-600'>Numero di telefono</span>
+            <span className='text-sm font-medium text-zinc-500'>{userData.phone}</span>
+            <span className='text-sm font-semibold text-zinc-600'>Indirizzo PEC</span>
+            <span className='text-sm font-medium text-zinc-500'>{userData.billingPec}</span>
+            <span className='text-sm font-semibold text-zinc-600'>Ragione sociale</span>
+            <span className='text-sm font-medium text-zinc-500'>{userData.company}</span>
           </div>
         </section>
 
@@ -189,30 +148,28 @@ export default async function ArtistDetailPage({
         />
       </div>
 
-      <Tabs defaultValue='personal-data'>
+      <Tabs defaultValue='a'>
         <div className='flex justify-between items-center mb-2 overflow-hidden'>
-          <span className='hidden lg:block text-xl font-semibold'>
-            Dettagli
-          </span>
+          <span className='hidden lg:block text-xl font-semibold'>Dettagli</span>
           <TabsList className='w-full lg:max-w-max justify-start gap-4 bg-white p-1 rounded-xl overflow-x-auto'>
-            <TabsTrigger value='personal-data'>Dati personali</TabsTrigger>
-            <TabsTrigger value='billing-data'>Dati di fatturazione</TabsTrigger>
-            <TabsTrigger value='availabilities'>Disponibilità</TabsTrigger>
-            <TabsTrigger value='social-data'>Social</TabsTrigger>
+            <TabsTrigger value='a'>Dati personali</TabsTrigger>
+            <TabsTrigger value='b'>Dati di fatturazione</TabsTrigger>
+            <TabsTrigger value='c'>Disponibilità</TabsTrigger>
+            <TabsTrigger value='d'>Social</TabsTrigger>
           </TabsList>
         </div>
 
         <PersonalDataTab
-          tabValue='personal-data'
+          tabValue='a'
           userData={userData}
         />
         <BillingDataTab
-          tabValue='billing-data'
+          tabValue='b'
           data={userData}
         />
-        <AvailabilitiesTab tabValue='availabilities' />
+        <AvailabilitiesTab tabValue='c' />
         <SocialDataTab
-          tabValue='social-data'
+          tabValue='d'
           data={userData}
         />
       </Tabs>

@@ -10,21 +10,18 @@ import { UserStatus } from '@/lib/constants';
 import ConfirmDialog from '@/app/_components/ConfirmDialog';
 import { cn } from '@/lib/utils';
 
-export default function ToggleArtistBlockButton({
-  artistId,
-  initialStatus,
-}: {
+type ToggleArtistBlockButtonProps = {
   artistId: number;
   initialStatus: UserStatus;
-}) {
+};
+
+export default function ToggleArtistBlockButton({ artistId, initialStatus }: ToggleArtistBlockButtonProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
 
   const isActive = initialStatus === 'active';
-  const title = isActive
-    ? "Vuoi archiviare l'artista?"
-    : "Vuoi riattivare l'artista?";
+  const title = isActive ? "Vuoi archiviare l'artista?" : "Vuoi riattivare l'artista?";
   const description = isActive
     ? "L'account verrà archiviato temporaneamente. Tutti i dati saranno conservati in modo sicuro e potrai riattivarlo in qualsiasi momento."
     : "Sei sicuro di voler riattivare questo artista? L'artista potrà essere nuovamente selezionato.";
@@ -48,10 +45,7 @@ export default function ToggleArtistBlockButton({
       <Button
         variant='ghost'
         size='sm'
-        className={cn(
-          'max-w-max',
-          isActive ? 'text-destructive' : 'text-emerald-500'
-        )}
+        className={cn('max-w-max', isActive ? 'text-destructive' : 'text-emerald-500')}
         onClick={() => setIsDialogOpen(true)}
         disabled={isPending}
       >

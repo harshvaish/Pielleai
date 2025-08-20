@@ -3,20 +3,10 @@
 import { PAGINATED_TABLE_ROWS_X_PAGE } from '@/lib/constants';
 import { database } from '@/lib/database/connection';
 import { profiles, users, venues } from '@/lib/database/schema';
-import {
-  VenueManagerTableData,
-  VenueBadgeData,
-  VenueManagersTableFilters,
-} from '@/lib/types';
-import { and, count, eq, ilike, inArray } from 'drizzle-orm';
+import { VenueManagerTableData, VenueBadgeData, VenueManagersTableFilters } from '@/lib/types';
+import { and, count, eq, ilike, inArray, or } from 'drizzle-orm';
 
-export async function getPaginatedVenueManagers({
-  currentPage,
-  fullName,
-  email,
-  phone,
-  venueIds,
-}: VenueManagersTableFilters): Promise<{
+export async function getPaginatedVenueManagers({ currentPage, fullName, email, phone, venueIds }: VenueManagersTableFilters): Promise<{
   data: VenueManagerTableData[];
   totalPages: number;
   currentPage: number;
@@ -34,9 +24,7 @@ export async function getPaginatedVenueManagers({
         .from(venues)
         .where(inArray(venues.id, venueIds.map(Number)));
 
-      venueFilteredManagerIds = [
-        ...new Set(managerResults.map((r) => r.managerProfileId)),
-      ];
+      venueFilteredManagerIds = [...new Set(managerResults.map((r) => r.managerProfileId))];
 
       if (venueFilteredManagerIds.length === 0) {
         return {
@@ -46,6 +34,15 @@ export async function getPaginatedVenueManagers({
         };
       }
     }
+
+    const filters = and(
+      eq(users.role, 'venue-manager'),
+      inArray(users.status, ['active', 'disabled']),
+      fullName ? or(ilike(profiles.name, `%${fullName}%`), ilike(profiles.surname, `%${fullName}%`)) : undefined,
+      email ? ilike(users.email, `%${email}%`) : undefined,
+      phone ? ilike(profiles.phone, `%${phone}%`) : undefined,
+      venueFilteredManagerIds ? inArray(profiles.id, venueFilteredManagerIds) : undefined
+    );
 
     // Get paginated data
     const managersResult = await database
@@ -62,17 +59,7 @@ export async function getPaginatedVenueManagers({
       })
       .from(users)
       .innerJoin(profiles, eq(users.id, profiles.userId))
-      .where(
-        and(
-          eq(users.role, 'venue-manager'),
-          fullName ? ilike(profiles.name, `%${fullName}%`) : undefined,
-          email ? ilike(users.email, `%${email}%`) : undefined,
-          phone ? ilike(profiles.phone, `%${phone}%`) : undefined,
-          venueFilteredManagerIds
-            ? inArray(profiles.id, venueFilteredManagerIds)
-            : undefined
-        )
-      )
+      .where(filters)
       .limit(limit)
       .offset(offset);
 
@@ -91,21 +78,7 @@ export async function getPaginatedVenueManagers({
         .from(venues)
         .where(inArray(venues.managerProfileId, managerProfilesIds)),
 
-      database
-        .select({ userCount: count() })
-        .from(users)
-        .innerJoin(profiles, eq(users.id, profiles.userId))
-        .where(
-          and(
-            eq(users.role, 'venue-manager'),
-            fullName ? ilike(profiles.name, `%${fullName}%`) : undefined,
-            email ? ilike(users.email, `%${email}%`) : undefined,
-            phone ? ilike(profiles.phone, `%${phone}%`) : undefined,
-            venueFilteredManagerIds
-              ? inArray(profiles.id, venueFilteredManagerIds)
-              : undefined
-          )
-        ),
+      database.select({ userCount: count() }).from(users).innerJoin(profiles, eq(users.id, profiles.userId)).where(filters),
     ]);
 
     // Group venues by managerProfileId

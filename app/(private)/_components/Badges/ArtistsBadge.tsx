@@ -1,22 +1,14 @@
 'use client';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { ArtistSelectData } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { ChevronDown } from 'lucide-react';
 import Link from 'next/link';
 import { useState } from 'react';
 
-export default function ArtistsBadge({
-  artists,
-}: {
-  artists: ArtistSelectData[];
-}) {
+export default function ArtistsBadge({ artists }: { artists: ArtistSelectData[] }) {
   const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
   const count = artists.length;
 
@@ -42,22 +34,15 @@ export default function ArtistsBadge({
                 className='w-5 h-5'
               >
                 <AvatarImage src={artist.avatarUrl} />
-                <AvatarFallback>
-                  {artist.stageName.substring(0, 1)}
-                </AvatarFallback>
+                <AvatarFallback>{artist.stageName.substring(0, 1)}</AvatarFallback>
               </Avatar>
             );
           })}
         </div>
-        <span className='text-sm font-semibold text-zinc-700 whitespace-nowrap'>
-          {count} Artisti
-        </span>
+        <span className='text-sm font-semibold text-zinc-700 whitespace-nowrap'>{count} Artisti</span>
         <ChevronDown
           size={16}
-          className={cn(
-            'transition-transform',
-            isDropdownOpen ? 'rotate-180' : ''
-          )}
+          className={cn('transition-transform', isDropdownOpen ? 'rotate-180' : '')}
         />
       </DropdownMenuTrigger>
 
@@ -91,20 +76,8 @@ function ArtistBadge({ artist }: { artist: ArtistSelectData }) {
         <AvatarFallback>{artist.stageName.substring(0, 1)}</AvatarFallback>
       </Avatar>
       <div className='max-w-full overflow-hidden'>
-        <div
-          className={cn(
-            'text-xs font-semibold line-clamp-1 text-ellipsis',
-            isDisabled ? 'text-zinc-400' : 'text-zinc-700'
-          )}
-        >
-          @{artist.stageName}
-        </div>
-        <div
-          className={cn(
-            'text-[10px] font-medium line-clamp-1 text-ellipsis',
-            isDisabled ? 'text-zinc-300' : 'text-zinc-500'
-          )}
-        >
+        <div className={cn('text-xs font-semibold truncate', isDisabled ? 'text-zinc-400' : 'text-zinc-700')}>@{artist.stageName}</div>
+        <div className={cn('text-[10px] font-medium truncate', isDisabled ? 'text-zinc-300' : 'text-zinc-500')}>
           {artist.name} {artist.surname}
         </div>
       </div>

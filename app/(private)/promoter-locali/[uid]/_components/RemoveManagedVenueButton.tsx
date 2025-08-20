@@ -7,18 +7,17 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
-export default function RemoveManagedVenueButton({
-  managerProfileId,
-  venueId,
-}: {
+type RemoveManagedVenueButtonProps = {
   managerProfileId: number;
   venueId: number;
-}) {
+};
+
+export default function RemoveManagedVenueButton({ managerProfileId, venueId }: RemoveManagedVenueButtonProps) {
   const router = useRouter();
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(false);
 
   const onClickHandler = async () => {
-    setIsLoading(true);
+    setLoading(true);
 
     const response = await deleteManagedVenue({ managerProfileId, venueId });
 
@@ -28,7 +27,7 @@ export default function RemoveManagedVenueButton({
     } else {
       toast.error(response.message);
     }
-    setIsLoading(false);
+    setLoading(false);
   };
 
   return (
@@ -38,9 +37,9 @@ export default function RemoveManagedVenueButton({
       size='icon'
       className='text-destructive'
       onClick={onClickHandler}
-      disabled={isLoading}
+      disabled={loading}
     >
-      <CircleMinus className={isLoading ? 'animate-spin' : ''} />
+      <CircleMinus className={loading ? 'animate-spin' : ''} />
     </Button>
   );
 }

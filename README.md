@@ -34,6 +34,7 @@ Always treat user inputs as being in a specific timezone (e.g. Europe/Rome), and
 - check optional values inside schemas (take example in event schema)
 - bottoni pulisci da controllare UI
 - general fetches in the pages: cache and errors?
+- review all availability system and timezones UTC..
 
 - managers possono essere visualizzati anche se non ancora approvati?
 - in tabella no, mettere sezione accetta anche su relativa pgina

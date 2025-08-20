@@ -13,7 +13,7 @@ const styles: Record<EventStatus, { label: string; text: string; bg: string; ico
   'proposed': {
     label: 'Proposto',
     text: 'text-blue-600',
-    bg: 'bg-blue-100',
+    bg: 'bg-blue-50',
     icon: (
       <div className='w-3 h-3 flex justify-center items-center bg-blue-600 rounded-full'>
         <ChevronRight className='size-2 text-white' />
@@ -23,7 +23,7 @@ const styles: Record<EventStatus, { label: string; text: string; bg: string; ico
   'pre-confirmed': {
     label: 'Pre-confermato',
     text: 'text-amber-600',
-    bg: 'bg-amber-100',
+    bg: 'bg-amber-50',
     icon: (
       <div className='w-3 h-3 flex justify-center items-center bg-amber-600 rounded-full'>
         <span className='text-[8px] text-white'>?</span>
@@ -33,7 +33,7 @@ const styles: Record<EventStatus, { label: string; text: string; bg: string; ico
   'confirmed': {
     label: 'Confermato',
     text: 'text-lime-600',
-    bg: 'bg-lime-100',
+    bg: 'bg-lime-50',
     icon: (
       <div className='w-3 h-3 flex justify-center items-center bg-lime-600 rounded-full'>
         <Check className='size-2 text-white' />
@@ -43,7 +43,7 @@ const styles: Record<EventStatus, { label: string; text: string; bg: string; ico
   'conflict': {
     label: 'Conflitto',
     text: 'text-rose-600',
-    bg: 'bg-rose-100',
+    bg: 'bg-rose-50',
     icon: (
       <div className='w-3 h-3 flex justify-center items-center bg-rose-600 rounded-full'>
         <span className='text-[8px] text-white'>!</span>
@@ -53,7 +53,7 @@ const styles: Record<EventStatus, { label: string; text: string; bg: string; ico
   'rejected': {
     label: 'Rifiutato',
     text: 'text-red-600',
-    bg: 'bg-red-100',
+    bg: 'bg-red-50',
     icon: (
       <div className='w-3 h-3 flex justify-center items-center bg-red-600 rounded-full'>
         <X className='size-2 text-white' />

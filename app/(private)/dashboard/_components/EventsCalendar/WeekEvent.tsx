@@ -1,6 +1,6 @@
 'use client';
 
-import EventStatusBadge from '@/app/(private)/_components/Badges/EventStatusBadge';
+import EventStatusBadge from '@/app/(private)/_components/badges/EventStatusBadge';
 import { CalendarEvent } from '@/lib/types';
 import Image from 'next/image';
 

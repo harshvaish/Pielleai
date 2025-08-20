@@ -6,16 +6,7 @@ import { profiles, users, venues } from '@/lib/database/schema';
 import { VenuesTableFilters, VenueTableData } from '@/lib/types';
 import { and, count, eq, gte, ilike, inArray } from 'drizzle-orm';
 
-export async function getPaginatedVenues({
-  currentPage,
-  name,
-  company,
-  taxCode,
-  address,
-  types,
-  managerIds,
-  capacity,
-}: VenuesTableFilters): Promise<{
+export async function getPaginatedVenues({ currentPage, name, company, taxCode, address, types, managerIds, capacity }: VenuesTableFilters): Promise<{
   data: VenueTableData[];
   totalPages: number;
   currentPage: number;
@@ -44,6 +35,16 @@ export async function getPaginatedVenues({
       }
     }
 
+    const filters = and(
+      name ? ilike(venues.name, `%${name}%`) : undefined,
+      company ? ilike(venues.company, `%${company}%`) : undefined,
+      taxCode ? ilike(venues.taxCode, `%${taxCode}%`) : undefined,
+      address ? ilike(venues.address, `%${address}%`) : undefined,
+      types.length > 0 ? inArray(venues.type, types) : undefined,
+      managersFilteredVenueIds ? inArray(venues.id, managersFilteredVenueIds) : undefined,
+      capacity ? gte(venues.capacity, parseInt(capacity)) : undefined
+    );
+
     // Get paginated venues and total count
     const [venuesResult, [{ venueCount }]] = await Promise.all([
       database
@@ -70,37 +71,10 @@ export async function getPaginatedVenues({
         .from(venues)
         .innerJoin(profiles, eq(venues.managerProfileId, profiles.id))
         .innerJoin(users, eq(profiles.userId, users.id))
-        .where(
-          and(
-            name ? ilike(venues.name, `%${name}%`) : undefined,
-            company ? ilike(venues.company, `%${company}%`) : undefined,
-            taxCode ? ilike(venues.taxCode, `%${taxCode}%`) : undefined,
-            address ? ilike(venues.address, `%${address}%`) : undefined,
-            types.length > 0 ? inArray(venues.type, types) : undefined,
-            managersFilteredVenueIds
-              ? inArray(venues.id, managersFilteredVenueIds)
-              : undefined,
-            capacity ? gte(venues.capacity, parseInt(capacity)) : undefined
-          )
-        )
+        .where(filters)
         .limit(limit)
         .offset(offset),
-      database
-        .select({ venueCount: count() })
-        .from(venues)
-        .where(
-          and(
-            name ? ilike(venues.name, `%${name}%`) : undefined,
-            company ? ilike(venues.company, `%${company}%`) : undefined,
-            taxCode ? ilike(venues.taxCode, `%${taxCode}%`) : undefined,
-            address ? ilike(venues.address, `%${address}%`) : undefined,
-            types.length > 0 ? inArray(venues.type, types) : undefined,
-            managersFilteredVenueIds
-              ? inArray(venues.id, managersFilteredVenueIds)
-              : undefined,
-            capacity ? gte(venues.capacity, parseInt(capacity)) : undefined
-          )
-        ),
+      database.select({ venueCount: count() }).from(venues).where(filters),
     ]);
 
     const totalPages = Math.ceil(Number(venueCount) / limit);

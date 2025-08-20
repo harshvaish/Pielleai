@@ -3,10 +3,10 @@
 import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useState } from 'react';
-import StepOne from './StepOne';
-import StepTwo from './StepTwo';
+import StepOne from '../form/StepOne';
+import StepTwo from '../form/StepTwo';
 import { toast } from 'sonner';
-import StepThree from './StepThree';
+import StepThree from '../form/StepThree';
 import { ArrowLeft } from 'lucide-react';
 import { Country, VenueManagerSelectData } from '@/lib/types';
 import StepIndicator from '@/app/(private)/_components/form/StepIndicator';

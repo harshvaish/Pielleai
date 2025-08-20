@@ -6,66 +6,56 @@ import { CALENDAR_VIEWS } from '@/lib/constants';
 import { buildCalendarLabel } from '@/lib/utils';
 import { ToolbarProps } from 'react-big-calendar';
 import { CalendarAvailability } from '@/lib/types';
-import { EditAvailabilitiesButton } from './EditAvailabilitiesButton';
+import { UpdateAvailabilitiesButton } from './UpdateAvailabilitiesButton';
 
-export function Toolbar({
-  date,
-  view,
-  onNavigate,
-  onView,
-}: ToolbarProps<CalendarAvailability, object>) {
+export function Toolbar({ date, view, onNavigate, onView }: ToolbarProps<CalendarAvailability, object>) {
   const label = buildCalendarLabel(date, view);
 
   return (
-    <div className='flex flex-col xl:flex-row justify-between items-center gap-4 mb-4'>
+    <div className='flex flex-col lg:flex-row justify-between xl:items-center gap-4 mb-8'>
       {/* Title & arrows */}
-      <div className='w-full xl:w-auto flex justify-center items-center gap-2'>
-        <div className='hidden md:block text-2xl font-bold capitalize'>
-          {label}
-        </div>
+      <div className='w-full grid grid-cols-[1fr_max-content] items-center gap-2'>
+        <div className='text-lg md:text-2xl font-bold capitalize truncate'>{label}</div>
+
         <div className='flex items-center'>
           <Button
             size='icon'
             variant='ghost'
-            className='w-6 h-6 text-zinc-400 rounded-xl'
+            className='w-8 h-8 text-zinc-500 rounded-md'
             onClick={() => onNavigate('PREV')}
           >
-            <ChevronLeft className='stroke-3' />
+            <ChevronLeft className='size-4 stroke-3' />
           </Button>
-          <div className='grow md:hidden font-semibold capitalize text-center'>
-            {label}
-          </div>
           <Button
             size='icon'
             variant='ghost'
-            className='w-6 h-6 text-zinc-400 rounded-xl'
+            className='w-8 h-8 text-zinc-500 rounded-md'
             onClick={() => onNavigate('NEXT')}
           >
-            <ChevronRight className='stroke-3' />
+            <ChevronRight className='size-4 stroke-3' />
           </Button>
         </div>
       </div>
 
-      {/* view switch */}
-      <div className='max-w-max flex gap-1 bg-zinc-50 p-1 rounded-xl'>
-        {CALENDAR_VIEWS.map((v) => (
-          <Button
-            key={v}
-            size='sm'
-            variant='ghost'
-            onClick={() => onView(v)}
-            className={`py-1.5 px-3 rounded-lg ${
-              view === v
-                ? 'bg-zinc-100 text-zinc-800'
-                : 'bg-transparent text-zinc-600'
-            }`}
-          >
-            {v === 'day' ? 'Giorno' : v === 'week' ? 'Settimana' : 'Mese'}
-          </Button>
-        ))}
-      </div>
+      <div className='flex flex-col sm:flex-row justify-end items-end gap-4'>
+        {/* view switch */}
+        <div className='max-w-max flex gap-1 bg-zinc-50 rounded-xl'>
+          {CALENDAR_VIEWS.map((v) => (
+            <Button
+              key={v}
+              size='sm'
+              variant='ghost'
+              onClick={() => onView(v)}
+              className={`py-1.5 px-3 rounded-lg ${view === v ? 'bg-zinc-100 text-zinc-700' : 'bg-transparent text-zinc-500'}`}
+            >
+              {v === 'day' ? 'Giorno' : v === 'week' ? 'Settimana' : 'Mese'}
+            </Button>
+          ))}
+        </div>
 
-      <EditAvailabilitiesButton />
+        {/* update button */}
+        <UpdateAvailabilitiesButton />
+      </div>
     </div>
   );
 }

@@ -3,7 +3,6 @@
 import { Calendar as BigCalendar, dateFnsLocalizer, View, ToolbarProps as RBCToolbarProps } from 'react-big-calendar';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import '@/app/(private)/_components/Calendar/calendar-overrides.css';
-
 import { format, getDay, parse, startOfWeek } from 'date-fns';
 import { CALENDAR_VIEWS, TIME_ZONE, EVENTS_STATUS, type EventStatus } from '@/lib/constants';
 import ShowMore from './ShowMore';
@@ -18,8 +17,8 @@ import WeekEvent from './WeekEvent';
 import MonthEvent from './MonthEvent';
 import { toZonedTime } from 'date-fns-tz';
 import ConfirmDialog from '@/app/_components/ConfirmDialog';
-import MonthHeader from '@/app/(private)/_components/Calendar/MonthHeader';
-import WeekHeader from '@/app/(private)/_components/Calendar/WeekHeader';
+import MonthHeader from '@/app/(private)/_components/calendar/MonthHeader';
+import WeekHeader from '@/app/(private)/_components/calendar/WeekHeader';
 import EventContent from './EventContent';
 import { Toolbar } from './Toolbar';
 import { useSearchParams } from 'next/navigation';

@@ -4,7 +4,7 @@ import { ArtistSelectData, MoCoordinator, VenueSelectData } from '@/lib/types';
 import { Select, SelectContent, SelectItem, SelectTrigger } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
 import { EVENTS_STATUS } from '@/lib/constants';
-import EventStatusBadge from '../../../_components/Badges/EventStatusBadge';
+import EventStatusBadge from '../../../_components/badges/EventStatusBadge';
 import { Separator } from '@/components/ui/separator';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';

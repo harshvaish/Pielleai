@@ -2,30 +2,11 @@
 
 import { PAGINATED_TABLE_ROWS_X_PAGE } from '@/lib/constants';
 import { database } from '@/lib/database/connection';
-import {
-  artists,
-  artistZones,
-  zones,
-  managerArtists,
-  profiles,
-  users,
-} from '@/lib/database/schema';
-import {
-  ArtistTableData,
-  ArtistManagerSelectData,
-  Zone,
-  ArtistsTableFilters,
-} from '@/lib/types';
-import { and, count, eq, ilike, inArray } from 'drizzle-orm';
+import { artists, artistZones, zones, managerArtists, profiles, users } from '@/lib/database/schema';
+import { ArtistTableData, ArtistManagerSelectData, Zone, ArtistsTableFilters } from '@/lib/types';
+import { and, count, eq, ilike, inArray, or } from 'drizzle-orm';
 
-export async function getPaginatedArtists({
-  currentPage,
-  fullName,
-  email,
-  phone,
-  managerIds,
-  zoneIds,
-}: ArtistsTableFilters): Promise<{
+export async function getPaginatedArtists({ currentPage, fullName, email, phone, managerIds, zoneIds }: ArtistsTableFilters): Promise<{
   data: ArtistTableData[];
   totalPages: number;
   currentPage: number;
@@ -42,13 +23,9 @@ export async function getPaginatedArtists({
         .select({ artistId: managerArtists.artistId })
         .from(artists)
         .innerJoin(managerArtists, eq(artists.id, managerArtists.artistId))
-        .where(
-          inArray(managerArtists.managerProfileId, managerIds.map(Number))
-        );
+        .where(inArray(managerArtists.managerProfileId, managerIds.map(Number)));
 
-      managerFilteredArtistIds = [
-        ...new Set(artistResults.map((r) => r.artistId)),
-      ];
+      managerFilteredArtistIds = [...new Set(artistResults.map((r) => r.artistId))];
 
       if (managerFilteredArtistIds.length === 0) {
         return {
@@ -70,9 +47,7 @@ export async function getPaginatedArtists({
         .innerJoin(zones, eq(artistZones.zoneId, zones.id))
         .where(inArray(artistZones.zoneId, zoneIds.map(Number)));
 
-      zoneFilteredArtistIds = [
-        ...new Set(artistResults.map((r) => r.artistId)),
-      ];
+      zoneFilteredArtistIds = [...new Set(artistResults.map((r) => r.artistId))];
 
       if (zoneFilteredArtistIds.length === 0) {
         return {
@@ -82,6 +57,15 @@ export async function getPaginatedArtists({
         };
       }
     }
+
+    // Build reusable filters
+    const filters = and(
+      or(fullName ? ilike(artists.name, `%${fullName}%`) : undefined, fullName ? ilike(artists.surname, `%${fullName}%`) : undefined),
+      email ? ilike(artists.email, `%${email}%`) : undefined,
+      phone ? ilike(artists.phone, `%${phone}%`) : undefined,
+      managerFilteredArtistIds ? inArray(artists.id, managerFilteredArtistIds) : undefined,
+      zoneFilteredArtistIds ? inArray(artists.id, zoneFilteredArtistIds) : undefined
+    );
 
     // Get paginated artists
     const artistsResult = await database
@@ -98,19 +82,7 @@ export async function getPaginatedArtists({
         createdAt: artists.createdAt,
       })
       .from(artists)
-      .where(
-        and(
-          fullName ? ilike(artists.name, `%${fullName}%`) : undefined,
-          email ? ilike(artists.email, `%${email}%`) : undefined,
-          phone ? ilike(artists.phone, `%${phone}%`) : undefined,
-          managerFilteredArtistIds
-            ? inArray(artists.id, managerFilteredArtistIds)
-            : undefined,
-          zoneFilteredArtistIds
-            ? inArray(artists.id, zoneFilteredArtistIds)
-            : undefined
-        )
-      )
+      .where(filters)
       .limit(limit)
       .offset(offset);
 
@@ -142,22 +114,7 @@ export async function getPaginatedArtists({
         .innerJoin(users, eq(profiles.userId, users.id))
         .where(inArray(managerArtists.artistId, artistIds)),
 
-      database
-        .select({ userCount: count() })
-        .from(artists)
-        .where(
-          and(
-            fullName ? ilike(artists.name, `%${fullName}%`) : undefined,
-            email ? ilike(artists.email, `%${email}%`) : undefined,
-            phone ? ilike(artists.phone, `%${phone}%`) : undefined,
-            managerFilteredArtistIds
-              ? inArray(artists.id, managerFilteredArtistIds)
-              : undefined,
-            zoneFilteredArtistIds
-              ? inArray(artists.id, zoneFilteredArtistIds)
-              : undefined
-          )
-        ),
+      database.select({ userCount: count() }).from(artists).where(filters),
     ]);
 
     // Group managers by artistId

@@ -39,7 +39,7 @@ export async function getPaginatedArtistManagers({ currentPage, fullName, email,
     const filters = and(
       eq(users.role, 'artist-manager'),
       inArray(users.status, ['active', 'disabled']),
-      or(fullName ? ilike(profiles.name, `%${fullName}%`) : undefined, fullName ? ilike(profiles.surname, `%${fullName}%`) : undefined),
+      fullName ? or(ilike(profiles.name, `%${fullName}%`), ilike(profiles.surname, `%${fullName}%`)) : undefined,
       email ? ilike(users.email, `%${email}%`) : undefined,
       phone ? ilike(profiles.phone, `%${phone}%`) : undefined,
       artistFilteredManagerIds ? inArray(profiles.id, artistFilteredManagerIds) : undefined,

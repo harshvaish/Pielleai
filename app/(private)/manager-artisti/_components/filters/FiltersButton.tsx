@@ -7,7 +7,7 @@ import { useState, useTransition } from 'react';
 import { ArtistSelectData, ArtistManagersTableFilters } from '@/lib/types';
 import ResponsivePopover from '@/app/_components/ResponsivePopover';
 import { Input } from '@/components/ui/input';
-import ArtistSelect from '@/app/(private)/_components/filters/mobile/ArtistSelect';
+import ArtistSelect from '@/app/(private)/_components/filters/ArtistSelect';
 
 type FiltersButtonProps = {
   filters: ArtistManagersTableFilters;

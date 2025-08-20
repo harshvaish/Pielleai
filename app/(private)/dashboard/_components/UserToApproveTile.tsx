@@ -1,6 +1,6 @@
 'use client';
 
-import UserRoleBadge from '../../_components/Badges/UserRoleBadge';
+import UserRoleBadge from '../../_components/badges/UserRoleBadge';
 import { Check, Mail, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { UserToApprove } from '@/lib/types';

@@ -2,22 +2,18 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { getPaginatedVenueManagers } from '@/lib/data/venue-managers/get-paginated-venue-managers';
 import { getLanguages } from '@/lib/data/get-languages';
 import { getCountries } from '@/lib/data/get-countries';
-import { notFound } from 'next/navigation';
 import { TablePagination } from '../_components/form/TablePagination';
-import UserBadge from '../_components/Badges/UserBadge';
-import StatusBadge from '../_components/Badges/StatusBadge';
+import UserBadge from '../_components/badges/UserBadge';
+import StatusBadge from '../_components/badges/StatusBadge';
 import { NEW_USER_TIME } from '@/lib/constants';
-import FilterInput from '../_components/filters/desktop/FilterInput';
 import CreateButton from './_components/create/CreateButton';
-import VenuesBadge from '../_components/Badges/VenuesBadge';
-import VenueFilter from '../_components/filters/desktop/VenueFilter';
+import VenuesBadge from '../_components/badges/VenuesBadge';
 import { getVenues } from '@/lib/data/venues/get-venues';
 import FiltersButton from './_components/filters/FiltersButton';
 import { VenueManagersTableFilters } from '@/lib/types';
+import { splitCsv } from '@/lib/utils';
 
-export default async function VenueManagersPage({
-  searchParams,
-}: {
+type VenueManagersPageProps = {
   searchParams?: Promise<{
     page?: string;
     showFilters?: string;
@@ -26,37 +22,33 @@ export default async function VenueManagersPage({
     phone?: string;
     venue?: string;
   }>;
-}) {
+};
+
+export default async function VenueManagersPage({ searchParams }: VenueManagersPageProps) {
   const sp = await searchParams;
 
   const currentPage = Number(sp?.page ?? '1');
-  const showFilters = sp?.showFilters === 'true';
 
   const filters: VenueManagersTableFilters = {
     currentPage: currentPage,
     fullName: sp?.fullName || '',
     email: sp?.email || '',
     phone: sp?.phone || '',
-    venueIds: sp?.venue ? sp.venue.split(',') : [],
+    venueIds: splitCsv(sp?.venue),
   };
 
-  const [{ data: managers, totalPages }, languages, countries, venues] = await Promise.all([getPaginatedVenueManagers(filters), getLanguages(), getCountries(), getVenues()]).catch((error) => {
-    console.error('❌ Error fetching:', error);
-    notFound();
-  });
+  const [{ data: managers, totalPages }, languages, countries, venues] = await Promise.all([getPaginatedVenueManagers(filters), getLanguages(), getCountries(), getVenues()]);
 
   return (
     <div className='h-full grid grid-rows-[min-content_1fr_min-content] gap-4'>
       <div className='md:flex justify-between items-center gap-2'>
         <h1 className='text-2xl font-bold'>Promoter locali</h1>
-        <div className='flex items-center gap-2 md:gap-4 mt-2 md:mt-0'>
-          {(managers.length > 0 || showFilters) && (
-            <FiltersButton
-              filters={filters}
-              showFilters={showFilters}
-              venues={venues}
-            />
-          )}
+        <div className='flex items-center gap-2 mt-2 md:mt-0'>
+          <FiltersButton
+            filters={filters}
+            venues={venues}
+          />
+
           <CreateButton
             languages={languages}
             countries={countries}
@@ -68,43 +60,10 @@ export default async function VenueManagersPage({
         <Table className='w-full'>
           <TableHeader className='bg-zinc-50'>
             <TableRow>
-              <TableHead>
-                <div>Nome completo</div>
-                <div className='hidden md:block'>
-                  {showFilters && (
-                    <FilterInput
-                      paramKey='fullName'
-                      defaultValue={filters.fullName}
-                    />
-                  )}
-                </div>
-              </TableHead>
-              <TableHead>
-                <div>Email</div>
-                <div className='hidden md:block'>
-                  {showFilters && (
-                    <FilterInput
-                      paramKey='email'
-                      defaultValue={filters.email}
-                    />
-                  )}
-                </div>
-              </TableHead>
-              <TableHead>
-                <div>Numero di telefono</div>
-                <div className='hidden md:block'>
-                  {showFilters && (
-                    <FilterInput
-                      paramKey='phone'
-                      defaultValue={filters.phone}
-                    />
-                  )}
-                </div>
-              </TableHead>
-              <TableHead>
-                <div>Locali</div>
-                <div className='hidden md:block'>{showFilters && <VenueFilter venues={venues} />}</div>
-              </TableHead>
+              <TableHead>Nome completo</TableHead>
+              <TableHead>Email</TableHead>
+              <TableHead>Numero di telefono</TableHead>
+              <TableHead>Locali</TableHead>
             </TableRow>
           </TableHeader>
 

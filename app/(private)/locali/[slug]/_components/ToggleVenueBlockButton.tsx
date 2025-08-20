@@ -10,28 +10,25 @@ import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import { toast } from 'sonner';
 
-export default function ToggleVenueBlockButton({
-  venueId,
-  initialStatus,
-}: {
+type ToggleVenueBlockButtonProps = {
   venueId: number;
   initialStatus: UserStatus;
-}) {
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+};
+
+export default function ToggleVenueBlockButton({ venueId, initialStatus }: ToggleVenueBlockButtonProps) {
+  const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
 
   const isActive = initialStatus === 'active';
-  const title = isActive
-    ? 'Vuoi archiviare il locale?'
-    : 'Vuoi riattivare il locale?';
+  const title = isActive ? 'Vuoi archiviare il locale?' : 'Vuoi riattivare il locale?';
   const description = isActive
     ? 'Il locale verrà archiviato temporaneamente. Tutti i dati saranno conservati in modo sicuro e potrai riattivarlo in qualsiasi momento.'
     : 'Sei sicuro di voler riattivare questo locale? Il locale potrà essere di nuovo selezionato per gli eventi.';
   const confirmLabel = isActive ? 'Archivia' : 'Riattiva';
 
   const onConfirm = () => {
-    setIsDialogOpen(false);
+    setOpen(false);
     startTransition(async () => {
       const response = await toggleVenueStatus(venueId, initialStatus);
 
@@ -49,35 +46,30 @@ export default function ToggleVenueBlockButton({
       <Button
         variant='ghost'
         size='sm'
-        className={cn(
-          'max-w-max',
-          isActive ? 'text-destructive' : 'text-emerald-500'
-        )}
-        onClick={() => setIsDialogOpen(true)}
+        className={cn('max-w-max', isActive ? 'text-destructive' : 'text-emerald-500')}
+        onClick={() => setOpen(true)}
         disabled={isPending}
       >
         {isActive ? (
           <>
-            <Clipboard className={isPending ? 'animate-spin' : ''} /> Archivia
-            locale
+            <Clipboard className={isPending ? 'animate-spin' : ''} /> Archivia locale
           </>
         ) : (
           <>
-            <Repeat className={isPending ? 'animate-spin' : ''} /> Riattiva
-            locale
+            <Repeat className={isPending ? 'animate-spin' : ''} /> Riattiva locale
           </>
         )}
       </Button>
 
       <ConfirmDialog
-        open={isDialogOpen}
-        onOpenChange={setIsDialogOpen}
+        open={open}
+        onOpenChange={setOpen}
         title={title}
         description={description}
         confirmLabel={confirmLabel}
         cancelLabel='Annulla'
         onConfirm={onConfirm}
-        onCancel={() => setIsDialogOpen(false)}
+        onCancel={() => setOpen(false)}
       />
     </>
   );

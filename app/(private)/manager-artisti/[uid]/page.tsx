@@ -9,14 +9,14 @@ import { auth } from '@/lib/auth';
 import { getProfileNotes } from '@/lib/data/notes/get-profile-notes';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
-import EditArtistManagerButton from './_components/update/EditArtistManagerButton';
+import UpdateButton from './_components/update/UpdateButton';
 import { getLanguages } from '@/lib/data/get-languages';
 import { getCountries } from '@/lib/data/get-countries';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import PersonalDataTab from './_components/tabs/PersonalDataTab';
-import BillingDataTab from '../../_components/Tabs/BillingDataTab';
-import StatusBadge from '../../_components/Badges/StatusBadge';
-import NotesSection from '../../_components/Notes/NotesSection';
+import BillingDataTab from '../../_components/tabs/BillingDataTab';
+import StatusBadge from '../../_components/badges/StatusBadge';
+import NotesSection from '../../_components/notes/NotesSection';
 import ToggleBlockButton from '../../_components/ToggleBlockButton';
 import ManagedArtistsTab from './_components/tabs/ManagedArtistsTab';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -67,7 +67,7 @@ export default async function ArtistManagerDetailPage({ params }: ArtistManagerD
             <Ellipsis />
           </PopoverTrigger>
           <PopoverContent className='w-48 flex flex-col justify-start lg:hidden'>
-            <EditArtistManagerButton
+            <UpdateButton
               userData={userData}
               languages={languages}
               countries={countries}
@@ -84,7 +84,7 @@ export default async function ArtistManagerDetailPage({ params }: ArtistManagerD
             userId={userData.id}
             userInitialStatus={userData.status}
           />
-          <EditArtistManagerButton
+          <UpdateButton
             userData={userData}
             languages={languages}
             countries={countries}
@@ -143,26 +143,26 @@ export default async function ArtistManagerDetailPage({ params }: ArtistManagerD
         />
       </div>
 
-      <Tabs defaultValue='managed-artists'>
+      <Tabs defaultValue='a'>
         <div className='flex justify-between items-center mb-2 overflow-hidden'>
           <span className='hidden lg:block text-xl font-semibold'>Dettagli</span>
           <TabsList className='w-full lg:max-w-max justify-start gap-4 bg-white p-1 rounded-xl overflow-x-auto'>
-            <TabsTrigger value='managed-artists'>Artisti gestiti</TabsTrigger>
-            <TabsTrigger value='billing-data'>Dati di fatturazione</TabsTrigger>
-            <TabsTrigger value='personal-data'>Dati personali</TabsTrigger>
+            <TabsTrigger value='a'>Artisti gestiti</TabsTrigger>
+            <TabsTrigger value='b'>Dati di fatturazione</TabsTrigger>
+            <TabsTrigger value='c'>Dati personali</TabsTrigger>
           </TabsList>
         </div>
 
         <ManagedArtistsTab
-          tabValue='managed-artists'
+          tabValue='a'
           data={userData}
         />
         <BillingDataTab
-          tabValue='billing-data'
+          tabValue='b'
           data={userData}
         />
         <PersonalDataTab
-          tabValue='personal-data'
+          tabValue='c'
           userData={userData}
         />
       </Tabs>

@@ -1,17 +1,17 @@
 'use client';
 
 import { ArtistSelectData, Event, MoCoordinator, VenueSelectData } from '@/lib/types';
-import EventStatusBadge from '../../../_components/Badges/EventStatusBadge';
+import EventStatusBadge from '../../../_components/badges/EventStatusBadge';
 import { it } from 'date-fns/locale';
 import { format } from 'date-fns';
-import ArtistsBadge from '../../../_components/Badges/ArtistsBadge';
+import ArtistsBadge from '../../../_components/badges/ArtistsBadge';
 import Image from 'next/image';
-import VenuesBadge from '../../../_components/Badges/VenuesBadge';
-import ManagersBadge from '../../../_components/Badges/ManagersBadge';
+import VenuesBadge from '../../../_components/badges/VenuesBadge';
+import ManagersBadge from '../../../_components/badges/ManagersBadge';
 import UpdateEventStatusButton from './UpdateEventStatusButton';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import DeleteEventButton from './DeleteEventButton';
-import UpdateEventButton from '../update/UpdateEventButton';
+import UpdateButton from '../update/UpdateButton';
 import { CalendarDays, Check, ChevronDown, Clock, Ellipsis, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Separator } from '@/components/ui/separator';
@@ -165,7 +165,7 @@ export default function EventTile({ event, artists, venues, moCoordinators }: Ev
               align='end'
               className='max-w-max flex flex-col items-start gap-2'
             >
-              <UpdateEventButton
+              <UpdateButton
                 event={event}
                 artists={artists}
                 venues={venues}
@@ -194,7 +194,7 @@ export default function EventTile({ event, artists, venues, moCoordinators }: Ev
             align='end'
             className='w-48 space-y-2'
           >
-            <UpdateEventButton
+            <UpdateButton
               event={event}
               artists={artists}
               venues={venues}
