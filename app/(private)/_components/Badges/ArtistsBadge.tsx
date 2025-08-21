@@ -39,11 +39,8 @@ export default function ArtistsBadge({ artists }: { artists: ArtistSelectData[] 
             );
           })}
         </div>
-        <span className='text-sm font-semibold text-zinc-700 whitespace-nowrap'>{count} Artisti</span>
-        <ChevronDown
-          size={16}
-          className={cn('transition-transform', isDropdownOpen ? 'rotate-180' : '')}
-        />
+        <span className='text-xs font-semibold text-zinc-700 truncate'>{count} Artisti</span>
+        <ChevronDown className={cn('size-4 transition-transform', isDropdownOpen ? 'rotate-180' : '')} />
       </DropdownMenuTrigger>
 
       <DropdownMenuContent className='flex flex-col gap-2 p-2'>

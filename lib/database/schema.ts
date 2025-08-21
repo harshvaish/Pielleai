@@ -1,4 +1,4 @@
-import { pgTable, foreignKey, unique, text, timestamp, check, serial, integer, boolean, date, varchar, uuid, numeric, time, primaryKey, pgEnum, uniqueIndex } from 'drizzle-orm/pg-core';
+import { pgTable, foreignKey, unique, text, timestamp, check, serial, integer, boolean, date, varchar, uuid, uniqueIndex, numeric, time, primaryKey, pgEnum } from 'drizzle-orm/pg-core';
 import { sql } from 'drizzle-orm';
 
 export const availabilityStatus = pgEnum('availability_status', ['available', 'booked', 'expired']);
@@ -50,13 +50,15 @@ export const artistAvailabilities = pgTable(
     status: availabilityStatus().default('available').notNull(),
     createdAt: timestamp('created_at').defaultNow().notNull(),
     updatedAt: timestamp('updated_at').defaultNow().notNull(),
+    // TODO: failed to parse database type 'tsrange'
+    // timeRange: unknown('time_range').generatedAlwaysAs(sql`tsrange(start_date, end_date, '[)'::text)`),
   },
   (table) => [
     foreignKey({
       columns: [table.artistId],
       foreignColumns: [artists.id],
       name: 'artist_availabilities_artist_id_fkey',
-    }).onDelete('cascade'),
+    }).onDelete('restrict'),
     check('chk_time_range', sql`start_date < end_date`),
   ]
 );
@@ -170,22 +172,30 @@ export const artists = pgTable(
       columns: [table.billingCountryId],
       foreignColumns: [countries.id],
       name: 'artists_billing_country_id_fkey',
-    }).onDelete('restrict'),
+    })
+      .onUpdate('restrict')
+      .onDelete('restrict'),
     foreignKey({
       columns: [table.billingSubdivisionId],
       foreignColumns: [subdivisions.id],
       name: 'artists_billing_subdivision_id_fkey',
-    }).onDelete('restrict'),
+    })
+      .onUpdate('restrict')
+      .onDelete('restrict'),
     foreignKey({
       columns: [table.countryId],
       foreignColumns: [countries.id],
       name: 'artists_country_id_fkey',
-    }).onDelete('restrict'),
+    })
+      .onUpdate('restrict')
+      .onDelete('restrict'),
     foreignKey({
       columns: [table.subdivisionId],
       foreignColumns: [subdivisions.id],
       name: 'artists_subdivision_id_fkey',
-    }).onDelete('restrict'),
+    })
+      .onUpdate('restrict')
+      .onDelete('restrict'),
     unique('artists_slug_key').on(table.slug),
   ]
 );
@@ -203,9 +213,7 @@ export const subdivisions = pgTable(
       columns: [table.countryId],
       foreignColumns: [countries.id],
       name: 'subdivisions_country_id_fkey',
-    })
-      .onUpdate('cascade')
-      .onDelete('cascade'),
+    }).onDelete('restrict'),
   ]
 );
 
@@ -321,12 +329,12 @@ export const profileNotes = pgTable(
       columns: [table.receiverProfileId],
       foreignColumns: [profiles.id],
       name: 'profile_notes_receiver_profile_id_fkey',
-    }),
+    }).onDelete('cascade'),
     foreignKey({
       columns: [table.writerId],
       foreignColumns: [users.id],
       name: 'profile_notes_writer_id_fkey',
-    }),
+    }).onDelete('cascade'),
   ]
 );
 
@@ -344,12 +352,12 @@ export const artistNotes = pgTable(
       columns: [table.artistId],
       foreignColumns: [artists.id],
       name: 'artist_notes_artist_id_fkey',
-    }),
+    }).onDelete('cascade'),
     foreignKey({
       columns: [table.writerId],
       foreignColumns: [users.id],
       name: 'artist_notes_writer_id_fkey',
-    }),
+    }).onDelete('cascade'),
   ]
 );
 
@@ -431,13 +439,36 @@ export const venues = pgTable(
       columns: [table.managerProfileId],
       foreignColumns: [profiles.id],
       name: 'venues_manager_profile_id_fkey',
-    }).onDelete('restrict'),
+    }).onDelete('cascade'),
     foreignKey({
       columns: [table.subdivisionId],
       foreignColumns: [subdivisions.id],
       name: 'venues_subdivision_id_fkey',
     }).onDelete('restrict'),
     unique('venues_slug_key').on(table.slug),
+  ]
+);
+
+export const eventNotes = pgTable(
+  'event_notes',
+  {
+    id: serial().primaryKey().notNull(),
+    writerId: text('writer_id').notNull(),
+    eventId: integer('event_id').notNull(),
+    content: text().notNull(),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+  },
+  (table) => [
+    foreignKey({
+      columns: [table.eventId],
+      foreignColumns: [events.id],
+      name: 'event_notes_event_id_fkey',
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [table.writerId],
+      foreignColumns: [users.id],
+      name: 'event_notes_writer_id_fkey',
+    }).onDelete('cascade'),
   ]
 );
 
@@ -521,29 +552,6 @@ export const events = pgTable(
   ]
 );
 
-export const eventNotes = pgTable(
-  'event_notes',
-  {
-    id: serial().primaryKey().notNull(),
-    writerId: text('writer_id').notNull(),
-    eventId: integer('event_id').notNull(),
-    content: text().notNull(),
-    createdAt: timestamp('created_at').defaultNow().notNull(),
-  },
-  (table) => [
-    foreignKey({
-      columns: [table.eventId],
-      foreignColumns: [events.id],
-      name: 'event_notes_event_id_fkey',
-    }).onDelete('cascade'),
-    foreignKey({
-      columns: [table.writerId],
-      foreignColumns: [users.id],
-      name: 'event_notes_writer_id_fkey',
-    }).onDelete('cascade'),
-  ]
-);
-
 export const artistZones = pgTable(
   'artist_zones',
   {
@@ -556,12 +564,12 @@ export const artistZones = pgTable(
       columns: [table.artistId],
       foreignColumns: [artists.id],
       name: 'artist_zones_artist_id_fkey',
-    }).onDelete('restrict'),
+    }).onDelete('cascade'),
     foreignKey({
       columns: [table.zoneId],
       foreignColumns: [zones.id],
       name: 'artist_zones_zone_id_fkey',
-    }).onDelete('restrict'),
+    }).onDelete('cascade'),
     primaryKey({ columns: [table.artistId, table.zoneId], name: 'artist_zones_pkey' }),
   ]
 );
@@ -578,12 +586,12 @@ export const managerArtists = pgTable(
       columns: [table.artistId],
       foreignColumns: [artists.id],
       name: 'manager_artists_artist_id_fkey',
-    }).onDelete('restrict'),
+    }).onDelete('cascade'),
     foreignKey({
       columns: [table.managerProfileId],
       foreignColumns: [profiles.id],
       name: 'manager_artists_manager_profile_id_fkey',
-    }).onDelete('restrict'),
+    }).onDelete('cascade'),
     primaryKey({ columns: [table.managerProfileId, table.artistId], name: 'manager_artists_pkey' }),
   ]
 );
@@ -600,16 +608,12 @@ export const artistLanguages = pgTable(
       columns: [table.artistId],
       foreignColumns: [artists.id],
       name: 'artist_languages_artist_id_fkey',
-    })
-      .onUpdate('restrict')
-      .onDelete('restrict'),
+    }).onDelete('cascade'),
     foreignKey({
       columns: [table.languageId],
       foreignColumns: [languages.id],
       name: 'artist_languages_language_id_fkey',
-    })
-      .onUpdate('restrict')
-      .onDelete('restrict'),
+    }).onDelete('cascade'),
     primaryKey({ columns: [table.artistId, table.languageId], name: 'artist_languages_pkey' }),
   ]
 );
@@ -626,16 +630,12 @@ export const profileLanguages = pgTable(
       columns: [table.languageId],
       foreignColumns: [languages.id],
       name: 'profile_languages_language_id_fkey',
-    })
-      .onUpdate('restrict')
-      .onDelete('restrict'),
+    }).onDelete('cascade'),
     foreignKey({
       columns: [table.profileId],
       foreignColumns: [profiles.id],
       name: 'profile_languages_profile_id_fkey',
-    })
-      .onUpdate('restrict')
-      .onDelete('restrict'),
+    }).onDelete('cascade'),
     primaryKey({ columns: [table.profileId, table.languageId], name: 'profile_languages_pkey' }),
   ]
 );

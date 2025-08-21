@@ -92,7 +92,7 @@ export default function PersonalDataForm({ userData, languages, countries, close
             className='text-destructive'
             disabled={submitting}
           >
-            <X size={16} /> Annulla
+            <X className='size-4' /> Annulla
           </Button>
 
           <Button

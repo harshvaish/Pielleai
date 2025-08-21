@@ -124,20 +124,21 @@ export default function CreateVenueManagerForm({ languages, countries, closeDial
 
             <div className={`flex ${step > 1 ? 'justify-between' : 'justify-end'} mt-4`}>
               {step > 1 && (
-                <div
+                <Button
+                  type='button'
+                  variant='ghost'
                   onClick={onPrev}
-                  className='w-full md:w-auto flex justify-center items-center gap-2 h-10 text-zinc-500 p-3 rounded-xl hover:cursor-pointer hover:bg-slate-50'
                 >
-                  <ArrowLeft size={16} /> Indietro
-                </div>
+                  <ArrowLeft className='size-4' /> Indietro
+                </Button>
               )}
               {step < 2 ? (
-                <div
+                <Button
+                  type='button'
                   onClick={onNext}
-                  className='w-full md:w-auto flex justify-center items-center h-10 bg-primary text-white p-3 rounded-xl hover:cursor-pointer hover:bg-primary/90'
                 >
                   Continua
-                </div>
+                </Button>
               ) : (
                 <Button
                   type='submit'

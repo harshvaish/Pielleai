@@ -5,31 +5,11 @@ import { headers } from 'next/headers';
 import { ServerActionResponse } from '@/lib/types';
 import { database } from '@/lib/database/connection';
 import { and, eq, inArray } from 'drizzle-orm';
-import {
-  profiles,
-  countries,
-  languages as languagesTable,
-  subdivisions,
-  zones as zonesTable,
-  users,
-  artists,
-  artistLanguages,
-  managerArtists,
-  artistZones,
-} from '@/lib/database/schema';
-import {
-  artistS1FormSchema,
-  ArtistS1FormSchema,
-} from '@/lib/validation/artistFormSchema';
+import { profiles, countries, languages as languagesTable, subdivisions, zones as zonesTable, users, artists, artistLanguages, managerArtists, artistZones } from '@/lib/database/schema';
+import { artistS1FormSchema, ArtistS1FormSchema } from '@/lib/validation/artistFormSchema';
 import { areSame } from '@/lib/utils';
 
-export const editArtistPersonalData = async ({
-  artistId,
-  data,
-}: {
-  artistId: number;
-  data: ArtistS1FormSchema;
-}): Promise<ServerActionResponse<null>> => {
+export const editArtistPersonalData = async ({ artistId, data }: { artistId: number; data: ArtistS1FormSchema }): Promise<ServerActionResponse<null>> => {
   const headersList = await headers();
   try {
     const session = await auth.api.getSession({
@@ -56,10 +36,7 @@ export const editArtistPersonalData = async ({
   const validation = artistS1FormSchema.safeParse(data);
 
   if (!validation.success) {
-    console.error(
-      '[editArtistPersonalData] - Error: validation failed',
-      validation.error.issues[0]
-    );
+    console.error('[editArtistPersonalData] - Error: validation failed', validation.error.issues[0]);
     return {
       success: false,
       message: 'I dati inviati non sono corretti.',
@@ -67,47 +44,17 @@ export const editArtistPersonalData = async ({
     };
   }
 
-  const { languages, countryId, subdivisionId, zones, artistManagers } =
-    validation.data;
+  const { languages, countryId, subdivisionId, zones, artistManagers } = validation.data;
 
   try {
-    const [
-      languagesCheck,
-      countryCheck,
-      subdivisionCheck,
-      zonesCheck,
-      artistManagersCheck,
-    ] = await Promise.all([
-      database
-        .select({ id: languagesTable.id })
-        .from(languagesTable)
-        .where(inArray(languagesTable.id, languages)),
+    const [languagesCheck, countryCheck, subdivisionCheck, zonesCheck] = await Promise.all([
+      database.select({ id: languagesTable.id }).from(languagesTable).where(inArray(languagesTable.id, languages)),
 
-      database
-        .select({ id: countries.id })
-        .from(countries)
-        .where(eq(countries.id, countryId)),
+      database.select({ id: countries.id }).from(countries).where(eq(countries.id, countryId)),
 
-      database
-        .select({ id: subdivisions.id, countryId: subdivisions.countryId })
-        .from(subdivisions)
-        .where(eq(subdivisions.id, subdivisionId)),
+      database.select({ id: subdivisions.id, countryId: subdivisions.countryId }).from(subdivisions).where(eq(subdivisions.id, subdivisionId)),
 
-      database
-        .select({ id: zonesTable.id })
-        .from(zonesTable)
-        .where(inArray(zonesTable.id, zones)),
-
-      database
-        .select({ id: profiles.id })
-        .from(profiles)
-        .innerJoin(users, eq(profiles.userId, users.id))
-        .where(
-          and(
-            eq(users.role, 'artist-manager'),
-            inArray(profiles.id, artistManagers)
-          )
-        ),
+      database.select({ id: zonesTable.id }).from(zonesTable).where(inArray(zonesTable.id, zones)),
     ]);
 
     if (languagesCheck.length !== languages.length) {
@@ -150,29 +97,27 @@ export const editArtistPersonalData = async ({
       };
     }
 
-    if (artistManagersCheck.length !== artistManagersCheck.length) {
-      return {
-        success: false,
-        message: 'Una o più manager selezionati non validi.',
-        data: null,
-      };
+    if (artistManagers.length > 0) {
+      const artistManagersCheck = await database
+        .select({ id: profiles.id })
+        .from(profiles)
+        .innerJoin(users, eq(profiles.userId, users.id))
+        .where(and(eq(users.role, 'artist-manager'), inArray(profiles.id, artistManagers)));
+
+      if (artistManagersCheck.length !== artistManagers.length) {
+        return {
+          success: false,
+          message: 'Una o più manager selezionati non validi.',
+          data: null,
+        };
+      }
     }
 
-    const [existingLanguages, existingZones, existingManagers] =
-      await Promise.all([
-        database
-          .select({ languageId: artistLanguages.languageId })
-          .from(artistLanguages)
-          .where(eq(artistLanguages.artistId, artistId)),
-        database
-          .select({ zoneId: artistZones.zoneId })
-          .from(artistZones)
-          .where(eq(artistZones.artistId, artistId)),
-        database
-          .select({ managerProfileId: managerArtists.managerProfileId })
-          .from(managerArtists)
-          .where(eq(managerArtists.artistId, artistId)),
-      ]);
+    const [existingLanguages, existingZones, existingManagers] = await Promise.all([
+      database.select({ languageId: artistLanguages.languageId }).from(artistLanguages).where(eq(artistLanguages.artistId, artistId)),
+      database.select({ zoneId: artistZones.zoneId }).from(artistZones).where(eq(artistZones.artistId, artistId)),
+      database.select({ managerProfileId: managerArtists.managerProfileId }).from(managerArtists).where(eq(managerArtists.artistId, artistId)),
+    ]);
 
     const existingLanguageIds = existingLanguages.map((l) => l.languageId);
     const existingZoneIds = existingZones.map((z) => z.zoneId);
@@ -205,9 +150,7 @@ export const editArtistPersonalData = async ({
         .where(eq(artists.id, artistId));
 
       if (!areSame(existingLanguageIds, validation.data.languages)) {
-        await tx
-          .delete(artistLanguages)
-          .where(eq(artistLanguages.artistId, artistId));
+        await tx.delete(artistLanguages).where(eq(artistLanguages.artistId, artistId));
         if (validation.data.languages.length > 0) {
           await tx.insert(artistLanguages).values(
             validation.data.languages.map((languageId) => ({
@@ -221,21 +164,15 @@ export const editArtistPersonalData = async ({
       if (!areSame(existingZoneIds, validation.data.zones)) {
         await tx.delete(artistZones).where(eq(artistZones.artistId, artistId));
         if (validation.data.zones.length > 0) {
-          await tx
-            .insert(artistZones)
-            .values(
-              validation.data.zones.map((zoneId) => ({ artistId, zoneId }))
-            );
+          await tx.insert(artistZones).values(validation.data.zones.map((zoneId) => ({ artistId, zoneId })));
         }
       }
 
-      if (!areSame(existingManagerIds, validation.data.artistManagers)) {
-        await tx
-          .delete(managerArtists)
-          .where(eq(managerArtists.artistId, artistId));
-        if (validation.data.artistManagers.length > 0) {
+      if (!areSame(existingManagerIds, artistManagers)) {
+        await tx.delete(managerArtists).where(eq(managerArtists.artistId, artistId));
+        if (artistManagers.length > 0) {
           await tx.insert(managerArtists).values(
-            validation.data.artistManagers.map((managerProfileId) => ({
+            artistManagers.map((managerProfileId) => ({
               artistId,
               managerProfileId,
             }))

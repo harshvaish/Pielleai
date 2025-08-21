@@ -1,4 +1,6 @@
+import { auth } from '@/lib/auth';
 import { getSearchItems } from '@/lib/data/get-search-items';
+import { headers } from 'next/headers';
 import { type NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod/v4';
 
@@ -21,6 +23,15 @@ const SearchSchema = z.object({
 });
 
 export async function GET(request: NextRequest) {
+  const requestHeaders = await headers();
+  const session = await auth.api.getSession({
+    headers: requestHeaders,
+  });
+
+  if (!session || session.user.role !== 'admin') {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   const url = new URL(request.url);
 
   // Validate the query using zod
@@ -29,12 +40,7 @@ export async function GET(request: NextRequest) {
   });
 
   if (!check.success) {
-    return NextResponse.json(
-      {
-        error: check.error.message,
-      },
-      { status: 400 }
-    );
+    return NextResponse.json({ error: check.error.message }, { status: 400 });
   }
 
   const { value: searchText } = check.data;

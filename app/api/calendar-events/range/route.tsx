@@ -2,12 +2,23 @@ import { getCalendarEvents } from '@/lib/data/events/get-calendar-events';
 import { splitCsv, toUTCRange } from '@/lib/utils';
 import { EVENTS_STATUS, type EventStatus } from '@/lib/constants';
 import { type NextRequest, NextResponse } from 'next/server';
+import { headers } from 'next/headers';
+import { auth } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
 const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
 
 export async function GET(request: NextRequest) {
+  const requestHeaders = await headers();
+  const session = await auth.api.getSession({
+    headers: requestHeaders,
+  });
+
+  if (!session || session.user.role !== 'admin') {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   const url = new URL(request.url);
 
   const startDate = url.searchParams.get('start');

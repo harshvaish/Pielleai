@@ -1,11 +1,7 @@
 'use client';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { VenueBadgeData } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { ChevronDown } from 'lucide-react';
@@ -43,16 +39,8 @@ export default function VenuesBadge({ venues }: { venues: VenueBadgeData[] }) {
             );
           })}
         </div>
-        <span className='text-sm font-semibold text-zinc-700 whitespace-nowrap'>
-          {count} Locali
-        </span>
-        <ChevronDown
-          size={16}
-          className={cn(
-            'transition-transform',
-            isDropdownOpen ? 'rotate-180' : ''
-          )}
-        />
+        <span className='text-xs font-semibold text-zinc-700 whitespace-nowrap'>{count} Locali</span>
+        <ChevronDown className={cn('size-4 transition-transform', isDropdownOpen ? 'rotate-180' : '')} />
       </DropdownMenuTrigger>
 
       <DropdownMenuContent className='flex flex-col gap-2 p-2'>
@@ -85,14 +73,7 @@ function VenueBadge({ venue }: { venue: VenueBadgeData }) {
         <AvatarFallback>{venue.name.substring(0, 1)}</AvatarFallback>
       </Avatar>
       <div className='max-w-full overflow-hidden'>
-        <div
-          className={cn(
-            'text-xs font-semibold line-clamp-1 text-ellipsis',
-            isDisabled ? 'text-zinc-400' : 'text-zinc-700'
-          )}
-        >
-          {venue.name}
-        </div>
+        <div className={cn('text-xs font-semibold truncate', isDisabled ? 'text-zinc-400' : 'text-zinc-700')}>{venue.name}</div>
       </div>
     </Link>
   );

@@ -6,7 +6,7 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, Command
 import { cn } from '@/lib/utils';
 import { useEffect, useState } from 'react';
 import { ZoneBadge } from '../badges/ZonesBadge';
-import { Check, X } from 'lucide-react';
+import { Check, Eraser } from 'lucide-react';
 import { Zone } from '@/lib/types';
 
 type ZoneSelectProps = { initialValue: string[]; zones: Zone[]; onConfirm: (selected: string[]) => void };
@@ -80,10 +80,9 @@ export default function ZoneSelect({ initialValue, zones, onConfirm }: ZoneSelec
             <Button
               variant='ghost'
               size='sm'
-              className='text-destructive'
               onClick={resetHandler}
             >
-              <X />
+              <Eraser />
               Pulisci
             </Button>
             <Button

@@ -1,25 +1,12 @@
 import { TabsContent } from '@/components/ui/tabs';
 import { ArtistData, VenueData } from '@/lib/types';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import Image from 'next/image';
 import Link from 'next/link';
 import { format } from 'date-fns';
 import { SquareArrowOutUpRight } from 'lucide-react';
 
-export default function SocialDataTab({
-  tabValue,
-  data,
-}: {
-  tabValue: string;
-  data: ArtistData | VenueData;
-}) {
+export default function SocialDataTab({ tabValue, data }: { tabValue: string; data: ArtistData | VenueData }) {
   return (
     <TabsContent value={tabValue}>
       <Table className='w-full'>
@@ -55,20 +42,14 @@ export default function SocialDataTab({
                   rel='noopener noreferrer'
                   className='flex flex-nowrap gap-2 text-blue-600'
                 >
-                  @{data.tiktokUsername} <SquareArrowOutUpRight size={16} />
+                  @{data.tiktokUsername} <SquareArrowOutUpRight className='size-4' />
                 </Link>
               ) : (
                 '-'
               )}
             </TableCell>
-            <TableCell>
-              {data.tiktokFollowers ? data.tiktokFollowers : '-'}
-            </TableCell>
-            <TableCell>
-              {data.tiktokCreatedAt
-                ? format(new Date(data.tiktokCreatedAt), 'dd/MM/yyyy')
-                : '-'}
-            </TableCell>
+            <TableCell>{data.tiktokFollowers ? data.tiktokFollowers : '-'}</TableCell>
+            <TableCell>{data.tiktokCreatedAt ? format(new Date(data.tiktokCreatedAt), 'dd/MM/yyyy') : '-'}</TableCell>
           </TableRow>
 
           <TableRow>
@@ -93,20 +74,14 @@ export default function SocialDataTab({
                   rel='noopener noreferrer'
                   className='flex flex-nowrap gap-2 text-blue-600'
                 >
-                  @{data.facebookUsername} <SquareArrowOutUpRight size={16} />
+                  @{data.facebookUsername} <SquareArrowOutUpRight className='size-4' />
                 </Link>
               ) : (
                 '-'
               )}
             </TableCell>
-            <TableCell>
-              {data.facebookFollowers ? data.facebookFollowers : '-'}
-            </TableCell>
-            <TableCell>
-              {data.facebookCreatedAt
-                ? format(new Date(data.facebookCreatedAt), 'dd/MM/yyyy')
-                : '-'}
-            </TableCell>
+            <TableCell>{data.facebookFollowers ? data.facebookFollowers : '-'}</TableCell>
+            <TableCell>{data.facebookCreatedAt ? format(new Date(data.facebookCreatedAt), 'dd/MM/yyyy') : '-'}</TableCell>
           </TableRow>
 
           <TableRow>
@@ -131,20 +106,14 @@ export default function SocialDataTab({
                   rel='noopener noreferrer'
                   className='flex flex-nowrap gap-2 text-blue-600'
                 >
-                  @{data.instagramUsername} <SquareArrowOutUpRight size={16} />
+                  @{data.instagramUsername} <SquareArrowOutUpRight className='size-4' />
                 </Link>
               ) : (
                 '-'
               )}
             </TableCell>
-            <TableCell>
-              {data.instagramFollowers ? data.instagramFollowers : '-'}
-            </TableCell>
-            <TableCell>
-              {data.instagramCreatedAt
-                ? format(new Date(data.instagramCreatedAt), 'dd/MM/yyyy')
-                : '-'}
-            </TableCell>
+            <TableCell>{data.instagramFollowers ? data.instagramFollowers : '-'}</TableCell>
+            <TableCell>{data.instagramCreatedAt ? format(new Date(data.instagramCreatedAt), 'dd/MM/yyyy') : '-'}</TableCell>
           </TableRow>
 
           <TableRow>
@@ -169,18 +138,14 @@ export default function SocialDataTab({
                   rel='noopener noreferrer'
                   className='flex flex-nowrap gap-2 text-blue-600'
                 >
-                  @{data.xUsername} <SquareArrowOutUpRight size={16} />
+                  @{data.xUsername} <SquareArrowOutUpRight className='size-4' />
                 </Link>
               ) : (
                 '-'
               )}
             </TableCell>
             <TableCell>{data.xFollowers ? data.xFollowers : '-'}</TableCell>
-            <TableCell>
-              {data.xCreatedAt
-                ? format(new Date(data.xCreatedAt), 'dd/MM/yyyy')
-                : '-'}
-            </TableCell>
+            <TableCell>{data.xCreatedAt ? format(new Date(data.xCreatedAt), 'dd/MM/yyyy') : '-'}</TableCell>
           </TableRow>
         </TableBody>
       </Table>

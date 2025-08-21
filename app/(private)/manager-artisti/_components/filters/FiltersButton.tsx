@@ -1,7 +1,7 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { ListFilter, X } from 'lucide-react';
+import { Eraser, ListFilter } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import { ArtistSelectData, ArtistManagersTableFilters } from '@/lib/types';
@@ -148,10 +148,9 @@ export default function FiltersButton({ filters, artists }: FiltersButtonProps) 
           <Button
             variant='ghost'
             size='sm'
-            className='text-destructive'
             onClick={resetHandler}
           >
-            <X />
+            <Eraser />
             Pulisci
           </Button>
           <Button

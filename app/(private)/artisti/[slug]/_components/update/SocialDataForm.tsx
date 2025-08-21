@@ -93,7 +93,7 @@ export default function SocialDataForm({ userData, closeDialog }: SocialDataForm
             className='text-destructive'
             disabled={isSubmitting}
           >
-            <X size={16} /> Annulla
+            <X className='size-4' /> Annulla
           </Button>
 
           <Button

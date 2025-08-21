@@ -53,7 +53,7 @@ export default function PdfUploadInput() {
   };
 
   const uploadPdf = async (file: File) => {
-    const response = await fetch('/api/pdf-upload-url', {
+    const response = await fetch('/api/upload/pdf', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({

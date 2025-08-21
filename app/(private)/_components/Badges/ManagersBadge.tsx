@@ -21,8 +21,9 @@ export default function ManagersBadge({ managers, pathSegment }: { managers: Art
           alt='icona Milano Ovest'
           width={20}
           height={20}
+          className='w-5 h-5'
         />
-        Milano Ovest
+        <span className='text-xs font-semibold'>Milano Ovest</span>
       </div>
     );
 
@@ -55,11 +56,8 @@ export default function ManagersBadge({ managers, pathSegment }: { managers: Art
             );
           })}
         </div>
-        <span className='text-sm font-semibold text-zinc-700 whitespace-nowrap'>{count} Manager</span>
-        <ChevronDown
-          size={16}
-          className={cn('transition-transform', isDropdownOpen ? 'rotate-180' : '')}
-        />
+        <span className='text-xs font-semibold text-zinc-700 whitespace-nowrap'>{count} Manager</span>
+        <ChevronDown className={cn('size-4 transition-transform', isDropdownOpen ? 'rotate-180' : '')} />
       </DropdownMenuTrigger>
 
       <DropdownMenuContent className='flex flex-col gap-2 p-2'>
@@ -94,7 +92,7 @@ function ManagerBadge({ manager, pathSegment }: { manager: ArtistManagerSelectDa
       </Avatar>
 
       <div className='max-w-full overflow-hidden'>
-        <div className={cn('text-xs font-semibold line-clamp-1 text-ellipsis', isDisabled ? 'text-zinc-400' : 'text-zinc-700')}>
+        <div className={cn('text-xs font-semibold truncate', isDisabled ? 'text-zinc-400' : 'text-zinc-700')}>
           {manager.name} {manager.surname}
         </div>
       </div>

@@ -6,10 +6,11 @@ import { getVenueManagers } from '@/lib/data/venue-managers/get-venue-managers';
 import { getPaginatedVenues } from '@/lib/data/venues/get-paginated-venues';
 import ManagersBadge from '../_components/badges/ManagersBadge';
 import VenueTypeBadge from '../_components/badges/VenueTypeBadge';
-import { VenueType } from '@/lib/constants';
+import { NEW_USER_TIME, VenueType } from '@/lib/constants';
 import { VenuesTableFilters } from '@/lib/types';
 import FiltersButton from './_components/filters/FiltersButton';
 import CreateButton from './_components/create/CreateButton';
+import StatusBadge from '../_components/badges/StatusBadge';
 
 type VenuesPageProps = {
   searchParams?: Promise<{
@@ -78,6 +79,10 @@ export default async function VenuesPage({ searchParams }: VenuesPageProps) {
             {venues.map((venue, index) => {
               const isDisabled = venue.status === 'disabled';
 
+              const isNew = new Date().getTime() - new Date(venue.createdAt).getTime() < NEW_USER_TIME;
+
+              const badgeStatus = isDisabled ? 'disabled' : isNew ? 'new' : undefined;
+
               return (
                 <TableRow
                   key={index}
@@ -92,6 +97,7 @@ export default async function VenuesPage({ searchParams }: VenuesPageProps) {
                         isDisabled={isDisabled}
                         href={`/locali/${venue.slug}`}
                       />
+                      {badgeStatus && <StatusBadge status={badgeStatus} />}
                     </div>
                   </TableCell>
                   <TableCell>{venue.company}</TableCell>

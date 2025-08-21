@@ -12,10 +12,10 @@ export const sessions = pgTable(
   'sessions',
   {
     id: text().primaryKey().notNull(),
-    expiresAt: timestamp('expires_at', { mode: 'string' }).notNull(),
+    expiresAt: timestamp('expires_at').notNull(),
     token: text().notNull(),
-    createdAt: timestamp('created_at', { mode: 'string' }).notNull(),
-    updatedAt: timestamp('updated_at', { mode: 'string' }).notNull(),
+    createdAt: timestamp('created_at').notNull(),
+    updatedAt: timestamp('updated_at').notNull(),
     ipAddress: text('ip_address'),
     userAgent: text('user_agent'),
     userId: text('user_id').notNull(),
@@ -35,9 +35,9 @@ export const verifications = pgTable('verifications', {
   id: text().primaryKey().notNull(),
   identifier: text().notNull(),
   value: text().notNull(),
-  expiresAt: timestamp('expires_at', { mode: 'string' }).notNull(),
-  createdAt: timestamp('created_at', { mode: 'string' }),
-  updatedAt: timestamp('updated_at', { mode: 'string' }),
+  expiresAt: timestamp('expires_at').notNull(),
+  createdAt: timestamp('created_at'),
+  updatedAt: timestamp('updated_at'),
 });
 
 export const artistAvailabilities = pgTable(
@@ -45,20 +45,20 @@ export const artistAvailabilities = pgTable(
   {
     id: serial().primaryKey().notNull(),
     artistId: integer('artist_id').notNull(),
-    startDate: timestamp('start_date', { mode: 'string' }).notNull(),
-    endDate: timestamp('end_date', { mode: 'string' }).notNull(),
+    startDate: timestamp('start_date').notNull(),
+    endDate: timestamp('end_date').notNull(),
     status: availabilityStatus().default('available').notNull(),
-    createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
-    updatedAt: timestamp('updated_at', { mode: 'string' }).defaultNow().notNull(),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+    updatedAt: timestamp('updated_at').defaultNow().notNull(),
     // TODO: failed to parse database type 'tsrange'
-    // timeRange: unknown("time_range").generatedAlwaysAs(sql`tsrange(start_date, end_date, '[)'::text)`),
+    // timeRange: unknown('time_range').generatedAlwaysAs(sql`tsrange(start_date, end_date, '[)'::text)`),
   },
   (table) => [
     foreignKey({
       columns: [table.artistId],
       foreignColumns: [artists.id],
       name: 'artist_availabilities_artist_id_fkey',
-    }).onDelete('cascade'),
+    }).onDelete('restrict'),
     check('chk_time_range', sql`start_date < end_date`),
   ]
 );
@@ -72,11 +72,11 @@ export const users = pgTable(
     emailVerified: boolean('email_verified').notNull(),
     image: text(),
     role: userRoles().default('user').notNull(),
-    createdAt: timestamp('created_at', { mode: 'string' }).notNull(),
-    updatedAt: timestamp('updated_at', { mode: 'string' }).notNull(),
+    createdAt: timestamp('created_at').notNull(),
+    updatedAt: timestamp('updated_at').notNull(),
     banned: boolean(),
     banReason: text('ban_reason'),
-    banExpires: timestamp('ban_expires', { mode: 'string' }),
+    banExpires: timestamp('ban_expires'),
     status: userStatus().default('waiting-for-approval').notNull(),
   },
   (table) => [unique('users_email_unique').on(table.email)]
@@ -92,12 +92,12 @@ export const accounts = pgTable(
     accessToken: text('access_token'),
     refreshToken: text('refresh_token'),
     idToken: text('id_token'),
-    accessTokenExpiresAt: timestamp('access_token_expires_at', { mode: 'string' }),
-    refreshTokenExpiresAt: timestamp('refresh_token_expires_at', { mode: 'string' }),
+    accessTokenExpiresAt: timestamp('access_token_expires_at'),
+    refreshTokenExpiresAt: timestamp('refresh_token_expires_at'),
     scope: text(),
     password: text(),
-    createdAt: timestamp('created_at', { mode: 'string' }).notNull(),
-    updatedAt: timestamp('updated_at', { mode: 'string' }).notNull(),
+    createdAt: timestamp('created_at').notNull(),
+    updatedAt: timestamp('updated_at').notNull(),
   },
   (table) => [
     foreignKey({
@@ -163,8 +163,8 @@ export const artists = pgTable(
     xUsername: text('x_username'),
     xFollowers: integer('x_followers'),
     xCreatedAt: date('x_created_at'),
-    createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
-    updatedAt: timestamp('updated_at', { mode: 'string' }).defaultNow().notNull(),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+    updatedAt: timestamp('updated_at').defaultNow().notNull(),
     slug: uuid().defaultRandom().notNull(),
   },
   (table) => [
@@ -172,22 +172,30 @@ export const artists = pgTable(
       columns: [table.billingCountryId],
       foreignColumns: [countries.id],
       name: 'artists_billing_country_id_fkey',
-    }).onDelete('restrict'),
+    })
+      .onUpdate('restrict')
+      .onDelete('restrict'),
     foreignKey({
       columns: [table.billingSubdivisionId],
       foreignColumns: [subdivisions.id],
       name: 'artists_billing_subdivision_id_fkey',
-    }).onDelete('restrict'),
+    })
+      .onUpdate('restrict')
+      .onDelete('restrict'),
     foreignKey({
       columns: [table.countryId],
       foreignColumns: [countries.id],
       name: 'artists_country_id_fkey',
-    }).onDelete('restrict'),
+    })
+      .onUpdate('restrict')
+      .onDelete('restrict'),
     foreignKey({
       columns: [table.subdivisionId],
       foreignColumns: [subdivisions.id],
       name: 'artists_subdivision_id_fkey',
-    }).onDelete('restrict'),
+    })
+      .onUpdate('restrict')
+      .onDelete('restrict'),
     unique('artists_slug_key').on(table.slug),
   ]
 );
@@ -198,16 +206,14 @@ export const subdivisions = pgTable(
     id: serial().primaryKey().notNull(),
     countryId: integer('country_id').notNull(),
     name: varchar({ length: 200 }).notNull(),
-    createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
   },
   (table) => [
     foreignKey({
       columns: [table.countryId],
       foreignColumns: [countries.id],
       name: 'subdivisions_country_id_fkey',
-    })
-      .onUpdate('cascade')
-      .onDelete('cascade'),
+    }).onDelete('restrict'),
   ]
 );
 
@@ -217,7 +223,7 @@ export const languages = pgTable(
     id: serial().primaryKey().notNull(),
     code: varchar({ length: 2 }).notNull(),
     name: varchar({ length: 100 }).notNull(),
-    createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
   },
   (table) => [unique('languages_code_key').on(table.code)]
 );
@@ -228,7 +234,7 @@ export const countries = pgTable(
     id: serial().primaryKey().notNull(),
     code: varchar({ length: 2 }).notNull(),
     name: varchar({ length: 100 }).notNull(),
-    createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
     isEu: boolean('is_eu').default(false).notNull(),
   },
   (table) => [unique('countries_code_key').on(table.code)]
@@ -267,8 +273,8 @@ export const profiles = pgTable(
     billingPec: text('billing_pec'),
     billingPhone: text('billing_phone'),
     taxableInvoice: boolean('taxable_invoice').default(false),
-    createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
-    updatedAt: timestamp('updated_at', { mode: 'string' }).defaultNow().notNull(),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+    updatedAt: timestamp('updated_at').defaultNow().notNull(),
   },
   (table) => [
     foreignKey({
@@ -304,7 +310,7 @@ export const zones = pgTable(
   {
     id: serial().primaryKey().notNull(),
     name: text().notNull(),
-    createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
   },
   (table) => [unique('zones_name_key').on(table.name)]
 );
@@ -316,19 +322,19 @@ export const profileNotes = pgTable(
     writerId: text('writer_id').notNull(),
     receiverProfileId: integer('receiver_profile_id').notNull(),
     content: text().notNull(),
-    createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
   },
   (table) => [
     foreignKey({
       columns: [table.receiverProfileId],
       foreignColumns: [profiles.id],
       name: 'profile_notes_receiver_profile_id_fkey',
-    }),
+    }).onDelete('cascade'),
     foreignKey({
       columns: [table.writerId],
       foreignColumns: [users.id],
       name: 'profile_notes_writer_id_fkey',
-    }),
+    }).onDelete('cascade'),
   ]
 );
 
@@ -339,19 +345,19 @@ export const artistNotes = pgTable(
     writerId: text('writer_id').notNull(),
     artistId: integer('artist_id').notNull(),
     content: text().notNull(),
-    createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
   },
   (table) => [
     foreignKey({
       columns: [table.artistId],
       foreignColumns: [artists.id],
       name: 'artist_notes_artist_id_fkey',
-    }),
+    }).onDelete('cascade'),
     foreignKey({
       columns: [table.writerId],
       foreignColumns: [users.id],
       name: 'artist_notes_writer_id_fkey',
-    }),
+    }).onDelete('cascade'),
   ]
 );
 
@@ -359,7 +365,7 @@ export const moCoordinators = pgTable('mo_coordinators', {
   id: serial().primaryKey().notNull(),
   name: text().notNull(),
   surname: text().notNull(),
-  createdAt: timestamp('created_at', { mode: 'string' }).defaultNow(),
+  createdAt: timestamp('created_at').defaultNow(),
 });
 
 export const venues = pgTable(
@@ -410,8 +416,8 @@ export const venues = pgTable(
     xUsername: text('x_username'),
     xFollowers: integer('x_followers'),
     xCreatedAt: date('x_created_at'),
-    createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
-    updatedAt: timestamp('updated_at', { mode: 'string' }).defaultNow().notNull(),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+    updatedAt: timestamp('updated_at').defaultNow().notNull(),
   },
   (table) => [
     foreignKey({
@@ -433,7 +439,7 @@ export const venues = pgTable(
       columns: [table.managerProfileId],
       foreignColumns: [profiles.id],
       name: 'venues_manager_profile_id_fkey',
-    }).onDelete('restrict'),
+    }).onDelete('cascade'),
     foreignKey({
       columns: [table.subdivisionId],
       foreignColumns: [subdivisions.id],
@@ -450,7 +456,7 @@ export const eventNotes = pgTable(
     writerId: text('writer_id').notNull(),
     eventId: integer('event_id').notNull(),
     content: text().notNull(),
-    createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
   },
   (table) => [
     foreignKey({
@@ -508,8 +514,8 @@ export const events = pgTable(
     performance: boolean().default(false).notNull(),
     postDateFeedback: boolean('post_date_feedback').default(false).notNull(),
     bordereau: boolean().default(false).notNull(),
-    createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
-    updatedAt: timestamp('updated_at', { mode: 'string' }).defaultNow().notNull(),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+    updatedAt: timestamp('updated_at').defaultNow().notNull(),
     previousStatus: eventStatus('previous_status'),
     tourManagerEmail: text('tour_manager_email'),
   },
@@ -551,19 +557,19 @@ export const artistZones = pgTable(
   {
     artistId: integer('artist_id').notNull(),
     zoneId: integer('zone_id').notNull(),
-    createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
   },
   (table) => [
     foreignKey({
       columns: [table.artistId],
       foreignColumns: [artists.id],
       name: 'artist_zones_artist_id_fkey',
-    }).onDelete('restrict'),
+    }).onDelete('cascade'),
     foreignKey({
       columns: [table.zoneId],
       foreignColumns: [zones.id],
       name: 'artist_zones_zone_id_fkey',
-    }).onDelete('restrict'),
+    }).onDelete('cascade'),
     primaryKey({ columns: [table.artistId, table.zoneId], name: 'artist_zones_pkey' }),
   ]
 );
@@ -573,19 +579,19 @@ export const managerArtists = pgTable(
   {
     managerProfileId: integer('manager_profile_id').notNull(),
     artistId: integer('artist_id').notNull(),
-    createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
   },
   (table) => [
     foreignKey({
       columns: [table.artistId],
       foreignColumns: [artists.id],
       name: 'manager_artists_artist_id_fkey',
-    }).onDelete('restrict'),
+    }).onDelete('cascade'),
     foreignKey({
       columns: [table.managerProfileId],
       foreignColumns: [profiles.id],
       name: 'manager_artists_manager_profile_id_fkey',
-    }).onDelete('restrict'),
+    }).onDelete('cascade'),
     primaryKey({ columns: [table.managerProfileId, table.artistId], name: 'manager_artists_pkey' }),
   ]
 );
@@ -595,23 +601,19 @@ export const artistLanguages = pgTable(
   {
     artistId: integer('artist_id').notNull(),
     languageId: integer('language_id').notNull(),
-    createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
   },
   (table) => [
     foreignKey({
       columns: [table.artistId],
       foreignColumns: [artists.id],
       name: 'artist_languages_artist_id_fkey',
-    })
-      .onUpdate('restrict')
-      .onDelete('restrict'),
+    }).onDelete('cascade'),
     foreignKey({
       columns: [table.languageId],
       foreignColumns: [languages.id],
       name: 'artist_languages_language_id_fkey',
-    })
-      .onUpdate('restrict')
-      .onDelete('restrict'),
+    }).onDelete('cascade'),
     primaryKey({ columns: [table.artistId, table.languageId], name: 'artist_languages_pkey' }),
   ]
 );
@@ -621,23 +623,19 @@ export const profileLanguages = pgTable(
   {
     profileId: integer('profile_id').notNull(),
     languageId: integer('language_id').notNull(),
-    createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
   },
   (table) => [
     foreignKey({
       columns: [table.languageId],
       foreignColumns: [languages.id],
       name: 'profile_languages_language_id_fkey',
-    })
-      .onUpdate('restrict')
-      .onDelete('restrict'),
+    }).onDelete('cascade'),
     foreignKey({
       columns: [table.profileId],
       foreignColumns: [profiles.id],
       name: 'profile_languages_profile_id_fkey',
-    })
-      .onUpdate('restrict')
-      .onDelete('restrict'),
+    }).onDelete('cascade'),
     primaryKey({ columns: [table.profileId, table.languageId], name: 'profile_languages_pkey' }),
   ]
 );

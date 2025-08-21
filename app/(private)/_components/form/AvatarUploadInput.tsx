@@ -54,7 +54,7 @@ export default function AvatarUploadInput({ localStorageKey, value, onChange, ha
   };
 
   const uploadImage = async (file: File) => {
-    const response = await fetch('/api/avatar-upload-url', {
+    const response = await fetch('/api/upload/avatar', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -135,13 +135,10 @@ export default function AvatarUploadInput({ localStorageKey, value, onChange, ha
             className='object-cover object-center rounded-full'
           />
         ) : (
-          <UserRound
-            size={32}
-            className='text-zinc-400'
-          />
+          <UserRound className='size-8 text-zinc-400' />
         )}
         <div className='absolute -bottom-1 right-0 w-6 h-6 flex justify-center items-center bg-emerald-600 text-white rounded-full transition-transform group-hover:scale-105'>
-          <Plus size={16} />
+          <Plus className='size-4' />
         </div>
       </div>
     </>

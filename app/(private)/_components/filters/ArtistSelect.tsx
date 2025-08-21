@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { ArtistSelectData } from '@/lib/types';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Check, X } from 'lucide-react';
+import { Check, Eraser } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useEffect, useState } from 'react';
 import ResponsivePopover from '@/app/_components/ResponsivePopover';
@@ -84,10 +84,9 @@ export default function ArtistSelect({ initialValue, artists, onConfirm }: { ini
             <Button
               variant='ghost'
               size='sm'
-              className='text-destructive'
               onClick={resetHandler}
             >
-              <X />
+              <Eraser />
               Pulisci
             </Button>
             <Button

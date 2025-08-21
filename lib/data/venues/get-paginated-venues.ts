@@ -67,6 +67,7 @@ export async function getPaginatedVenues({ currentPage, name, company, taxCode, 
             surname: profiles.surname,
             status: users.status,
           },
+          createdAt: venues.createdAt,
         })
         .from(venues)
         .innerJoin(profiles, eq(venues.managerProfileId, profiles.id))

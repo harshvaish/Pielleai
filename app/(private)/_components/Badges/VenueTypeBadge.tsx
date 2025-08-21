@@ -2,10 +2,7 @@ import { Badge } from '@/components/ui/badge';
 import { VenueType } from '@/lib/constants';
 import { cn } from '@/lib/utils';
 
-const styles: Record<
-  VenueType,
-  { label: string; text: string; bg: string; dot: string }
-> = {
+const styles: Record<VenueType, { label: string; text: string; bg: string; dot: string }> = {
   small: {
     label: 'Club / DJ set',
     text: 'text-lime-600',
@@ -26,8 +23,13 @@ const styles: Record<
   },
 };
 
-export default function VenueTypeBadge({ type }: { type: VenueType }) {
+type VenueTypeBadgeProps = {
+  type: VenueType;
+  isDisabled?: boolean;
+};
+
+export default function VenueTypeBadge({ type, isDisabled }: VenueTypeBadgeProps) {
   const style = styles[type];
 
-  return <Badge className={cn(style.text, style.bg)}>{style.label}</Badge>;
+  return <Badge className={cn(isDisabled ? 'text-zinc-500' : style.text, isDisabled ? 'bg-zinc-50' : style.bg)}>{style.label}</Badge>;
 }

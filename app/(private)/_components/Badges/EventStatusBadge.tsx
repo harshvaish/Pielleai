@@ -74,7 +74,7 @@ export default function EventStatusBadge({ status, variant = 'primary', size = '
   return (
     <div className={cn('min-w-min inline-flex flex-nowrap items-center font-medium rounded-md', style.text, variant === 'primary' ? style.bg : 'bg-white', sizes[size])}>
       {style.icon}
-      <span className='whitespace-nowrap'>{style.label}</span>
+      <span className='truncate'>{style.label}</span>
     </div>
   );
 }

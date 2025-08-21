@@ -1,9 +1,20 @@
+import { auth } from '@/lib/auth';
 import { getArtistDateAvailabilitiesFromSlug } from '@/lib/data/artists/get-artist-date-availabilities-from-slug';
+import { headers } from 'next/headers';
 import { type NextRequest, NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
+  const requestHeaders = await headers();
+  const session = await auth.api.getSession({
+    headers: requestHeaders,
+  });
+
+  if (!session || session.user.role !== 'admin') {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   const url = new URL(request.url);
 
   const artistSlug = url.searchParams.get('artist');

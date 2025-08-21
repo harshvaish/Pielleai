@@ -2,12 +2,7 @@
 
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
-import {
-  Select,
-  SelectTrigger,
-  SelectContent,
-  SelectItem,
-} from '@/components/ui/select';
+import { Select, SelectTrigger, SelectContent, SelectItem } from '@/components/ui/select';
 import { X } from 'lucide-react';
 import { Language } from '@/lib/types';
 
@@ -18,12 +13,7 @@ type LanguageSelectProps = {
   hasError: boolean;
 };
 
-export default function LanguagesSelect({
-  languages,
-  value,
-  onChange,
-  hasError,
-}: LanguageSelectProps) {
+export default function LanguagesSelect({ languages, value, onChange, hasError }: LanguageSelectProps) {
   const handleAddLanguage = (languageId: string) => {
     const id = parseInt(languageId);
     if (value.includes(id)) return;
@@ -40,10 +30,7 @@ export default function LanguagesSelect({
         <SelectTrigger
           id='languages'
           size='sm'
-          className={cn(
-            'w-full',
-            hasError && 'border-destructive text-destructive'
-          )}
+          className={cn('w-full', hasError && 'border-destructive text-destructive')}
         >
           Seleziona una o più lingue
         </SelectTrigger>
@@ -74,10 +61,7 @@ export default function LanguagesSelect({
                 onClick={() => handleRemoveLanguage(languageId)}
               >
                 {langObj.name}
-                <X
-                  className='transition-colors group-hover:text-destructive ml-1'
-                  size={12}
-                />
+                <X className='size-3 transition-colors group-hover:text-destructive ml-1' />
               </Badge>
             );
           })}

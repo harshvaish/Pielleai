@@ -345,7 +345,7 @@ export type VenueData = {
   xCreatedAt: string | null;
 };
 
-export type VenueTableData = Pick<VenueData, 'id' | 'slug' | 'status' | 'avatarUrl' | 'name' | 'company' | 'taxCode' | 'address' | 'manager' | 'type' | 'capacity'>;
+export type VenueTableData = Pick<VenueData, 'id' | 'slug' | 'status' | 'avatarUrl' | 'name' | 'company' | 'taxCode' | 'address' | 'manager' | 'type' | 'capacity' | 'createdAt'>;
 
 export type VenueSelectData = Pick<VenueData, 'id' | 'slug' | 'status' | 'avatarUrl' | 'name' | 'address' | 'manager'>;
 

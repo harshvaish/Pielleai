@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { cn } from '@/lib/utils';
 import { useEffect, useState } from 'react';
-import { Check, X } from 'lucide-react';
+import { Check, Eraser } from 'lucide-react';
 import { VENUE_TYPES } from '@/lib/constants';
 import VenueTypeBadge from '../badges/VenueTypeBadge';
 
@@ -79,10 +79,9 @@ export default function VenueTypeSelect({ initialValue, onConfirm }: VenueTypeSe
             <Button
               variant='ghost'
               size='sm'
-              className='text-destructive'
               onClick={resetHandler}
             >
-              <X />
+              <Eraser />
               Pulisci
             </Button>
             <Button

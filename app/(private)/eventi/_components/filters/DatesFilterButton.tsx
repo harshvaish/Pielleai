@@ -8,7 +8,7 @@ import { type DateRange } from 'react-day-picker';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { formatInTimeZone } from 'date-fns-tz';
 import { TIME_ZONE } from '@/lib/constants';
-import { Calendar as CalendarIcon, X } from 'lucide-react';
+import { Calendar as CalendarIcon, Eraser } from 'lucide-react';
 import { it } from 'date-fns/locale';
 import ResponsivePopover from '@/app/_components/ResponsivePopover';
 
@@ -90,10 +90,9 @@ export default function DatesFilterButton({ filters }: DatesFilterButtonProps) {
         <Button
           variant='ghost'
           size='sm'
-          className='text-destructive'
           onClick={resetHandler}
         >
-          <X />
+          <Eraser />
           Pulisci
         </Button>
         <Button

@@ -112,10 +112,7 @@ export default function ResetPasswordForm({ token }: { token: string }) {
               variant='ghost'
               onClick={openModal}
             >
-              <ArrowLeft
-                size={16}
-                className='text-muted-foreground'
-              />
+              <ArrowLeft className='size-4 text-muted-foreground' />
               Torna al login
             </Button>
           </div>

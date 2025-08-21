@@ -1,20 +1,13 @@
 'use client';
 
 import { Badge } from '@/components/ui/badge';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Zone } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { ChevronDown } from 'lucide-react';
 import { useState } from 'react';
 
-const zoneColorsClasses: Record<
-  string,
-  { text: string; bg: string; dot: string }
-> = {
+const zoneColorsClasses: Record<string, { text: string; bg: string; dot: string }> = {
   'Nord': {
     text: 'text-lime-600',
     bg: 'bg-lime-100',
@@ -50,11 +43,8 @@ export default function ZonesBadge({ zones }: { zones: Zone[] }) {
 
   if (count === 1) {
     const zone = zones[0];
-    const zoneClass =
-      zoneColorsClasses[zone.name] || zoneColorsClasses['Default'];
-    return (
-      <Badge className={cn(zoneClass.text, zoneClass.bg)}>{zone.name}</Badge>
-    );
+    const zoneClass = zoneColorsClasses[zone.name] || zoneColorsClasses['Default'];
+    return <Badge className={cn(zoneClass.text, zoneClass.bg)}>{zone.name}</Badge>;
   }
 
   return (
@@ -65,35 +55,22 @@ export default function ZonesBadge({ zones }: { zones: Zone[] }) {
       <DropdownMenuTrigger className='flex items-center gap-2 p-2 bg-zinc-50 rounded-md w-max hover:bg-zinc-100 transition-colors'>
         <div className='flex -space-x-3'>
           {zones.slice(0, 4).map((zone, idx) => {
-            const zoneClass =
-              zoneColorsClasses[zone.name] || zoneColorsClasses['Default'];
+            const zoneClass = zoneColorsClasses[zone.name] || zoneColorsClasses['Default'];
             return (
               <div
                 key={idx}
-                className={cn(
-                  'w-5 h-5 rounded-full border border-white',
-                  zoneClass.dot
-                )}
+                className={cn('w-5 h-5 rounded-full border border-white', zoneClass.dot)}
               />
             );
           })}
         </div>
-        <span className='text-sm font-semibold text-zinc-700 whitespace-nowrap'>
-          {count} aree
-        </span>
-        <ChevronDown
-          size={16}
-          className={cn(
-            'transition-transform',
-            isDropdownOpen ? 'rotate-180' : ''
-          )}
-        />
+        <span className='text-xs font-semibold text-zinc-700 whitespace-nowrap'>{count} aree</span>
+        <ChevronDown className={cn('size-4 transition-transform', isDropdownOpen ? 'rotate-180' : '')} />
       </DropdownMenuTrigger>
 
       <DropdownMenuContent className='flex flex-col gap-2 p-2'>
         {zones.map((zone, idx) => {
-          const zoneClass =
-            zoneColorsClasses[zone.name] || zoneColorsClasses['Default'];
+          const zoneClass = zoneColorsClasses[zone.name] || zoneColorsClasses['Default'];
           return (
             <Badge
               key={idx}
@@ -109,10 +86,7 @@ export default function ZonesBadge({ zones }: { zones: Zone[] }) {
 }
 
 export const ZoneBadge = ({ zone }: { zone: Zone }) => {
-  const zoneClass =
-    zoneColorsClasses[zone.name] || zoneColorsClasses['Default'];
+  const zoneClass = zoneColorsClasses[zone.name] || zoneColorsClasses['Default'];
 
-  return (
-    <Badge className={cn(zoneClass.text, zoneClass.bg)}>{zone.name}</Badge>
-  );
+  return <Badge className={cn(zoneClass.text, zoneClass.bg)}>{zone.name}</Badge>;
 };

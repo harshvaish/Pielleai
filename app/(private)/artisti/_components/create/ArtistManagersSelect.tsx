@@ -2,12 +2,7 @@
 
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
-import {
-  Select,
-  SelectTrigger,
-  SelectContent,
-  SelectItem,
-} from '@/components/ui/select';
+import { Select, SelectTrigger, SelectContent, SelectItem } from '@/components/ui/select';
 import { X } from 'lucide-react';
 import { ArtistManagerSelectData } from '@/lib/types';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -19,12 +14,7 @@ type ArtistManagersSelectProps = {
   hasError: boolean;
 };
 
-export default function ArtistManagersSelect({
-  artistManagers,
-  value,
-  onChange,
-  hasError,
-}: ArtistManagersSelectProps) {
+export default function ArtistManagersSelect({ artistManagers, value, onChange, hasError }: ArtistManagersSelectProps) {
   const handleAddManager = (profileId: string) => {
     const id = parseInt(profileId);
     if (value.includes(id)) return;
@@ -41,10 +31,7 @@ export default function ArtistManagersSelect({
         <SelectTrigger
           id='artist-managers'
           size='sm'
-          className={cn(
-            'w-full',
-            hasError && 'border-destructive text-destructive'
-          )}
+          className={cn('w-full', hasError && 'border-destructive text-destructive')}
         >
           Seleziona uno o più manager
         </SelectTrigger>
@@ -58,9 +45,7 @@ export default function ArtistManagersSelect({
               <div className='flex items-center gap-2 flex-nowrap'>
                 <Avatar className='w-6 h-6'>
                   <AvatarImage src={manager.avatarUrl} />
-                  <AvatarFallback>
-                    {manager.name.substring(0, 1)}
-                  </AvatarFallback>
+                  <AvatarFallback>{manager.name.substring(0, 1)}</AvatarFallback>
                 </Avatar>
                 {manager.name} {manager.surname}
               </div>
@@ -72,9 +57,7 @@ export default function ArtistManagersSelect({
       {value.length > 0 && (
         <div className='w-full flex flex-nowrap gap-1 overflow-x-auto mt-2'>
           {value.map((managerProfileId) => {
-            const managerObj = artistManagers.find(
-              (m) => m.profileId === managerProfileId
-            );
+            const managerObj = artistManagers.find((m) => m.profileId === managerProfileId);
             if (!managerObj) return null;
 
             return (
@@ -85,10 +68,7 @@ export default function ArtistManagersSelect({
                 onClick={() => handleRemoveManager(managerProfileId)}
               >
                 {managerObj.name} {managerObj.surname}
-                <X
-                  className='transition-colors group-hover:text-destructive ml-1'
-                  size={12}
-                />
+                <X className='size-3 transition-colors group-hover:text-destructive ml-1' />
               </Badge>
             );
           })}
