@@ -1,9 +1,10 @@
 import Image from 'next/image';
 import NavbarButton from './NavbarButton';
+import SearchBar from './SearchBar';
 
 export default async function Header() {
   return (
-    <header className='max-h-max flex justify-between items-center px-4 md:px-8 py-4 border-b-1'>
+    <header className='max-h-max flex justify-between items-center px-4 md:px-8 py-4 gap-4 border-b-1'>
       <Image
         className='md:hidden w-10 h-10'
         src='/images/icon-black.svg'
@@ -22,7 +23,11 @@ export default async function Header() {
         priority
       />
 
-      <NavbarButton />
+      <div className='w-full flex justify-end items-center gap-2'>
+        <SearchBar />
+
+        <NavbarButton />
+      </div>
     </header>
   );
 }

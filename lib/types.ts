@@ -41,6 +41,23 @@ export interface CalendarAvailability extends RbcEvent {
   status: AvailabilityStatus;
 }
 /* ------------------------------------------------- */
+export type RawSearchItem = {
+  id: string;
+  profileId: number;
+  avatarUrl: string;
+  name: string;
+  surname: string;
+  path: string;
+};
+
+export type SearchItem = {
+  avatarUrl: string;
+  fullName: string;
+  surname: string;
+  path: string;
+  role: string;
+};
+/* ------------------------------------------------- */
 export type Language = {
   id: number;
   name: string;
