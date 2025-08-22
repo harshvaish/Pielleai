@@ -1,5 +1,5 @@
 import { auth } from '@/lib/auth';
-import { getArtistAvailabilitiesFromRange } from '@/lib/data/artists/get-artist-availabilities-from-range';
+import { getArtistRangeAvailabilities } from '@/lib/data/artists/get-artist-range-availabilities';
 import { headers } from 'next/headers';
 import { type NextRequest, NextResponse } from 'next/server';
 
@@ -21,9 +21,10 @@ export async function GET(request: NextRequest) {
   const startDate = url.searchParams.get('start');
   const endDate = url.searchParams.get('end');
 
+  const slugRegex = /^[0-9a-z-]+$/;
   const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
 
-  if (!artistSlug) {
+  if (!artistSlug || !slugRegex.test(artistSlug)) {
     return NextResponse.json({ error: 'Artista mancante o non valido.' }, { status: 400 });
   }
 
@@ -36,7 +37,7 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const availabilities = await getArtistAvailabilitiesFromRange({
+    const availabilities = await getArtistRangeAvailabilities({
       artistSlug,
       startDate,
       endDate,

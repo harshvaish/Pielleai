@@ -22,7 +22,7 @@ export default function ArtistAvailabilitySelect() {
     setValue,
     formState: { errors },
   } = useFormContext<EventFormSchema>();
-  const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
+  const [open, setOpen] = useState<boolean>(false);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [timeRanges, setTimeRanges] = useState<TimeRange[]>([]);
   const [isFormVisible, setIsFormVisible] = useState<boolean>(false);
@@ -37,7 +37,7 @@ export default function ArtistAvailabilitySelect() {
   const searchDate = selectedDate ? format(selectedDate, 'yyyy-MM-dd') : '';
   const label = selectedAvailability ? `${selectedAvailability.date} (${selectedAvailability.startTime} - ${selectedAvailability.endTime})` : 'Seleziona data';
 
-  const fetchUrl = selectedArtistId && searchDate ? `/api/artist-availabilities/date?artist=${selectedArtistId}&date=${searchDate}` : null;
+  const fetchUrl = selectedArtistId && searchDate ? `/api/artist-availabilities/date?i=${selectedArtistId}&date=${searchDate}` : null;
 
   const { data, error, isLoading } = useSWR(fetchUrl, fetcher, {
     dedupingInterval: 0, // milliseconds; 0 disables deduplication
@@ -80,7 +80,7 @@ export default function ArtistAvailabilitySelect() {
       startTime: newTimeRange.startTime,
       endTime: newTimeRange.endTime,
     });
-    setIsDialogOpen(false);
+    setOpen(false);
   };
 
   const onAvailabilityClickHandler = (timeRange: TimeRange) => {
@@ -100,7 +100,7 @@ export default function ArtistAvailabilitySelect() {
       startTime: timeRange.startTime,
       endTime: timeRange.endTime,
     });
-    setIsDialogOpen(false);
+    setOpen(false);
   };
 
   return (
@@ -110,15 +110,15 @@ export default function ArtistAvailabilitySelect() {
         size='sm'
         variant='outline'
         className={cn('justify-start text-sm font-normal', selectedAvailability ?? 'text-zinc-400', errors.availability && 'border-destructive')}
-        onClick={() => setIsDialogOpen(true)}
+        onClick={() => setOpen(true)}
         disabled={!selectedArtistId}
       >
         {label}
       </Button>
 
       <Dialog
-        open={isDialogOpen}
-        onOpenChange={setIsDialogOpen}
+        open={open}
+        onOpenChange={setOpen}
       >
         <DialogContent className='h-dvh md:max-h-[420px] w-dvw grid grid-rows-[auto_1fr] p-4 pt-12 rounded-none md:rounded-2xl'>
           <DialogHeader>

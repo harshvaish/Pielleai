@@ -360,7 +360,7 @@ export type ArtistAvailability = {
   startDate: Date;
   endDate: Date;
   status: AvailabilityStatus;
-  canDelete: boolean;
+  canDelete?: boolean;
 };
 
 export type Availability = Pick<ArtistAvailability, 'startDate' | 'endDate'>;

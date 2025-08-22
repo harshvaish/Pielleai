@@ -1,30 +1,41 @@
 'server only';
 
+import { TIME_ZONE } from '@/lib/constants';
 import { database } from '@/lib/database/connection';
 import { artistAvailabilities, artists, events } from '@/lib/database/schema';
 import { ArtistAvailability } from '@/lib/types';
+import { format } from 'date-fns';
+import { fromZonedTime } from 'date-fns-tz';
 import { and, count, eq, inArray, or, sql } from 'drizzle-orm';
 
-export async function getArtistDateAvailabilitiesFromSlug({
-  artistSlug,
-  date,
-}: {
-  artistSlug: string;
-  date: string; // YYYY-MM-DD in local wall time of the app's TZ
-}): Promise<ArtistAvailability[]> {
-  try {
-    // 1) Resolve artist id
-    const artistRow = await database.select({ id: artists.id }).from(artists).where(eq(artists.slug, artistSlug));
+type getArtistDateAvailabilitiesParams = {
+  artistId: string | null;
+  artistSlug: string | null;
+  date: string;
+};
 
-    const artistId = artistRow[0]?.id;
-    if (!artistId) {
-      throw new Error('Recupero artista non riuscito.');
+export async function getArtistDateAvailabilities({ artistId, artistSlug, date }: getArtistDateAvailabilitiesParams): Promise<ArtistAvailability[]> {
+  if (!artistId && !artistSlug) throw new Error('Dati artista mancanti.');
+
+  let id = artistId ? parseInt(artistId) : null;
+
+  try {
+    if (!id) {
+      // 1) Resolve artist id
+      const artistRow = await database.select({ id: artists.id }).from(artists).where(eq(artists.slug, artistSlug!));
+
+      id = artistRow[0]?.id;
+
+      if (!id) {
+        throw new Error('Recupero artista non riuscito.');
+      }
     }
 
     // 2) Build a full-day window as tsrange:
     //    For e.g. 2025-08-12 => [2025-08-12 00:00, 2025-08-13 00:00)
     //    '[)' means include start, exclude end.
-    const dayWindow = sql`tsrange(${date}::timestamp, (${date}::date + 1)::timestamp, '[)')`;
+    const dateUTC = format(fromZonedTime(date, TIME_ZONE), 'yyyy-MM-dd');
+    const dayWindow = sql`tsrange(${dateUTC}::timestamp, (${dateUTC}::date + 1)::timestamp, '[)')`;
 
     // 3) Fetch availabilities for the day
     const rows = await database
@@ -35,7 +46,7 @@ export async function getArtistDateAvailabilitiesFromSlug({
         status: artistAvailabilities.status,
       })
       .from(artistAvailabilities)
-      .where(and(eq(artistAvailabilities.artistId, artistId), sql`${artistAvailabilities.timeRange} && ${dayWindow}`))
+      .where(and(eq(artistAvailabilities.artistId, id), sql`${artistAvailabilities.timeRange} && ${dayWindow}`))
       .orderBy(artistAvailabilities.startDate);
 
     if (rows.length === 0) return [];

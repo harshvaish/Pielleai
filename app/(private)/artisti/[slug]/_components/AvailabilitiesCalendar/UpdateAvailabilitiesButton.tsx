@@ -28,7 +28,7 @@ export function UpdateAvailabilitiesButton() {
   const [submitting, setSubmitting] = useState<boolean>(false);
 
   const searchDate = selectedDate ? format(selectedDate, 'yyyy-MM-dd') : '';
-  const fetchUrl = searchDate ? `/api/artist-availabilities/date-slug?artist=${slug}&date=${searchDate}` : null;
+  const fetchUrl = searchDate ? `/api/artist-availabilities/date?s=${slug}&date=${searchDate}` : null;
 
   const { data, error, isLoading } = useSWR(fetchUrl, fetcher);
 

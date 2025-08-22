@@ -27,7 +27,7 @@ type EventTileProps = {
 export default function EventTile({ event, artists, venues, moCoordinators }: EventTileProps) {
   const isDesktop = useMediaQuery('(min-width: 1280px)');
 
-  const eventDate = format(event.availability.startDate, 'dd/MM/yyyy', { locale: it });
+  const eventDate = format(event.availability.startDate, 'dd MMM yyyy', { locale: it });
   const eventStartTime = format(event.availability.startDate, 'HH:mm', { locale: it });
   const eventEndTime = format(event.availability.endDate, 'HH:mm', { locale: it });
 
@@ -41,9 +41,9 @@ export default function EventTile({ event, artists, venues, moCoordinators }: Ev
           {/* time info */}
           <div className='w-40 flex flex-col gap-1 justify-center pe-4 border-r'>
             <EventStatusBadge status={event.status} />
-            <div className='text-lg font-semibold capitalize'>{format(event.availability.startDate, 'dd MMM yy', { locale: it })}</div>
+            <div className='text-lg font-semibold capitalize'>{eventDate}</div>
             <div className='text-zinc-500 font-medium'>
-              {format(event.availability.startDate, 'HH:mm', { locale: it })} - {format(event.availability.endDate, 'HH:mm', { locale: it })}
+              {eventStartTime} - {eventEndTime}
             </div>
           </div>
 
