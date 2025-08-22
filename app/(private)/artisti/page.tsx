@@ -3,7 +3,6 @@ import { getLanguages } from '@/lib/data/get-languages';
 import { getCountries } from '@/lib/data/get-countries';
 import { NEW_USER_TIME } from '@/lib/constants';
 import { TablePagination } from '../_components/form/TablePagination';
-import UserBadge from '../_components/badges/UserBadge';
 import StatusBadge from '../_components/badges/StatusBadge';
 import { getPaginatedArtists } from '@/lib/data/artists/get-paginated-artists';
 import { getZones } from '@/lib/data/artists/get-zones';
@@ -14,6 +13,7 @@ import { ArtistsTableFilters } from '@/lib/types';
 import FiltersButton from './_components/filters/FiltersButton';
 import CreateButton from './_components/create/CreateButton';
 import { splitCsv } from '@/lib/utils';
+import ArtistsBadge from '../_components/badges/ArtistsBadge';
 
 type ArtistsPageProps = {
   searchParams?: Promise<{
@@ -95,13 +95,7 @@ export default async function ArtistsPage({ searchParams }: ArtistsPageProps) {
                 >
                   <TableCell>
                     <div className='flex items-center flex-nowrap gap-3'>
-                      <UserBadge
-                        name={artist.name}
-                        surname={artist.surname}
-                        avatarUrl={artist.avatarUrl}
-                        isDisabled={isDisabled}
-                        href={`/artisti/${artist.slug}`}
-                      />
+                      <ArtistsBadge artists={[artist]} />
                       {badgeStatus && <StatusBadge status={badgeStatus} />}
                     </div>
                   </TableCell>

@@ -3,7 +3,7 @@
 import { database } from '@/lib/database/connection';
 import { profiles, users } from '@/lib/database/schema';
 import { ArtistManagerSelectData } from '@/lib/types';
-import { asc, eq } from 'drizzle-orm';
+import { and, asc, eq, inArray } from 'drizzle-orm';
 
 export async function getArtistManagers(): Promise<ArtistManagerSelectData[]> {
   try {
@@ -18,7 +18,7 @@ export async function getArtistManagers(): Promise<ArtistManagerSelectData[]> {
       })
       .from(users)
       .innerJoin(profiles, eq(users.id, profiles.userId))
-      .where(eq(users.role, 'artist-manager'))
+      .where(and(eq(users.role, 'artist-manager'), inArray(users.status, ['active', 'disabled'])))
       .orderBy(asc(profiles.name), asc(profiles.surname));
 
     return results;

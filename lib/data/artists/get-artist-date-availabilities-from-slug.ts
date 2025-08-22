@@ -1,32 +1,33 @@
 'server only';
 
 import { database } from '@/lib/database/connection';
-import { artistAvailabilities, artists } from '@/lib/database/schema';
+import { artistAvailabilities, artists, events } from '@/lib/database/schema';
 import { ArtistAvailability } from '@/lib/types';
-import { and, eq, or, sql } from 'drizzle-orm';
+import { and, count, eq, inArray, or, sql } from 'drizzle-orm';
 
 export async function getArtistDateAvailabilitiesFromSlug({
   artistSlug,
   date,
 }: {
   artistSlug: string;
-  date: string;
+  date: string; // YYYY-MM-DD in local wall time of the app's TZ
 }): Promise<ArtistAvailability[]> {
   try {
-    const artistResult = await database
-      .select({
-        id: artists.id,
-      })
-      .from(artists)
-      .where(and(eq(artists.slug, artistSlug)));
+    // 1) Resolve artist id
+    const artistRow = await database.select({ id: artists.id }).from(artists).where(eq(artists.slug, artistSlug));
 
-    const artistId = artistResult[0]?.id;
-
+    const artistId = artistRow[0]?.id;
     if (!artistId) {
       throw new Error('Recupero artista non riuscito.');
     }
 
-    const availabilitiesResult = await database
+    // 2) Build a full-day window as tsrange:
+    //    For e.g. 2025-08-12 => [2025-08-12 00:00, 2025-08-13 00:00)
+    //    '[)' means include start, exclude end.
+    const dayWindow = sql`tsrange(${date}::timestamp, (${date}::date + 1)::timestamp, '[)')`;
+
+    // 3) Fetch availabilities for the day
+    const rows = await database
       .select({
         id: artistAvailabilities.id,
         startDate: artistAvailabilities.startDate,
@@ -34,20 +35,34 @@ export async function getArtistDateAvailabilitiesFromSlug({
         status: artistAvailabilities.status,
       })
       .from(artistAvailabilities)
-      .where(
-        and(
-          eq(artistAvailabilities.artistId, artistId),
-          or(
-            sql`DATE(${artistAvailabilities.startDate}) = ${date}::date`,
-            sql`DATE(${artistAvailabilities.endDate}) = ${date}::date`
-          )
-        )
-      )
+      .where(and(eq(artistAvailabilities.artistId, artistId), sql`${artistAvailabilities.timeRange} && ${dayWindow}`))
       .orderBy(artistAvailabilities.startDate);
 
-    if (!availabilitiesResult.length) return [];
+    if (rows.length === 0) return [];
 
-    return availabilitiesResult;
+    // 4) Fetch counts of "protected" events per availability (pre-confirmed/confirmed or previous pre-confirmed)
+    const availabilityIds = rows.map((r) => r.id);
+
+    const protectedCounts = await database
+      .select({
+        availabilityId: events.availabilityId,
+        cnt: count(),
+      })
+      .from(events)
+      .where(and(inArray(events.availabilityId, availabilityIds), or(inArray(events.status, ['pre-confirmed', 'confirmed']), eq(events.previousStatus, 'pre-confirmed'))))
+      .groupBy(events.availabilityId);
+
+    const protectedMap = new Map<number, number>();
+    for (const r of protectedCounts) protectedMap.set(r.availabilityId, Number(r.cnt));
+
+    // 5) Compute canDelete
+    const result: ArtistAvailability[] = rows.map((r) => {
+      const protectedCount = protectedMap.get(r.id) ?? 0;
+      const canDelete = r.status !== 'booked' && protectedCount === 0;
+      return { ...r, canDelete };
+    });
+
+    return result;
   } catch (error) {
     console.error('[getArtistAvailabilitiesFromDate] - Error:', error);
     throw new Error('Recupero disponibilità artista non riuscito.');

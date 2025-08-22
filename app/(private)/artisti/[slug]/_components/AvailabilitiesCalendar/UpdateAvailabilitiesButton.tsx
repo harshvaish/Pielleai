@@ -30,19 +30,17 @@ export function UpdateAvailabilitiesButton() {
   const searchDate = selectedDate ? format(selectedDate, 'yyyy-MM-dd') : '';
   const fetchUrl = searchDate ? `/api/artist-availabilities/date-slug?artist=${slug}&date=${searchDate}` : null;
 
-  const { data, error, isLoading } = useSWR(fetchUrl, fetcher, {
-    dedupingInterval: 0, // milliseconds; 0 disables deduplication
-    revalidateIfStale: true,
-    revalidateOnMount: true,
-  });
+  const { data, error, isLoading } = useSWR(fetchUrl, fetcher);
 
   useEffect(() => {
     if (!data?.availabilities) return;
+
     setTimeRanges(
       data.availabilities.map((a: ArtistAvailability) => ({
         startTime: format(a.startDate, 'HH:mm'),
         endTime: format(a.endDate, 'HH:mm'),
         status: a.status,
+        canDelete: a.canDelete,
       }))
     );
   }, [data]);
@@ -80,7 +78,8 @@ export function UpdateAvailabilitiesButton() {
     });
 
     if (!response.success) {
-      toast(response.message);
+      toast.error(response.message);
+      setSubmitting(false);
       return;
     }
 
@@ -119,7 +118,7 @@ export function UpdateAvailabilitiesButton() {
               mode='single'
               selected={selectedDate}
               onSelect={setSelectedDate}
-              disabled={submitting || isLoading}
+              disabled={submitting || isLoading ? true : { before: new Date() }}
               className='h-max p-0 self-center'
             />
 
@@ -149,7 +148,7 @@ export function UpdateAvailabilitiesButton() {
                   {!isLoading &&
                     timeRanges.length > 0 &&
                     timeRanges.map((timeRange, index) => {
-                      const notAvailable = 'status' in timeRange && timeRange.status !== 'available';
+                      const canDelete = !('canDelete' in timeRange) || timeRange?.canDelete;
 
                       return (
                         <div
@@ -166,10 +165,10 @@ export function UpdateAvailabilitiesButton() {
                             }}
                             className={cn(
                               'w-min appearance-none [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none shadow-none',
-                              notAvailable ? 'text-zinc-400 pointer-events-none' : ''
+                              !canDelete ? 'text-zinc-400 pointer-events-none' : ''
                             )}
                             disabled={submitting || isLoading}
-                            readOnly={notAvailable}
+                            readOnly={!canDelete}
                           />
                           <span className='text-zinc-400'>-</span>
                           <Input
@@ -182,12 +181,12 @@ export function UpdateAvailabilitiesButton() {
                             }}
                             className={cn(
                               'w-min appearance-none [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none shadow-none',
-                              notAvailable ? 'text-zinc-400 pointer-events-none' : ''
+                              !canDelete ? 'text-zinc-400 pointer-events-none' : ''
                             )}
                             disabled={submitting || isLoading}
-                            readOnly={notAvailable}
+                            readOnly={!canDelete}
                           />
-                          {!notAvailable && (
+                          {canDelete && (
                             <Button
                               variant='ghost'
                               size='icon'

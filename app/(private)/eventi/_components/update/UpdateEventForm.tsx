@@ -64,10 +64,13 @@ export default function UpdateEventForm({ event, artists, venues, moCoordinators
       soundCheckStart: event.soundCheckStart || '',
       soundCheckEnd: event.soundCheckEnd || '',
 
-      tecnicalRiderDocument: {
-        url: event.tecnicalRiderUrl || '',
-        name: event.tecnicalRiderName || '',
-      },
+      tecnicalRiderDocument:
+        event.tecnicalRiderUrl && event.tecnicalRiderName
+          ? {
+              url: event.tecnicalRiderUrl,
+              name: event.tecnicalRiderName,
+            }
+          : undefined,
 
       contractSigning: event.contractSigning ?? false,
       depositInvoiceIssuing: event.depositInvoiceIssuing ?? false,

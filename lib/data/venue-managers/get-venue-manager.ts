@@ -1,22 +1,12 @@
 'server only';
 
 import { database } from '@/lib/database/connection';
-import {
-  countries,
-  languages,
-  profileLanguages,
-  profiles,
-  subdivisions,
-  users,
-  venues,
-} from '@/lib/database/schema';
+import { countries, languages, profileLanguages, profiles, subdivisions, users, venues } from '@/lib/database/schema';
 import { Language, VenueListData, VenueManagerData } from '@/lib/types';
-import { eq } from 'drizzle-orm';
+import { desc, eq } from 'drizzle-orm';
 import { alias } from 'drizzle-orm/pg-core';
 
-export async function getVenueManager(
-  uid: string
-): Promise<VenueManagerData<VenueListData> | null> {
+export async function getVenueManager(uid: string): Promise<VenueManagerData<VenueListData> | null> {
   try {
     const country = alias(countries, 'country');
     const subdivision = alias(subdivisions, 'subdivision');
@@ -56,36 +46,36 @@ export async function getVenueManager(
       .innerJoin(country, eq(profiles.countryId, country.id))
       .innerJoin(subdivision, eq(profiles.subdivisionId, subdivision.id))
       .where(eq(users.id, uid))
+      .orderBy(desc(profiles.createdAt))
       .limit(1);
 
     if (!userResult.length) return null;
 
     const user = userResult[0];
 
-    const [languagesResult, venuesResult]: [Language[], VenueListData[]] =
-      await Promise.all([
-        database
-          .select({ id: languages.id, name: languages.name })
-          .from(profileLanguages)
-          .innerJoin(languages, eq(profileLanguages.languageId, languages.id))
-          .where(eq(profileLanguages.profileId, user.profileId)),
+    const [languagesResult, venuesResult]: [Language[], VenueListData[]] = await Promise.all([
+      database
+        .select({ id: languages.id, name: languages.name })
+        .from(profileLanguages)
+        .innerJoin(languages, eq(profileLanguages.languageId, languages.id))
+        .where(eq(profileLanguages.profileId, user.profileId)),
 
-        database
-          .select({
-            id: venues.id,
-            status: venues.status,
-            slug: venues.slug,
-            avatarUrl: venues.avatarUrl,
-            type: venues.type,
-            name: venues.name,
-            address: venues.address,
-            company: venues.company,
-            taxCode: venues.taxCode,
-            capacity: venues.capacity,
-          })
-          .from(venues)
-          .where(eq(venues.managerProfileId, user.profileId)),
-      ]);
+      database
+        .select({
+          id: venues.id,
+          status: venues.status,
+          slug: venues.slug,
+          avatarUrl: venues.avatarUrl,
+          type: venues.type,
+          name: venues.name,
+          address: venues.address,
+          company: venues.company,
+          taxCode: venues.taxCode,
+          capacity: venues.capacity,
+        })
+        .from(venues)
+        .where(eq(venues.managerProfileId, user.profileId)),
+    ]);
 
     return {
       ...user,

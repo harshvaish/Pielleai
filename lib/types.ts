@@ -229,7 +229,7 @@ export type ArtistData = {
   xCreatedAt: string | null;
 };
 
-export type ArtistTableData = Pick<ArtistData, 'id' | 'slug' | 'status' | 'zones' | 'createdAt' | 'avatarUrl' | 'name' | 'surname' | 'phone' | 'email' | 'company' | 'managers'>;
+export type ArtistTableData = Pick<ArtistData, 'id' | 'slug' | 'status' | 'zones' | 'createdAt' | 'avatarUrl' | 'name' | 'surname' | 'stageName' | 'phone' | 'email' | 'company' | 'managers'>;
 
 export type ArtistListData = Pick<
   ArtistData,
@@ -360,6 +360,7 @@ export type ArtistAvailability = {
   startDate: Date;
   endDate: Date;
   status: AvailabilityStatus;
+  canDelete: boolean;
 };
 
 export type Availability = Pick<ArtistAvailability, 'startDate' | 'endDate'>;
@@ -369,6 +370,7 @@ export type TimeRange = {
   endTime: string;
   status?: AvailabilityStatus;
   availabilityId?: number;
+  canDelete?: boolean;
 };
 
 /* ------------------------------------------------- */

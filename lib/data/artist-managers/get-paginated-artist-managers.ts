@@ -4,7 +4,7 @@ import { PAGINATED_TABLE_ROWS_X_PAGE } from '@/lib/constants';
 import { database } from '@/lib/database/connection';
 import { artists, managerArtists, profiles, users } from '@/lib/database/schema';
 import { ArtistManagerTableData, ArtistManagersTableFilters, ArtistSelectData } from '@/lib/types';
-import { and, count, eq, ilike, inArray, or } from 'drizzle-orm';
+import { and, count, desc, eq, ilike, inArray, or } from 'drizzle-orm';
 
 export async function getPaginatedArtistManagers({ currentPage, fullName, email, phone, artistIds, company }: ArtistManagersTableFilters): Promise<{
   data: ArtistManagerTableData[];
@@ -63,6 +63,7 @@ export async function getPaginatedArtistManagers({ currentPage, fullName, email,
       .from(users)
       .innerJoin(profiles, eq(users.id, profiles.userId))
       .where(filters)
+      .orderBy(desc(profiles.createdAt))
       .limit(limit)
       .offset(offset);
 

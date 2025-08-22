@@ -4,7 +4,7 @@ import { PAGINATED_TABLE_ROWS_X_PAGE } from '@/lib/constants';
 import { database } from '@/lib/database/connection';
 import { profiles, users, venues } from '@/lib/database/schema';
 import { VenuesTableFilters, VenueTableData } from '@/lib/types';
-import { and, count, eq, gte, ilike, inArray } from 'drizzle-orm';
+import { and, count, desc, eq, gte, ilike, inArray } from 'drizzle-orm';
 
 export async function getPaginatedVenues({ currentPage, name, company, taxCode, address, types, managerIds, capacity }: VenuesTableFilters): Promise<{
   data: VenueTableData[];
@@ -35,6 +35,7 @@ export async function getPaginatedVenues({ currentPage, name, company, taxCode, 
       }
     }
 
+    // Build reusable filters
     const filters = and(
       name ? ilike(venues.name, `%${name}%`) : undefined,
       company ? ilike(venues.company, `%${company}%`) : undefined,
@@ -73,6 +74,7 @@ export async function getPaginatedVenues({ currentPage, name, company, taxCode, 
         .innerJoin(profiles, eq(venues.managerProfileId, profiles.id))
         .innerJoin(users, eq(profiles.userId, users.id))
         .where(filters)
+        .orderBy(desc(venues.createdAt))
         .limit(limit)
         .offset(offset),
       database.select({ venueCount: count() }).from(venues).where(filters),

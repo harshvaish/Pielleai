@@ -133,7 +133,7 @@ export default function ArtistAvailabilitySelect() {
               className='h-max p-0 self-center'
               selected={selectedDate}
               onSelect={setSelectedDate}
-              disabled={isLoading ? isLoading : { before: new Date() }}
+              disabled={isLoading ? true : { before: new Date() }}
             />
 
             {searchDate ? (

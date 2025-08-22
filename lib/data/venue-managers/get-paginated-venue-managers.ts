@@ -4,7 +4,7 @@ import { PAGINATED_TABLE_ROWS_X_PAGE } from '@/lib/constants';
 import { database } from '@/lib/database/connection';
 import { profiles, users, venues } from '@/lib/database/schema';
 import { VenueManagerTableData, VenueBadgeData, VenueManagersTableFilters } from '@/lib/types';
-import { and, count, eq, ilike, inArray, or } from 'drizzle-orm';
+import { and, count, desc, eq, ilike, inArray, or } from 'drizzle-orm';
 
 export async function getPaginatedVenueManagers({ currentPage, fullName, email, phone, venueIds }: VenueManagersTableFilters): Promise<{
   data: VenueManagerTableData[];
@@ -35,6 +35,7 @@ export async function getPaginatedVenueManagers({ currentPage, fullName, email, 
       }
     }
 
+    // Build reusable filters
     const filters = and(
       eq(users.role, 'venue-manager'),
       inArray(users.status, ['active', 'disabled']),
@@ -60,6 +61,7 @@ export async function getPaginatedVenueManagers({ currentPage, fullName, email, 
       .from(users)
       .innerJoin(profiles, eq(users.id, profiles.userId))
       .where(filters)
+      .orderBy(desc(profiles.createdAt))
       .limit(limit)
       .offset(offset);
 

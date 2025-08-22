@@ -1,5 +1,6 @@
 import { pgTable, foreignKey, unique, text, timestamp, check, serial, integer, boolean, date, varchar, uuid, uniqueIndex, numeric, time, primaryKey, pgEnum } from 'drizzle-orm/pg-core';
 import { sql } from 'drizzle-orm';
+import { generatedTSRangeColumn } from './ts-range';
 
 export const availabilityStatus = pgEnum('availability_status', ['available', 'booked', 'expired']);
 export const eventStatus = pgEnum('event_status', ['proposed', 'pre-confirmed', 'confirmed', 'conflict', 'rejected']);
@@ -50,8 +51,10 @@ export const artistAvailabilities = pgTable(
     status: availabilityStatus().default('available').notNull(),
     createdAt: timestamp('created_at').defaultNow().notNull(),
     updatedAt: timestamp('updated_at').defaultNow().notNull(),
-    // TODO: failed to parse database type 'tsrange'
-    // timeRange: unknown('time_range').generatedAlwaysAs(sql`tsrange(start_date, end_date, '[)'::text)`),
+    timeRange: generatedTSRangeColumn('time_range', 'start_date', 'end_date', {
+      lowerInclusive: true,
+      upperInclusive: false,
+    }),
   },
   (table) => [
     foreignKey({
