@@ -21,11 +21,5 @@ Convert received UTC values back to the business timezone for display.
 
 - change email sender in send-reset-password-email
 - create subfolders for upload based on entity
-- add loading pages
-- validation on input filters
-- check for timestamp in the db for timezone
-- format function, add locale everiwhere
 - transitions sui filtri
 - general fetches in the pages: cache and errors?
-
-- review all availability system and timezones UTC.. kkepp goingggg
