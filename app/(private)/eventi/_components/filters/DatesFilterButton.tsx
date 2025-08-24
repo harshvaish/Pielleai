@@ -6,11 +6,12 @@ import { Calendar } from '@/components/ui/calendar';
 import { useState, useCallback, useTransition } from 'react';
 import { type DateRange } from 'react-day-picker';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { formatInTimeZone } from 'date-fns-tz';
-import { TIME_ZONE } from '@/lib/constants';
 import { Calendar as CalendarIcon, Eraser } from 'lucide-react';
 import { it } from 'date-fns/locale';
 import ResponsivePopover from '@/app/_components/ResponsivePopover';
+import { format } from 'date-fns';
+import { toZonedTime } from 'date-fns-tz';
+import { TIME_ZONE } from '@/lib/constants';
 
 type DatesFilterButtonProps = {
   filters: EventsTableFilters;
@@ -23,8 +24,8 @@ export default function DatesFilterButton({ filters }: DatesFilterButtonProps) {
 
   const [open, setOpen] = useState<boolean>(false);
   const [dateRange, setDateRange] = useState<DateRange | undefined>({
-    from: filters.startDate ?? undefined,
-    to: filters.endDate ?? undefined,
+    from: filters.startDate ? toZonedTime(filters.startDate, TIME_ZONE) : undefined,
+    to: filters.endDate ? toZonedTime(filters.endDate, TIME_ZONE) : undefined,
   });
 
   const active = Boolean(filters.startDate && filters.endDate);
@@ -33,14 +34,14 @@ export default function DatesFilterButton({ filters }: DatesFilterButtonProps) {
     const params = new URLSearchParams(sp?.toString());
 
     if (dateRange?.from) {
-      const start = formatInTimeZone(dateRange.from, TIME_ZONE, 'yyyy-MM-dd');
+      const start = format(dateRange.from, 'yyyy-MM-dd');
       params.set('start', start);
     } else {
       params.delete('start');
     }
 
     if (dateRange?.to) {
-      const end = formatInTimeZone(dateRange.to, TIME_ZONE, 'yyyy-MM-dd');
+      const end = format(dateRange.to, 'yyyy-MM-dd');
       params.set('end', end);
     } else {
       params.delete('end');

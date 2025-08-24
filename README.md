@@ -1,11 +1,23 @@
-Golden Rule:
-Always treat user inputs as being in a specific timezone (e.g. Europe/Rome), and convert them to UTC in the Frontend.
+Golden Rule for Dates & Timezones
 
-- frontend use timezoned (e.g. Europe/Rome)
-- as soon as possible in the FE convert the dates in UTC
-- pass the data in UTC to the backend
-- the BE responds in UTC to the FE
-- the FE convert to timezone and display
+Always interpret user inputs in the business timezone (e.g. Europe/Rome) and convert them to UTC as early as possible in the Frontend.
+All communication between Frontend and Backend happens in UTC.
+
+WORKFLOW
+
+Frontend (FE)
+Work in the business timezone for all user interactions (date pickers, calendars, forms).
+Immediately convert inputs to UTC once captured.
+Send only UTC values to the backend.
+
+Backend (BE)
+Accept and store UTC values exclusively.
+Perform all queries and computations in UTC.
+Return responses in UTC.
+
+Frontend (FE)
+Convert received UTC values back to the business timezone for display.
+@@@@@@@@@@@@@@@@@@@@@@@@
 
 - change email sender in send-reset-password-email
 - create subfolders for upload based on entity

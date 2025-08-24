@@ -4,7 +4,7 @@ import { PAGINATED_TABLE_ROWS_X_PAGE } from '@/lib/constants';
 import { database } from '@/lib/database/connection';
 import { artists, events, artistAvailabilities, venues, eventNotes, profiles, users, moCoordinators } from '@/lib/database/schema';
 import { Event, EventNote, EventsTableFilters } from '@/lib/types';
-import { and, count, desc, eq, gt, inArray, lt } from 'drizzle-orm';
+import { and, count, desc, eq, inArray, sql } from 'drizzle-orm';
 
 export async function getEvents({ currentPage, status, artistIds, artistManagerIds, venueIds, startDate, endDate }: EventsTableFilters): Promise<{
   data: Event[];
@@ -17,13 +17,16 @@ export async function getEvents({ currentPage, status, artistIds, artistManagerI
   const offset = (safePage - 1) * limit;
 
   try {
+    // Build date window only if both are present: [start 00:00, end+1 00:00)
+    const rangeWindow = startDate && endDate ? sql`tsrange(${startDate}::timestamp, (${endDate}::date + 1)::timestamp, '[)')` : undefined;
+
     // Build reusable filters
     const filters = and(
       status.length > 0 ? inArray(events.status, status) : undefined,
       artistIds.length > 0 ? inArray(events.artistId, artistIds.map(Number)) : undefined,
       artistManagerIds.length > 0 ? inArray(events.artistManagerProfileId, artistManagerIds.map(Number)) : undefined,
       venueIds.length > 0 ? inArray(events.venueId, venueIds.map(Number)) : undefined,
-      startDate && endDate ? and(lt(artistAvailabilities.startDate, endDate), gt(artistAvailabilities.endDate, startDate)) : undefined
+      rangeWindow ? sql`${artistAvailabilities.timeRange} && ${rangeWindow}` : undefined
     );
 
     // Base query

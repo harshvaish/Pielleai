@@ -15,6 +15,8 @@ import { checkTimeRanges, cn, fetcher } from '@/lib/utils';
 import { ArtistAvailability, TimeRange } from '@/lib/types';
 import { toast } from 'sonner';
 import { Skeleton } from '@/components/ui/skeleton';
+import { formatInTimeZone, fromZonedTime } from 'date-fns-tz';
+import { TIME_ZONE } from '@/lib/constants';
 
 export default function ArtistAvailabilitySelect() {
   const {
@@ -34,24 +36,20 @@ export default function ArtistAvailabilitySelect() {
   const selectedArtistId = watch('artistId');
   const selectedAvailability = watch('availability');
 
-  const searchDate = selectedDate ? format(selectedDate, 'yyyy-MM-dd') : '';
+  const searchDateUTC = selectedDate ? format(fromZonedTime(selectedDate, TIME_ZONE), 'yyyy-MM-dd') : '';
   const label = selectedAvailability ? `${selectedAvailability.date} (${selectedAvailability.startTime} - ${selectedAvailability.endTime})` : 'Seleziona data';
 
-  const fetchUrl = selectedArtistId && searchDate ? `/api/artist-availabilities/date?i=${selectedArtistId}&date=${searchDate}` : null;
+  const fetchUrl = selectedArtistId && searchDateUTC ? `/api/artist-availabilities/date?i=${selectedArtistId}&date=${searchDateUTC}` : null;
 
-  const { data, error, isLoading } = useSWR(fetchUrl, fetcher, {
-    dedupingInterval: 0, // milliseconds; 0 disables deduplication
-    revalidateIfStale: true,
-    revalidateOnMount: true,
-  });
+  const { data, error, isLoading } = useSWR(fetchUrl, fetcher);
 
   useEffect(() => {
     if (!data?.availabilities) return;
     setTimeRanges(
       data.availabilities.map((a: ArtistAvailability) => ({
         availabilityId: a.id,
-        startTime: format(a.startDate, 'HH:mm'),
-        endTime: format(a.endDate, 'HH:mm'),
+        startTime: formatInTimeZone(a.startDate, TIME_ZONE, 'HH:mm'),
+        endTime: formatInTimeZone(a.endDate, TIME_ZONE, 'HH:mm'),
         status: a.status,
       }))
     );
@@ -67,7 +65,8 @@ export default function ArtistAvailabilitySelect() {
       return;
     }
 
-    const check = checkTimeRanges(searchDate, [...timeRanges, newTimeRange]);
+    const date = format(selectedDate, 'yyyy-MM-dd');
+    const check = checkTimeRanges(date, [...timeRanges, newTimeRange]);
 
     if (!check.success) {
       toast.error(check.message);
@@ -76,7 +75,7 @@ export default function ArtistAvailabilitySelect() {
 
     setValue('availability', {
       id: undefined,
-      date: format(selectedDate, 'yyyy-MM-dd'),
+      date: date,
       startTime: newTimeRange.startTime,
       endTime: newTimeRange.endTime,
     });
@@ -136,7 +135,7 @@ export default function ArtistAvailabilitySelect() {
               disabled={isLoading ? true : { before: new Date() }}
             />
 
-            {searchDate ? (
+            {selectedDate ? (
               <div className='w-full flex flex-col overflow-y-auto'>
                 <div className='flex justify-between items-center shrink-0'>
                   <div className='font-semibold text-zinc-700'>Orario</div>
