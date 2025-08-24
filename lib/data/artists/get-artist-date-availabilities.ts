@@ -1,11 +1,8 @@
 'server only';
 
-import { TIME_ZONE } from '@/lib/constants';
 import { database } from '@/lib/database/connection';
 import { artistAvailabilities, artists, events } from '@/lib/database/schema';
 import { ArtistAvailability } from '@/lib/types';
-import { format } from 'date-fns';
-import { fromZonedTime } from 'date-fns-tz';
 import { and, count, eq, inArray, or, sql } from 'drizzle-orm';
 
 type getArtistDateAvailabilitiesParams = {
@@ -34,8 +31,7 @@ export async function getArtistDateAvailabilities({ artistId, artistSlug, date }
     // 2) Build a full-day window as tsrange:
     //    For e.g. 2025-08-12 => [2025-08-12 00:00, 2025-08-13 00:00)
     //    '[)' means include start, exclude end.
-    const dateUTC = format(fromZonedTime(date, TIME_ZONE), 'yyyy-MM-dd');
-    const dayWindow = sql`tsrange(${dateUTC}::timestamp, (${dateUTC}::date + 1)::timestamp, '[)')`;
+    const dayWindow = sql`tsrange(${date}::timestamp, (${date}::date + 1)::timestamp, '[)')`;
 
     // 3) Fetch availabilities for the day
     const rows = await database

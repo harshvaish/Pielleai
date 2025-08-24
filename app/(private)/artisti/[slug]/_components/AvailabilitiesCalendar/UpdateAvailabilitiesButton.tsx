@@ -15,6 +15,8 @@ import { editArtistAvailabilities } from '@/lib/server-actions/artists/edit-arti
 import { checkTimeRanges, cn, fetcher } from '@/lib/utils';
 import { notFound, useParams, useRouter } from 'next/navigation';
 import { it } from 'date-fns/locale';
+import { fromZonedTime } from 'date-fns-tz';
+import { TIME_ZONE } from '@/lib/constants';
 
 export function UpdateAvailabilitiesButton() {
   const { slug } = useParams();
@@ -27,8 +29,8 @@ export function UpdateAvailabilitiesButton() {
   const [timeRanges, setTimeRanges] = useState<TimeRange[]>([]);
   const [submitting, setSubmitting] = useState<boolean>(false);
 
-  const searchDate = selectedDate ? format(selectedDate, 'yyyy-MM-dd') : '';
-  const fetchUrl = searchDate ? `/api/artist-availabilities/date?s=${slug}&date=${searchDate}` : null;
+  const searchDateUTC = selectedDate ? format(fromZonedTime(selectedDate, TIME_ZONE), 'yyyy-MM-dd') : '';
+  const fetchUrl = selectedDate ? `/api/artist-availabilities/date?s=${slug}&date=${searchDateUTC}` : null;
 
   const { data, error, isLoading } = useSWR(fetchUrl, fetcher);
 
@@ -50,7 +52,7 @@ export function UpdateAvailabilitiesButton() {
   }, [error]);
 
   const addTimeRange = () => {
-    const check = checkTimeRanges(searchDate, timeRanges);
+    const check = checkTimeRanges(searchDateUTC, timeRanges);
     if (!check.success) {
       toast.error(check.message);
       return;
@@ -64,7 +66,7 @@ export function UpdateAvailabilitiesButton() {
   };
 
   const onSaveHandler = async () => {
-    const check = checkTimeRanges(searchDate, timeRanges);
+    const check = checkTimeRanges(searchDateUTC, timeRanges);
     if (!check.success) {
       toast.error(check.message);
       return;
@@ -73,7 +75,7 @@ export function UpdateAvailabilitiesButton() {
 
     const response = await editArtistAvailabilities({
       artistSlug: slug as string,
-      date: searchDate,
+      date: searchDateUTC,
       timeRanges,
     });
 
@@ -122,7 +124,7 @@ export function UpdateAvailabilitiesButton() {
               className='h-max p-0 self-center'
             />
 
-            {searchDate ? (
+            {selectedDate ? (
               <div className='flex flex-col overflow-y-auto'>
                 <div className='flex justify-between items-center shrink-0'>
                   <div className='font-semibold text-zinc-700'>Orario</div>

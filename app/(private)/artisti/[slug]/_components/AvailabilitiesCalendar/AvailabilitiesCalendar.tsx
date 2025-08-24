@@ -5,7 +5,7 @@ import 'react-big-calendar/lib/css/react-big-calendar.css';
 import '@/app/(private)/_components/Calendar/calendar-overrides.css';
 
 import { format, getDay, parse, startOfWeek } from 'date-fns';
-import { CALENDAR_VIEWS } from '@/lib/constants';
+import { CALENDAR_VIEWS, TIME_ZONE } from '@/lib/constants';
 import { Toolbar } from './Toolbar';
 import WeekHeader from './WeekHeader';
 import MonthHeader from './MonthHeader';
@@ -19,6 +19,7 @@ import { toast } from 'sonner';
 import { it } from 'date-fns/locale';
 import { Skeleton } from '@/components/ui/skeleton';
 import Event from './Event';
+import { fromZonedTime, toZonedTime } from 'date-fns-tz';
 
 const locales = { it };
 
@@ -39,10 +40,10 @@ export default function AvailabilitiesCalendar() {
   const [range, setRange] = useState<{ start: Date; end: Date }>(() => calculateRange(new Date(), 'week'));
   const [availabilities, setAvailabilities] = useState<CalendarAvailability[]>([]);
 
-  const startDate = format(range.start, 'yyyy-MM-dd');
-  const endDate = format(range.end, 'yyyy-MM-dd');
+  const startDateUTC = format(fromZonedTime(range.start, TIME_ZONE), 'yyyy-MM-dd');
+  const endDateUTC = format(fromZonedTime(range.end, TIME_ZONE), 'yyyy-MM-dd');
 
-  const fetchUrl = `/api/artist-availabilities/range?artist=${slug}&start=${startDate}&end=${endDate}`;
+  const fetchUrl = `/api/artist-availabilities/range?artist=${slug}&start=${startDateUTC}&end=${endDateUTC}`;
 
   const { data, error, isLoading } = useSWR(fetchUrl, fetcher, {
     keepPreviousData: true,
@@ -69,8 +70,8 @@ export default function AvailabilitiesCalendar() {
 
     setAvailabilities(
       data.availabilities.map((a: ArtistAvailability) => ({
-        start: new Date(a.startDate),
-        end: new Date(a.endDate),
+        start: toZonedTime(a.startDate, TIME_ZONE),
+        end: toZonedTime(a.endDate, TIME_ZONE),
         status: a.status,
       }))
     );
