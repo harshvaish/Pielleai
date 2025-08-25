@@ -1,5 +1,7 @@
 import { z } from 'zod/v4';
 
+export const timeValidation = z.string('Campo malformato.').regex(/^([01]\d|2[0-3]):[0-5]\d$/, 'Può contenere solo numeri o ":".');
+
 export const nameValidation = z
   .string('Campo malformato.')
   .min(2, 'Minimo 2 caratteri.')

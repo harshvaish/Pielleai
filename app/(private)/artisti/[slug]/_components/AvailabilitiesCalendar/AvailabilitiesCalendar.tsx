@@ -4,7 +4,7 @@ import { Calendar as BigCalendar, dateFnsLocalizer, View } from 'react-big-calen
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import '@/app/(private)/_components/Calendar/calendar-overrides.css';
 
-import { format, getDay, parse, startOfWeek } from 'date-fns';
+import { endOfDay, format, getDay, parse, startOfDay, startOfWeek } from 'date-fns';
 import { CALENDAR_VIEWS, TIME_ZONE } from '@/lib/constants';
 import { Toolbar } from './Toolbar';
 import WeekHeader from './WeekHeader';
@@ -40,10 +40,17 @@ export default function AvailabilitiesCalendar() {
   const [range, setRange] = useState<{ start: Date; end: Date }>(() => calculateRange(new Date(), 'week'));
   const [availabilities, setAvailabilities] = useState<CalendarAvailability[]>([]);
 
-  const startDateUTC = format(fromZonedTime(range.start, TIME_ZONE), 'yyyy-MM-dd');
-  const endDateUTC = format(fromZonedTime(range.end, TIME_ZONE), 'yyyy-MM-dd');
+  const startDateUTC = fromZonedTime(
+    startOfDay(range.start), // set to 00:00 in local TZ
+    TIME_ZONE // your app’s locale time zone, e.g. 'Europe/Rome'
+  ).toISOString(); // convert to UTC string
 
-  const fetchUrl = `/api/artist-availabilities/range?artist=${slug}&start=${startDateUTC}&end=${endDateUTC}`;
+  const endDateUTC = fromZonedTime(
+    endOfDay(range.end), // set to 23:59 in local TZ
+    TIME_ZONE // your app’s locale time zone, e.g. 'Europe/Rome'
+  ).toISOString(); // convert to UTC string
+
+  const fetchUrl = `/api/artist-availabilities/range?s=${slug}&sd=${startDateUTC}&ed=${endDateUTC}`;
 
   const { data, error, isLoading } = useSWR(fetchUrl, fetcher, {
     keepPreviousData: true,

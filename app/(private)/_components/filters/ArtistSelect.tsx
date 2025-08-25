@@ -62,8 +62,9 @@ export default function ArtistSelect({ initialValue, artists, onConfirm }: { ini
                   <CommandItem
                     key={id}
                     value={id}
-                    onSelect={() => onSelectHandler(id)}
+                    onSelect={onSelectHandler}
                     keywords={[artist.stageName]}
+                    disabled={isSelected}
                   >
                     <div className='w-full flex justify-between items-center gap-2 hover:cursor-pointer'>
                       <div className='flex items-center gap-2 truncate'>

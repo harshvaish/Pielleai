@@ -9,7 +9,7 @@ import { useEffect, useState } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { it } from 'date-fns/locale';
 import { Input } from '@/components/ui/input';
-import { format } from 'date-fns';
+import { format, startOfDay } from 'date-fns';
 import useSWR from 'swr';
 import { checkTimeRanges, cn, fetcher } from '@/lib/utils';
 import { ArtistAvailability, TimeRange } from '@/lib/types';
@@ -27,7 +27,7 @@ export default function ArtistAvailabilitySelect() {
   const [open, setOpen] = useState<boolean>(false);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [timeRanges, setTimeRanges] = useState<TimeRange[]>([]);
-  const [isFormVisible, setIsFormVisible] = useState<boolean>(false);
+  const [visible, setVisible] = useState<boolean>(false);
   const [newTimeRange, setNewTimeRange] = useState<TimeRange>({
     startTime: '',
     endTime: '',
@@ -36,10 +36,16 @@ export default function ArtistAvailabilitySelect() {
   const selectedArtistId = watch('artistId');
   const selectedAvailability = watch('availability');
 
-  const searchDateUTC = selectedDate ? format(fromZonedTime(selectedDate, TIME_ZONE), 'yyyy-MM-dd') : '';
+  const startDateUTC = selectedDate
+    ? fromZonedTime(
+        startOfDay(selectedDate), // set to 00:00 in local TZ
+        TIME_ZONE // your app’s locale time zone, e.g. 'Europe/Rome'
+      ).toISOString() // convert to UTC string
+    : null;
+
   const label = selectedAvailability ? `${selectedAvailability.date} (${selectedAvailability.startTime} - ${selectedAvailability.endTime})` : 'Seleziona data';
 
-  const fetchUrl = selectedArtistId && searchDateUTC ? `/api/artist-availabilities/date?i=${selectedArtistId}&date=${searchDateUTC}` : null;
+  const fetchUrl = selectedArtistId && startDateUTC ? `/api/artist-availabilities/date?i=${selectedArtistId}&sd=${startDateUTC}` : null;
 
   const { data, error, isLoading } = useSWR(fetchUrl, fetcher);
 
@@ -142,14 +148,14 @@ export default function ArtistAvailabilitySelect() {
                   <Button
                     variant='ghost'
                     size='icon'
-                    onClick={() => setIsFormVisible(!isFormVisible)}
+                    onClick={() => setVisible(!visible)}
                     disabled={isLoading}
                   >
-                    {isFormVisible ? <Minus /> : <Plus />}
+                    {visible ? <Minus /> : <Plus />}
                   </Button>
                 </div>
 
-                {isFormVisible && (
+                {visible && (
                   <div className='flex gap-2 items-center text-zinc-700 pb-2 border-b'>
                     <Input
                       type='time'

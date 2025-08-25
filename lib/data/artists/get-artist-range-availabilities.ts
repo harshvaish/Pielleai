@@ -20,7 +20,10 @@ export async function getArtistRangeAvailabilities({ artistSlug, startDate, endD
       throw new Error('Recupero artista non riuscito.');
     }
 
-    const rangeWindow = sql`tsrange(${startDate}::timestamp, (${endDate}::date + 1)::timestamp, '[)')`;
+    const rangeWindow = sql`tstzrange(
+                            ${startDate}::timestamptz,
+                            ${endDate}::timestamptz,
+                            '[)')`;
 
     const availabilitiesResult = await database
       .select({

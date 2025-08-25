@@ -1,7 +1,9 @@
 import { auth } from '@/lib/auth';
 import { getArtistDateAvailabilities } from '@/lib/data/artists/get-artist-date-availabilities';
+import { idValidation } from '@/lib/validation/_general';
 import { headers } from 'next/headers';
 import { type NextRequest, NextResponse } from 'next/server';
+import { z } from 'zod/v4';
 
 export async function GET(request: NextRequest) {
   const requestHeaders = await headers();
@@ -10,36 +12,45 @@ export async function GET(request: NextRequest) {
   });
 
   if (!session || session.user.role !== 'admin') {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    return NextResponse.json({ error: 'Non autorizzato.' }, { status: 401 });
   }
 
   const url = new URL(request.url);
 
-  const artistId = url.searchParams.get('i');
+  const artistIdParam = url.searchParams.get('i');
   const artistSlug = url.searchParams.get('s');
-  const date = url.searchParams.get('date');
+  const startDate = url.searchParams.get('sd');
 
-  const idRegex = /^[0-9]+$/;
-  const slugRegex = /^[0-9a-z-]+$/;
-  const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+  const artistId = artistIdParam ? parseInt(artistIdParam) : null;
 
-  if (artistId && !idRegex.test(artistId)) {
-    return NextResponse.json({ error: 'Artista mancante o non valido. (i)' }, { status: 400 });
+  if (!artistId && !artistSlug) {
+    return NextResponse.json({ error: 'Dati artista mancanti.' }, { status: 400 });
   }
 
-  if (artistSlug && !slugRegex.test(artistSlug)) {
-    return NextResponse.json({ error: 'Artista mancante o non valido. (s)' }, { status: 400 });
+  if (!startDate) {
+    return NextResponse.json({ error: 'Data di filtraggio mancante.' }, { status: 400 });
   }
 
-  if (!date || !dateRegex.test(date)) {
-    return NextResponse.json({ error: 'Data mancante o non valida.' }, { status: 400 });
+  const schema = z.object({
+    artistId: idValidation.nullable(),
+    artistSlug: z.uuid().nullable(),
+    startDate: z
+      .string()
+      .transform((val) => new Date(val))
+      .refine((date) => !isNaN(date.getTime())),
+  });
+
+  const validation = schema.safeParse({ artistId, artistSlug, startDate });
+
+  if (!validation.success) {
+    return NextResponse.json({ error: 'Dati forniti non validi.' }, { status: 400 });
   }
 
   try {
     const availabilities = await getArtistDateAvailabilities({
       artistId,
       artistSlug,
-      date,
+      startDate,
     });
     return NextResponse.json({ availabilities }, { status: 200 });
   } catch (error) {

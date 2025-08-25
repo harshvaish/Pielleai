@@ -3,18 +3,19 @@
 import { database } from '@/lib/database/connection';
 import { artistAvailabilities, artists, events } from '@/lib/database/schema';
 import { ArtistAvailability } from '@/lib/types';
+import { addDays } from 'date-fns';
 import { and, count, eq, inArray, or, sql } from 'drizzle-orm';
 
 type getArtistDateAvailabilitiesParams = {
-  artistId: string | null;
+  artistId: number | null;
   artistSlug: string | null;
-  date: string;
+  startDate: string;
 };
 
-export async function getArtistDateAvailabilities({ artistId, artistSlug, date }: getArtistDateAvailabilitiesParams): Promise<ArtistAvailability[]> {
+export async function getArtistDateAvailabilities({ artistId, artistSlug, startDate }: getArtistDateAvailabilitiesParams): Promise<ArtistAvailability[]> {
   if (!artistId && !artistSlug) throw new Error('Dati artista mancanti.');
 
-  let id = artistId ? parseInt(artistId) : null;
+  let id = artistId ? artistId : null;
 
   try {
     if (!id) {
@@ -28,10 +29,10 @@ export async function getArtistDateAvailabilities({ artistId, artistSlug, date }
       }
     }
 
-    // 2) Build a full-day window as tsrange:
-    //    For e.g. 2025-08-12 => [2025-08-12 00:00, 2025-08-13 00:00)
-    //    '[)' means include start, exclude end.
-    const dayWindow = sql`tsrange(${date}::timestamp, (${date}::date + 1)::timestamp, '[)')`;
+    const dayWindow = sql`tstzrange(
+                            ${startDate}::timestamptz,
+                            ${addDays(new Date(startDate), 1).toISOString()}::timestamptz,
+                            '[)')`;
 
     // 3) Fetch availabilities for the day
     const rows = await database

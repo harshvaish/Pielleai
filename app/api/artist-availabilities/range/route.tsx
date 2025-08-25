@@ -2,6 +2,7 @@ import { auth } from '@/lib/auth';
 import { getArtistRangeAvailabilities } from '@/lib/data/artists/get-artist-range-availabilities';
 import { headers } from 'next/headers';
 import { type NextRequest, NextResponse } from 'next/server';
+import { z } from 'zod/v4';
 
 export async function GET(request: NextRequest) {
   const requestHeaders = await headers();
@@ -15,23 +16,34 @@ export async function GET(request: NextRequest) {
 
   const url = new URL(request.url);
 
-  const artistSlug = url.searchParams.get('artist');
-  const startDate = url.searchParams.get('start');
-  const endDate = url.searchParams.get('end');
+  const artistSlug = url.searchParams.get('s');
+  const startDate = url.searchParams.get('sd');
+  const endDate = url.searchParams.get('ed');
 
-  const slugRegex = /^[0-9a-z-]+$/;
-  const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
-
-  if (!artistSlug || !slugRegex.test(artistSlug)) {
-    return NextResponse.json({ error: 'Artista mancante o non valido.' }, { status: 400 });
+  if (!artistSlug) {
+    return NextResponse.json({ error: 'Dati artista mancanti.' }, { status: 400 });
   }
 
-  if (!startDate || !dateRegex.test(startDate)) {
-    return NextResponse.json({ error: 'Data inizio range mancante o non valida.' }, { status: 400 });
+  if (!startDate || !endDate) {
+    return NextResponse.json({ error: 'Date di filtraggio mancanti.' }, { status: 400 });
   }
 
-  if (!endDate || !dateRegex.test(endDate)) {
-    return NextResponse.json({ error: 'Data fine range mancante o non valida.' }, { status: 400 });
+  const schema = z.object({
+    artistSlug: z.uuid().nullable(),
+    startDate: z
+      .string()
+      .transform((val) => new Date(val))
+      .refine((date) => !isNaN(date.getTime())),
+    endDate: z
+      .string()
+      .transform((val) => new Date(val))
+      .refine((date) => !isNaN(date.getTime())),
+  });
+
+  const validation = schema.safeParse({ artistSlug, startDate, endDate });
+
+  if (!validation.success) {
+    return NextResponse.json({ error: 'Dati forniti non validi.' }, { status: 400 });
   }
 
   try {

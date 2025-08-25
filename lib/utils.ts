@@ -4,7 +4,7 @@ import { twMerge } from 'tailwind-merge';
 import { format, startOfWeek, endOfWeek, isBefore, startOfDay, startOfISOWeek, endOfISOWeek, startOfMonth, endOfMonth, endOfDay, parse } from 'date-fns';
 import { it } from 'date-fns/locale';
 import imageCompression from 'browser-image-compression';
-import { TimeRange } from './types';
+import { Availability, TimeRange } from './types';
 import { fromZonedTime } from 'date-fns-tz';
 import { TIME_ZONE } from './constants';
 
@@ -260,6 +260,50 @@ export function checkTimeRanges(
       }
     }
   }
+  return {
+    success: true,
+    message: null,
+  };
+}
+
+function isOverlappingRange(aStart: Date, aEnd: Date, bStart: Date, bEnd: Date): boolean {
+  return aStart < bEnd && bStart < aEnd;
+}
+
+export function checkAvailabilities(availabilities: Availability[]): { success: true; message: null } | { success: false; message: string } {
+  const today = startOfDay(new Date());
+
+  for (let i = 0; i < availabilities.length; i++) {
+    const { startDate, endDate } = availabilities[i];
+
+    // Validate presence and order
+    if (!startDate || !endDate || startDate >= endDate) {
+      return {
+        success: false,
+        message: 'Correggi gli intervalli di date presenti per poter procedere.',
+      };
+    }
+
+    // Prevent ranges entirely in the past
+    if (isBefore(endDate, today)) {
+      return {
+        success: false,
+        message: 'Alcuni intervalli di date sono scaduti.',
+      };
+    }
+
+    // Overlap check
+    for (let j = i + 1; j < availabilities.length; j++) {
+      const { startDate: startB, endDate: endB } = availabilities[j];
+      if (isOverlappingRange(startDate, endDate, startB, endB)) {
+        return {
+          success: false,
+          message: 'Alcuni intervalli di date sono in conflitto, rimuovi il conflitto per procedere.',
+        };
+      }
+    }
+  }
+
   return {
     success: true,
     message: null,

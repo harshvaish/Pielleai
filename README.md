@@ -26,4 +26,4 @@ Convert received UTC values back to the business timezone for display.
 
 -all server action refactor with app error
 
-- create and update event UTC dates usage check, also update availabilities
+- go on with events refactor with new timestampz

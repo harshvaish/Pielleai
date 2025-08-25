@@ -2,14 +2,14 @@ import { relations } from 'drizzle-orm/relations';
 import {
   users,
   sessions,
-  artists,
-  artistAvailabilities,
   accounts,
   countries,
+  artists,
   subdivisions,
   profiles,
   profileNotes,
   artistNotes,
+  artistAvailabilities,
   venues,
   events,
   eventNotes,
@@ -38,16 +38,14 @@ export const usersRelations = relations(users, ({ many }) => ({
   eventNotes: many(eventNotes),
 }));
 
-export const artistAvailabilitiesRelations = relations(artistAvailabilities, ({ one, many }) => ({
-  artist: one(artists, {
-    fields: [artistAvailabilities.artistId],
-    references: [artists.id],
+export const accountsRelations = relations(accounts, ({ one }) => ({
+  user: one(users, {
+    fields: [accounts.userId],
+    references: [users.id],
   }),
-  events: many(events),
 }));
 
 export const artistsRelations = relations(artists, ({ one, many }) => ({
-  artistAvailabilities: many(artistAvailabilities),
   country_billingCountryId: one(countries, {
     fields: [artists.billingCountryId],
     references: [countries.id],
@@ -69,17 +67,11 @@ export const artistsRelations = relations(artists, ({ one, many }) => ({
     relationName: 'artists_subdivisionId_subdivisions_id',
   }),
   artistNotes: many(artistNotes),
+  artistAvailabilities: many(artistAvailabilities),
   events: many(events),
   artistZones: many(artistZones),
   managerArtists: many(managerArtists),
   artistLanguages: many(artistLanguages),
-}));
-
-export const accountsRelations = relations(accounts, ({ one }) => ({
-  user: one(users, {
-    fields: [accounts.userId],
-    references: [users.id],
-  }),
 }));
 
 export const countriesRelations = relations(countries, ({ many }) => ({
@@ -181,6 +173,14 @@ export const artistNotesRelations = relations(artistNotes, ({ one }) => ({
     fields: [artistNotes.writerId],
     references: [users.id],
   }),
+}));
+
+export const artistAvailabilitiesRelations = relations(artistAvailabilities, ({ one, many }) => ({
+  artist: one(artists, {
+    fields: [artistAvailabilities.artistId],
+    references: [artists.id],
+  }),
+  events: many(events),
 }));
 
 export const venuesRelations = relations(venues, ({ one, many }) => ({

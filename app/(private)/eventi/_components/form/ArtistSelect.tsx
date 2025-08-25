@@ -23,6 +23,15 @@ export default function ArtistSelect({ artists, value, setValue, hasError }: Art
   const [open, setOpen] = React.useState(false);
   const selectedArtist = artists.find((artist) => artist.id === value) ?? undefined;
 
+  const { resetField } = useFormContext<EventFormSchema>();
+
+  const onSelectHandler = (value: string): void => {
+    setValue(parseInt(value));
+    resetField('artistManagerProfileId');
+    resetField('availability');
+    setOpen(false);
+  };
+
   return (
     <ResponsivePopover
       open={open}
@@ -48,60 +57,38 @@ export default function ArtistSelect({ artists, value, setValue, hasError }: Art
       }
     >
       <div className='mt-4 border-t'>
-        <ArtistsList
-          artists={artists}
-          setOpen={setOpen}
-          value={value}
-          setValue={setValue}
-        />
+        <Command className='relative'>
+          <CommandInput placeholder='Ricerca artista' />
+          <CommandList>
+            <CommandEmpty>Nessun risultato.</CommandEmpty>
+            <CommandGroup>
+              {artists.map((artist) => {
+                const isSelected = artist.id === value;
+                return (
+                  <CommandItem
+                    key={artist.id}
+                    value={artist.id.toString()}
+                    onSelect={onSelectHandler}
+                    keywords={[artist.stageName]} // to enable filtering with stageName
+                    disabled={isSelected}
+                  >
+                    <div className='w-full flex justify-between items-center gap-2 hover:cursor-pointer'>
+                      <div className='flex items-center gap-2 truncate'>
+                        <Avatar className='w-6 h-6'>
+                          <AvatarImage src={artist.avatarUrl} />
+                          <AvatarFallback>{artist.stageName.substring(0, 1)}</AvatarFallback>
+                        </Avatar>
+                        <span className='truncate'>{artist.stageName}</span>
+                      </div>
+                      <Check className={cn('transition-opacity', isSelected ? 'opacity-100' : 'opacity-0')} />
+                    </div>
+                  </CommandItem>
+                );
+              })}
+            </CommandGroup>
+          </CommandList>
+        </Command>
       </div>
     </ResponsivePopover>
-  );
-}
-
-type ArtistsListProps = { artists: ArtistSelectData[]; setOpen: (open: boolean) => void; value: number | undefined; setValue: (newValue: number) => void };
-
-function ArtistsList({ artists, setOpen, value, setValue }: ArtistsListProps) {
-  const { resetField } = useFormContext<EventFormSchema>();
-
-  const onSelectHandler = (value: string): void => {
-    setValue(parseInt(value));
-    resetField('artistManagerProfileId');
-    resetField('availability');
-    setOpen(false);
-  };
-
-  return (
-    <Command>
-      <CommandInput placeholder='Ricerca artista' />
-      <CommandList>
-        <CommandEmpty>Nessun risultato.</CommandEmpty>
-        <CommandGroup>
-          {artists.map((artist) => {
-            const isSelected = artist.id === value;
-            return (
-              <CommandItem
-                key={artist.id}
-                value={artist.id.toString()}
-                onSelect={onSelectHandler}
-                keywords={[artist.stageName]} // to enable filtering with stageName
-                disabled={isSelected}
-              >
-                <div className='w-full flex justify-between items-center gap-2 hover:cursor-pointer'>
-                  <div className='flex items-center gap-2 flex-nowrap'>
-                    <Avatar className='w-6 h-6'>
-                      <AvatarImage src={artist.avatarUrl} />
-                      <AvatarFallback>{artist.stageName.substring(0, 1)}</AvatarFallback>
-                    </Avatar>
-                    {artist.stageName}
-                  </div>
-                  <Check className={cn(isSelected ? 'opacity-100' : 'opacity-0')} />
-                </div>
-              </CommandItem>
-            );
-          })}
-        </CommandGroup>
-      </CommandList>
-    </Command>
   );
 }
