@@ -6,7 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useMemo, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
-import { editArtistManagerBillingData } from '@/lib/server-actions/artist-managers/edit-artist-manager-billing-data';
+import { updateArtistManagerBillingData } from '@/lib/server-actions/artist-managers/update-artist-manager-billing-data';
 import { X } from 'lucide-react';
 import StepTwo from '@/app/(private)/manager-artisti/_components/form/StepTwo';
 
@@ -53,10 +53,7 @@ export default function BillingDataForm({ userData, countries, closeDialog }: { 
 
     setIsSubmitting(true);
 
-    const response = await editArtistManagerBillingData({
-      profileId: userData.profileId,
-      data: data,
-    });
+    const response = await updateArtistManagerBillingData(userData.profileId, data);
 
     if (response.success) {
       toast.success('Profilo manager artisti aggiornato!');

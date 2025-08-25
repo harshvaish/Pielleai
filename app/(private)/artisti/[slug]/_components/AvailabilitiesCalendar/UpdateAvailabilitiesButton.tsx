@@ -11,11 +11,11 @@ import { toast } from 'sonner';
 import { useEffect, useState } from 'react';
 import { format } from 'date-fns';
 import useSWR from 'swr';
-import { editArtistAvailabilities } from '@/lib/server-actions/artists/edit-artist-availabilities';
+import { updateArtistAvailabilities } from '@/lib/server-actions/artists/update-artist-availabilities';
 import { checkTimeRanges, cn, fetcher } from '@/lib/utils';
 import { notFound, useParams, useRouter } from 'next/navigation';
 import { it } from 'date-fns/locale';
-import { fromZonedTime } from 'date-fns-tz';
+import { formatInTimeZone, fromZonedTime } from 'date-fns-tz';
 import { TIME_ZONE } from '@/lib/constants';
 
 export function UpdateAvailabilitiesButton() {
@@ -39,8 +39,8 @@ export function UpdateAvailabilitiesButton() {
 
     setTimeRanges(
       data.availabilities.map((a: ArtistAvailability) => ({
-        startTime: format(a.startDate, 'HH:mm'),
-        endTime: format(a.endDate, 'HH:mm'),
+        startTime: formatInTimeZone(a.startDate, TIME_ZONE, 'HH:mm'),
+        endTime: formatInTimeZone(a.endDate, TIME_ZONE, 'HH:mm'),
         status: a.status,
         canDelete: a.canDelete,
       }))
@@ -52,7 +52,9 @@ export function UpdateAvailabilitiesButton() {
   }, [error]);
 
   const addTimeRange = () => {
-    const check = checkTimeRanges(searchDateUTC, timeRanges);
+    if (!selectedDate) return;
+
+    const check = checkTimeRanges(format(selectedDate, 'yyyy-MM-dd'), timeRanges);
     if (!check.success) {
       toast.error(check.message);
       return;
@@ -67,17 +69,14 @@ export function UpdateAvailabilitiesButton() {
 
   const onSaveHandler = async () => {
     const check = checkTimeRanges(searchDateUTC, timeRanges);
+
     if (!check.success) {
       toast.error(check.message);
       return;
     }
     setSubmitting(true);
 
-    const response = await editArtistAvailabilities({
-      artistSlug: slug as string,
-      date: searchDateUTC,
-      timeRanges,
-    });
+    const response = await updateArtistAvailabilities(slug as string, searchDateUTC, timeRanges);
 
     if (!response.success) {
       toast.error(response.message);

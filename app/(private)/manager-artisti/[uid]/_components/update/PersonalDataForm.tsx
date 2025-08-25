@@ -7,7 +7,7 @@ import { ArtistManagerS1FormSchema, artistManagerS1FormSchema } from '@/lib/vali
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
 import { useMemo, useState } from 'react';
-import { editArtistManagerPersonalData } from '@/lib/server-actions/artist-managers/edit-artist-manager-personal-data';
+import { updateArtistManagerPersonalData } from '@/lib/server-actions/artist-managers/update-artist-manager-personal-data';
 import { useRouter } from 'next/navigation';
 import { X } from 'lucide-react';
 import StepOne from '@/app/(private)/manager-artisti/_components/form/StepOne';
@@ -55,10 +55,7 @@ export default function PersonalDataForm({ userData, languages, countries, close
     }
     setIsSubmitting(true);
 
-    const response = await editArtistManagerPersonalData({
-      profileId: userData.profileId,
-      data: data,
-    });
+    const response = await updateArtistManagerPersonalData(userData.profileId, data);
 
     if (response.success) {
       methods.reset(data); // new form status, isDirty to false

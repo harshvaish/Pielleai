@@ -1,17 +1,8 @@
 import * as z from 'zod/v4';
 import { GENDERS } from '../constants';
+import { birthDateValidation, emailValidation, idValidation, nameValidation, phoneValidation } from './_general';
 
 const genderEnum = z.enum(GENDERS, "Seleziona un'opzione valida.");
-
-const today = new Date();
-const subtractYears = (date: Date, years: number): Date => {
-  const newDate = new Date(date);
-  newDate.setFullYear(newDate.getFullYear() - years);
-  return newDate;
-};
-
-const minBirthDate = subtractYears(today, 6);
-const maxBirthDate = subtractYears(today, 100);
 
 export const artistS1FormSchema = z.object({
   avatarUrl: z
@@ -19,56 +10,27 @@ export const artistS1FormSchema = z.object({
     .refine((url) => url.startsWith(`${process.env.NEXT_PUBLIC_SUPABASE_URL}`), 'Campo non valido.')
     .trim(),
 
-  name: z
-    .string('Campo malformato.')
-    .min(2, 'Minimo 2 caratteri.')
-    .max(50, 'Massimo 50 caratteri.')
-    .regex(/^[\p{L}\s'-]+$/u, 'Può contenere solo lettere, spazi, trattini o apostrofi.')
-    .trim(),
+  name: nameValidation,
 
-  surname: z
-    .string('Campo malformato.')
-    .min(2, 'Minimo 2 caratteri.')
-    .max(50, 'Massimo 50 caratteri.')
-    .regex(/^[\p{L}\s'-]+$/u, 'Può contenere solo lettere, spazi, trattini o apostrofi.')
-    .trim(),
+  surname: nameValidation,
 
   stageName: z.string('Campo malformato.').min(2, 'Minimo 2 caratteri.').max(100, 'Massimo 100 caratteri.').trim(),
 
-  phone: z
-    .string('Campo malformato.')
-    .min(8, 'Minimo 8 caratteri.')
-    .max(20, 'Massimo 20 caratteri.')
-    .regex(/^\+\d{1,3}\s?\d+$/, 'Formato non valido. Esempio: +39 123456789')
-    .trim(),
+  phone: phoneValidation,
 
-  email: z.email('Formato non valido. (Es. info@eaglebooking.it)').trim(),
+  email: emailValidation,
 
-  birthDate: z
-    .string('Campo malformato.')
-    .regex(/^\d{4}-\d{2}-\d{2}$/, 'Campo obbligatorio')
-    .refine((dateStr) => {
-      const date = new Date(dateStr);
-      return !isNaN(date.getTime());
-    }, 'Formato non corretto.')
-    .refine((dateStr) => {
-      const date = new Date(dateStr);
-      return date <= minBirthDate;
-    }, `Fuori dal range accettato. (minore)`)
-    .refine((dateStr) => {
-      const date = new Date(dateStr);
-      return date >= maxBirthDate;
-    }, `Fuori dal range accettato. (maggiore)`),
+  birthDate: birthDateValidation,
 
   birthPlace: z.string('Campo malformato.').min(2, 'Minimo 2 caratteri.').max(100, 'Massimo 100 caratteri.').trim(),
 
-  languages: z.array(z.number("Seleziona un'opzione valida.").positive("Seleziona un'opzione valida."), 'Campo malformato').min(1, 'Campo obbligatorio.'),
+  languages: z.array(idValidation, 'Campo malformato').min(1, 'Campo obbligatorio.'),
 
   address: z.string('Campo malformato.').min(5, 'Minimo 5 caratteri.').max(150, 'Massimo 150 caratteri.').trim(),
 
-  countryId: z.number("Seleziona un'opzione valida.").min(1, 'Campo obbligatorio.').positive("Seleziona un'opzione valida."),
+  countryId: idValidation,
 
-  subdivisionId: z.number("Seleziona un'opzione valida.").min(1, 'Campo obbligatorio.').positive("Seleziona un'opzione valida."),
+  subdivisionId: idValidation,
 
   city: z
     .string('Campo malformato.')
@@ -86,32 +48,17 @@ export const artistS1FormSchema = z.object({
 
   gender: genderEnum,
 
-  zones: z.array(z.number("Seleziona un'opzione valida.").positive("Seleziona un'opzione valida."), 'Campo malformato').min(1, 'Campo obbligatorio.'),
+  zones: z.array(idValidation, 'Campo malformato').min(1, 'Campo obbligatorio.'),
 
-  artistManagers: z.array(z.number("Seleziona un'opzione valida.").positive("Seleziona un'opzione valida."), 'Campo malformato'),
+  artistManagers: z.array(idValidation, 'Campo malformato').min(1, 'Campo obbligatorio.'),
 
-  tourManagerName: z
-    .string('Campo malformato.')
-    .min(2, 'Minimo 2 caratteri.')
-    .max(50, 'Massimo 50 caratteri.')
-    .regex(/^[\p{L}\s'-]+$/u, 'Può contenere solo lettere, spazi, trattini o apostrofi.')
-    .trim(),
+  tourManagerName: nameValidation,
 
-  tourManagerSurname: z
-    .string('Campo malformato.')
-    .min(2, 'Minimo 2 caratteri.')
-    .max(50, 'Massimo 50 caratteri.')
-    .regex(/^[\p{L}\s'-]+$/u, 'Può contenere solo lettere, spazi, trattini o apostrofi.')
-    .trim(),
+  tourManagerSurname: nameValidation,
 
-  tourManagerPhone: z
-    .string('Campo malformato.')
-    .min(8, 'Minimo 8 caratteri.')
-    .max(20, 'Massimo 20 caratteri.')
-    .regex(/^\+\d{1,3}\s?\d+$/, 'Formato non valido. Esempio: +39 123456789')
-    .trim(),
+  tourManagerPhone: phoneValidation,
 
-  tourManagerEmail: z.email('Formato non valido. (Es. info@eaglebooking.it)').trim(),
+  tourManagerEmail: emailValidation,
 });
 
 export type ArtistS1FormSchema = z.infer<typeof artistS1FormSchema>;
@@ -165,7 +112,7 @@ export const artistS2FormSchema = z
       "Seleziona un'opzione valida."
     ),
 
-    billingSubdivisionId: z.number("Seleziona un'opzione valida.").min(1, 'Campo obbligatorio.').positive("Seleziona un'opzione valida."),
+    billingSubdivisionId: idValidation,
 
     billingCity: z
       .string('Campo malformato.')
@@ -181,16 +128,11 @@ export const artistS2FormSchema = z
       .regex(/^[A-Z0-9\- ]+$/, 'Può contenere solo lettere maiuscole, numeri, trattini o spazi.')
       .trim(),
 
-    billingEmail: z.email('Formato non valido. Esempio fatturazione@eaglebooking.it').trim(),
+    billingEmail: emailValidation,
 
-    billingPhone: z
-      .string('Campo malformato.')
-      .min(8, 'Minimo 8 caratteri.')
-      .max(20, 'Massimo 20 caratteri.')
-      .regex(/^\+\d{1,3}\s?\d+$/, 'Formato non valido. Esempio: +39 123456789')
-      .trim(),
+    billingPhone: phoneValidation,
 
-    billingPec: z.email('Formato non valido. Esempio pec@eaglebooking.it').trim(),
+    billingPec: emailValidation,
 
     taxableInvoice: z.string('Campo malformato.').refine((val) => val === 'true' || val === 'false', {
       message: "Seleziona un'opzione valida",

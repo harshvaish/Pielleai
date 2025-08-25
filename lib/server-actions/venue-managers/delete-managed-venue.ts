@@ -6,55 +6,39 @@ import { ServerActionResponse } from '@/lib/types';
 import { database } from '@/lib/database/connection';
 import { and, eq } from 'drizzle-orm';
 import { venues } from '@/lib/database/schema';
+import { z } from 'zod/v4';
+import { AppError } from '@/lib/classes/AppError';
+import { idValidation } from '@/lib/validation/_general';
 
-export const deleteManagedVenue = async ({
-  managerProfileId,
-  venueId,
-}: {
-  managerProfileId: number;
-  venueId: number;
-}): Promise<ServerActionResponse<null>> => {
-  const headersList = await headers();
+export const deleteManagedVenue = async (managerProfileId: number, venueId: number): Promise<ServerActionResponse<null>> => {
   try {
+    const headersList = await headers();
+
     const session = await auth.api.getSession({
       headers: headersList,
     });
 
     if (!session?.user || session.user.role != 'admin') {
-      console.error('[removeManagedVenue] - Error: unauthorized', session);
-      return {
-        success: false,
-        message: 'Non sei autorizzato.',
-        data: null,
-      };
+      console.error('[deleteManagedVenue] - Error: unauthorized', session);
+      throw new AppError('Non sei autorizzato.');
     }
-  } catch (error) {
-    console.error('[removeManagedVenue] - Error: ', error);
-    return {
-      success: false,
-      message: 'Autenticazione non riutita.',
-      data: null,
-    };
-  }
 
-  try {
-    const result = await database
-      .delete(venues)
-      .where(
-        and(
-          eq(venues.managerProfileId, managerProfileId),
-          eq(venues.id, venueId)
-        )
-      );
+    const schema = z.object({
+      managerProfileId: idValidation,
+      venueId: idValidation,
+    });
+
+    const validation = schema.safeParse({ managerProfileId, venueId });
+    if (!validation.success) {
+      throw new AppError('Dati inviati non corretti.');
+    }
+
+    const result = await database.delete(venues).where(and(eq(venues.managerProfileId, managerProfileId), eq(venues.id, venueId)));
 
     const deletedRows = result.rowCount;
 
     if (!deletedRows) {
-      return {
-        success: false,
-        message: 'Locale non trovato.',
-        data: null,
-      };
+      throw new AppError('Locale non trovato.');
     }
 
     return {
@@ -63,10 +47,11 @@ export const deleteManagedVenue = async ({
       data: null,
     };
   } catch (error) {
-    console.error('[removeManagedVenue] transaction failed', error);
+    console.error('[deleteManagedVenue] transaction failed:', error);
+
     return {
       success: false,
-      message: 'Rimozione locale non riuscita.',
+      message: error instanceof AppError ? error.message : 'Rimozione locale non riuscita.',
       data: null,
     };
   }

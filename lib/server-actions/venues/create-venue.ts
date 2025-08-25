@@ -5,158 +5,74 @@ import { headers } from 'next/headers';
 import { ServerActionResponse } from '@/lib/types';
 import { database } from '@/lib/database/connection';
 import { and, eq } from 'drizzle-orm';
-import {
-  profiles,
-  countries,
-  subdivisions,
-  users,
-  venues,
-} from '@/lib/database/schema';
-import {
-  venueFormSchema,
-  VenueFormSchema,
-} from '@/lib/validation/venueFormSchema';
+import { profiles, countries, subdivisions, users, venues } from '@/lib/database/schema';
+import { venueFormSchema, VenueFormSchema } from '@/lib/validation/venueFormSchema';
+import { AppError } from '@/lib/classes/AppError';
 
-export const createVenue = async (
-  data: VenueFormSchema
-): Promise<ServerActionResponse<null>> => {
-  const headersList = await headers();
+export const createVenue = async (data: VenueFormSchema): Promise<ServerActionResponse<null>> => {
   try {
+    const headersList = await headers();
+
     const session = await auth.api.getSession({
       headers: headersList,
     });
 
     if (!session?.user || session.user.role != 'admin') {
       console.error('[createVenue] - Error: unauthorized', session);
-      return {
-        success: false,
-        message: 'Non sei autorizzato.',
-        data: null,
-      };
+      throw new AppError('Non sei autorizzato.');
     }
-  } catch (error) {
-    console.error('[createVenue] - Error: ', error);
-    return {
-      success: false,
-      message: 'Autenticazione non riutita.',
-      data: null,
-    };
-  }
 
-  const validation = venueFormSchema.safeParse(data);
+    const validation = venueFormSchema.safeParse(data);
 
-  if (!validation.success) {
-    console.error(
-      '[createVenue] - Error: validation failed',
-      validation.error.issues[0]
-    );
-    return {
-      success: false,
-      message: 'I dati inviati non sono corretti.',
-      data: null,
-    };
-  }
+    if (!validation.success) {
+      console.error('[createVenue] - Error: validation failed', validation.error.issues[0]);
+      throw new AppError('I dati inviati non sono corretti.');
+    }
 
-  const {
-    countryId,
-    subdivisionId,
-    venueManagerId,
-    billingCountry,
-    billingSubdivisionId,
-  } = validation.data;
+    const { countryId, subdivisionId, venueManagerId, billingCountry, billingSubdivisionId } = validation.data;
 
-  try {
-    const [
-      countryCheck,
-      subdivisionCheck,
-      billingCountryCheck,
-      billingSubdivisionCheck,
-      venueManagerCheck,
-    ] = await Promise.all([
-      database
-        .select({ id: countries.id })
-        .from(countries)
-        .where(eq(countries.id, countryId)),
+    const [countryCheck, subdivisionCheck, billingCountryCheck, billingSubdivisionCheck, venueManagerCheck] = await Promise.all([
+      database.select({ id: countries.id }).from(countries).where(eq(countries.id, countryId)),
 
-      database
-        .select({ id: subdivisions.id, countryId: subdivisions.countryId })
-        .from(subdivisions)
-        .where(eq(subdivisions.id, subdivisionId)),
+      database.select({ id: subdivisions.id, countryId: subdivisions.countryId }).from(subdivisions).where(eq(subdivisions.id, subdivisionId)),
 
-      database
-        .select({ id: countries.id })
-        .from(countries)
-        .where(eq(countries.id, billingCountry.id)),
+      database.select({ id: countries.id }).from(countries).where(eq(countries.id, billingCountry.id)),
 
-      database
-        .select({ id: subdivisions.id, countryId: subdivisions.countryId })
-        .from(subdivisions)
-        .where(eq(subdivisions.id, billingSubdivisionId)),
+      database.select({ id: subdivisions.id, countryId: subdivisions.countryId }).from(subdivisions).where(eq(subdivisions.id, billingSubdivisionId)),
 
       database
         .select({ id: profiles.id })
         .from(profiles)
         .innerJoin(users, eq(profiles.userId, users.id))
-        .where(
-          and(eq(users.role, 'venue-manager'), eq(profiles.id, venueManagerId))
-        ),
+        .where(and(eq(users.role, 'venue-manager'), eq(profiles.id, venueManagerId))),
     ]);
 
     if (countryCheck.length !== 1) {
-      return {
-        success: false,
-        message: 'Stato selezionato non valido.',
-        data: null,
-      };
+      throw new AppError('Stato selezionato non valido.');
     }
 
     if (billingCountryCheck.length !== 1) {
-      return {
-        success: false,
-        message: 'Stato fatturazione selezionato non valido.',
-        data: null,
-      };
+      throw new AppError('Stato fatturazione selezionato non valido.');
     }
 
     if (subdivisionCheck.length !== 1) {
-      return {
-        success: false,
-        message: 'Provincia selezionata non valida.',
-        data: null,
-      };
+      throw new AppError('Provincia selezionata non valida.');
     }
 
     if (billingSubdivisionCheck.length !== 1) {
-      return {
-        success: false,
-        message: 'Provincia fatturazione selezionata non valida.',
-        data: null,
-      };
+      throw new AppError('Provincia fatturazione selezionata non valida.');
     }
 
     if (subdivisionCheck[0].countryId != countryId) {
-      return {
-        success: false,
-        message: 'La provincia selezionata non appartiene allo stato indicato.',
-        data: null,
-      };
+      throw new AppError('La provincia selezionata non appartiene allo stato indicato.');
     }
 
     if (billingSubdivisionCheck[0].countryId != billingCountry.id) {
-      return {
-        success: false,
-        message:
-          'La provincia fatturazione non appartiene allo stato fatturazione selezionato.',
-        data: null,
-      };
+      throw new AppError('La provincia fatturazione non appartiene allo stato fatturazione selezionato.');
     }
 
     if (venueManagerCheck.length !== 1) {
-      return {
-        success: false,
-        message: 'Manager selezionato non valido.',
-        data: null,
-      };
+      throw new AppError('Manager selezionato non valido.');
     }
 
     await database.insert(venues).values({
@@ -217,10 +133,11 @@ export const createVenue = async (
       data: null,
     };
   } catch (error) {
-    console.error('[createVenue] transaction failed', error);
+    console.error('[createVenue] transaction failed:', error);
+
     return {
       success: false,
-      message: 'Creazione locale non riuscita.',
+      message: error instanceof AppError ? error.message : 'Creazione locale non riuscita.',
       data: null,
     };
   }

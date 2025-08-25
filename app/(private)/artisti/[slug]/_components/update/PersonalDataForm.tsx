@@ -9,7 +9,7 @@ import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { X } from 'lucide-react';
 import { ArtistS1FormSchema, artistS1FormSchema } from '@/lib/validation/artistFormSchema';
-import { editArtistPersonalData } from '@/lib/server-actions/artists/edit-artist-personal-data';
+import { updateArtistPersonalData } from '@/lib/server-actions/artists/update-artist-personal-data';
 import StepOne from '@/app/(private)/artisti/_components/form/StepOne';
 
 type PersonalDataFormProps = {
@@ -76,10 +76,7 @@ export default function PersonalDataForm({ userData, languages, countries, zones
     }
     setIsSubmitting(true);
 
-    const response = await editArtistPersonalData({
-      artistId: userData.id,
-      data: data,
-    });
+    const response = await updateArtistPersonalData(userData.id, data);
 
     if (response.success) {
       methods.reset(data); // new form status, isDirty to false

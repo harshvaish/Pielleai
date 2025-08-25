@@ -1,16 +1,17 @@
 import * as z from 'zod/v4';
 import { EVENTS_STATUS } from '../constants';
+import { emailValidation, idValidation } from './_general';
 
 export const eventFormSchema = z.object({
-  artistId: z.number("Seleziona un'opzione valida.").min(1, 'Campo obbligatorio.').positive("Seleziona un'opzione valida."),
+  artistId: idValidation,
 
   status: z.enum(EVENTS_STATUS, "Seleziona un'opzione valida."),
 
-  artistManagerProfileId: z.number("Seleziona un'opzione valida.").min(1, 'Campo obbligatorio.').positive("Seleziona un'opzione valida.").optional(),
+  artistManagerProfileId: idValidation.optional(),
 
   availability: z.object(
     {
-      id: z.number("Seleziona un'opzione valida.").min(1, 'Campo obbligatorio.').positive("Seleziona un'opzione valida.").optional(),
+      id: idValidation.optional(),
       date: z.string("Seleziona un'opzione valida."),
       startTime: z.string("Seleziona un'opzione valida."),
       endTime: z.string("Seleziona un'opzione valida."),
@@ -18,13 +19,13 @@ export const eventFormSchema = z.object({
     "Seleziona un'opzione valida."
   ),
 
-  venueId: z.number("Seleziona un'opzione valida.").min(1, 'Campo obbligatorio.').positive("Seleziona un'opzione valida."),
+  venueId: idValidation,
 
-  tourManagerEmail: z.preprocess((val) => (typeof val === 'string' && val.trim() !== '' ? val : undefined), z.email('Formato non valido. (Es. info@eaglebooking.it)').optional()),
+  tourManagerEmail: z.preprocess((val) => (typeof val === 'string' && val.trim() !== '' ? val : undefined), emailValidation.optional()),
 
-  administrationEmail: z.preprocess((val) => (typeof val === 'string' && val.trim() !== '' ? val : undefined), z.email('Formato non valido. (Es. info@eaglebooking.it)').optional()),
+  administrationEmail: z.preprocess((val) => (typeof val === 'string' && val.trim() !== '' ? val : undefined), emailValidation.optional()),
 
-  payrollConsultantEmail: z.preprocess((val) => (typeof val === 'string' && val.trim() !== '' ? val : undefined), z.email('Formato non valido. (Es. info@eaglebooking.it)').optional()),
+  payrollConsultantEmail: z.preprocess((val) => (typeof val === 'string' && val.trim() !== '' ? val : undefined), emailValidation.optional()),
 
   notes: z.array(z.string('Campo malformato.').min(3, 'Almeno 3 caratteri.')).optional(),
 
@@ -71,7 +72,7 @@ export const eventFormSchema = z.object({
     z.string('Campo malformato.').min(2, 'Minimo 2 caratteri.').max(300, 'Massimo 300 caratteri.').trim().optional()
   ),
 
-  moCoordinatorId: z.number("Seleziona un'opzione valida.").min(1, 'Campo obbligatorio.').positive("Seleziona un'opzione valida.").optional(),
+  moCoordinatorId: idValidation.optional(),
 
   totalCost: z.number('Campo malformato.').positive('Può contenere solo numeri positivi.').optional(),
 
@@ -92,16 +93,16 @@ export const eventFormSchema = z.object({
       "Seleziona un'opzione valida."
     )
     .optional(),
-  contractSigning: z.boolean({ message: "Seleziona un'opzione valida." }),
-  depositInvoiceIssuing: z.boolean({ message: "Seleziona un'opzione valida." }),
-  depositReceiptVerification: z.boolean({ message: "Seleziona un'opzione valida." }),
-  techSheetSubmission: z.boolean({ message: "Seleziona un'opzione valida." }),
-  artistEngagement: z.boolean({ message: "Seleziona un'opzione valida." }),
-  professionalsEngagement: z.boolean({ message: "Seleziona un'opzione valida." }),
-  accompanyingPersonsEngagement: z.boolean({ message: "Seleziona un'opzione valida." }),
-  performance: z.boolean({ message: "Seleziona un'opzione valida." }),
-  postDateFeedback: z.boolean({ message: "Seleziona un'opzione valida." }),
-  bordereau: z.boolean({ message: "Seleziona un'opzione valida." }),
+  contractSigning: z.boolean("Seleziona un'opzione valida."),
+  depositInvoiceIssuing: z.boolean("Seleziona un'opzione valida."),
+  depositReceiptVerification: z.boolean("Seleziona un'opzione valida."),
+  techSheetSubmission: z.boolean("Seleziona un'opzione valida."),
+  artistEngagement: z.boolean("Seleziona un'opzione valida."),
+  professionalsEngagement: z.boolean("Seleziona un'opzione valida."),
+  accompanyingPersonsEngagement: z.boolean("Seleziona un'opzione valida."),
+  performance: z.boolean("Seleziona un'opzione valida."),
+  postDateFeedback: z.boolean("Seleziona un'opzione valida."),
+  bordereau: z.boolean("Seleziona un'opzione valida."),
 });
 
 export type EventFormSchema = z.infer<typeof eventFormSchema>;

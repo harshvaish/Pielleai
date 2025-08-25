@@ -1,17 +1,10 @@
 import * as z from 'zod/v4';
+import { passwordValidation } from './_general';
 
 export const changePasswordSchema = z
   .object({
-    oldPassword: z
-      .string('Campo malformato.')
-      .min(1, 'Password obbligatoria.')
-      .min(8, 'Almeno 8 caratteri.')
-      .max(16, 'Massimo 16 caratteri.'),
-    newPassword: z
-      .string('Campo malformato.')
-      .min(1, 'Password obbligatoria.')
-      .min(8, 'Almeno 8 caratteri.')
-      .max(16, 'Massimo 16 caratteri.'),
+    oldPassword: passwordValidation,
+    newPassword: passwordValidation,
     newPasswordConfirm: z.string(),
   })
   .refine((data) => data.newPassword === data.newPasswordConfirm, {

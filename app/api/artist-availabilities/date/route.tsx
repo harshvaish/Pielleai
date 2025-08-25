@@ -3,8 +3,6 @@ import { getArtistDateAvailabilities } from '@/lib/data/artists/get-artist-date-
 import { headers } from 'next/headers';
 import { type NextRequest, NextResponse } from 'next/server';
 
-export const dynamic = 'force-dynamic';
-
 export async function GET(request: NextRequest) {
   const requestHeaders = await headers();
   const session = await auth.api.getSession({

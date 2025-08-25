@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
 import { X } from 'lucide-react';
 import { VenueS2FormSchema, venueS2FormSchema } from '@/lib/validation/venueFormSchema';
-import { editVenueBillingData } from '@/lib/server-actions/venues/edit-venue-billing-data';
+import { updateVenueBillingData } from '@/lib/server-actions/venues/update-venue-billing-data';
 import StepTwo from '../../../_components/form/StepTwo';
 
 type BillingDataFormProps = { venueData: VenueData; countries: Country[]; closeDialog: () => void };
@@ -55,10 +55,7 @@ export default function BillingDataForm({ venueData, countries, closeDialog }: B
 
     setSubmitting(true);
 
-    const response = await editVenueBillingData({
-      venueId: venueData.id,
-      data: data,
-    });
+    const response = await updateVenueBillingData(venueData.id, data);
 
     if (response.success) {
       toast.success('Scheda locale aggiornata!');

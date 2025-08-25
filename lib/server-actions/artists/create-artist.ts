@@ -7,45 +7,30 @@ import { database } from '@/lib/database/connection';
 import { and, eq, inArray } from 'drizzle-orm';
 import { profiles, countries, languages as languagesTable, subdivisions, zones as zonesTable, users, artists, artistLanguages, managerArtists, artistZones } from '@/lib/database/schema';
 import { artistFormSchema, ArtistFormSchema } from '@/lib/validation/artistFormSchema';
+import { AppError } from '@/lib/classes/AppError';
 
 export const createArtist = async (data: ArtistFormSchema): Promise<ServerActionResponse<null>> => {
-  const headersList = await headers();
   try {
+    const headersList = await headers();
+
     const session = await auth.api.getSession({
       headers: headersList,
     });
 
     if (!session?.user || session.user.role != 'admin') {
       console.error('[createArtist] - Error: unauthorized', session);
-      return {
-        success: false,
-        message: 'Non sei autorizzato.',
-        data: null,
-      };
+      throw new AppError('Non sei autorizzato.');
     }
-  } catch (error) {
-    console.error('[createArtist] - Error: ', error);
-    return {
-      success: false,
-      message: 'Autenticazione non riutita.',
-      data: null,
-    };
-  }
 
-  const validation = artistFormSchema.safeParse(data);
+    const validation = artistFormSchema.safeParse(data);
 
-  if (!validation.success) {
-    console.error('[createArtist] - Error: validation failed', validation.error.issues[0]);
-    return {
-      success: false,
-      message: 'I dati inviati non sono corretti.',
-      data: null,
-    };
-  }
+    if (!validation.success) {
+      console.error('[createArtist] - Error: validation failed', validation.error.issues[0]);
+      throw new AppError('I dati inviati non sono corretti.');
+    }
 
-  const { languages, countryId, subdivisionId, billingCountry, billingSubdivisionId, zones, artistManagers } = validation.data;
+    const { languages, countryId, subdivisionId, billingCountry, billingSubdivisionId, zones, artistManagers } = validation.data;
 
-  try {
     const [languagesCheck, countryCheck, subdivisionCheck, billingCountryCheck, billingSubdivisionCheck, zonesCheck] = await Promise.all([
       database.select({ id: languagesTable.id }).from(languagesTable).where(inArray(languagesTable.id, languages)),
 
@@ -61,67 +46,35 @@ export const createArtist = async (data: ArtistFormSchema): Promise<ServerAction
     ]);
 
     if (languagesCheck.length !== languages.length) {
-      return {
-        success: false,
-        message: 'Una o più lingue selezionate non valide.',
-        data: null,
-      };
+      throw new AppError('Una o più lingue selezionate non valide.');
     }
 
     if (countryCheck.length !== 1) {
-      return {
-        success: false,
-        message: 'Stato selezionato non valido.',
-        data: null,
-      };
+      throw new AppError('Stato selezionato non valido.');
     }
 
     if (billingCountryCheck.length !== 1) {
-      return {
-        success: false,
-        message: 'Stato fatturazione selezionato non valido.',
-        data: null,
-      };
+      throw new AppError('Stato fatturazione selezionato non valido.');
     }
 
     if (subdivisionCheck.length !== 1) {
-      return {
-        success: false,
-        message: 'Provincia selezionata non valida.',
-        data: null,
-      };
+      throw new AppError('Provincia selezionata non valida.');
     }
 
     if (billingSubdivisionCheck.length !== 1) {
-      return {
-        success: false,
-        message: 'Provincia fatturazione selezionata non valida.',
-        data: null,
-      };
+      throw new AppError('Provincia fatturazione selezionata non valida.');
     }
 
     if (subdivisionCheck[0].countryId != countryId) {
-      return {
-        success: false,
-        message: 'La provincia selezionata non appartiene allo stato indicato.',
-        data: null,
-      };
+      throw new AppError('La provincia selezionata non appartiene allo stato indicato');
     }
 
     if (billingSubdivisionCheck[0].countryId != billingCountry.id) {
-      return {
-        success: false,
-        message: 'La provincia fatturazione non appartiene allo stato fatturazione selezionato.',
-        data: null,
-      };
+      throw new AppError('La provincia fatturazione non appartiene allo stato fatturazione selezionato.');
     }
 
     if (zonesCheck.length !== zones.length) {
-      return {
-        success: false,
-        message: 'Una o più aree di interesse selezionate non valide.',
-        data: null,
-      };
+      throw new AppError('Una o più aree di interesse selezionate non valide.');
     }
 
     if (artistManagers.length > 0) {
@@ -132,11 +85,7 @@ export const createArtist = async (data: ArtistFormSchema): Promise<ServerAction
         .where(and(eq(users.role, 'artist-manager'), inArray(profiles.id, artistManagers)));
 
       if (artistManagersCheck.length !== artistManagers.length) {
-        return {
-          success: false,
-          message: 'Una o più manager selezionati non validi.',
-          data: null,
-        };
+        throw new AppError('Una o più manager selezionati non validi.');
       }
     }
 
@@ -206,11 +155,7 @@ export const createArtist = async (data: ArtistFormSchema): Promise<ServerAction
 
       const newArtistId = artistResult[0]?.id;
       if (!newArtistId) {
-        return {
-          success: false,
-          message: 'Recupero id artista non riuscito.',
-          data: null,
-        };
+        throw new AppError('Recupero id artista non riuscito.');
       }
 
       const languageInserts = (data.languages || []).map((languageId: number) => ({
@@ -247,10 +192,11 @@ export const createArtist = async (data: ArtistFormSchema): Promise<ServerAction
       data: null,
     };
   } catch (error) {
-    console.error('[createArtist] transaction failed', error);
+    console.error('[createArtist] transaction failed:', error);
+
     return {
       success: false,
-      message: 'Creazione artista non riuscita.',
+      message: error instanceof AppError ? error.message : 'Creazione artista non riuscita.',
       data: null,
     };
   }

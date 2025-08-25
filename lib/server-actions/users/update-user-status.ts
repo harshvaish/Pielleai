@@ -1,16 +1,38 @@
 'use server';
 
-import { UserStatus } from '@/lib/constants';
+import { auth } from '@/lib/auth';
+import { AppError } from '@/lib/classes/AppError';
+import { USER_STATUS, UserStatus } from '@/lib/constants';
 import { database } from '@/lib/database/connection';
 import { users } from '@/lib/database/schema';
 import { ServerActionResponse } from '@/lib/types';
 import { eq } from 'drizzle-orm';
+import { headers } from 'next/headers';
+import { z } from 'zod/v4';
 
-export async function updateUserStatus(
-  userId: string,
-  newStatus: UserStatus
-): Promise<ServerActionResponse<null>> {
+export async function updateUserStatus(userId: string, newStatus: UserStatus): Promise<ServerActionResponse<null>> {
   try {
+    const headersList = await headers();
+
+    const session = await auth.api.getSession({
+      headers: headersList,
+    });
+
+    if (!session?.user || session.user.role != 'admin') {
+      console.error('[updateUserStatus] - Error: unauthorized', session);
+      throw new AppError('Non sei autorizzato.');
+    }
+
+    const schema = z.object({
+      userId: z.uuid('Campo malformato.'),
+      newStatus: z.enum(USER_STATUS, "Scegli un'opzione valida."),
+    });
+
+    const validation = schema.safeParse({ userId, newStatus });
+    if (!validation.success) {
+      throw new AppError('Dati inviati non corretti.');
+    }
+
     await database
       .update(users)
       .set({
@@ -24,11 +46,12 @@ export async function updateUserStatus(
       message: null,
       data: null,
     };
-  } catch (err) {
-    console.error('[updateUserStatus] - Error updating user:', err);
+  } catch (error) {
+    console.error('[updateUserStatus] transaction failed:', error);
+
     return {
       success: false,
-      message: 'Aggiornamento utente non riuscito.',
+      message: error instanceof AppError ? error.message : 'Aggiornamento utente non riuscito.',
       data: null,
     };
   }

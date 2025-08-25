@@ -19,7 +19,7 @@ export default function RemoveManagedArtistButton({ managerProfileId, artistId }
   const onClickHandler = async () => {
     setLoading(true);
 
-    const response = await removeManagedArtist({ managerProfileId, artistId });
+    const response = await removeManagedArtist(managerProfileId, artistId);
 
     if (response.success) {
       toast.success('Artista gestito rimosso!');

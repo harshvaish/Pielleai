@@ -1,7 +1,8 @@
 import { z } from 'zod/v4';
+import { emailValidation } from '../_general';
 
 export const recoverPasswordSchema = z.object({
-  email: z.email('Formato non valido. (Es. info@eaglebooking.it)'),
+  email: emailValidation,
 });
 
 export type RecoverPasswordSchema = z.infer<typeof recoverPasswordSchema>;

@@ -2,23 +2,41 @@
 
 import sgMail from '@sendgrid/mail';
 import { ServerActionResponse } from '../types';
+import { z } from 'zod/v4';
+import { auth } from '../auth';
+import { headers } from 'next/headers';
+import { AppError } from '../classes/AppError';
+import { emailValidation, nameValidation } from '../validation/_general';
 
-export const sendResetPasswordEmailAction = async (
-  userEmail: string,
-  userName: string,
-  url: string
-): Promise<ServerActionResponse<null>> => {
-  const apiKey = process.env.SENDGRID_API_KEY;
-  if (!apiKey) {
-    return {
-      success: false,
-      message:
-        'Configurazione errata del server: Chiave API SendGrid mancante.',
-      data: null,
-    };
-  }
-
+export const sendResetPasswordEmailAction = async (userEmail: string, userName: string, url: string): Promise<ServerActionResponse<null>> => {
   try {
+    const headersList = await headers();
+
+    const session = await auth.api.getSession({
+      headers: headersList,
+    });
+
+    if (!session?.user || session.user.role != 'admin') {
+      console.error('[sendResetPasswordEmailAction] - Error: unauthorized', session);
+      throw new AppError('Non sei autorizzato.');
+    }
+
+    const schema = z.object({
+      userEmail: emailValidation,
+      userName: nameValidation,
+      url: z.url('Inserisci un link valido.').trim(),
+    });
+
+    const validation = schema.safeParse({ userEmail, userName, url });
+    if (!validation.success) {
+      throw new AppError('Dati inviati non corretti.');
+    }
+
+    const apiKey = process.env.SENDGRID_API_KEY;
+    if (!apiKey) {
+      throw new AppError('Configurazione errata del server: Chiave API SendGrid mancante.');
+    }
+
     // Initialize SendGrid API
     sgMail.setApiKey(apiKey);
 
@@ -42,11 +60,11 @@ export const sendResetPasswordEmailAction = async (
       data: null,
     };
   } catch (error) {
-    console.error('[sendResetPasswordEmail] - Error: ', error);
+    console.error('[sendResetPasswordEmailAction] transaction failed:', error);
 
     return {
       success: false,
-      message: "Non è stato possibile inviare l'email. Riprovare più tardi.",
+      message: error instanceof AppError ? error.message : "Non è stato possibile inviare l'email. Riprovare più tardi.",
       data: null,
     };
   }

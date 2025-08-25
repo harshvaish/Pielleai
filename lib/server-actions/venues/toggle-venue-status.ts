@@ -1,19 +1,41 @@
 'use server';
 
-import { UserStatus } from '@/lib/constants';
+import { auth } from '@/lib/auth';
+import { AppError } from '@/lib/classes/AppError';
+import { USER_STATUS, UserStatus } from '@/lib/constants';
 import { database } from '@/lib/database/connection';
 import { venues } from '@/lib/database/schema';
 import { ServerActionResponse } from '@/lib/types';
+import { idValidation } from '@/lib/validation/_general';
 import { eq } from 'drizzle-orm';
+import { headers } from 'next/headers';
+import { z } from 'zod/v4';
 
-export async function toggleVenueStatus(
-  venueId: number,
-  initialStatus: UserStatus
-): Promise<ServerActionResponse<null>> {
-  const newStatus: UserStatus =
-    initialStatus === 'active' ? 'disabled' : 'active';
-
+export async function toggleVenueStatus(venueId: number, initialStatus: UserStatus): Promise<ServerActionResponse<null>> {
   try {
+    const headersList = await headers();
+
+    const session = await auth.api.getSession({
+      headers: headersList,
+    });
+
+    if (!session?.user || session.user.role != 'admin') {
+      console.error('[toggleVenueStatus] - Error: unauthorized', session);
+      throw new AppError('Non sei autorizzato.');
+    }
+
+    const schema = z.object({
+      venueId: idValidation,
+      initialStatus: z.enum(USER_STATUS, "Scegli un'opzione valida."),
+    });
+
+    const validation = schema.safeParse({ venueId, initialStatus });
+    if (!validation.success) {
+      throw new AppError('Dati inviati non corretti.');
+    }
+
+    const newStatus: UserStatus = initialStatus === 'active' ? 'disabled' : 'active';
+
     await database
       .update(venues)
       .set({
@@ -27,11 +49,12 @@ export async function toggleVenueStatus(
       message: null,
       data: null,
     };
-  } catch (err) {
-    console.error('[toggleVenueStatus] - Error updating artist:', err);
+  } catch (error) {
+    console.error('[toggleVenueStatus] transaction failed:', error);
+
     return {
       success: false,
-      message: 'Aggiornamento locale non riuscito.',
+      message: error instanceof AppError ? error.message : 'Aggiornamento locale non riuscito.',
       data: null,
     };
   }

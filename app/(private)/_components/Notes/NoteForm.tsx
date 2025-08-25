@@ -39,7 +39,7 @@ export function NoteForm({
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const validation = newNoteSchema.safeParse(newNoteContent);
+    const validation = newNoteSchema.safeParse({ writerId, receiverProfileId, newNoteContent });
     if (!validation.success) {
       setError(validation.error.issues[0].message);
       return;
@@ -49,19 +49,9 @@ export function NoteForm({
       let response;
 
       if (isArtist) {
-        const data = {
-          writerId,
-          artistId: receiverProfileId,
-          content: validation.data,
-        };
-        response = await createArtistNote(data);
+        response = await createArtistNote(writerId, receiverProfileId, validation.data.content);
       } else {
-        const data = {
-          writerId,
-          receiverProfileId,
-          content: validation.data,
-        };
-        response = await createProfileNote(data);
+        response = await createProfileNote(writerId, receiverProfileId, validation.data.content);
       }
 
       if (!response.success || !response.data) {

@@ -5,8 +5,6 @@ import { type NextRequest, NextResponse } from 'next/server';
 import { headers } from 'next/headers';
 import { auth } from '@/lib/auth';
 
-export const dynamic = 'force-dynamic';
-
 const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
 
 export async function GET(request: NextRequest) {

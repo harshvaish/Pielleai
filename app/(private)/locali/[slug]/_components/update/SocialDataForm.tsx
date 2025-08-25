@@ -10,7 +10,7 @@ import { useRouter } from 'next/navigation';
 import { X } from 'lucide-react';
 import { format } from 'date-fns';
 import { venueS3FormSchema, VenueS3FormSchema } from '@/lib/validation/venueFormSchema';
-import { editVenueSocialData } from '@/lib/server-actions/venues/edit-artist-social-data';
+import { updateVenueSocialData } from '@/lib/server-actions/venues/update-artist-social-data';
 import StepThree from '../../../_components/form/StepThree';
 
 type SocialDataFormProps = {
@@ -64,10 +64,7 @@ export default function SocialDataForm({ venueData, closeDialog }: SocialDataFor
     }
     setSubmitting(true);
 
-    const response = await editVenueSocialData({
-      venueId: venueData.id,
-      data: data,
-    });
+    const response = await updateVenueSocialData(venueData.id, data);
 
     if (response.success) {
       methods.reset(data); // new form status, isDirty to false

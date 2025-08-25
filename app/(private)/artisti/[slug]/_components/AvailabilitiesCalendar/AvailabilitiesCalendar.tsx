@@ -68,6 +68,7 @@ export default function AvailabilitiesCalendar() {
   useEffect(() => {
     if (!data?.availabilities) return;
 
+    // Backend is UTC → convert to business TZ for display only
     setAvailabilities(
       data.availabilities.map((a: ArtistAvailability) => ({
         start: toZonedTime(a.startDate, TIME_ZONE),

@@ -4,8 +4,6 @@ import { headers } from 'next/headers';
 import { type NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod/v4';
 
-export const dynamic = 'force-dynamic';
-
 // Strict schema for the query param `value`
 const SearchSchema = z.object({
   value: z

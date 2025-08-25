@@ -19,10 +19,10 @@ export const updateEvent = async (eventId: number, data: EventFormSchema): Promi
       throw new AppError('Non sei autorizzato.');
     }
 
-    const parsed = eventFormSchema.safeParse(data);
-    if (!parsed.success) throw new AppError('I dati inviati non sono corretti.');
+    const validation = eventFormSchema.safeParse(data);
+    if (!validation.success) throw new AppError('I dati inviati non sono corretti.');
 
-    const { artistId, artistManagerProfileId, venueId, availability, status: desiredStatus, tecnicalRiderDocument } = parsed.data;
+    const { artistId, artistManagerProfileId, venueId, availability, status: desiredStatus, tecnicalRiderDocument } = validation.data;
 
     // 1) Load current event (to know current availability/status)
     const [currentEvent] = await database
@@ -144,45 +144,45 @@ export const updateEvent = async (eventId: number, data: EventFormSchema): Promi
           status: desiredStatus, // triggers handle conflicts/booking
 
           artistManagerProfileId: artistManagerProfileId || null,
-          administrationEmail: parsed.data.administrationEmail || null,
-          payrollConsultantEmail: parsed.data.payrollConsultantEmail || null,
+          administrationEmail: validation.data.administrationEmail || null,
+          payrollConsultantEmail: validation.data.payrollConsultantEmail || null,
 
-          moCost: parsed.data.moCost?.toString() ?? null,
-          venueManagerCost: parsed.data.venueManagerCost?.toString() ?? null,
-          depositCost: parsed.data.depositCost?.toString() ?? null,
-          depositInvoiceNumber: parsed.data.depositInvoiceNumber || null,
-          expenseReimbursement: parsed.data.expenseReimbursement?.toString() ?? null,
-          bookingPercentage: parsed.data.bookingPercentage?.toString() ?? null,
-          supplierCost: parsed.data.supplierCost?.toString() ?? null,
-          moArtistAdvancedExpenses: parsed.data.moArtistAdvancedExpenses?.toString() ?? null,
-          artistNetCost: parsed.data.artistNetCost?.toString() ?? null,
-          artistUpfrontCost: parsed.data.artistUpfrontCost?.toString() ?? null,
+          moCost: validation.data.moCost?.toString() ?? null,
+          venueManagerCost: validation.data.venueManagerCost?.toString() ?? null,
+          depositCost: validation.data.depositCost?.toString() ?? null,
+          depositInvoiceNumber: validation.data.depositInvoiceNumber || null,
+          expenseReimbursement: validation.data.expenseReimbursement?.toString() ?? null,
+          bookingPercentage: validation.data.bookingPercentage?.toString() ?? null,
+          supplierCost: validation.data.supplierCost?.toString() ?? null,
+          moArtistAdvancedExpenses: validation.data.moArtistAdvancedExpenses?.toString() ?? null,
+          artistNetCost: validation.data.artistNetCost?.toString() ?? null,
+          artistUpfrontCost: validation.data.artistUpfrontCost?.toString() ?? null,
 
-          hotel: parsed.data.hotel || null,
-          restaurant: parsed.data.restaurant || null,
-          eveningContact: parsed.data.eveningContact || null,
-          moCoordinatorId: parsed.data.moCoordinatorId || null,
+          hotel: validation.data.hotel || null,
+          restaurant: validation.data.restaurant || null,
+          eveningContact: validation.data.eveningContact || null,
+          moCoordinatorId: validation.data.moCoordinatorId || null,
 
-          totalCost: parsed.data.totalCost?.toString() ?? null,
-          transportationsCost: parsed.data.transportationsCost?.toString() ?? null,
-          cashBalanceCost: parsed.data.cashBalanceCost?.toString() ?? null,
+          totalCost: validation.data.totalCost?.toString() ?? null,
+          transportationsCost: validation.data.transportationsCost?.toString() ?? null,
+          cashBalanceCost: validation.data.cashBalanceCost?.toString() ?? null,
 
-          soundCheckStart: parsed.data.soundCheckStart || null,
-          soundCheckEnd: parsed.data.soundCheckEnd || null,
+          soundCheckStart: validation.data.soundCheckStart || null,
+          soundCheckEnd: validation.data.soundCheckEnd || null,
 
           tecnicalRiderUrl: validTecnicalRider ? tecnicalRiderDocument!.url : null,
           tecnicalRiderName: validTecnicalRider ? tecnicalRiderDocument!.name : null,
 
-          contractSigning: parsed.data.contractSigning,
-          depositInvoiceIssuing: parsed.data.depositInvoiceIssuing,
-          depositReceiptVerification: parsed.data.depositReceiptVerification,
-          techSheetSubmission: parsed.data.techSheetSubmission,
-          artistEngagement: parsed.data.artistEngagement,
-          professionalsEngagement: parsed.data.professionalsEngagement,
-          accompanyingPersonsEngagement: parsed.data.accompanyingPersonsEngagement,
-          performance: parsed.data.performance,
-          postDateFeedback: parsed.data.postDateFeedback,
-          bordereau: parsed.data.bordereau,
+          contractSigning: validation.data.contractSigning,
+          depositInvoiceIssuing: validation.data.depositInvoiceIssuing,
+          depositReceiptVerification: validation.data.depositReceiptVerification,
+          techSheetSubmission: validation.data.techSheetSubmission,
+          artistEngagement: validation.data.artistEngagement,
+          professionalsEngagement: validation.data.professionalsEngagement,
+          accompanyingPersonsEngagement: validation.data.accompanyingPersonsEngagement,
+          performance: validation.data.performance,
+          postDateFeedback: validation.data.postDateFeedback,
+          bordereau: validation.data.bordereau,
 
           updatedAt: nowUTC,
         })
@@ -190,7 +190,7 @@ export const updateEvent = async (eventId: number, data: EventFormSchema): Promi
 
       // 5e) replace notes
       await tx.delete(eventNotes).where(eq(eventNotes.eventId, eventId));
-      const notes = (parsed.data.notes || [])
+      const notes = (validation.data.notes || [])
         .map((content: string) => content.trim())
         .filter(Boolean)
         .map((content: string) => ({

@@ -9,7 +9,7 @@ import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { X } from 'lucide-react';
 import { EditVenueS1FormSchema, editVenueS1FormSchema } from '@/lib/validation/venueFormSchema';
-import { editVenueGeneralData } from '@/lib/server-actions/venues/edit-venue-general-data';
+import { updateVenueGeneralData } from '@/lib/server-actions/venues/update-venue-general-data';
 import StepOne from '../../../_components/form/StepOne';
 
 type GeneralDataFormProps = {
@@ -56,10 +56,7 @@ export default function GeneralDataForm({ venueData, countries, venueManagers, c
     }
     setSubmitting(true);
 
-    const response = await editVenueGeneralData({
-      venueId: venueData.id,
-      data: data,
-    });
+    const response = await updateVenueGeneralData(venueData.id, data);
 
     if (response.success) {
       methods.reset(data); // new form status, isDirty to false

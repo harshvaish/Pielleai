@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
 import { X } from 'lucide-react';
 import { ArtistS2FormSchema, artistS2FormSchema } from '@/lib/validation/artistFormSchema';
-import { editArtistBillingData } from '@/lib/server-actions/artists/edit-artist-billing-data';
+import { updateArtistBillingData } from '@/lib/server-actions/artists/update-artist-billing-data';
 import StepTwo from '@/app/(private)/artisti/_components/form/StepTwo';
 
 type BillingDataFormProps = { userData: ArtistData; countries: Country[]; closeDialog: () => void };
@@ -55,10 +55,7 @@ export default function BillingDataForm({ userData, countries, closeDialog }: Bi
 
     setIsSubmitting(true);
 
-    const response = await editArtistBillingData({
-      artistId: userData.id,
-      data: data,
-    });
+    const response = await updateArtistBillingData(userData.id, data);
 
     if (response.success) {
       toast.success('Profilo artista aggiornato!');

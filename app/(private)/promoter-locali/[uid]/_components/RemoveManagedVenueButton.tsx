@@ -19,7 +19,7 @@ export default function RemoveManagedVenueButton({ managerProfileId, venueId }: 
   const onClickHandler = async () => {
     setLoading(true);
 
-    const response = await deleteManagedVenue({ managerProfileId, venueId });
+    const response = await deleteManagedVenue(managerProfileId, venueId);
 
     if (response.success) {
       toast.success('Locale gestito rimosso!');

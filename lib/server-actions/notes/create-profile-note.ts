@@ -1,29 +1,31 @@
 'use server';
 
+import { auth } from '@/lib/auth';
+import { AppError } from '@/lib/classes/AppError';
 import { database } from '@/lib/database/connection';
 import { profileNotes } from '@/lib/database/schema';
 import { ProfileNote, ServerActionResponse } from '@/lib/types';
 import { newNoteSchema } from '@/lib/validation/newNoteSchema';
+import { headers } from 'next/headers';
 
-export async function createProfileNote({
-  writerId,
-  receiverProfileId,
-  content,
-}: {
-  writerId: string;
-  receiverProfileId: number;
-  content: string;
-}): Promise<ServerActionResponse<ProfileNote | null>> {
-  const validation = newNoteSchema.safeParse(content);
-
-  if (!validation.success) {
-    return {
-      success: false,
-      message: 'Contenuto nota non valido.',
-      data: null,
-    };
-  }
+export async function createProfileNote(writerId: string, receiverProfileId: number, content: string): Promise<ServerActionResponse<ProfileNote | null>> {
   try {
+    const headersList = await headers();
+
+    const session = await auth.api.getSession({
+      headers: headersList,
+    });
+
+    if (!session?.user || session.user.role != 'admin') {
+      console.error('[createProfileNote] - Error: unauthorized', session);
+      throw new AppError('Non sei autorizzato.');
+    }
+
+    const validation = newNoteSchema.safeParse({ writerId, receiverId: receiverProfileId, content });
+    if (!validation.success) {
+      throw new AppError('Dati inviati non corretti.');
+    }
+
     const newNote = await database
       .insert(profileNotes)
       .values({
@@ -42,11 +44,12 @@ export async function createProfileNote({
       message: null,
       data: newNote[0],
     };
-  } catch (err) {
-    console.error('[updateUserNote] - Error updating note:', err);
+  } catch (error) {
+    console.error('[createProfileNote] transaction failed:', error);
+
     return {
       success: false,
-      message: 'Inserimento nota non riuscito.',
+      message: error instanceof AppError ? error.message : 'Inserimento nota non riuscito.',
       data: null,
     };
   }

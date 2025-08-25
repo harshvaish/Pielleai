@@ -7,18 +7,30 @@ import { ServerActionResponse } from '@/lib/types';
 import { database } from '@/lib/database/connection';
 import { events } from '@/lib/database/schema';
 import { eq } from 'drizzle-orm';
+import { idValidation } from '@/lib/validation/_general';
 
 export async function deleteEvent(eventId: number): Promise<ServerActionResponse<null>> {
   try {
-    const session = await auth.api.getSession({ headers: await headers() });
-    if (!session?.user || session.user.role !== 'admin') {
+    const headersList = await headers();
+
+    const session = await auth.api.getSession({
+      headers: headersList,
+    });
+
+    if (!session?.user || session.user.role != 'admin') {
+      console.error('[deleteEvent] - Error: unauthorized', session);
       throw new AppError('Non sei autorizzato.');
     }
 
-    await database.transaction(async (tx) => {
-      await tx.delete(events).where(eq(events.id, eventId));
-      // No other logic here—DB trigger handles conflicts & availability status.
-    });
+    const validation = idValidation.safeParse(eventId);
+
+    if (!validation.success) {
+      console.error('[deleteEvent] - Error: ', validation.error.issues[0]);
+      throw new AppError('Dati inviati non validi.');
+    }
+
+    await database.delete(events).where(eq(events.id, eventId));
+    // No other logic here—DB trigger handles conflicts & availability status.
 
     return { success: true, message: null, data: null };
   } catch (error) {

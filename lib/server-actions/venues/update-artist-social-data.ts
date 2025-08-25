@@ -5,59 +5,32 @@ import { headers } from 'next/headers';
 import { ServerActionResponse } from '@/lib/types';
 import { database } from '@/lib/database/connection';
 import { eq } from 'drizzle-orm';
-import { artists } from '@/lib/database/schema';
-import {
-  artistS3FormSchema,
-  ArtistS3FormSchema,
-} from '@/lib/validation/artistFormSchema';
+import { venues } from '@/lib/database/schema';
+import { venueS3FormSchema, VenueS3FormSchema } from '@/lib/validation/venueFormSchema';
+import { AppError } from '@/lib/classes/AppError';
 
-export const editArtistSocialData = async ({
-  artistId,
-  data,
-}: {
-  artistId: number;
-  data: ArtistS3FormSchema;
-}): Promise<ServerActionResponse<null>> => {
-  const headersList = await headers();
+export const updateVenueSocialData = async (venueId: number, data: VenueS3FormSchema): Promise<ServerActionResponse<null>> => {
   try {
+    const headersList = await headers();
+
     const session = await auth.api.getSession({
       headers: headersList,
     });
 
     if (!session?.user || session.user.role != 'admin') {
-      console.error('[editArtistSocialData] - Error: unauthorized', session);
-      return {
-        success: false,
-        message: 'Non sei autorizzato.',
-        data: null,
-      };
+      console.error('[updateVenueSocialData] - Error: unauthorized', session);
+      throw new AppError('Non sei autorizzato.');
     }
-  } catch (error) {
-    console.error('[editArtistSocialData] - Error: ', error);
-    return {
-      success: false,
-      message: 'Autenticazione non riutita.',
-      data: null,
-    };
-  }
 
-  const validation = artistS3FormSchema.safeParse(data);
+    const validation = venueS3FormSchema.safeParse(data);
 
-  if (!validation.success) {
-    console.error(
-      '[editArtistSocialData] - Error: validation failed',
-      validation.error.issues[0]
-    );
-    return {
-      success: false,
-      message: 'I dati inviati non sono corretti.',
-      data: null,
-    };
-  }
+    if (!validation.success) {
+      console.error('[updateVenueSocialData] - Error: validation failed', validation.error.issues[0]);
+      throw new AppError('Dati inviati non corretti.');
+    }
 
-  try {
     await database
-      .update(artists)
+      .update(venues)
       .set({
         tiktokUrl: validation.data.tiktokUrl,
         tiktokUsername: validation.data.tiktokUsername,
@@ -81,7 +54,7 @@ export const editArtistSocialData = async ({
 
         updatedAt: new Date(),
       })
-      .where(eq(artists.id, artistId));
+      .where(eq(venues.id, venueId));
 
     return {
       success: true,
@@ -89,10 +62,11 @@ export const editArtistSocialData = async ({
       data: null,
     };
   } catch (error) {
-    console.error('[editArtistSocialData] transaction failed', error);
+    console.error('[updateVenueSocialData] transaction failed:', error);
+
     return {
       success: false,
-      message: 'Aggiornamento profilo non riuscito.',
+      message: error instanceof AppError ? error.message : 'Aggiornamento locale non riuscito.',
       data: null,
     };
   }

@@ -9,7 +9,7 @@ import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { X } from 'lucide-react';
 import { VenueManagerS1FormSchema, venueManagerS1FormSchema } from '@/lib/validation/venueManagerFormSchema';
-import { editVenueManagerPersonalData } from '@/lib/server-actions/venue-managers/edit-venue-manager-personal-data';
+import { updateVenueManagerPersonalData } from '@/lib/server-actions/venue-managers/update-venue-manager-personal-data';
 import StepOne from '../../../_components/form/StepOne';
 
 type PersonalDataForm = { userData: VenueManagerData; languages: Language[]; countries: Country[]; closeDialog: () => void };
@@ -57,10 +57,7 @@ export default function PersonalDataForm({ userData, languages, countries, close
     }
     setSubmitting(true);
 
-    const response = await editVenueManagerPersonalData({
-      profileId: userData.profileId,
-      data: data,
-    });
+    const response = await updateVenueManagerPersonalData(userData.profileId, data);
 
     if (response.success) {
       methods.reset(data); // new form status, isDirty to false

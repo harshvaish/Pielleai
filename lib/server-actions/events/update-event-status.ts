@@ -1,14 +1,41 @@
 'use server';
 
+import { auth } from '@/lib/auth';
 import { AppError } from '@/lib/classes/AppError';
-import { EventStatus } from '@/lib/constants';
+import { EVENTS_STATUS, EventStatus } from '@/lib/constants';
 import { database } from '@/lib/database/connection';
 import { artistAvailabilities, events } from '@/lib/database/schema';
 import { ServerActionResponse } from '@/lib/types';
+import { idValidation } from '@/lib/validation/_general';
 import { and, eq, ne, count } from 'drizzle-orm';
+import { headers } from 'next/headers';
+import { z } from 'zod/v4';
 
 export async function updateEventStatus(eventId: number, newStatus: EventStatus): Promise<ServerActionResponse<null>> {
   try {
+    const headersList = await headers();
+
+    const session = await auth.api.getSession({
+      headers: headersList,
+    });
+
+    if (!session?.user || session.user.role != 'admin') {
+      console.error('[updateEventStatus] - Error: unauthorized', session);
+      throw new AppError('Non sei autorizzato.');
+    }
+
+    const schema = z.object({
+      eventId: idValidation,
+      newStatus: z.enum(EVENTS_STATUS, "Seleziona un'opzione valida."),
+    });
+
+    const validation = schema.safeParse({ eventId, newStatus });
+
+    if (!validation.success) {
+      console.error('[updateEventStatus] - Error: ', validation.error.issues[0]);
+      throw new AppError('Dati inviati non validi.');
+    }
+
     const now = new Date();
 
     // 1) Fetch event + availability

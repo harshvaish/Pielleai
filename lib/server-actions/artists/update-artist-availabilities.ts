@@ -1,31 +1,66 @@
 'use server';
 
-import { TIME_ZONE } from '@/lib/constants';
+import { auth } from '@/lib/auth';
+import { AppError } from '@/lib/classes/AppError';
 import { database } from '@/lib/database/connection';
 import { artistAvailabilities, artists, events } from '@/lib/database/schema';
 import { TimeRange, ServerActionResponse } from '@/lib/types';
 import { checkTimeRanges } from '@/lib/utils';
 import { parse } from 'date-fns';
-import { fromZonedTime } from 'date-fns-tz';
 import { eq, and, or, sql, ne, inArray, notExists } from 'drizzle-orm';
+import { headers } from 'next/headers';
+import { z } from 'zod/v4';
 
-interface EditArtistAvailabilitiesParams {
-  artistSlug: string;
-  date: string; // Format YYYY-MM-DD
-  timeRanges: TimeRange[];
-}
-
-export async function editArtistAvailabilities({ artistSlug, date, timeRanges }: EditArtistAvailabilitiesParams): Promise<ServerActionResponse<null>> {
-  const check = checkTimeRanges(date, timeRanges);
-  if (!check.success) {
-    return {
-      success: false,
-      message: check.message,
-      data: null,
-    };
-  }
-
+export async function updateArtistAvailabilities(artistSlug: string, date: string, timeRanges: TimeRange[]): Promise<ServerActionResponse<null>> {
   try {
+    const headersList = await headers();
+
+    const session = await auth.api.getSession({
+      headers: headersList,
+    });
+
+    if (!session?.user || session.user.role != 'admin') {
+      console.error('[updateArtistAvailabilities] - Error: unauthorized', session);
+      throw new AppError('Non sei autorizzato.');
+    }
+
+    const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+    const HOUR_RE = /^([01]\d|2[0-3]):[0-5]\d$/;
+
+    const schema = z.object({
+      artistSlug: z.uuid("Seleziona un'opzione valida."),
+      date: z
+        .string({ message: "Seleziona un'opzione valida." })
+        .regex(DATE_RE, 'Campo malformato.')
+        .refine((s) => {
+          // real calendar date check (e.g., reject 2025-02-30)
+          const d = new Date(`${s}T00:00:00Z`);
+          const yy = `${d.getUTCFullYear()}`.padStart(4, '0');
+          const mm = `${d.getUTCMonth() + 1}`.padStart(2, '0');
+          const dd = `${d.getUTCDate()}`.padStart(2, '0');
+          return `${yy}-${mm}-${dd}` === s;
+        }, 'Data non valida.'),
+      timeRanges: z
+        .array(
+          z.object({
+            startTime: z.string().regex(HOUR_RE, 'Orario di inizio non valido.'),
+            endTime: z.string().regex(HOUR_RE, 'Orario di fine non valido.'),
+          })
+        )
+        .min(1, 'Inserisci almeno un intervallo.'),
+    });
+
+    const validation = schema.safeParse({ artistSlug, date, timeRanges });
+    if (!validation.success) {
+      console.error('[updateArtistAvailabilities] - Error: ', validation.error.issues[0]);
+      throw new AppError('Dati inviati non validi.');
+    }
+
+    const check = checkTimeRanges(date, timeRanges);
+    if (!check.success) {
+      throw new AppError(check.message);
+    }
+
     return await database.transaction(async (tx) => {
       const artistResult = await tx
         .select({
@@ -36,12 +71,7 @@ export async function editArtistAvailabilities({ artistSlug, date, timeRanges }:
 
       const artistId = artistResult[0]?.id;
 
-      if (!artistId)
-        return {
-          success: false,
-          message: 'Artista non trovato.',
-          data: null,
-        };
+      if (!artistId) throw new AppError('Artista non trovato.');
 
       // Build a Postgres tsrange covering the entire given day e.g. 2025-08-12:
       //   [2025-08-12 00:00, 2025-08-13 00:00)
@@ -82,18 +112,13 @@ export async function editArtistAvailabilities({ artistSlug, date, timeRanges }:
       if (timeRanges.length > 0) {
         await tx.insert(artistAvailabilities).values(
           timeRanges.map((range) => {
-            // parse as naive date
-            const localStart = parse(`${date} ${range.startTime}`, 'yyyy-MM-dd HH:mm', new Date());
-            const localEnd = parse(`${date} ${range.endTime}`, 'yyyy-MM-dd HH:mm', new Date());
-
-            // parse to UTC
-            const startDateUTC = fromZonedTime(localStart, TIME_ZONE);
-            const endDateUTC = fromZonedTime(localEnd, TIME_ZONE);
+            const start = parse(`${date} ${range.startTime}`, 'yyyy-MM-dd HH:mm', new Date());
+            const end = parse(`${date} ${range.endTime}`, 'yyyy-MM-dd HH:mm', new Date());
 
             return {
               artistId,
-              startDate: startDateUTC,
-              endDate: endDateUTC,
+              startDate: start,
+              endDate: end,
             };
           })
         );
@@ -106,10 +131,11 @@ export async function editArtistAvailabilities({ artistSlug, date, timeRanges }:
       };
     });
   } catch (error) {
-    console.error('[editArtistAvailabilities] ', error);
+    console.error('[updateArtistAvailabilities] transaction failed:', error);
+
     return {
       success: false,
-      message: 'Aggiornamento disponibilità artista non riuscito.',
+      message: error instanceof AppError ? error.message : 'Aggiornamento disponibilità artista non riuscito',
       data: null,
     };
   }

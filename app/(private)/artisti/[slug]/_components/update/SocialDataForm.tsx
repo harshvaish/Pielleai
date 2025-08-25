@@ -10,7 +10,7 @@ import { useRouter } from 'next/navigation';
 import { X } from 'lucide-react';
 import { ArtistS3FormSchema, artistS3FormSchema } from '@/lib/validation/artistFormSchema';
 import { format } from 'date-fns';
-import { editArtistSocialData } from '@/lib/server-actions/artists/edit-artist-social-data';
+import { updateArtistSocialData } from '@/lib/server-actions/artists/update-artist-social-data';
 import StepThree from '@/app/(private)/artisti/_components/form/StepThree';
 
 type SocialDataFormProps = { userData: ArtistData; closeDialog: () => void };
@@ -61,10 +61,7 @@ export default function SocialDataForm({ userData, closeDialog }: SocialDataForm
     }
     setIsSubmitting(true);
 
-    const response = await editArtistSocialData({
-      artistId: userData.id,
-      data: data,
-    });
+    const response = await updateArtistSocialData(userData.id, data);
 
     if (response.success) {
       methods.reset(data); // new form status, isDirty to false

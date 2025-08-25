@@ -1,26 +1,38 @@
 'use server';
 
+import { auth } from '@/lib/auth';
+import { AppError } from '@/lib/classes/AppError';
 import { database } from '@/lib/database/connection';
 import { artistNotes } from '@/lib/database/schema';
 import { ServerActionResponse } from '@/lib/types';
+import { idValidation } from '@/lib/validation/_general';
 import { eq } from 'drizzle-orm';
+import { headers } from 'next/headers';
 
-export async function deleteArtistNote(
-  noteId: number
-): Promise<ServerActionResponse<null>> {
+export async function deleteArtistNote(noteId: number): Promise<ServerActionResponse<null>> {
   try {
-    const result = await database
-      .delete(artistNotes)
-      .where(eq(artistNotes.id, noteId));
+    const headersList = await headers();
+
+    const session = await auth.api.getSession({
+      headers: headersList,
+    });
+
+    if (!session?.user || session.user.role != 'admin') {
+      console.error('[deleteArtistNote] - Error: unauthorized', session);
+      throw new AppError('Non sei autorizzato.');
+    }
+
+    const validation = idValidation.safeParse(noteId);
+    if (!validation.success) {
+      throw new AppError('Dati inviati non corretti.');
+    }
+
+    const result = await database.delete(artistNotes).where(eq(artistNotes.id, noteId));
 
     const deletedRows = result.rowCount;
 
     if (!deletedRows) {
-      return {
-        success: false,
-        message: 'Nota non trovata.',
-        data: null,
-      };
+      throw new AppError('Nota non trovata.');
     }
 
     return {
@@ -28,11 +40,12 @@ export async function deleteArtistNote(
       message: null,
       data: null,
     };
-  } catch (err) {
-    console.error('[deleteArtistNote] - Error deleting note:', err);
+  } catch (error) {
+    console.error('[deleteArtistNote] transaction failed:', error);
+
     return {
       success: false,
-      message: 'Eliminazione nota non riuscita.',
+      message: error instanceof AppError ? error.message : 'Eliminazione nota non riuscita.',
       data: null,
     };
   }
