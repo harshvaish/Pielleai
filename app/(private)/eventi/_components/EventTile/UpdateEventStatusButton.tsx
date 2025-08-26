@@ -2,7 +2,7 @@
 
 import ConfirmDialog from '@/app/_components/ConfirmDialog';
 import { Button } from '@/components/ui/button';
-import { EventStatus } from '@/lib/constants';
+import { EventStatus } from '@/lib/types';
 import { updateEventStatus } from '@/lib/server-actions/events/update-event-status';
 import { Event } from '@/lib/types';
 import { useRouter } from 'next/navigation';

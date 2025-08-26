@@ -35,35 +35,34 @@ export default function AvailabilitiesCalendar() {
   const { slug } = useParams();
   if (!slug || typeof slug !== 'string') notFound();
 
-  const [date, setDate] = useState<Date>(new Date());
+  const [calendarDate, setCalendarDate] = useState<Date>(new Date());
+  const [calendarRange, setCalendarRange] = useState<{ start: Date; end: Date }>(() => calculateRange(new Date(), 'week'));
   const [view, setView] = useState<View>('week');
-  const [range, setRange] = useState<{ start: Date; end: Date }>(() => calculateRange(new Date(), 'week'));
+
   const [availabilities, setAvailabilities] = useState<CalendarAvailability[]>([]);
 
   const startDateUTC = fromZonedTime(
-    startOfDay(range.start), // set to 00:00 in local TZ
+    startOfDay(calendarRange.start), // set to 00:00 in local TZ
     TIME_ZONE // your app’s locale time zone, e.g. 'Europe/Rome'
   ).toISOString(); // convert to UTC string
 
   const endDateUTC = fromZonedTime(
-    endOfDay(range.end), // set to 23:59 in local TZ
+    endOfDay(calendarRange.end), // set to 23:59 in local TZ
     TIME_ZONE // your app’s locale time zone, e.g. 'Europe/Rome'
   ).toISOString(); // convert to UTC string
 
   const fetchUrl = `/api/artist-availabilities/range?s=${slug}&sd=${startDateUTC}&ed=${endDateUTC}`;
 
-  const { data, error, isLoading } = useSWR(fetchUrl, fetcher, {
-    keepPreviousData: true,
-  });
+  const { data, error, isLoading } = useSWR(fetchUrl, fetcher);
 
   const onNavigateHandler = (newDate: Date) => {
-    setDate(newDate);
-    setRange(calculateRange(newDate, view));
+    setCalendarDate(newDate);
+    setCalendarRange(calculateRange(newDate, view));
   };
 
   const onViewHandler = (nextView: View) => {
     setView(nextView);
-    setRange(calculateRange(date, nextView));
+    setCalendarRange(calculateRange(calendarDate, nextView));
   };
 
   const eventPropGetter = ({ status }: CalendarAvailability) => {
@@ -95,7 +94,7 @@ export default function AvailabilitiesCalendar() {
       <BigCalendar
         localizer={localizer}
         culture='it'
-        date={date}
+        date={calendarDate}
         onNavigate={onNavigateHandler}
         onView={onViewHandler}
         view={view}

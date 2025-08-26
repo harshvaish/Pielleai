@@ -147,12 +147,12 @@ export const artists = pgTable(
     xUsername: text('x_username'),
     xFollowers: integer('x_followers'),
     xCreatedAt: date('x_created_at'),
-    createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
-    updatedAt: timestamp('updated_at', { mode: 'string' }).defaultNow().notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
     slug: uuid().defaultRandom().notNull(),
   },
   (table) => [
-    index('idx_artists_created_at_desc').using('btree', table.createdAt.desc().nullsFirst().op('timestamp_ops')),
+    index('idx_artists_created_at_desc').using('btree', table.createdAt.desc().nullsFirst().op('timestamptz_ops')),
     index('idx_artists_email_trgm').using('gin', table.email.asc().nullsLast().op('gin_trgm_ops')),
     index('idx_artists_name_trgm').using('gin', table.name.asc().nullsLast().op('gin_trgm_ops')),
     index('idx_artists_phone_trgm').using('gin', table.phone.asc().nullsLast().op('gin_trgm_ops')),
@@ -196,7 +196,7 @@ export const subdivisions = pgTable(
     id: serial().primaryKey().notNull(),
     countryId: integer('country_id').notNull(),
     name: varchar({ length: 200 }).notNull(),
-    createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
   },
   (table) => [
     foreignKey({
@@ -213,7 +213,7 @@ export const languages = pgTable(
     id: serial().primaryKey().notNull(),
     code: varchar({ length: 2 }).notNull(),
     name: varchar({ length: 100 }).notNull(),
-    createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
   },
   (table) => [unique('languages_code_key').on(table.code)]
 );
@@ -224,7 +224,7 @@ export const countries = pgTable(
     id: serial().primaryKey().notNull(),
     code: varchar({ length: 2 }).notNull(),
     name: varchar({ length: 100 }).notNull(),
-    createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
     isEu: boolean('is_eu').default(false).notNull(),
   },
   (table) => [unique('countries_code_key').on(table.code)]
@@ -263,12 +263,12 @@ export const profiles = pgTable(
     billingPec: text('billing_pec'),
     billingPhone: text('billing_phone'),
     taxableInvoice: boolean('taxable_invoice').default(false),
-    createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
-    updatedAt: timestamp('updated_at', { mode: 'string' }).defaultNow().notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
   },
   (table) => [
     index('idx_profiles_company_trgm').using('gin', table.company.asc().nullsLast().op('gin_trgm_ops')),
-    index('idx_profiles_created_at_desc').using('btree', table.createdAt.desc().nullsFirst().op('timestamp_ops')),
+    index('idx_profiles_created_at_desc').using('btree', table.createdAt.desc().nullsFirst().op('timestamptz_ops')),
     index('idx_profiles_name_trgm').using('gin', table.name.asc().nullsLast().op('gin_trgm_ops')),
     index('idx_profiles_phone_trgm').using('gin', table.phone.asc().nullsLast().op('gin_trgm_ops')),
     index('idx_profiles_surname_trgm').using('gin', table.surname.asc().nullsLast().op('gin_trgm_ops')),
@@ -306,7 +306,7 @@ export const zones = pgTable(
   {
     id: serial().primaryKey().notNull(),
     name: text().notNull(),
-    createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
   },
   (table) => [unique('zones_name_key').on(table.name)]
 );
@@ -318,7 +318,7 @@ export const profileNotes = pgTable(
     writerId: text('writer_id').notNull(),
     receiverProfileId: integer('receiver_profile_id').notNull(),
     content: text().notNull(),
-    createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
   },
   (table) => [
     foreignKey({
@@ -341,7 +341,7 @@ export const artistNotes = pgTable(
     writerId: text('writer_id').notNull(),
     artistId: integer('artist_id').notNull(),
     content: text().notNull(),
-    createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
   },
   (table) => [
     foreignKey({
@@ -389,7 +389,7 @@ export const moCoordinators = pgTable('mo_coordinators', {
   id: serial().primaryKey().notNull(),
   name: text().notNull(),
   surname: text().notNull(),
-  createdAt: timestamp('created_at', { mode: 'string' }).defaultNow(),
+  createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' }).defaultNow(),
 });
 
 export const venues = pgTable(
@@ -440,14 +440,14 @@ export const venues = pgTable(
     xUsername: text('x_username'),
     xFollowers: integer('x_followers'),
     xCreatedAt: date('x_created_at'),
-    createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
-    updatedAt: timestamp('updated_at', { mode: 'string' }).defaultNow().notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
   },
   (table) => [
     index('idx_venues_address_trgm').using('gin', table.address.asc().nullsLast().op('gin_trgm_ops')),
     index('idx_venues_capacity').using('btree', table.capacity.asc().nullsLast().op('int4_ops')),
     index('idx_venues_company_trgm').using('gin', table.company.asc().nullsLast().op('gin_trgm_ops')),
-    index('idx_venues_created_at_desc').using('btree', table.createdAt.desc().nullsFirst().op('timestamp_ops')),
+    index('idx_venues_created_at_desc').using('btree', table.createdAt.desc().nullsFirst().op('timestamptz_ops')),
     index('idx_venues_manager_profile_id').using('btree', table.managerProfileId.asc().nullsLast().op('int4_ops')),
     index('idx_venues_name_trgm').using('gin', table.name.asc().nullsLast().op('gin_trgm_ops')),
     index('idx_venues_tax_code_trgm').using('gin', table.taxCode.asc().nullsLast().op('gin_trgm_ops')),
@@ -488,7 +488,7 @@ export const eventNotes = pgTable(
     writerId: text('writer_id').notNull(),
     eventId: integer('event_id').notNull(),
     content: text().notNull(),
-    createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
   },
   (table) => [
     foreignKey({
@@ -546,8 +546,8 @@ export const events = pgTable(
     performance: boolean().default(false).notNull(),
     postDateFeedback: boolean('post_date_feedback').default(false).notNull(),
     bordereau: boolean().default(false).notNull(),
-    createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
-    updatedAt: timestamp('updated_at', { mode: 'string' }).defaultNow().notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
     previousStatus: eventStatus('previous_status'),
     tourManagerEmail: text('tour_manager_email'),
   },
@@ -560,14 +560,14 @@ export const events = pgTable(
       'btree',
       table.status.asc().nullsLast().op('int4_ops'),
       table.artistId.asc().nullsLast().op('enum_ops'),
-      table.createdAt.desc().nullsFirst().op('timestamp_ops')
+      table.createdAt.desc().nullsFirst().op('int4_ops')
     ),
-    index('idx_events_status_created_desc').using('btree', table.status.asc().nullsLast().op('enum_ops'), table.createdAt.desc().nullsFirst().op('timestamp_ops')),
+    index('idx_events_status_created_desc').using('btree', table.status.asc().nullsLast().op('enum_ops'), table.createdAt.desc().nullsFirst().op('timestamptz_ops')),
     index('idx_events_status_venue_created_desc').using(
       'btree',
-      table.status.asc().nullsLast().op('timestamp_ops'),
-      table.venueId.asc().nullsLast().op('int4_ops'),
-      table.createdAt.desc().nullsFirst().op('int4_ops')
+      table.status.asc().nullsLast().op('enum_ops'),
+      table.venueId.asc().nullsLast().op('timestamptz_ops'),
+      table.createdAt.desc().nullsFirst().op('timestamptz_ops')
     ),
     index('idx_events_venue_id').using('btree', table.venueId.asc().nullsLast().op('int4_ops')),
     uniqueIndex('ux_events_one_confirmed_per_availability')
@@ -607,7 +607,7 @@ export const artistZones = pgTable(
   {
     artistId: integer('artist_id').notNull(),
     zoneId: integer('zone_id').notNull(),
-    createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
   },
   (table) => [
     foreignKey({
@@ -629,7 +629,7 @@ export const managerArtists = pgTable(
   {
     managerProfileId: integer('manager_profile_id').notNull(),
     artistId: integer('artist_id').notNull(),
-    createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
   },
   (table) => [
     foreignKey({
@@ -651,7 +651,7 @@ export const artistLanguages = pgTable(
   {
     artistId: integer('artist_id').notNull(),
     languageId: integer('language_id').notNull(),
-    createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
   },
   (table) => [
     foreignKey({
@@ -673,7 +673,7 @@ export const profileLanguages = pgTable(
   {
     profileId: integer('profile_id').notNull(),
     languageId: integer('language_id').notNull(),
-    createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
   },
   (table) => [
     foreignKey({

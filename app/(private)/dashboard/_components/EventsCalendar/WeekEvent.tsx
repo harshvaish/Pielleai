@@ -43,7 +43,7 @@ export default function WeekEvent({ event }: WeekEventProps) {
       </div>
 
       {/* artist manager */}
-      {event?.artistManager && (
+      {event.artistManager?.id && (
         <div className='flex items-center gap-1 text-[10px] font-semibold line-clamp-1'>
           <Image
             className='w-3 h-3'

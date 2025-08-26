@@ -7,10 +7,7 @@ import { database } from '@/lib/database/connection';
 import { and, count, eq, gt, ne } from 'drizzle-orm';
 import { profiles, users, artists, artistAvailabilities, venues, events, eventNotes } from '@/lib/database/schema';
 import { eventFormSchema, EventFormSchema } from '@/lib/validation/eventFormSchema';
-import { parse } from 'date-fns';
 import { AppError } from '@/lib/classes/AppError';
-import { TIME_ZONE } from '@/lib/constants';
-import { fromZonedTime } from 'date-fns-tz';
 
 export const updateEvent = async (eventId: number, data: EventFormSchema): Promise<ServerActionResponse<null>> => {
   try {
@@ -56,25 +53,18 @@ export const updateEvent = async (eventId: number, data: EventFormSchema): Promi
 
     // 3) Availability resolution
     let targetAvailabilityId = availability.id as number | undefined;
-    let startDateUTC: Date | undefined;
-    let endDateUTC: Date | undefined;
-    const nowUTC = new Date();
+    const { startDate, endDate } = availability;
+    const now = new Date();
 
     if (!targetAvailabilityId) {
-      // Create-from date/time (Europe/Rome → UTC)
-      const parsedStart = parse(`${availability.date} ${availability.startTime}`, 'yyyy-MM-dd HH:mm', new Date());
-      const parsedEnd = parse(`${availability.date} ${availability.endTime}`, 'yyyy-MM-dd HH:mm', new Date());
-      startDateUTC = fromZonedTime(parsedStart, TIME_ZONE);
-      endDateUTC = fromZonedTime(parsedEnd, TIME_ZONE);
-
-      if (endDateUTC <= startDateUTC) throw new AppError("L'orario di fine deve essere successivo all'orario di inizio.");
-      if (startDateUTC <= nowUTC) throw new AppError('Nuova disponibilità inserita già iniziata e quindi scaduta.');
+      if (endDate <= startDate) throw new AppError("L'orario di fine deve essere successivo all'orario di inizio.");
+      if (startDate <= now) throw new AppError('Nuova disponibilità inserita già iniziata e quindi scaduta.');
     } else {
       // Reuse existing availability: must belong to artist and not be expired
       const [availabilityCheck] = await database
         .select({ count: count() })
         .from(artistAvailabilities)
-        .where(and(eq(artistAvailabilities.id, targetAvailabilityId), eq(artistAvailabilities.artistId, artistId), gt(artistAvailabilities.endDate, nowUTC)))
+        .where(and(eq(artistAvailabilities.id, targetAvailabilityId), eq(artistAvailabilities.artistId, artistId), gt(artistAvailabilities.endDate, now)))
         .limit(1);
       if (availabilityCheck.count === 0) throw new AppError('Disponibilità selezionata non trovata o scaduta.');
     }
@@ -89,13 +79,13 @@ export const updateEvent = async (eventId: number, data: EventFormSchema): Promi
 
     await database.transaction(async (tx) => {
       // 5) Create availability if needed
-      if (!targetAvailabilityId && startDateUTC && endDateUTC) {
+      if (!targetAvailabilityId && startDate && endDate) {
         const [newAvail] = await tx
           .insert(artistAvailabilities)
           .values({
             artistId,
-            startDate: startDateUTC,
-            endDate: endDateUTC,
+            startDate: availability.startDate,
+            endDate: availability.endDate,
             status: 'available', // triggers will flip to 'booked' if we confirm
           })
           .returning({ id: artistAvailabilities.id });
@@ -184,7 +174,7 @@ export const updateEvent = async (eventId: number, data: EventFormSchema): Promi
           postDateFeedback: validation.data.postDateFeedback,
           bordereau: validation.data.bordereau,
 
-          updatedAt: nowUTC,
+          updatedAt: now,
         })
         .where(eq(events.id, eventId));
 

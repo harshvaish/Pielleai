@@ -6,11 +6,12 @@ import { getVenueManagers } from '@/lib/data/venue-managers/get-venue-managers';
 import { getPaginatedVenues } from '@/lib/data/venues/get-paginated-venues';
 import ManagersBadge from '../_components/badges/ManagersBadge';
 import VenueTypeBadge from '../_components/badges/VenueTypeBadge';
-import { NEW_USER_TIME, VenueType } from '@/lib/constants';
-import { VenuesTableFilters } from '@/lib/types';
+import { NEW_USER_TIME } from '@/lib/constants';
+import { VenuesTableFilters, VenueType } from '@/lib/types';
 import FiltersButton from './_components/filters/FiltersButton';
 import CreateButton from './_components/create/CreateButton';
 import StatusBadge from '../_components/badges/StatusBadge';
+import { splitCsv } from '@/lib/utils';
 
 type VenuesPageProps = {
   searchParams?: Promise<{
@@ -37,8 +38,8 @@ export default async function VenuesPage({ searchParams }: VenuesPageProps) {
     company: sp?.company || '',
     taxCode: sp?.taxCode || '',
     address: sp?.address || '',
-    types: (sp?.type ? sp.type.split(',') : []) as VenueType[],
-    managerIds: sp?.manager ? sp.manager.split(',') : [],
+    types: splitCsv(sp?.type) as VenueType[],
+    managerIds: splitCsv(sp?.manager),
     capacity: sp?.capacity || '',
   };
 

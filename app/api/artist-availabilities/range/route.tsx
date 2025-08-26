@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
   }
 
   const schema = z.object({
-    artistSlug: z.uuid().nullable(),
+    artistSlug: z.uuid(),
     startDate: z
       .string()
       .transform((val) => new Date(val))
@@ -52,6 +52,7 @@ export async function GET(request: NextRequest) {
       startDate,
       endDate,
     });
+
     return NextResponse.json({ availabilities }, { status: 200 });
   } catch (error) {
     console.error('Errore nel recupero delle disponibilità:', error);

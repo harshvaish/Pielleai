@@ -2,32 +2,22 @@
 
 import ConfirmDialog from '@/app/_components/ConfirmDialog';
 import { Button } from '@/components/ui/button';
-import { UserStatus } from '@/lib/constants';
 import { updateUserStatus } from '@/lib/server-actions/users/update-user-status';
+import { UserStatus } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { CircleOff, Repeat } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import { toast } from 'sonner';
 
-export default function ToggleBlockButton({
-  userId,
-  userInitialStatus,
-}: {
-  userId: string;
-  userInitialStatus: UserStatus;
-}) {
+export default function ToggleBlockButton({ userId, userInitialStatus }: { userId: string; userInitialStatus: UserStatus }) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
 
   const isActive = userInitialStatus === 'active';
-  const title = isActive
-    ? "Vuoi disattivare l'utente?"
-    : "Vuoi riattivare l'utente?";
-  const description = isActive
-    ? "Sei sicuro di voler disattivare questo utente? L'utente non potrà più accedere."
-    : "Sei sicuro di voler riattivare questo utente? L'utente potrà accedere di nuovo.";
+  const title = isActive ? "Vuoi disattivare l'utente?" : "Vuoi riattivare l'utente?";
+  const description = isActive ? "Sei sicuro di voler disattivare questo utente? L'utente non potrà più accedere." : "Sei sicuro di voler riattivare questo utente? L'utente potrà accedere di nuovo.";
   const confirmLabel = isActive ? 'Disattiva' : 'Riattiva';
 
   const onConfirm = () => {
@@ -49,22 +39,17 @@ export default function ToggleBlockButton({
       <Button
         variant='ghost'
         size='sm'
-        className={cn(
-          'max-w-max',
-          isActive ? 'text-destructive' : 'text-emerald-500'
-        )}
+        className={cn('max-w-max', isActive ? 'text-destructive' : 'text-emerald-500')}
         onClick={() => setIsDialogOpen(true)}
         disabled={isPending}
       >
         {isActive ? (
           <>
-            <CircleOff className={isPending ? 'animate-spin' : ''} /> Disattiva
-            utente
+            <CircleOff className={isPending ? 'animate-spin' : ''} /> Disattiva utente
           </>
         ) : (
           <>
-            <Repeat className={isPending ? 'animate-spin' : ''} /> Riattiva
-            utente
+            <Repeat className={isPending ? 'animate-spin' : ''} /> Riattiva utente
           </>
         )}
       </Button>

@@ -1,6 +1,6 @@
 import * as z from 'zod/v4';
-import { VENUE_TYPES } from '../constants';
 import { emailValidation, idValidation, phoneValidation } from './_general';
+import { venueTypes } from '../database/schema';
 
 export const venueS1FormSchema = z.object({
   avatarUrl: z
@@ -10,7 +10,7 @@ export const venueS1FormSchema = z.object({
 
   name: z.string('Campo malformato.').min(2, 'Minimo 2 caratteri.').max(100, 'Massimo 100 caratteri.').trim(),
 
-  type: z.enum(VENUE_TYPES, "Seleziona un'opzione valida."),
+  type: z.enum(venueTypes.enumValues, "Seleziona un'opzione valida."),
 
   capacity: z.number('Campo malformato.').min(1, 'Campo obbligatorio.').positive('Può contenere solo numeri positivi.'),
 

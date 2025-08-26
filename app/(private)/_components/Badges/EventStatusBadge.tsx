@@ -1,4 +1,5 @@
-import { EventStatus } from '@/lib/constants';
+import { EVENT_STATUS_LABELS } from '@/lib/constants';
+import { EventStatus } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { Check, ChevronRight, X } from 'lucide-react';
 import { JSX } from 'react';
@@ -9,9 +10,8 @@ type EventStatusBadgeProps = {
   size?: 'lg' | 'md' | 'sm';
 };
 
-const styles: Record<EventStatus, { label: string; text: string; bg: string; icon: JSX.Element }> = {
+const styles: Record<EventStatus, { text: string; bg: string; icon: JSX.Element }> = {
   'proposed': {
-    label: 'Proposto',
     text: 'text-blue-600',
     bg: 'bg-blue-50',
     icon: (
@@ -21,7 +21,6 @@ const styles: Record<EventStatus, { label: string; text: string; bg: string; ico
     ),
   },
   'pre-confirmed': {
-    label: 'Pre-confermato',
     text: 'text-amber-600',
     bg: 'bg-amber-50',
     icon: (
@@ -31,7 +30,6 @@ const styles: Record<EventStatus, { label: string; text: string; bg: string; ico
     ),
   },
   'confirmed': {
-    label: 'Confermato',
     text: 'text-lime-600',
     bg: 'bg-lime-50',
     icon: (
@@ -41,7 +39,6 @@ const styles: Record<EventStatus, { label: string; text: string; bg: string; ico
     ),
   },
   'conflict': {
-    label: 'Conflitto',
     text: 'text-rose-600',
     bg: 'bg-rose-50',
     icon: (
@@ -51,7 +48,6 @@ const styles: Record<EventStatus, { label: string; text: string; bg: string; ico
     ),
   },
   'rejected': {
-    label: 'Rifiutato',
     text: 'text-red-600',
     bg: 'bg-red-50',
     icon: (
@@ -74,7 +70,7 @@ export default function EventStatusBadge({ status, variant = 'primary', size = '
   return (
     <div className={cn('max-w-min inline-flex flex-nowrap items-center font-medium rounded-md', style.text, variant === 'primary' ? style.bg : 'bg-white', sizes[size])}>
       {style.icon}
-      <span className='truncate'>{style.label}</span>
+      <span className='truncate'>{EVENT_STATUS_LABELS[status]}</span>
     </div>
   );
 }

@@ -2,10 +2,9 @@
 
 import { auth } from '@/lib/auth';
 import { AppError } from '@/lib/classes/AppError';
-import { USER_STATUS, UserStatus } from '@/lib/constants';
 import { database } from '@/lib/database/connection';
-import { venues } from '@/lib/database/schema';
-import { ServerActionResponse } from '@/lib/types';
+import { userStatus, venues } from '@/lib/database/schema';
+import { ServerActionResponse, UserStatus } from '@/lib/types';
 import { idValidation } from '@/lib/validation/_general';
 import { eq } from 'drizzle-orm';
 import { headers } from 'next/headers';
@@ -26,7 +25,7 @@ export async function toggleVenueStatus(venueId: number, initialStatus: UserStat
 
     const schema = z.object({
       venueId: idValidation,
-      initialStatus: z.enum(USER_STATUS, "Scegli un'opzione valida."),
+      initialStatus: z.enum(userStatus.enumValues, "Scegli un'opzione valida."),
     });
 
     const validation = schema.safeParse({ venueId, initialStatus });

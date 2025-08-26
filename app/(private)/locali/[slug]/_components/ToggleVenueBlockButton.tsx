@@ -2,7 +2,7 @@
 
 import ConfirmDialog from '@/app/_components/ConfirmDialog';
 import { Button } from '@/components/ui/button';
-import { UserStatus } from '@/lib/constants';
+import { UserStatus } from '@/lib/types';
 import { toggleVenueStatus } from '@/lib/server-actions/venues/toggle-venue-status';
 import { cn } from '@/lib/utils';
 import { Clipboard, Repeat } from 'lucide-react';

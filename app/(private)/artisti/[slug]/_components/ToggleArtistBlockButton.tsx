@@ -6,9 +6,9 @@ import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import { toast } from 'sonner';
 import { toggleArtistStatus } from '@/lib/server-actions/artists/toggle-artist-status';
-import { UserStatus } from '@/lib/constants';
 import ConfirmDialog from '@/app/_components/ConfirmDialog';
 import { cn } from '@/lib/utils';
+import { UserStatus } from '@/lib/types';
 
 type ToggleArtistBlockButtonProps = {
   artistId: number;

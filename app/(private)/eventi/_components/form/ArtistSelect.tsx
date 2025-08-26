@@ -57,7 +57,7 @@ export default function ArtistSelect({ artists, value, setValue, hasError }: Art
       }
     >
       <div className='mt-4 border-t'>
-        <Command className='relative'>
+        <Command>
           <CommandInput placeholder='Ricerca artista' />
           <CommandList>
             <CommandEmpty>Nessun risultato.</CommandEmpty>

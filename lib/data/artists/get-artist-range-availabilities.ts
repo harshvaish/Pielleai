@@ -23,11 +23,12 @@ export async function getArtistRangeAvailabilities({ artistSlug, startDate, endD
     const rangeWindow = sql`tstzrange(
                             ${startDate}::timestamptz,
                             ${endDate}::timestamptz,
-                            '[)')`;
+                            '[]')`;
 
     const availabilitiesResult = await database
       .select({
         id: artistAvailabilities.id,
+        artistId: artistAvailabilities.artistId,
         startDate: artistAvailabilities.startDate,
         endDate: artistAvailabilities.endDate,
         status: artistAvailabilities.status,

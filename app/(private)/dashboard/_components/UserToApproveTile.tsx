@@ -4,7 +4,7 @@ import UserRoleBadge from '../../_components/badges/UserRoleBadge';
 import { Check, Mail, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { UserToApprove } from '@/lib/types';
-import { UserStatus } from '@/lib/constants';
+import { UserStatus } from '@/lib/types';
 import { updateUserStatus } from '@/lib/server-actions/users/update-user-status';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';

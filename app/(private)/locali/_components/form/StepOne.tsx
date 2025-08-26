@@ -4,14 +4,15 @@ import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import { cn, fetcher } from '@/lib/utils';
 import { Select, SelectContent, SelectItem, SelectTrigger } from '@/components/ui/select';
-import { VENUE_TYPES, VenueType } from '@/lib/constants';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import useSWR from 'swr';
-import { Country, Subdivision, VenueManagerSelectData } from '@/lib/types';
+import { Country, Subdivision, VenueManagerSelectData, VenueType } from '@/lib/types';
 import { useEffect, useMemo } from 'react';
 import { toast } from 'sonner';
 import { Checkbox } from '@/components/ui/checkbox';
 import Image from 'next/image';
+import { venueTypes } from '@/lib/database/schema';
+import { VENUE_TYPE_LABELS } from '@/lib/constants';
 
 export default function StepOne({ countries, venueManagers }: { countries: Country[]; venueManagers: VenueManagerSelectData[] }) {
   const {
@@ -103,7 +104,7 @@ export default function StepOne({ countries, venueManagers }: { countries: Count
               onValueChange={(v) => field.onChange(v as VenueType)}
               className='flex flex-wrap gap-2'
             >
-              {VENUE_TYPES.map((type) => (
+              {venueTypes.enumValues.map((type) => (
                 <label
                   key={type}
                   htmlFor={`venue-type-${type}`}
@@ -113,9 +114,7 @@ export default function StepOne({ countries, venueManagers }: { countries: Count
                     id={`venue-type-${type}`}
                     value={type}
                   />
-                  {type === 'small' && 'Club / DJ set'}
-                  {type === 'medium' && 'Media > 3.000'}
-                  {type === 'big' && 'Grande > 10.000'}
+                  {VENUE_TYPE_LABELS[type]}
                 </label>
               ))}
             </RadioGroup>

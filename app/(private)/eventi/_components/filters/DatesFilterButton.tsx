@@ -9,8 +9,8 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { Calendar as CalendarIcon, Eraser } from 'lucide-react';
 import { it } from 'date-fns/locale';
 import ResponsivePopover from '@/app/_components/ResponsivePopover';
-import { format } from 'date-fns';
-import { toZonedTime } from 'date-fns-tz';
+import { endOfDay, startOfDay } from 'date-fns';
+import { fromZonedTime } from 'date-fns-tz';
 import { TIME_ZONE } from '@/lib/constants';
 
 type DatesFilterButtonProps = {
@@ -24,8 +24,8 @@ export default function DatesFilterButton({ filters }: DatesFilterButtonProps) {
 
   const [open, setOpen] = useState<boolean>(false);
   const [dateRange, setDateRange] = useState<DateRange | undefined>({
-    from: filters.startDate ? toZonedTime(filters.startDate, TIME_ZONE) : undefined,
-    to: filters.endDate ? toZonedTime(filters.endDate, TIME_ZONE) : undefined,
+    from: filters.startDate ? new Date(filters.startDate) : undefined,
+    to: filters.endDate ? new Date(filters.endDate) : undefined,
   });
 
   const active = Boolean(filters.startDate && filters.endDate);
@@ -34,14 +34,14 @@ export default function DatesFilterButton({ filters }: DatesFilterButtonProps) {
     const params = new URLSearchParams(sp?.toString());
 
     if (dateRange?.from) {
-      const start = format(dateRange.from, 'yyyy-MM-dd');
+      const start = fromZonedTime(startOfDay(dateRange.from), TIME_ZONE).toISOString();
       params.set('start', start);
     } else {
       params.delete('start');
     }
 
     if (dateRange?.to) {
-      const end = format(dateRange.to, 'yyyy-MM-dd');
+      const end = fromZonedTime(endOfDay(dateRange.to), TIME_ZONE).toISOString();
       params.set('end', end);
     } else {
       params.delete('end');

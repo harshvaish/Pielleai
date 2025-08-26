@@ -7,7 +7,6 @@ import { createAuthMiddleware, APIError } from 'better-auth/api';
 import { sendResetPasswordEmailAction } from './server-actions/send-reset-password-email';
 import { admin } from 'better-auth/plugins/admin';
 import { adminConfig } from './permissions';
-import { USER_STATUS } from './constants';
 
 export const auth = betterAuth({
   database: drizzleAdapter(database, {
@@ -18,7 +17,7 @@ export const auth = betterAuth({
   user: {
     additionalFields: {
       status: {
-        type: [...USER_STATUS],
+        type: schema.userStatus.enumValues,
         required: true,
         input: true,
         returned: true,
@@ -61,8 +60,7 @@ export const auth = betterAuth({
       if (user.role !== 'admin') {
         throw new APIError('UNAUTHORIZED', {
           code: 'NOT_ADMIN_USER',
-          message:
-            'Solo gli amministratori possono accedere a questa piattaforma',
+          message: 'Solo gli amministratori possono accedere a questa piattaforma',
         });
       }
     }),

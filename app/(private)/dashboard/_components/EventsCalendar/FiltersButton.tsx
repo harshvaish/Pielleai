@@ -2,16 +2,16 @@
 
 import { Button } from '@/components/ui/button';
 import { Eraser, ListFilter } from 'lucide-react';
-import { ArtistSelectData, EventsCalendarFilters, VenueSelectData } from '@/lib/types';
+import { ArtistSelectData, EventsCalendarFilters, EventStatus, VenueSelectData } from '@/lib/types';
 import { useState, useTransition } from 'react';
 import { cn } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
-import { EVENTS_STATUS, EventStatus } from '@/lib/constants';
 import VenueSelect from '@/app/(private)/_components/filters/VenueSelect';
 import ArtistSelect from '@/app/(private)/_components/filters/ArtistSelect';
 import { Checkbox } from '@/components/ui/checkbox';
 import ResponsivePopover from '@/app/_components/ResponsivePopover';
 import EventStatusBadge from '@/app/(private)/_components/badges/EventStatusBadge';
+import { eventStatus } from '@/lib/database/schema';
 
 type FiltersButtonProps = {
   filters: EventsCalendarFilters;
@@ -24,7 +24,7 @@ export function FiltersButton({ filters, artists, venues }: FiltersButtonProps) 
   const [open, setOpen] = useState<boolean>(false);
   const [isPending, startTransition] = useTransition();
 
-  const active = Boolean(filters.artistIds && filters.venueIds && filters.status.length);
+  const active = Boolean(filters.artistIds.length && filters.venueIds.length && filters.status.length);
 
   const [artistIds, setArtistIds] = useState<string[]>(filters.artistIds || []);
   const [venueIds, setVenueIds] = useState<string[]>(filters.venueIds || []);
@@ -44,21 +44,21 @@ export function FiltersButton({ filters, artists, venues }: FiltersButtonProps) 
     const params = new URLSearchParams();
 
     if (artistIds.length > 0) {
-      params.set('artist', artistIds.join(','));
+      params.set('a', artistIds.join(','));
     } else {
-      params.delete('artist');
+      params.delete('a');
     }
 
     if (venueIds.length > 0) {
-      params.set('venue', venueIds.join(','));
+      params.set('v', venueIds.join(','));
     } else {
-      params.delete('venue');
+      params.delete('v');
     }
 
     if (status.length > 0) {
-      params.set('status', status.join(','));
+      params.set('s', status.join(','));
     } else {
-      params.delete('status');
+      params.delete('s');
     }
 
     startTransition(() => {
@@ -107,7 +107,7 @@ export function FiltersButton({ filters, artists, venues }: FiltersButtonProps) 
 
         <div className='space-y-2'>
           <div className='text-sm font-semibold'>Stato</div>
-          {EVENTS_STATUS.map((s) => {
+          {eventStatus.enumValues.map((s) => {
             const checked = status.includes(s);
 
             return (

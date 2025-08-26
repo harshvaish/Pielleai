@@ -2,21 +2,29 @@
 
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { EventFormSchema } from '@/lib/validation/eventFormSchema';
 import { Check, Minus, Plus } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { it } from 'date-fns/locale';
 import { Input } from '@/components/ui/input';
 import { format, startOfDay } from 'date-fns';
 import useSWR from 'swr';
-import { checkTimeRanges, cn, fetcher } from '@/lib/utils';
+import { checkAvailabilities, cn, fetcher } from '@/lib/utils';
 import { ArtistAvailability, TimeRange } from '@/lib/types';
 import { toast } from 'sonner';
 import { Skeleton } from '@/components/ui/skeleton';
-import { formatInTimeZone, fromZonedTime } from 'date-fns-tz';
+import { formatInTimeZone, fromZonedTime, toZonedTime } from 'date-fns-tz';
 import { TIME_ZONE } from '@/lib/constants';
+import { z } from 'zod/v4';
+import { timeValidation } from '@/lib/validation/_general';
 
 export default function ArtistAvailabilitySelect() {
   const {
@@ -24,46 +32,51 @@ export default function ArtistAvailabilitySelect() {
     setValue,
     formState: { errors },
   } = useFormContext<EventFormSchema>();
+
   const [open, setOpen] = useState<boolean>(false);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
-  const [timeRanges, setTimeRanges] = useState<TimeRange[]>([]);
+
   const [visible, setVisible] = useState<boolean>(false);
   const [newTimeRange, setNewTimeRange] = useState<TimeRange>({
     startTime: '',
     endTime: '',
   });
 
+  const [availabilities, setAvailabilities] = useState<ArtistAvailability[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
+
   const selectedArtistId = watch('artistId');
   const selectedAvailability = watch('availability');
 
-  const startDateUTC = selectedDate
-    ? fromZonedTime(
-        startOfDay(selectedDate), // set to 00:00 in local TZ
-        TIME_ZONE // your app’s locale time zone, e.g. 'Europe/Rome'
-      ).toISOString() // convert to UTC string
-    : null;
+  const startDateUTC = useMemo(() => {
+    if (!selectedDate) return null;
+    const startLocal = startOfDay(selectedDate);
+    return fromZonedTime(startLocal, TIME_ZONE).toISOString();
+  }, [selectedDate]);
 
-  const label = selectedAvailability ? `${selectedAvailability.date} (${selectedAvailability.startTime} - ${selectedAvailability.endTime})` : 'Seleziona data';
+  const fetchUrl = useMemo(() => {
+    if (!selectedArtistId || !startDateUTC) return null;
+    return `/api/artist-availabilities/date?i=${selectedArtistId}&sd=${startDateUTC}`;
+  }, [selectedArtistId, startDateUTC]);
 
-  const fetchUrl = selectedArtistId && startDateUTC ? `/api/artist-availabilities/date?i=${selectedArtistId}&sd=${startDateUTC}` : null;
-
-  const { data, error, isLoading } = useSWR(fetchUrl, fetcher);
+  const { data: response, isLoading } = useSWR(fetchUrl, fetcher);
 
   useEffect(() => {
-    if (!data?.availabilities) return;
-    setTimeRanges(
-      data.availabilities.map((a: ArtistAvailability) => ({
-        availabilityId: a.id,
-        startTime: formatInTimeZone(a.startDate, TIME_ZONE, 'HH:mm'),
-        endTime: formatInTimeZone(a.endDate, TIME_ZONE, 'HH:mm'),
-        status: a.status,
-      }))
+    if (!response) return;
+
+    if (!response.success) {
+      toast.error(response.message || 'Recupero disponibilità artista non riuscito.');
+      return;
+    }
+
+    setAvailabilities(
+      response.data.map((a: ArtistAvailability) => ({
+        ...a,
+        startDate: toZonedTime(a.startDate, TIME_ZONE),
+        endDate: toZonedTime(a.endDate, TIME_ZONE),
+      })),
     );
-  }, [data]);
-
-  useEffect(() => {
-    if (error) toast.error('Recupero disponibilità artista non riuscito.');
-  }, [error]);
+  }, [response]);
 
   const onNewAvailabilityClickHandler = () => {
     if (!selectedDate) {
@@ -71,25 +84,61 @@ export default function ArtistAvailabilitySelect() {
       return;
     }
 
-    const date = format(selectedDate, 'yyyy-MM-dd');
-    const check = checkTimeRanges(date, [...timeRanges, newTimeRange]);
+    setLoading(true);
+
+    const schema = z.object({
+      startTime: timeValidation,
+      endTime: timeValidation,
+    });
+
+    const validation = schema.safeParse({
+      startTime: newTimeRange.startTime,
+      endTime: newTimeRange.endTime,
+    });
+
+    if (!validation.success) {
+      toast.error('Orari nuova disponibilità non validi.');
+      setLoading(false);
+      return;
+    }
+
+    const startTimeFragments = newTimeRange.startTime.split(':');
+    const endTimeFragments = newTimeRange.endTime.split(':');
+
+    const start = new Date(selectedDate);
+    start.setHours(parseInt(startTimeFragments[0], 10), parseInt(startTimeFragments[1], 10), 0, 0);
+    const end = new Date(selectedDate);
+    end.setHours(parseInt(endTimeFragments[0], 10), parseInt(endTimeFragments[1], 10), 0, 0);
+
+    const startUTC = fromZonedTime(start, TIME_ZONE);
+    const endUTC = fromZonedTime(end, TIME_ZONE);
+
+    const newAvailability = {
+      startDate: startUTC,
+      endDate: endUTC,
+    };
+
+    const check = checkAvailabilities([...availabilities, newAvailability]);
 
     if (!check.success) {
       toast.error(check.message);
+      setLoading(false);
       return;
     }
 
     setValue('availability', {
       id: undefined,
-      date: date,
-      startTime: newTimeRange.startTime,
-      endTime: newTimeRange.endTime,
+      startDate: startUTC,
+      endDate: endUTC,
     });
+
+    setNewTimeRange({ startTime: '', endTime: '' });
+    setLoading(false);
     setOpen(false);
   };
 
-  const onAvailabilityClickHandler = (timeRange: TimeRange) => {
-    if (!selectedDate || !timeRange.availabilityId) {
+  const onAvailabilityClickHandler = (availability: ArtistAvailability) => {
+    if (!selectedDate || !availability.id) {
       toast.error('Disponibilità selezionata non valida.');
       return;
     }
@@ -100,13 +149,27 @@ export default function ArtistAvailabilitySelect() {
     }
 
     setValue('availability', {
-      id: timeRange.availabilityId,
-      date: format(selectedDate, 'yyyy-MM-dd'),
-      startTime: timeRange.startTime,
-      endTime: timeRange.endTime,
+      id: availability.id,
+      startDate: fromZonedTime(availability.startDate, TIME_ZONE),
+      endDate: fromZonedTime(availability.endDate, TIME_ZONE),
     });
     setOpen(false);
   };
+
+  const label = useMemo(() => {
+    if (!selectedAvailability) return 'Seleziona data';
+    try {
+      const start = formatInTimeZone(
+        selectedAvailability.startDate,
+        TIME_ZONE,
+        'dd/MM/yyyy (HH:mm',
+      );
+      const end = formatInTimeZone(selectedAvailability.endDate, TIME_ZONE, 'HH:mm)');
+      return `${start} - ${end}`;
+    } catch {
+      return 'Seleziona data';
+    }
+  }, [selectedAvailability]);
 
   return (
     <>
@@ -114,7 +177,11 @@ export default function ArtistAvailabilitySelect() {
         type='button'
         size='sm'
         variant='outline'
-        className={cn('justify-start text-sm font-normal', selectedAvailability ?? 'text-zinc-400', errors.availability && 'border-destructive')}
+        className={cn(
+          'justify-start text-sm font-normal',
+          selectedAvailability ?? 'text-zinc-400',
+          errors.availability && 'border-destructive',
+        )}
         onClick={() => setOpen(true)}
         disabled={!selectedArtistId}
       >
@@ -128,7 +195,9 @@ export default function ArtistAvailabilitySelect() {
         <DialogContent className='h-dvh md:max-h-[420px] w-dvw grid grid-rows-[auto_1fr] p-4 pt-12 rounded-none md:rounded-2xl'>
           <DialogHeader>
             <DialogTitle>Seleziona data e ora dell&apos;evento</DialogTitle>
-            <DialogDescription className='hidden'>Tramite questo dialog l&apos;utente può scegliere la disponibilità dell&apos;artista.</DialogDescription>
+            <DialogDescription className='hidden'>
+              Tramite questo dialog l&apos;utente può scegliere la disponibilità dell&apos;artista.
+            </DialogDescription>
           </DialogHeader>
 
           <div className='h-full grid grid-rows-[max-content_1fr] md:grid-rows-none md:grid-cols-2 justify-items-center gap-4 py-4 border-t overflow-hidden'>
@@ -166,7 +235,9 @@ export default function ArtistAvailabilitySelect() {
                           startTime: e.target.value,
                         }))
                       }
-                      className={cn('w-min appearance-none [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none shadow-none')}
+                      className={cn(
+                        'w-min appearance-none [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none shadow-none',
+                      )}
                       disabled={isLoading}
                     />
                     <span className='text-zinc-400'>-</span>
@@ -179,7 +250,9 @@ export default function ArtistAvailabilitySelect() {
                           endTime: e.target.value,
                         }))
                       }
-                      className={cn('w-min appearance-none [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none shadow-none')}
+                      className={cn(
+                        'w-min appearance-none [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none shadow-none',
+                      )}
                       disabled={isLoading}
                     />
 
@@ -203,29 +276,33 @@ export default function ArtistAvailabilitySelect() {
                       <Skeleton className='h-8 rounded-md' />
                     </>
                   )}
-                  {!isLoading && timeRanges.length === 0 && <div className='text-sm text-zinc-500'>Nessuna disponibilità. Aggiungine una per vederla nella lista.</div>}
+                  {!isLoading && availabilities.length === 0 && (
+                    <div className='text-sm text-zinc-500'>
+                      Nessuna disponibilità. Aggiungine una per vederla nella lista.
+                    </div>
+                  )}
                   {!isLoading &&
-                    timeRanges.length > 0 &&
-                    timeRanges.map((timeRange, index) => {
-                      const notAvailable = 'status' in timeRange && timeRange.status !== 'available';
+                    availabilities.length > 0 &&
+                    availabilities.map((av) => {
+                      const notAvailable = 'status' in av && av.status !== 'available';
 
                       return (
                         <div
-                          key={index}
+                          key={av.id}
                           className='h-10 flex gap-2 justify-between items-center bg-zinc-50 px-2 rounded-xl'
                         >
                           <span>
-                            {timeRange.startTime}
+                            {format(av.startDate, 'HH:mm')}
                             <span className='text-zinc-400 mx-1'>-</span>
-                            {timeRange.endTime}
+                            {format(av.endDate, 'HH:mm')}
                           </span>
                           {!notAvailable && (
                             <Button
                               variant='ghost'
                               size='icon'
                               className='text-emerald-600'
-                              onClick={() => onAvailabilityClickHandler(timeRange)}
-                              disabled={isLoading}
+                              onClick={() => onAvailabilityClickHandler(av)}
+                              disabled={loading || isLoading}
                             >
                               <Check />
                             </Button>
@@ -236,7 +313,9 @@ export default function ArtistAvailabilitySelect() {
                 </div>
               </div>
             ) : (
-              <div className='w-full flex justify-center items-center text-sm text-zinc-500'>Seleziona una data per accedere alle disponibilità.</div>
+              <div className='w-full flex justify-center items-center text-sm text-zinc-500'>
+                Seleziona una data per accedere alle disponibilità.
+              </div>
             )}
           </div>
         </DialogContent>

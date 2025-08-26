@@ -2,10 +2,9 @@
 
 import { auth } from '@/lib/auth';
 import { AppError } from '@/lib/classes/AppError';
-import { USER_STATUS, UserStatus } from '@/lib/constants';
 import { database } from '@/lib/database/connection';
-import { artists } from '@/lib/database/schema';
-import { ServerActionResponse } from '@/lib/types';
+import { artists, userStatus } from '@/lib/database/schema';
+import { ServerActionResponse, UserStatus } from '@/lib/types';
 import { idValidation } from '@/lib/validation/_general';
 import { eq } from 'drizzle-orm';
 import { headers } from 'next/headers';
@@ -26,7 +25,7 @@ export async function toggleArtistStatus(artistId: number, initialStatus: UserSt
 
     const schema = z.object({
       artistId: idValidation,
-      initialStatus: z.enum(USER_STATUS, "Seleziona un'opzione valida."),
+      initialStatus: z.enum(userStatus.enumValues, "Seleziona un'opzione valida."),
     });
 
     const validation = schema.safeParse({ artistId, initialStatus });

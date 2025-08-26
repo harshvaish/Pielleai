@@ -38,6 +38,7 @@ export async function getArtistDateAvailabilities({ artistId, artistSlug, startD
     const rows = await database
       .select({
         id: artistAvailabilities.id,
+        artistId: artistAvailabilities.artistId,
         startDate: artistAvailabilities.startDate,
         endDate: artistAvailabilities.endDate,
         status: artistAvailabilities.status,
@@ -54,14 +55,14 @@ export async function getArtistDateAvailabilities({ artistId, artistSlug, startD
     const protectedCounts = await database
       .select({
         availabilityId: events.availabilityId,
-        cnt: count(),
+        count: count(),
       })
       .from(events)
       .where(and(inArray(events.availabilityId, availabilityIds), or(inArray(events.status, ['pre-confirmed', 'confirmed']), eq(events.previousStatus, 'pre-confirmed'))))
       .groupBy(events.availabilityId);
 
     const protectedMap = new Map<number, number>();
-    for (const r of protectedCounts) protectedMap.set(r.availabilityId, Number(r.cnt));
+    for (const r of protectedCounts) protectedMap.set(r.availabilityId, Number(r.count));
 
     // 5) Compute canDelete
     const result: ArtistAvailability[] = rows.map((r) => {

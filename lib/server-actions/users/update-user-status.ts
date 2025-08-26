@@ -2,10 +2,9 @@
 
 import { auth } from '@/lib/auth';
 import { AppError } from '@/lib/classes/AppError';
-import { USER_STATUS, UserStatus } from '@/lib/constants';
 import { database } from '@/lib/database/connection';
-import { users } from '@/lib/database/schema';
-import { ServerActionResponse } from '@/lib/types';
+import { users, userStatus } from '@/lib/database/schema';
+import { ServerActionResponse, UserStatus } from '@/lib/types';
 import { eq } from 'drizzle-orm';
 import { headers } from 'next/headers';
 import { z } from 'zod/v4';
@@ -25,7 +24,7 @@ export async function updateUserStatus(userId: string, newStatus: UserStatus): P
 
     const schema = z.object({
       userId: z.uuid('Campo malformato.'),
-      newStatus: z.enum(USER_STATUS, "Scegli un'opzione valida."),
+      newStatus: z.enum(userStatus.enumValues, "Scegli un'opzione valida."),
     });
 
     const validation = schema.safeParse({ userId, newStatus });

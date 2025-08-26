@@ -7,8 +7,10 @@ import { and, desc, eq, inArray, sql } from 'drizzle-orm';
 
 export async function getCalendarEvents({ status, artistIds, venueIds, startDate, endDate }: EventsCalendarFilters): Promise<CalendarEvent[]> {
   try {
-    // Build date window only if both are present: [start 00:00, end+1 00:00)
-    const rangeWindow = startDate && endDate ? sql`tsrange(${startDate}::timestamp, (${endDate}::date + 1)::timestamp, '[)')` : undefined;
+    const rangeWindow = sql`tstzrange(
+                            ${startDate}::timestamptz,
+                            ${endDate}::timestamptz,
+                            '[)')`;
 
     // Build reusable filters
     const filters = and(
@@ -62,17 +64,16 @@ export async function getCalendarEvents({ status, artistIds, venueIds, startDate
       .where(filters)
       .orderBy(desc(events.createdAt));
 
-    // nullify missing relations
-    const cleanedResult: CalendarEvent[] = eventsResult.map((event) => {
-      const newObj = {
+    //
+    const parsedResult: CalendarEvent[] = eventsResult.map((event) => {
+      return {
         ...event,
-      } as CalendarEvent;
-
-      if (!newObj.artistManager?.id) newObj.artistManager = null;
-      return newObj;
+        start: new Date(event.start),
+        end: new Date(event.end),
+      };
     });
 
-    return cleanedResult;
+    return parsedResult;
   } catch (error) {
     console.error('[getCalendarEvents] - Error:', error);
     throw new Error('Recupero eventi calendario non riuscito.');

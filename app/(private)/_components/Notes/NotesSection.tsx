@@ -12,17 +12,9 @@ import { deleteArtistNote } from '@/lib/server-actions/notes/delete-artist-note'
 import { deleteProfileNote } from '@/lib/server-actions/notes/delete-profile-note';
 import ConfirmDialog from '@/app/_components/ConfirmDialog';
 
-export default function NotesSection({
-  isArtist,
-  initialNotes,
-  writerId,
-  receiverProfileId,
-}: {
-  isArtist: boolean;
-  initialNotes: ProfileNote[];
-  writerId: string;
-  receiverProfileId: number;
-}) {
+type NotesSectionProps = { isArtist: boolean; initialNotes: ProfileNote[]; writerId: string; receiverProfileId: number };
+
+export default function NotesSection({ isArtist, initialNotes, writerId, receiverProfileId }: NotesSectionProps) {
   const [notes, setNotes] = useState<ProfileNote[]>(initialNotes);
   const [isFormVisible, setIsFormVisible] = useState(false);
   const [selectedNoteId, setSelectedNoteId] = useState<number | null>(null);
@@ -98,9 +90,7 @@ export default function NotesSection({
             ))}
           </div>
         ) : (
-          <div className='flex justify-center items-center font-semibold'>
-            Nessuna nota.
-          </div>
+          <div className='flex justify-center items-center font-semibold'>Nessuna nota.</div>
         )}
       </section>
 

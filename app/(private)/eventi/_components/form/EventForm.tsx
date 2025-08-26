@@ -3,19 +3,19 @@
 import { ArtistSelectData, MoCoordinator, VenueSelectData } from '@/lib/types';
 import { Select, SelectContent, SelectItem, SelectTrigger } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
-import { EVENTS_STATUS } from '@/lib/constants';
 import EventStatusBadge from '../../../_components/badges/EventStatusBadge';
 import { Separator } from '@/components/ui/separator';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import PdfUploadInput from '@/app/(private)/eventi/_components/form/PdfUploadInput';
 import { Checkbox } from '@/components/ui/checkbox';
-import ArtistSelect from './ArtistSelect';
 import VenueSelect from './VenueSelect';
 import ArtistAvailabilitySelect from './ArtistAvailabilitySelect';
 import ArtistManagerSelect from './ArtistManagerSelect';
 import EventNotesInput from './EventNotesInput';
 import { Controller, useFormContext } from 'react-hook-form';
+import ArtistSelect from './ArtistSelect';
+import { eventStatus } from '@/lib/database/schema';
 
 type EventForm = {
   artists: ArtistSelectData[];
@@ -71,7 +71,7 @@ export default function EventForm({ artists, venues, moCoordinators }: EventForm
                   <EventStatusBadge status={field.value} />
                 </SelectTrigger>
                 <SelectContent>
-                  {EVENTS_STATUS.map((status) => (
+                  {eventStatus.enumValues.map((status) => (
                     <SelectItem
                       key={status}
                       value={status}

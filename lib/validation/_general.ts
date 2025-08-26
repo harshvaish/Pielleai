@@ -22,6 +22,8 @@ export const phoneValidation = z
 
 export const idValidation = z.number("Seleziona un'opzione valida.").min(1, 'Campo obbligatorio.').positive("Seleziona un'opzione valida.");
 
+export const stringIdValidation = z.string('Campo malformato.').regex(/^[1-9]\d*$/, 'Può contenere solo numeri positivi.');
+
 const today = new Date();
 const subtractYears = (date: Date, years: number): Date => {
   const newDate = new Date(date);

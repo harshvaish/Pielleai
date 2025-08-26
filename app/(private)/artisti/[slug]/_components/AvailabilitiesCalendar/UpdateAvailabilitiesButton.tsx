@@ -1,14 +1,20 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from '@/components/ui/dialog';
 import { CalendarCheck2, Minus, Plus, Trash } from 'lucide-react';
 import { Calendar } from '@/components/ui/calendar';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ArtistAvailability, TimeRange } from '@/lib/types';
 import { toast } from 'sonner';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { format, startOfDay } from 'date-fns';
 import useSWR from 'swr';
 import { checkAvailabilities, cn, fetcher } from '@/lib/utils';
@@ -37,32 +43,35 @@ export function UpdateAvailabilitiesButton() {
   const [availabilities, setAvailabilities] = useState<ArtistAvailability[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
 
-  const startDateUTC = selectedDate
-    ? fromZonedTime(
-        startOfDay(selectedDate), // set to 00:00 in local TZ
-        TIME_ZONE // your app’s locale time zone, e.g. 'Europe/Rome'
-      ).toISOString() // convert to UTC string
-    : null;
+  const startDateUTC = useMemo(() => {
+    if (!selectedDate) return null;
+    const startLocal = startOfDay(selectedDate);
+    return fromZonedTime(startLocal, TIME_ZONE).toISOString();
+  }, [selectedDate]);
 
-  const fetchUrl = startDateUTC ? `/api/artist-availabilities/date?s=${slug}&sd=${startDateUTC}` : null;
+  const fetchUrl = useMemo(() => {
+    if (!startDateUTC) return null;
+    return `/api/artist-availabilities/date?s=${slug}&sd=${startDateUTC}`;
+  }, [slug, startDateUTC]);
 
-  const { data, error, isLoading, mutate } = useSWR(fetchUrl, fetcher);
+  const { data: response, isLoading, mutate } = useSWR(fetchUrl, fetcher);
 
   useEffect(() => {
-    if (!data?.availabilities) return;
+    if (!response) return;
+
+    if (!response.success) {
+      toast.error(response.message || 'Recupero disponibilità artista non riuscito.');
+      return;
+    }
 
     setAvailabilities(
-      data.availabilities.map((a: ArtistAvailability) => ({
+      response.data.map((a: ArtistAvailability) => ({
         ...a,
         startDate: toZonedTime(a.startDate, TIME_ZONE),
         endDate: toZonedTime(a.endDate, TIME_ZONE),
-      }))
+      })),
     );
-  }, [data]);
-
-  useEffect(() => {
-    if (error) toast.error('Recupero disponibilità artista non riuscito.');
-  }, [error]);
+  }, [response]);
 
   const addNewAvailability = async () => {
     if (!selectedDate) return;
@@ -84,12 +93,17 @@ export function UpdateAvailabilitiesButton() {
       return;
     }
 
-    const startTime = newTimeRange.startTime.split(':');
-    const endTime = newTimeRange.endTime.split(':');
+    const startTimeFragments = newTimeRange.startTime.split(':');
+    const endTimeFragments = newTimeRange.endTime.split(':');
+
+    const start = new Date(selectedDate);
+    start.setHours(parseInt(startTimeFragments[0], 10), parseInt(startTimeFragments[1], 10), 0, 0);
+    const end = new Date(selectedDate);
+    end.setHours(parseInt(endTimeFragments[0], 10), parseInt(endTimeFragments[1], 10), 0, 0);
 
     const newAvailability = {
-      startDate: fromZonedTime(selectedDate.setHours(parseInt(startTime[0]), parseInt(startTime[1])), TIME_ZONE),
-      endDate: fromZonedTime(selectedDate.setHours(parseInt(endTime[0]), parseInt(endTime[1])), TIME_ZONE),
+      startDate: fromZonedTime(start, TIME_ZONE),
+      endDate: fromZonedTime(end, TIME_ZONE),
     };
 
     const check = checkAvailabilities([...availabilities, newAvailability]);
@@ -152,7 +166,10 @@ export function UpdateAvailabilitiesButton() {
         <DialogContent className='h-dvh w-dvw md:max-h-[460px] grid grid-rows-[max-content_1fr_max-content] rounded-none md:rounded-2xl gap-2 md:gap-4'>
           <DialogHeader>
             <DialogTitle>Seleziona le disponibilità e l&apos;orario dell&apos;artista</DialogTitle>
-            <DialogDescription className='hidden'>Tramite questo dialog l&apos;utente può inserire o modificare le disponibilità dell&apos;artista.</DialogDescription>
+            <DialogDescription className='hidden'>
+              Tramite questo dialog l&apos;utente può inserire o modificare le disponibilità
+              dell&apos;artista.
+            </DialogDescription>
           </DialogHeader>
 
           <div className='h-full grid grid-rows-[max-content_1fr] md:grid-rows-none md:grid-cols-2 gap-4 py-4 border-t border-b overflow-hidden'>
@@ -190,7 +207,9 @@ export function UpdateAvailabilitiesButton() {
                           startTime: e.target.value,
                         }))
                       }
-                      className={cn('w-min appearance-none [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none shadow-none')}
+                      className={cn(
+                        'w-min appearance-none [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none shadow-none',
+                      )}
                       disabled={isLoading}
                     />
                     <span className='text-zinc-400'>-</span>
@@ -203,7 +222,9 @@ export function UpdateAvailabilitiesButton() {
                           endTime: e.target.value,
                         }))
                       }
-                      className={cn('w-min appearance-none [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none shadow-none')}
+                      className={cn(
+                        'w-min appearance-none [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none shadow-none',
+                      )}
                       disabled={isLoading}
                     />
 
@@ -225,15 +246,19 @@ export function UpdateAvailabilitiesButton() {
                       <Skeleton className='h-8 rounded-md' />
                     </>
                   )}
-                  {!isLoading && availabilities.length === 0 && <div className='text-sm text-zinc-500'>Nessuna disponibilità. Aggiungine una per vederla nella lista.</div>}
+                  {!isLoading && availabilities.length === 0 && (
+                    <div className='text-sm text-zinc-500'>
+                      Nessuna disponibilità. Aggiungine una per vederla nella lista.
+                    </div>
+                  )}
                   {!isLoading &&
                     availabilities.length > 0 &&
-                    availabilities.map((av, index) => {
+                    availabilities.map((av) => {
                       const canDelete = !('canDelete' in av) || av?.canDelete;
 
                       return (
                         <div
-                          key={index}
+                          key={av.id}
                           className='h-10 flex gap-2 justify-between items-center bg-zinc-50 px-2 rounded-xl'
                         >
                           <span>
@@ -258,7 +283,9 @@ export function UpdateAvailabilitiesButton() {
                 </div>
               </div>
             ) : (
-              <div className='flex justify-center items-center text-sm text-zinc-500'>Seleziona una data per accedere alle disponibilità.</div>
+              <div className='flex justify-center items-center text-sm text-zinc-500'>
+                Seleziona una data per accedere alle disponibilità.
+              </div>
             )}
           </div>
         </DialogContent>

@@ -1,20 +1,19 @@
 import * as z from 'zod/v4';
-import { EVENTS_STATUS } from '../constants';
 import { emailValidation, idValidation } from './_general';
+import { eventStatus } from '../database/schema';
 
 export const eventFormSchema = z.object({
   artistId: idValidation,
 
-  status: z.enum(EVENTS_STATUS, "Seleziona un'opzione valida."),
+  status: z.enum(eventStatus.enumValues, "Seleziona un'opzione valida."),
 
   artistManagerProfileId: idValidation.optional(),
 
   availability: z.object(
     {
       id: idValidation.optional(),
-      date: z.string("Seleziona un'opzione valida."),
-      startTime: z.string("Seleziona un'opzione valida."),
-      endTime: z.string("Seleziona un'opzione valida."),
+      startDate: z.date("Seleziona un'opzione valida."),
+      endDate: z.date("Seleziona un'opzione valida."),
     },
     "Seleziona un'opzione valida."
   ),

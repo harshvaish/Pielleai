@@ -2,7 +2,7 @@ import ArtistsBadge from '@/app/(private)/_components/badges/ArtistsBadge';
 import ManagersBadge from '@/app/(private)/_components/badges/ManagersBadge';
 import VenuesBadge from '@/app/(private)/_components/badges/VenuesBadge';
 import EventStatusBadge from '@/app/(private)/_components/badges/EventStatusBadge';
-import { CalendarEvent } from '@/lib/types';
+import { ArtistManagerSelectData, CalendarEvent } from '@/lib/types';
 import { format } from 'date-fns';
 import { CalendarDays, Clock } from 'lucide-react';
 
@@ -46,11 +46,11 @@ export default function EventContent({ event }: EventContentProps) {
           <ArtistsBadge artists={[event.artist]} />
         </div>
 
-        {event?.artistManager && (
+        {event.artistManager?.id && (
           <div className='flex items-center gap-2'>
             <span className='w-16 text-xs text-zinc-700 font-medium'>Manager</span>
             <ManagersBadge
-              managers={[event.artistManager]}
+              managers={[event.artistManager as ArtistManagerSelectData]}
               pathSegment='manager-artisti'
             />
           </div>

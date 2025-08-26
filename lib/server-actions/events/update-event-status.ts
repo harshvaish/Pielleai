@@ -2,10 +2,9 @@
 
 import { auth } from '@/lib/auth';
 import { AppError } from '@/lib/classes/AppError';
-import { EVENTS_STATUS, EventStatus } from '@/lib/constants';
 import { database } from '@/lib/database/connection';
-import { artistAvailabilities, events } from '@/lib/database/schema';
-import { ServerActionResponse } from '@/lib/types';
+import { artistAvailabilities, events, eventStatus } from '@/lib/database/schema';
+import { EventStatus, ServerActionResponse } from '@/lib/types';
 import { idValidation } from '@/lib/validation/_general';
 import { and, eq, ne, count } from 'drizzle-orm';
 import { headers } from 'next/headers';
@@ -26,7 +25,7 @@ export async function updateEventStatus(eventId: number, newStatus: EventStatus)
 
     const schema = z.object({
       eventId: idValidation,
-      newStatus: z.enum(EVENTS_STATUS, "Seleziona un'opzione valida."),
+      newStatus: z.enum(eventStatus.enumValues, "Seleziona un'opzione valida."),
     });
 
     const validation = schema.safeParse({ eventId, newStatus });
@@ -53,7 +52,7 @@ export async function updateEventStatus(eventId: number, newStatus: EventStatus)
       .limit(1);
 
     if (!event) throw new AppError('Evento non trovato.');
-    if (event.endDate < now) throw new AppError('Evento scaduto.');
+    if (new Date(event.endDate) < now) throw new AppError('Evento scaduto.');
 
     // 2) Users must not set 'conflict' directly; it's system-managed
     if (newStatus === 'conflict') {

@@ -17,8 +17,13 @@ export async function getEvents({ currentPage, status, artistIds, artistManagerI
   const offset = (safePage - 1) * limit;
 
   try {
-    // Build date window only if both are present: [start 00:00, end+1 00:00)
-    const rangeWindow = startDate && endDate ? sql`tsrange(${startDate}::timestamp, (${endDate}::date + 1)::timestamp, '[)')` : undefined;
+    const rangeWindow =
+      startDate && endDate
+        ? sql`tstzrange(
+              ${startDate}::timestamptz,
+              ${endDate}::timestamptz,
+              '[)')`
+        : undefined;
 
     // Build reusable filters
     const filters = and(
@@ -151,7 +156,7 @@ export async function getEvents({ currentPage, status, artistIds, artistManagerI
             .from(eventNotes)
             .where(inArray(eventNotes.eventId, eventIds))
             .orderBy(eventNotes.createdAt)
-        : Promise.resolve([] as Array<{ id: number; eventId: number; content: string; createdAt: Date }>),
+        : Promise.resolve([]),
       database.select({ eventCount: count() }).from(events).innerJoin(artistAvailabilities, eq(events.availabilityId, artistAvailabilities.id)).where(filters),
     ]);
 

@@ -6,8 +6,8 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, Command
 import { cn } from '@/lib/utils';
 import { useEffect, useState } from 'react';
 import { Check, Eraser } from 'lucide-react';
-import { VENUE_TYPES } from '@/lib/constants';
 import VenueTypeBadge from '../badges/VenueTypeBadge';
+import { venueTypes } from '@/lib/database/schema';
 
 type VenueTypeSelectProps = { initialValue: string[]; onConfirm: (selected: string[]) => void };
 
@@ -56,7 +56,7 @@ export default function VenueTypeSelect({ initialValue, onConfirm }: VenueTypeSe
           <CommandList>
             <CommandEmpty>Nessun risultato.</CommandEmpty>
             <CommandGroup>
-              {VENUE_TYPES.map((type) => {
+              {venueTypes.enumValues.map((type) => {
                 const isSelected = value.includes(type);
 
                 return (

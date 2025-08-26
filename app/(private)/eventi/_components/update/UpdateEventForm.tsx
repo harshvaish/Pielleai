@@ -9,7 +9,6 @@ import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
 import { EventFormSchema, eventFormSchema } from '@/lib/validation/eventFormSchema';
 import { useState } from 'react';
-import { format } from 'date-fns';
 import { updateEvent } from '@/lib/server-actions/events/update-event';
 import EventForm from '../form/EventForm';
 
@@ -33,9 +32,8 @@ export default function UpdateEventForm({ event, artists, venues, moCoordinators
       artistManagerProfileId: event.artistManager?.profileId || undefined,
       availability: {
         id: event.availability.id,
-        date: format(event.availability.startDate, 'yyyy-MM-dd'),
-        startTime: format(event.availability.startDate, 'HH:mm'),
-        endTime: format(event.availability.endDate, 'HH:mm'),
+        startDate: event.availability.startDate,
+        endDate: event.availability.endDate,
       },
       venueId: event.venue.id,
 

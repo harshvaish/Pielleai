@@ -1,7 +1,7 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { EventStatus } from '@/lib/constants';
+import { EventStatus } from '@/lib/types';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useTransition } from 'react';
 

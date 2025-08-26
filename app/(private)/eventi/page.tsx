@@ -5,13 +5,12 @@ import { getMoCoordinators } from '@/lib/data/get-mo-coordinators';
 import { getEvents } from '@/lib/data/events/get-events';
 import { TablePagination } from '../_components/form/TablePagination';
 import EventTile from './_components/EventTile/EventTile';
-import { EventStatus } from '@/lib/constants';
 import StatusFilterButton from './_components/filters/StatusFilterButton';
 import FiltersButton from './_components/filters/FiltersButton';
-import { EventsTableFilters } from '@/lib/types';
+import { EventsTableFilters, EventStatus } from '@/lib/types';
 import { getArtistManagers } from '@/lib/data/artist-managers/get-artist-managers';
 import DatesFilterButton from './_components/filters/DatesFilterButton';
-import { splitCsv, toUTCRange } from '@/lib/utils';
+import { splitCsv } from '@/lib/utils';
 
 type EventsPageProps = {
   searchParams?: Promise<{
@@ -29,7 +28,6 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
   const sp = await searchParams;
 
   const currentPage = Number(sp?.page ?? '1');
-  const { startUtc, endUtc } = toUTCRange(sp?.start, sp?.end);
 
   const filters: EventsTableFilters = {
     currentPage: currentPage,
@@ -37,8 +35,8 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
     artistIds: splitCsv(sp?.artist),
     artistManagerIds: splitCsv(sp?.manager),
     venueIds: splitCsv(sp?.venue),
-    startDate: startUtc,
-    endDate: endUtc,
+    startDate: sp?.start ? new Date(sp.start) : null,
+    endDate: sp?.end ? new Date(sp.end) : null,
   };
 
   const [{ data: events, totalPages }, artists, artistManagers, venues, moCoordinators] = await Promise.all([getEvents(filters), getArtists(), getArtistManagers(), getVenues(), getMoCoordinators()]);

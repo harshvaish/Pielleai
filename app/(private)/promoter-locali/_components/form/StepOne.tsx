@@ -5,12 +5,12 @@ import { Separator } from '@/components/ui/separator';
 import { cn, fetcher } from '@/lib/utils';
 import LanguagesSelect from '@/app/(private)/_components/form/LanguagesSelect';
 import { Select, SelectContent, SelectItem, SelectTrigger } from '@/components/ui/select';
-import { Gender, GENDERS } from '@/lib/constants';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import useSWR from 'swr';
-import { Country, Language, Subdivision } from '@/lib/types';
+import { Country, Gender, Language, Subdivision } from '@/lib/types';
 import { useEffect, useMemo } from 'react';
 import { toast } from 'sonner';
+import { profileGenders } from '@/lib/database/schema';
 
 type StepOneProps = { languages: Language[]; countries: Country[] };
 
@@ -355,7 +355,7 @@ export default function StepOne({ languages, countries }: StepOneProps) {
               onValueChange={(v) => field.onChange(v as Gender)}
               className='flex flex-wrap gap-2'
             >
-              {GENDERS.map((gender) => (
+              {profileGenders.enumValues.map((gender) => (
                 <label
                   key={gender}
                   htmlFor={`gender-${gender}`}

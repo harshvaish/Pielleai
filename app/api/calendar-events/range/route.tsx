@@ -1,11 +1,12 @@
 import { getCalendarEvents } from '@/lib/data/events/get-calendar-events';
-import { splitCsv, toUTCRange } from '@/lib/utils';
-import { EVENTS_STATUS, type EventStatus } from '@/lib/constants';
+import { splitCsv } from '@/lib/utils';
 import { type NextRequest, NextResponse } from 'next/server';
 import { headers } from 'next/headers';
 import { auth } from '@/lib/auth';
-
-const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+import { z } from 'zod/v4';
+import { stringIdValidation } from '@/lib/validation/_general';
+import { EventStatus } from '@/lib/types';
+import { eventStatus } from '@/lib/database/schema';
 
 export async function GET(request: NextRequest) {
   const requestHeaders = await headers();
@@ -19,54 +20,48 @@ export async function GET(request: NextRequest) {
 
   const url = new URL(request.url);
 
-  const startDate = url.searchParams.get('start');
-  const endDate = url.searchParams.get('end');
+  const startDate = url.searchParams.get('sd');
+  const endDate = url.searchParams.get('ed');
 
-  const statusParam = url.searchParams.get('status');
-  const artistParam = url.searchParams.get('artist');
-  const venueParam = url.searchParams.get('venue');
-
-  // --- Validate date params ---
-  if (!startDate || !dateRegex.test(startDate)) {
-    return NextResponse.json({ error: 'Data inizio range mancante o non valida.' }, { status: 400 });
-  }
-  if (!endDate || !dateRegex.test(endDate)) {
-    return NextResponse.json({ error: 'Data fine range mancante o non valida.' }, { status: 400 });
+  if (!startDate || !endDate) {
+    return NextResponse.json({ error: 'Date calendario mancanti.' }, { status: 400 });
   }
 
-  const { startUtc, endUtc } = toUTCRange(startDate, endDate);
-  if (startUtc! >= endUtc!) {
-    return NextResponse.json({ error: "L'intervallo di date non è valido." }, { status: 400 });
+  const artistParam = url.searchParams.get('a');
+  const venueParam = url.searchParams.get('v');
+  const statusParam = url.searchParams.get('s');
+
+  const status = splitCsv(statusParam) as EventStatus[];
+  const artistIds = splitCsv(artistParam);
+  const venueIds = splitCsv(venueParam);
+
+  const schema = z.object({
+    startDate: z
+      .string()
+      .transform((val) => new Date(val))
+      .refine((date) => !isNaN(date.getTime())),
+    endDate: z
+      .string()
+      .transform((val) => new Date(val))
+      .refine((date) => !isNaN(date.getTime())),
+    artistIds: z.array(stringIdValidation),
+    venueIds: z.array(stringIdValidation),
+    status: z.array(z.enum(eventStatus.enumValues)),
+  });
+
+  const validation = schema.safeParse({ startDate, endDate, status, artistIds, venueIds });
+
+  if (!validation.success) {
+    return NextResponse.json({ error: validation.error.issues[0] }, { status: 400 });
   }
-
-  // --- Parse & validate filters ---
-  const rawStatuses = splitCsv(statusParam);
-  const allowedStatuses = new Set<EventStatus>(EVENTS_STATUS);
-
-  const invalidStatuses = rawStatuses.filter((s) => !allowedStatuses.has(s as EventStatus));
-  if (rawStatuses.length > 0 && invalidStatuses.length > 0) {
-    return NextResponse.json(
-      {
-        error: 'Valori di status non validi.',
-        invalid: invalidStatuses,
-        allowed: Array.from(allowedStatuses),
-      },
-      { status: 400 }
-    );
-  }
-  const status: EventStatus[] = rawStatuses.filter((s) => allowedStatuses.has(s as EventStatus)) as EventStatus[];
-
-  // IDs: keep it permissive (non-empty trimmed strings), cap list size to avoid abuse
-  const artistIds = splitCsv(artistParam).slice(0, 100);
-  const venueIds = splitCsv(venueParam).slice(0, 100);
 
   try {
     const events = await getCalendarEvents({
       artistIds,
       venueIds,
       status,
-      startDate: startUtc,
-      endDate: endUtc,
+      startDate: new Date(startDate),
+      endDate: new Date(endDate),
     });
 
     return NextResponse.json({ events }, { status: 200 });

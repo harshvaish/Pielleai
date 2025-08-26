@@ -1,7 +1,7 @@
 import { Event as RbcEvent } from 'react-big-calendar';
-import { AvailabilityStatus, EventStatus, Gender, VenueType } from './constants';
-import { userRoles, userStatus } from './database/schema';
+import { availabilityStatus, eventStatus, profileGenders, userRoles, userStatus, venueTypes } from './database/schema';
 
+// project
 export type ServerActionResponse<T = unknown> =
   | {
       success: true;
@@ -13,10 +13,18 @@ export type ServerActionResponse<T = unknown> =
       message: string;
       data: null;
     };
-/* ------------------------------------------------- */
-export type UserStatus = (typeof userStatus.enumValues)[number];
-export type UserRole = (typeof userRoles.enumValues)[number];
 
+export type ApiResponse<T = unknown> = { success: true; message: null; data: T } | { success: false; message: string; data: null };
+
+// enums
+export type AvailabilityStatus = (typeof availabilityStatus.enumValues)[number];
+export type EventStatus = (typeof eventStatus.enumValues)[number];
+export type Gender = (typeof profileGenders.enumValues)[number];
+export type UserRole = (typeof userRoles.enumValues)[number];
+export type UserStatus = (typeof userStatus.enumValues)[number];
+export type VenueType = (typeof venueTypes.enumValues)[number];
+
+// users
 export type UserToApprove = {
   id: string;
   role: UserRole;
@@ -24,23 +32,8 @@ export type UserToApprove = {
   surname: string;
   email: string;
 };
-/* ------------------------------------------------- */
-export interface CalendarEvent extends RbcEvent {
-  id: number;
-  artist: ArtistSelectData;
-  venue: VenueSelectData;
-  artistManager: ArtistManagerSelectData | null;
-  status: EventStatus;
 
-  start: Date;
-  end: Date;
-}
-
-export interface CalendarAvailability extends RbcEvent {
-  id: number;
-  status: AvailabilityStatus;
-}
-/* ------------------------------------------------- */
+// search bar
 export type RawSearchItem = {
   id: string;
   profileId: number;
@@ -49,7 +42,6 @@ export type RawSearchItem = {
   surname: string;
   path: string;
 };
-
 export type SearchItem = {
   avatarUrl: string;
   fullName: string;
@@ -57,47 +49,51 @@ export type SearchItem = {
   path: string;
   role: string;
 };
-/* ------------------------------------------------- */
+
+// languages
 export type Language = {
   id: number;
   name: string;
 };
-/* ------------------------------------------------- */
+
+// geo
 export type Country = {
   id: number;
   code: string;
   name: string;
   isEu: boolean;
 };
-
 export type Subdivision = {
   id: number;
   name: string;
 };
-/* ------------------------------------------------- */
+
+// zones
 export type Zone = {
   id: number;
   name: string;
 };
-/* ------------------------------------------------- */
+
+// notes
 export type ProfileNote = {
   id: number;
   content: string;
-  createdAt: string;
+  createdAt: Date;
 };
-
 export type EventNote = {
   id: number;
   content: string;
   createdAt: Date;
 };
-/* ------------------------------------------------- */
+
+// mo coordinators
 export type MoCoordinator = {
   id: number;
   name: string;
   surname: string;
 };
-/* ------------------------------------------------- */
+
+// artist manager
 export type ArtistManagersTableFilters = {
   currentPage: number;
   fullName: string;
@@ -151,7 +147,8 @@ export type ArtistManagerData<T = ArtistListData | ArtistSelectData> = {
 export type ArtistManagerTableData = Pick<ArtistManagerData, 'id' | 'profileId' | 'status' | 'createdAt' | 'avatarUrl' | 'name' | 'surname' | 'phone' | 'email' | 'company' | 'artists'>;
 
 export type ArtistManagerSelectData = Pick<ArtistManagerData, 'id' | 'profileId' | 'avatarUrl' | 'name' | 'surname' | 'status'>;
-/* ------------------------------------------------- */
+
+// artist
 export type ArtistsTableFilters = {
   currentPage: number;
   fullName: string;
@@ -238,7 +235,7 @@ export type ArtistListData = Pick<
 
 export type ArtistSelectData = Pick<ArtistData, 'id' | 'slug' | 'status' | 'avatarUrl' | 'name' | 'surname' | 'stageName'>;
 
-/* ------------------------------------------------- */
+// venue manager
 export type VenueManagersTableFilters = {
   currentPage: number;
   fullName: string;
@@ -276,7 +273,8 @@ export type VenueManagerData<T = VenueTableData | VenueListData | VenueBadgeData
 export type VenueManagerTableData = Pick<VenueManagerData, 'id' | 'profileId' | 'status' | 'createdAt' | 'avatarUrl' | 'name' | 'surname' | 'phone' | 'email' | 'venues'>;
 
 export type VenueManagerSelectData = Pick<VenueManagerData, 'id' | 'profileId' | 'avatarUrl' | 'name' | 'surname' | 'status'>;
-/* ------------------------------------------------- */
+
+// venue
 export type VenuesTableFilters = {
   currentPage: number;
   name: string;
@@ -353,10 +351,10 @@ export type VenueListData = Pick<VenueData, 'id' | 'slug' | 'status' | 'avatarUr
 
 export type VenueBadgeData = Pick<VenueData, 'id' | 'slug' | 'status' | 'avatarUrl' | 'name'>;
 
-/* ------------------------------------------------- */
-
+// availability
 export type ArtistAvailability = {
   id: number;
+  artistId: number;
   startDate: Date;
   endDate: Date;
   status: AvailabilityStatus;
@@ -373,8 +371,13 @@ export type TimeRange = {
   canDelete?: boolean;
 };
 
-/* ------------------------------------------------- */
+// availability calendar
+export interface CalendarAvailability extends RbcEvent {
+  id: number;
+  status: AvailabilityStatus;
+}
 
+// event
 export type Event = {
   id: number;
 
@@ -456,10 +459,29 @@ export type EventsTableFilters = {
   endDate: Date | null;
 };
 
+// event calendar
 export type EventsCalendarFilters = {
   status: EventStatus[];
   artistIds: string[];
   venueIds: string[];
-  startDate: Date | null;
-  endDate: Date | null;
+  startDate?: Date;
+  endDate?: Date;
 };
+
+export interface CalendarEvent extends RbcEvent {
+  id: number;
+  artist: ArtistSelectData;
+  venue: VenueBadgeData;
+  artistManager: {
+    id: string | null;
+    profileId: number | null;
+    status: UserStatus | null;
+    avatarUrl: string | null;
+    name: string | null;
+    surname: string | null;
+  };
+  status: EventStatus;
+
+  start: Date;
+  end: Date;
+}

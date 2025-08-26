@@ -1,8 +1,8 @@
 import * as z from 'zod/v4';
-import { GENDERS } from '../constants';
 import { birthDateValidation, emailValidation, idValidation, nameValidation, passwordValidation, phoneValidation } from './_general';
+import { profileGenders } from '../database/schema';
 
-const genderEnum = z.enum(GENDERS, "Seleziona un'opzione valida.");
+const genderEnum = z.enum(profileGenders.enumValues, "Seleziona un'opzione valida.");
 
 export const venueManagerS1FormSchema = z.object({
   avatarUrl: z

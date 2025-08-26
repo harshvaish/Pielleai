@@ -5,12 +5,10 @@ import { headers } from 'next/headers';
 import { ServerActionResponse } from '@/lib/types';
 import { database } from '@/lib/database/connection';
 import { and, count, eq, gt } from 'drizzle-orm';
-import { profiles, users, artists, artistAvailabilities, venues, events, eventNotes } from '@/lib/database/schema';
+import { profiles, users, artists, venues, events, eventNotes, artistAvailabilities } from '@/lib/database/schema';
 import { eventFormSchema, EventFormSchema } from '@/lib/validation/eventFormSchema';
-import { isBefore, parse } from 'date-fns';
+import { isBefore } from 'date-fns';
 import { AppError } from '@/lib/classes/AppError';
-import { TIME_ZONE } from '@/lib/constants';
-import { fromZonedTime } from 'date-fns-tz';
 
 export const createEvent = async (data: EventFormSchema): Promise<ServerActionResponse<null>> => {
   try {
@@ -35,17 +33,7 @@ export const createEvent = async (data: EventFormSchema): Promise<ServerActionRe
     const { artistId, artistManagerProfileId, venueId, availability } = validation.data;
 
     let availabilityId = availability.id;
-    const { date, startTime, endTime } = availability;
-
-    // Step 1: Parse as naive date (no timezone interpretation yet)
-    const parsedStart = parse(`${date} ${startTime}`, 'yyyy-MM-dd HH:mm', new Date());
-    const parsedEnd = parse(`${date} ${endTime}`, 'yyyy-MM-dd HH:mm', new Date());
-
-    // Step 2: Interpret as Europe/Rome and convert to UTC
-    const startDateUTC = fromZonedTime(parsedStart, TIME_ZONE);
-    const endDateUTC = fromZonedTime(parsedEnd, TIME_ZONE);
-
-    // Step 3: system is already in UTC
+    const { startDate, endDate } = availability;
     const now = new Date();
 
     if (availabilityId) {
@@ -58,11 +46,11 @@ export const createEvent = async (data: EventFormSchema): Promise<ServerActionRe
         throw new AppError('Disponibilità selezionata non trovata o scaduta.');
       }
     } else {
-      if (endDateUTC <= startDateUTC) {
+      if (endDate <= startDate) {
         throw new AppError("L'orario di fine deve essere successivo all'orario di inizio.");
       }
 
-      if (isBefore(startDateUTC, now)) {
+      if (isBefore(startDate, now)) {
         throw new AppError('Nuova disponibilità inserita già iniziata e quindi scaduta.');
       }
     }
@@ -112,8 +100,8 @@ export const createEvent = async (data: EventFormSchema): Promise<ServerActionRe
           .insert(artistAvailabilities)
           .values({
             artistId: artistId,
-            startDate: startDateUTC,
-            endDate: endDateUTC,
+            startDate: startDate,
+            endDate: endDate,
             status: 'available', // db trigger will book it if event confirmed
           })
           .returning({ id: artistAvailabilities.id });

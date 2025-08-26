@@ -5,14 +5,14 @@ import { Separator } from '@/components/ui/separator';
 import { cn, fetcher } from '@/lib/utils';
 import LanguagesSelect from '@/app/(private)/_components/form/LanguagesSelect';
 import { Select, SelectContent, SelectItem, SelectTrigger } from '@/components/ui/select';
-import { Gender, GENDERS } from '@/lib/constants';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import useSWR from 'swr';
-import { ArtistManagerSelectData, Country, Language, Subdivision, Zone } from '@/lib/types';
+import { ArtistManagerSelectData, Country, Gender, Language, Subdivision, Zone } from '@/lib/types';
 import { useEffect, useMemo } from 'react';
 import { toast } from 'sonner';
 import ArtistManagersSelect from '../create/ArtistManagersSelect';
 import { Checkbox } from '@/components/ui/checkbox';
+import { profileGenders } from '@/lib/database/schema';
 
 export default function StepOne({ languages, countries, zones, artistManagers }: { languages: Language[]; countries: Country[]; zones: Zone[]; artistManagers: ArtistManagerSelectData[] }) {
   const {
@@ -370,7 +370,7 @@ export default function StepOne({ languages, countries, zones, artistManagers }:
               onValueChange={(v) => field.onChange(v as Gender)}
               className='flex flex-wrap gap-2'
             >
-              {GENDERS.map((gender) => (
+              {profileGenders.enumValues.map((gender) => (
                 <label
                   key={gender}
                   htmlFor={`gender-${gender}`}

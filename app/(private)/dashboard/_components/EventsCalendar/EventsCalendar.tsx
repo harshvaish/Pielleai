@@ -3,11 +3,11 @@
 import { Calendar as BigCalendar, dateFnsLocalizer, View, ToolbarProps as RBCToolbarProps } from 'react-big-calendar';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import '@/app/(private)/_components/Calendar/calendar-overrides.css';
-import { format, getDay, parse, startOfWeek } from 'date-fns';
-import { CALENDAR_VIEWS, TIME_ZONE, EVENTS_STATUS, type EventStatus } from '@/lib/constants';
+import { endOfDay, format, getDay, parse, startOfDay, startOfWeek } from 'date-fns';
+import { CALENDAR_VIEWS, TIME_ZONE } from '@/lib/constants';
 import ShowMore from './ShowMore';
-import { useEffect, useMemo, useState } from 'react';
-import { ArtistSelectData, CalendarEvent, EventsCalendarFilters, VenueSelectData } from '@/lib/types';
+import { useEffect, useState } from 'react';
+import { ArtistSelectData, CalendarEvent, EventsCalendarFilters, EventStatus, VenueSelectData } from '@/lib/types';
 import useSWR from 'swr';
 import { calculateRange, fetcher, splitCsv } from '@/lib/utils';
 import { toast } from 'sonner';
@@ -15,13 +15,13 @@ import { it } from 'date-fns/locale';
 import { Skeleton } from '@/components/ui/skeleton';
 import WeekEvent from './WeekEvent';
 import MonthEvent from './MonthEvent';
-import { toZonedTime } from 'date-fns-tz';
 import ConfirmDialog from '@/app/_components/ConfirmDialog';
 import MonthHeader from '@/app/(private)/_components/calendar/MonthHeader';
 import WeekHeader from '@/app/(private)/_components/calendar/WeekHeader';
 import EventContent from './EventContent';
 import { Toolbar } from './Toolbar';
 import { useSearchParams } from 'next/navigation';
+import { fromZonedTime, toZonedTime } from 'date-fns-tz';
 
 const locales = { it };
 
@@ -33,47 +33,43 @@ type EventsCalendarProps = {
 };
 
 export default function EventsCalendar({ artists, venues }: EventsCalendarProps) {
-  const [date, setDate] = useState<Date>(new Date());
+  const searchParams = useSearchParams();
+
+  const [calendarDate, setCalendarDate] = useState<Date>(new Date());
+  const [calendarRange, setCalendarRange] = useState<{ start: Date; end: Date }>(() => calculateRange(new Date(), 'week'));
   const [view, setView] = useState<View>('week');
-  const [range, setRange] = useState<{ start: Date; end: Date }>(() => calculateRange(new Date(), 'week'));
+
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [dialogOpen, setDialogOpen] = useState<boolean>(false);
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
 
-  const searchParams = useSearchParams();
+  const filters: EventsCalendarFilters = { artistIds: splitCsv(searchParams.get('a')), venueIds: splitCsv(searchParams.get('v')), status: splitCsv(searchParams.get('s')) as EventStatus[] };
 
-  // --- Build filters from URL params (robustly) ---
-  const filters: EventsCalendarFilters = useMemo(() => {
-    const isEventStatus = (s: string): s is EventStatus => (EVENTS_STATUS as readonly string[]).includes(s);
+  const startDateUTC = fromZonedTime(
+    startOfDay(calendarRange.start), // set to 00:00 in local TZ
+    TIME_ZONE // your app’s locale time zone, e.g. 'Europe/Rome'
+  ).toISOString(); // convert to UTC string
 
-    const artistIds = splitCsv(searchParams.get('artist'));
-    const venueIds = splitCsv(searchParams.get('venue'));
-    const status = splitCsv(searchParams.get('status')).filter(isEventStatus);
+  const endDateUTC = fromZonedTime(
+    endOfDay(calendarRange.end), // set to 23:59 in local TZ
+    TIME_ZONE // your app’s locale time zone, e.g. 'Europe/Rome'
+  ).toISOString(); // convert to UTC string
 
-    return { artistIds, venueIds, status, startDate: null, endDate: null };
-  }, [searchParams]);
-
-  // --- Build SWR key including filters so it refetches on change ---
-  const startDate = format(range.start, 'yyyy-MM-dd');
-  const endDate = format(range.end, 'yyyy-MM-dd');
-
-  const fetchUrl = useMemo(() => {
-    const qs = new URLSearchParams(searchParams.toString()); // clone since Readonly
-    qs.set('start', startDate);
-    qs.set('end', endDate);
-    return `/api/calendar-events/range?${qs.toString()}`;
-  }, [searchParams, startDate, endDate]);
+  const qs = new URLSearchParams(searchParams.toString());
+  qs.set('sd', startDateUTC);
+  qs.set('ed', endDateUTC);
+  const fetchUrl = `/api/calendar-events/range?${qs.toString()}`;
 
   const { data, error, isLoading } = useSWR(fetchUrl, fetcher, { keepPreviousData: true });
 
   const onNavigateHandler = (newDate: Date) => {
-    setDate(newDate);
-    setRange(calculateRange(newDate, view));
+    setCalendarDate(newDate);
+    setCalendarRange(calculateRange(newDate, view));
   };
 
   const onViewHandler = (nextView: View) => {
     setView(nextView);
-    setRange(calculateRange(date, nextView));
+    setCalendarRange(calculateRange(calendarDate, nextView));
   };
 
   const eventPropGetter = ({ status }: CalendarEvent) => ({ className: status });
@@ -99,7 +95,7 @@ export default function EventsCalendar({ artists, venues }: EventsCalendarProps)
       <BigCalendar
         localizer={localizer}
         culture='it'
-        date={date}
+        date={calendarDate}
         onNavigate={onNavigateHandler}
         onView={onViewHandler}
         view={view}
