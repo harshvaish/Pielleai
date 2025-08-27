@@ -8,6 +8,7 @@ import { database } from '@/lib/database/connection';
 import { events } from '@/lib/database/schema';
 import { eq } from 'drizzle-orm';
 import { idValidation } from '@/lib/validation/_general';
+import { revalidateTag } from 'next/cache';
 
 export async function deleteEvent(eventId: number): Promise<ServerActionResponse<null>> {
   try {
@@ -31,6 +32,8 @@ export async function deleteEvent(eventId: number): Promise<ServerActionResponse
 
     await database.delete(events).where(eq(events.id, eventId));
     // No other logic here—DB trigger handles conflicts & availability status.
+
+    revalidateTag('paginated-events');
 
     return { success: true, message: null, data: null };
   } catch (error) {

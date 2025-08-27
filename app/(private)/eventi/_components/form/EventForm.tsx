@@ -16,6 +16,7 @@ import EventNotesInput from './EventNotesInput';
 import { Controller, useFormContext } from 'react-hook-form';
 import ArtistSelect from './ArtistSelect';
 import { eventStatus } from '@/lib/database/schema';
+import { EventFormSchema } from '@/lib/validation/eventFormSchema';
 
 type EventForm = {
   artists: ArtistSelectData[];
@@ -29,10 +30,12 @@ export default function EventForm({ artists, venues, moCoordinators }: EventForm
     register,
     control,
     formState: { errors },
-  } = useFormContext();
+  } = useFormContext<EventFormSchema>();
 
   const selectedVenueId = watch('venueId');
   const selectedVenue = venues.find((venue) => venue.id == selectedVenueId);
+
+  console.dir(errors.availability, { depth: null });
 
   return (
     <>
@@ -51,7 +54,9 @@ export default function EventForm({ artists, venues, moCoordinators }: EventForm
               />
             )}
           />
-          {errors.artistId && <p className='text-xs text-destructive mt-2'>{errors.artistId.message as string}</p>}
+          {errors.artistId && (
+            <p className='text-xs text-destructive mt-2'>{errors.artistId.message as string}</p>
+          )}
         </div>
 
         <div className='flex flex-col'>
@@ -83,28 +88,38 @@ export default function EventForm({ artists, venues, moCoordinators }: EventForm
               </Select>
             )}
           />
-          {errors.status && <p className='text-xs text-destructive mt-2'>{errors.status.message as string}</p>}
+          {errors.status && (
+            <p className='text-xs text-destructive mt-2'>{errors.status.message as string}</p>
+          )}
         </div>
       </div>
 
       <div className='flex flex-col'>
         <div className='text-sm font-semibold mb-2'>Data</div>
         <ArtistAvailabilitySelect />
-        {errors.availability && <p className='text-xs text-destructive mt-2'>{errors.availability.message as string}</p>}
+        {errors.availability && (
+          <p className='text-xs text-destructive mt-2'>{errors.availability.message as string}</p>
+        )}
       </div>
 
       <div className='grid sm:grid-cols-2 gap-4'>
         <div className='flex flex-col'>
           <div className='text-sm font-semibold mb-2'>Locale</div>
           <VenueSelect venues={venues} />
-          {errors.venueId && <p className='text-xs text-destructive mt-2'>{errors.venueId.message as string}</p>}
+          {errors.venueId && (
+            <p className='text-xs text-destructive mt-2'>{errors.venueId.message as string}</p>
+          )}
         </div>
 
         <div className='flex flex-col'>
           <div className='text-sm font-semibold mb-2'>Indirizzo del locale</div>
 
           <div className='h-10 flex items-center text-sm'>
-            {selectedVenue?.address ? <span className='truncate'>{selectedVenue?.address}</span> : <span className='text-zinc-400'>Seleziona un locale</span>}
+            {selectedVenue?.address ? (
+              <span className='truncate'>{selectedVenue?.address}</span>
+            ) : (
+              <span className='text-zinc-400'>Seleziona un locale</span>
+            )}
           </div>
         </div>
       </div>
@@ -127,7 +142,11 @@ export default function EventForm({ artists, venues, moCoordinators }: EventForm
           <div className='flex flex-col'>
             <div className='text-sm font-semibold mb-2'>Manager artista</div>
             <ArtistManagerSelect />
-            {errors.artistManagerProfileId && <p className='text-xs text-destructive mt-2'>{errors.artistManagerProfileId.message as string}</p>}
+            {errors.artistManagerProfileId && (
+              <p className='text-xs text-destructive mt-2'>
+                {errors.artistManagerProfileId.message as string}
+              </p>
+            )}
           </div>
 
           <div className='flex flex-col'>
@@ -138,7 +157,11 @@ export default function EventForm({ artists, venues, moCoordinators }: EventForm
               placeholder='tour.manager@eaglebooking.it'
               className={errors.tourManagerEmail ? 'border-destructive text-destructive' : ''}
             />
-            {errors.tourManagerEmail && <p className='text-xs text-destructive mt-2'>{errors.tourManagerEmail.message as string}</p>}
+            {errors.tourManagerEmail && (
+              <p className='text-xs text-destructive mt-2'>
+                {errors.tourManagerEmail.message as string}
+              </p>
+            )}
           </div>
 
           <div className='flex flex-col'>
@@ -149,7 +172,11 @@ export default function EventForm({ artists, venues, moCoordinators }: EventForm
               placeholder='amministrazione@eaglebooking.it'
               className={errors.administrationEmail ? 'border-destructive text-destructive' : ''}
             />
-            {errors.administrationEmail && <p className='text-xs text-destructive mt-2'>{errors.administrationEmail.message as string}</p>}
+            {errors.administrationEmail && (
+              <p className='text-xs text-destructive mt-2'>
+                {errors.administrationEmail.message as string}
+              </p>
+            )}
           </div>
 
           <div className='flex flex-col'>
@@ -160,7 +187,11 @@ export default function EventForm({ artists, venues, moCoordinators }: EventForm
               placeholder='consulente@eaglebooking.it'
               className={errors.payrollConsultantEmail ? 'border-destructive text-destructive' : ''}
             />
-            {errors.payrollConsultantEmail && <p className='text-xs text-destructive mt-2'>{errors.payrollConsultantEmail.message as string}</p>}
+            {errors.payrollConsultantEmail && (
+              <p className='text-xs text-destructive mt-2'>
+                {errors.payrollConsultantEmail.message as string}
+              </p>
+            )}
           </div>
 
           <Separator className='bg-zinc-200' />
@@ -185,7 +216,9 @@ export default function EventForm({ artists, venues, moCoordinators }: EventForm
                 step={0.01}
                 className={errors.moCost ? 'border-destructive text-destructive' : ''}
               />
-              {errors.moCost && <p className='text-xs text-destructive mt-2'>{errors.moCost.message as string}</p>}
+              {errors.moCost && (
+                <p className='text-xs text-destructive mt-2'>{errors.moCost.message as string}</p>
+              )}
             </div>
 
             <div className='flex flex-col'>
@@ -216,7 +249,11 @@ export default function EventForm({ artists, venues, moCoordinators }: EventForm
                 step={0.01}
                 className={errors.depositCost ? 'border-destructive text-destructive' : ''}
               />
-              {errors.depositCost && <p className='text-xs text-destructive mt-2'>{errors.depositCost.message as string}</p>}
+              {errors.depositCost && (
+                <p className='text-xs text-destructive mt-2'>
+                  {errors.depositCost.message as string}
+                </p>
+              )}
             </div>
 
             <div className='flex flex-col'>
@@ -231,7 +268,11 @@ export default function EventForm({ artists, venues, moCoordinators }: EventForm
                 step={0.01}
                 className={errors.venueManagerCost ? 'border-destructive text-destructive' : ''}
               />
-              {errors.venueManagerCost && <p className='text-xs text-destructive mt-2'>{errors.venueManagerCost.message as string}</p>}
+              {errors.venueManagerCost && (
+                <p className='text-xs text-destructive mt-2'>
+                  {errors.venueManagerCost.message as string}
+                </p>
+              )}
             </div>
           </div>
 
@@ -243,7 +284,11 @@ export default function EventForm({ artists, venues, moCoordinators }: EventForm
                 placeholder='123456789'
                 className={errors.depositInvoiceNumber ? 'border-destructive text-destructive' : ''}
               />
-              {errors.depositInvoiceNumber && <p className='text-xs text-destructive mt-2'>{errors.depositInvoiceNumber.message as string}</p>}
+              {errors.depositInvoiceNumber && (
+                <p className='text-xs text-destructive mt-2'>
+                  {errors.depositInvoiceNumber.message as string}
+                </p>
+              )}
             </div>
 
             <div className='flex flex-col'>
@@ -258,7 +303,11 @@ export default function EventForm({ artists, venues, moCoordinators }: EventForm
                 step={0.01}
                 className={errors.expenseReimbursement ? 'border-destructive text-destructive' : ''}
               />
-              {errors.expenseReimbursement && <p className='text-xs text-destructive mt-2'>{errors.expenseReimbursement.message as string}</p>}
+              {errors.expenseReimbursement && (
+                <p className='text-xs text-destructive mt-2'>
+                  {errors.expenseReimbursement.message as string}
+                </p>
+              )}
             </div>
           </div>
 
@@ -275,7 +324,11 @@ export default function EventForm({ artists, venues, moCoordinators }: EventForm
                 step={0.01}
                 className={errors.bookingPercentage ? 'border-destructive text-destructive' : ''}
               />
-              {errors.bookingPercentage && <p className='text-xs text-destructive mt-2'>{errors.bookingPercentage.message as string}</p>}
+              {errors.bookingPercentage && (
+                <p className='text-xs text-destructive mt-2'>
+                  {errors.bookingPercentage.message as string}
+                </p>
+              )}
             </div>
 
             <div className='flex flex-col'>
@@ -290,12 +343,18 @@ export default function EventForm({ artists, venues, moCoordinators }: EventForm
                 step={0.01}
                 className={errors.supplierCost ? 'border-destructive text-destructive' : ''}
               />
-              {errors.supplierCost && <p className='text-xs text-destructive mt-2'>{errors.supplierCost.message as string}</p>}
+              {errors.supplierCost && (
+                <p className='text-xs text-destructive mt-2'>
+                  {errors.supplierCost.message as string}
+                </p>
+              )}
             </div>
           </div>
 
           <div className='flex flex-col'>
-            <div className='text-sm font-semibold mb-2'>Spese anticipate da Milano Ovest per Artista</div>
+            <div className='text-sm font-semibold mb-2'>
+              Spese anticipate da Milano Ovest per Artista
+            </div>
             <Input
               {...register('moArtistAdvancedExpenses', {
                 setValueAs: (v) => (v === '' ? undefined : parseFloat(v)),
@@ -304,9 +363,15 @@ export default function EventForm({ artists, venues, moCoordinators }: EventForm
               type='number'
               min={0}
               step={0.01}
-              className={errors.moArtistAdvancedExpenses ? 'border-destructive text-destructive' : ''}
+              className={
+                errors.moArtistAdvancedExpenses ? 'border-destructive text-destructive' : ''
+              }
             />
-            {errors.moArtistAdvancedExpenses && <p className='text-xs text-destructive mt-2'>{errors.moArtistAdvancedExpenses.message as string}</p>}
+            {errors.moArtistAdvancedExpenses && (
+              <p className='text-xs text-destructive mt-2'>
+                {errors.moArtistAdvancedExpenses.message as string}
+              </p>
+            )}
           </div>
 
           <div className='grid sm:grid-cols-2 gap-4'>
@@ -322,7 +387,11 @@ export default function EventForm({ artists, venues, moCoordinators }: EventForm
                 step={0.01}
                 className={errors.artistNetCost ? 'border-destructive text-destructive' : ''}
               />
-              {errors.artistNetCost && <p className='text-xs text-destructive mt-2'>{errors.artistNetCost.message as string}</p>}
+              {errors.artistNetCost && (
+                <p className='text-xs text-destructive mt-2'>
+                  {errors.artistNetCost.message as string}
+                </p>
+              )}
             </div>
 
             <div className='flex flex-col'>
@@ -337,7 +406,11 @@ export default function EventForm({ artists, venues, moCoordinators }: EventForm
                 step={0.01}
                 className={errors.artistUpfrontCost ? 'border-destructive text-destructive' : ''}
               />
-              {errors.artistUpfrontCost && <p className='text-xs text-destructive mt-2'>{errors.artistUpfrontCost.message as string}</p>}
+              {errors.artistUpfrontCost && (
+                <p className='text-xs text-destructive mt-2'>
+                  {errors.artistUpfrontCost.message as string}
+                </p>
+              )}
             </div>
           </div>
         </TabsContent>
@@ -354,7 +427,9 @@ export default function EventForm({ artists, venues, moCoordinators }: EventForm
                 placeholder='Milano Ovest Hotel'
                 className={errors.hotel ? 'border-destructive text-destructive' : ''}
               />
-              {errors.hotel && <p className='text-xs text-destructive mt-2'>{errors.hotel.message as string}</p>}
+              {errors.hotel && (
+                <p className='text-xs text-destructive mt-2'>{errors.hotel.message as string}</p>
+              )}
             </div>
 
             <div className='flex flex-col'>
@@ -364,7 +439,11 @@ export default function EventForm({ artists, venues, moCoordinators }: EventForm
                 placeholder='MoPizza'
                 className={errors.restaurant ? 'border-destructive text-destructive' : ''}
               />
-              {errors.restaurant && <p className='text-xs text-destructive mt-2'>{errors.restaurant.message as string}</p>}
+              {errors.restaurant && (
+                <p className='text-xs text-destructive mt-2'>
+                  {errors.restaurant.message as string}
+                </p>
+              )}
             </div>
           </div>
 
@@ -376,7 +455,11 @@ export default function EventForm({ artists, venues, moCoordinators }: EventForm
                 placeholder='Mario Rossi'
                 className={errors.eveningContact ? 'border-destructive text-destructive' : ''}
               />
-              {errors.eveningContact && <p className='text-xs text-destructive mt-2'>{errors.eveningContact.message as string}</p>}
+              {errors.eveningContact && (
+                <p className='text-xs text-destructive mt-2'>
+                  {errors.eveningContact.message as string}
+                </p>
+              )}
             </div>
 
             <div className='flex flex-col'>
@@ -392,10 +475,14 @@ export default function EventForm({ artists, venues, moCoordinators }: EventForm
                   >
                     <SelectTrigger
                       id='moCoordinatorId'
-                      className={cn('w-full', errors.moCoordinatorId && 'border-destructive text-destructive')}
+                      className={cn(
+                        'w-full',
+                        errors.moCoordinatorId && 'border-destructive text-destructive',
+                      )}
                       size='sm'
                     >
-                      {moCoordinators.find((mc) => mc.id == field.value)?.name || 'Seleziona coordinatore'}
+                      {moCoordinators.find((mc) => mc.id == field.value)?.name ||
+                        'Seleziona coordinatore'}
                     </SelectTrigger>
                     <SelectContent>
                       {moCoordinators.map((mc) => (
@@ -411,7 +498,11 @@ export default function EventForm({ artists, venues, moCoordinators }: EventForm
                 )}
               />
 
-              {errors.moCoordinatorId && <p className='text-xs text-destructive mt-2'>{errors.moCoordinatorId.message as string}</p>}
+              {errors.moCoordinatorId && (
+                <p className='text-xs text-destructive mt-2'>
+                  {errors.moCoordinatorId.message as string}
+                </p>
+              )}
             </div>
           </div>
 
@@ -430,7 +521,11 @@ export default function EventForm({ artists, venues, moCoordinators }: EventForm
                 step={0.01}
                 className={errors.totalCost ? 'border-destructive text-destructive' : ''}
               />
-              {errors.totalCost && <p className='text-xs text-destructive mt-2'>{errors.totalCost.message as string}</p>}
+              {errors.totalCost && (
+                <p className='text-xs text-destructive mt-2'>
+                  {errors.totalCost.message as string}
+                </p>
+              )}
             </div>
 
             <div className='flex flex-col'>
@@ -445,7 +540,11 @@ export default function EventForm({ artists, venues, moCoordinators }: EventForm
                 step={0.01}
                 className={errors.transportationsCost ? 'border-destructive text-destructive' : ''}
               />
-              {errors.transportationsCost && <p className='text-xs text-destructive mt-2'>{errors.transportationsCost.message as string}</p>}
+              {errors.transportationsCost && (
+                <p className='text-xs text-destructive mt-2'>
+                  {errors.transportationsCost.message as string}
+                </p>
+              )}
             </div>
           </div>
 
@@ -461,7 +560,11 @@ export default function EventForm({ artists, venues, moCoordinators }: EventForm
               step={0.01}
               className={errors.cashBalanceCost ? 'border-destructive text-destructive' : ''}
             />
-            {errors.cashBalanceCost && <p className='text-xs text-destructive mt-2'>{errors.cashBalanceCost.message as string}</p>}
+            {errors.cashBalanceCost && (
+              <p className='text-xs text-destructive mt-2'>
+                {errors.cashBalanceCost.message as string}
+              </p>
+            )}
           </div>
 
           <Separator className='bg-zinc-200' />
@@ -475,10 +578,14 @@ export default function EventForm({ artists, venues, moCoordinators }: EventForm
                   type='time'
                   className={cn(
                     'appearance-none [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none',
-                    errors.soundCheckStart ? 'border-destructive text-destructive' : ''
+                    errors.soundCheckStart ? 'border-destructive text-destructive' : '',
                   )}
                 />
-                {errors.soundCheckStart && <p className='text-xs text-destructive mt-2'>{errors.soundCheckStart.message as string}</p>}
+                {errors.soundCheckStart && (
+                  <p className='text-xs text-destructive mt-2'>
+                    {errors.soundCheckStart.message as string}
+                  </p>
+                )}
               </div>
               <div className='flex flex-col'>
                 <div className='text-sm font-semibold mb-2'>Fine sound-check</div>
@@ -487,17 +594,25 @@ export default function EventForm({ artists, venues, moCoordinators }: EventForm
                   type='time'
                   className={cn(
                     'appearance-none [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none',
-                    errors.soundCheckEnd ? 'border-destructive text-destructive' : ''
+                    errors.soundCheckEnd ? 'border-destructive text-destructive' : '',
                   )}
                 />
-                {errors.soundCheckEnd && <p className='text-xs text-destructive mt-2'>{errors.soundCheckEnd.message as string}</p>}
+                {errors.soundCheckEnd && (
+                  <p className='text-xs text-destructive mt-2'>
+                    {errors.soundCheckEnd.message as string}
+                  </p>
+                )}
               </div>
             </div>
 
             <div className='flex flex-col'>
               <div className='text-sm font-semibold mb-2'>Rider tecnico</div>
               <PdfUploadInput />
-              {errors.tecnicalRiderDocument && <p className='text-xs text-destructive mt-2'>{errors.tecnicalRiderDocument.message as string}</p>}
+              {errors.tecnicalRiderDocument && (
+                <p className='text-xs text-destructive mt-2'>
+                  {errors.tecnicalRiderDocument.message as string}
+                </p>
+              )}
             </div>
           </div>
         </TabsContent>
@@ -515,7 +630,11 @@ export default function EventForm({ artists, venues, moCoordinators }: EventForm
               render={({ field }) => (
                 <label
                   htmlFor='contractSigning'
-                  className={cn('flex items-center gap-2 text-sm cursor-pointer', field.value && 'text-zinc-400', errors.contractSigning && 'text-destructive')}
+                  className={cn(
+                    'flex items-center gap-2 text-sm cursor-pointer',
+                    field.value && 'text-zinc-400',
+                    errors.contractSigning && 'text-destructive',
+                  )}
                 >
                   <Checkbox
                     id='contractSigning'
@@ -526,7 +645,9 @@ export default function EventForm({ artists, venues, moCoordinators }: EventForm
                 </label>
               )}
             />
-            {errors.contractSigning && <p className='text-xs text-destructive'>{errors.contractSigning.message as string}</p>}
+            {errors.contractSigning && (
+              <p className='text-xs text-destructive'>{errors.contractSigning.message as string}</p>
+            )}
           </div>
 
           <div className='flex flex-col'>
@@ -536,7 +657,11 @@ export default function EventForm({ artists, venues, moCoordinators }: EventForm
               render={({ field }) => (
                 <label
                   htmlFor='depositInvoiceIssuing'
-                  className={cn('flex items-center gap-2 text-sm cursor-pointer', field.value && 'text-zinc-400', errors.depositInvoiceIssuing && 'text-destructive')}
+                  className={cn(
+                    'flex items-center gap-2 text-sm cursor-pointer',
+                    field.value && 'text-zinc-400',
+                    errors.depositInvoiceIssuing && 'text-destructive',
+                  )}
                 >
                   <Checkbox
                     id='depositInvoiceIssuing'
@@ -547,7 +672,11 @@ export default function EventForm({ artists, venues, moCoordinators }: EventForm
                 </label>
               )}
             />
-            {errors.depositInvoiceIssuing && <p className='text-xs text-destructive'>{errors.depositInvoiceIssuing.message as string}</p>}
+            {errors.depositInvoiceIssuing && (
+              <p className='text-xs text-destructive'>
+                {errors.depositInvoiceIssuing.message as string}
+              </p>
+            )}
           </div>
 
           <div className='flex flex-col'>
@@ -557,7 +686,11 @@ export default function EventForm({ artists, venues, moCoordinators }: EventForm
               render={({ field }) => (
                 <label
                   htmlFor='depositReceiptVerification'
-                  className={cn('flex items-center gap-2 text-sm cursor-pointer', field.value && 'text-zinc-400', errors.depositReceiptVerification && 'text-destructive')}
+                  className={cn(
+                    'flex items-center gap-2 text-sm cursor-pointer',
+                    field.value && 'text-zinc-400',
+                    errors.depositReceiptVerification && 'text-destructive',
+                  )}
                 >
                   <Checkbox
                     id='depositReceiptVerification'
@@ -568,7 +701,11 @@ export default function EventForm({ artists, venues, moCoordinators }: EventForm
                 </label>
               )}
             />
-            {errors.depositReceiptVerification && <p className='text-xs text-destructive'>{errors.depositReceiptVerification.message as string}</p>}
+            {errors.depositReceiptVerification && (
+              <p className='text-xs text-destructive'>
+                {errors.depositReceiptVerification.message as string}
+              </p>
+            )}
           </div>
 
           <div className='flex flex-col'>
@@ -578,7 +715,11 @@ export default function EventForm({ artists, venues, moCoordinators }: EventForm
               render={({ field }) => (
                 <label
                   htmlFor='techSheetSubmission'
-                  className={cn('flex items-center gap-2 text-sm cursor-pointer', field.value && 'text-zinc-400', errors.techSheetSubmission && 'text-destructive')}
+                  className={cn(
+                    'flex items-center gap-2 text-sm cursor-pointer',
+                    field.value && 'text-zinc-400',
+                    errors.techSheetSubmission && 'text-destructive',
+                  )}
                 >
                   <Checkbox
                     id='techSheetSubmission'
@@ -589,7 +730,11 @@ export default function EventForm({ artists, venues, moCoordinators }: EventForm
                 </label>
               )}
             />
-            {errors.techSheetSubmission && <p className='text-xs text-destructive'>{errors.techSheetSubmission.message as string}</p>}
+            {errors.techSheetSubmission && (
+              <p className='text-xs text-destructive'>
+                {errors.techSheetSubmission.message as string}
+              </p>
+            )}
           </div>
 
           <div className='flex flex-col'>
@@ -599,7 +744,11 @@ export default function EventForm({ artists, venues, moCoordinators }: EventForm
               render={({ field }) => (
                 <label
                   htmlFor='artistEngagement'
-                  className={cn('flex items-center gap-2 text-sm cursor-pointer', field.value && 'text-zinc-400', errors.artistEngagement && 'text-destructive')}
+                  className={cn(
+                    'flex items-center gap-2 text-sm cursor-pointer',
+                    field.value && 'text-zinc-400',
+                    errors.artistEngagement && 'text-destructive',
+                  )}
                 >
                   <Checkbox
                     id='artistEngagement'
@@ -610,7 +759,11 @@ export default function EventForm({ artists, venues, moCoordinators }: EventForm
                 </label>
               )}
             />
-            {errors.artistEngagement && <p className='text-xs text-destructive'>{errors.artistEngagement.message as string}</p>}
+            {errors.artistEngagement && (
+              <p className='text-xs text-destructive'>
+                {errors.artistEngagement.message as string}
+              </p>
+            )}
           </div>
 
           <div className='flex flex-col'>
@@ -620,7 +773,11 @@ export default function EventForm({ artists, venues, moCoordinators }: EventForm
               render={({ field }) => (
                 <label
                   htmlFor='professionalsEngagement'
-                  className={cn('flex items-center gap-2 text-sm cursor-pointer', field.value && 'text-zinc-400', errors.professionalsEngagement && 'text-destructive')}
+                  className={cn(
+                    'flex items-center gap-2 text-sm cursor-pointer',
+                    field.value && 'text-zinc-400',
+                    errors.professionalsEngagement && 'text-destructive',
+                  )}
                 >
                   <Checkbox
                     id='professionalsEngagement'
@@ -631,7 +788,11 @@ export default function EventForm({ artists, venues, moCoordinators }: EventForm
                 </label>
               )}
             />
-            {errors.professionalsEngagement && <p className='text-xs text-destructive'>{errors.professionalsEngagement.message as string}</p>}
+            {errors.professionalsEngagement && (
+              <p className='text-xs text-destructive'>
+                {errors.professionalsEngagement.message as string}
+              </p>
+            )}
           </div>
 
           <div className='flex flex-col'>
@@ -641,7 +802,11 @@ export default function EventForm({ artists, venues, moCoordinators }: EventForm
               render={({ field }) => (
                 <label
                   htmlFor='accompanyingPersonsEngagement'
-                  className={cn('flex items-center gap-2 text-sm cursor-pointer', field.value && 'text-zinc-400', errors.accompanyingPersonsEngagement && 'text-destructive')}
+                  className={cn(
+                    'flex items-center gap-2 text-sm cursor-pointer',
+                    field.value && 'text-zinc-400',
+                    errors.accompanyingPersonsEngagement && 'text-destructive',
+                  )}
                 >
                   <Checkbox
                     id='accompanyingPersonsEngagement'
@@ -652,7 +817,11 @@ export default function EventForm({ artists, venues, moCoordinators }: EventForm
                 </label>
               )}
             />
-            {errors.accompanyingPersonsEngagement && <p className='text-xs text-destructive'>{errors.accompanyingPersonsEngagement.message as string}</p>}
+            {errors.accompanyingPersonsEngagement && (
+              <p className='text-xs text-destructive'>
+                {errors.accompanyingPersonsEngagement.message as string}
+              </p>
+            )}
           </div>
 
           <div className='text-sm font-semibold'>Giorno dell&apos;evento</div>
@@ -664,7 +833,11 @@ export default function EventForm({ artists, venues, moCoordinators }: EventForm
               render={({ field }) => (
                 <label
                   htmlFor='performance'
-                  className={cn('flex items-center gap-2 text-sm cursor-pointer', field.value && 'text-zinc-400', errors.performance && 'text-destructive')}
+                  className={cn(
+                    'flex items-center gap-2 text-sm cursor-pointer',
+                    field.value && 'text-zinc-400',
+                    errors.performance && 'text-destructive',
+                  )}
                 >
                   <Checkbox
                     id='performance'
@@ -675,7 +848,9 @@ export default function EventForm({ artists, venues, moCoordinators }: EventForm
                 </label>
               )}
             />
-            {errors.performance && <p className='text-xs text-destructive'>{errors.performance.message as string}</p>}
+            {errors.performance && (
+              <p className='text-xs text-destructive'>{errors.performance.message as string}</p>
+            )}
           </div>
 
           <div className='text-sm font-semibold'>Post evento</div>
@@ -687,7 +862,11 @@ export default function EventForm({ artists, venues, moCoordinators }: EventForm
               render={({ field }) => (
                 <label
                   htmlFor='postDateFeedback'
-                  className={cn('flex items-center gap-2 text-sm cursor-pointer', field.value && 'text-zinc-400', errors.postDateFeedback && 'text-destructive')}
+                  className={cn(
+                    'flex items-center gap-2 text-sm cursor-pointer',
+                    field.value && 'text-zinc-400',
+                    errors.postDateFeedback && 'text-destructive',
+                  )}
                 >
                   <Checkbox
                     id='postDateFeedback'
@@ -698,7 +877,11 @@ export default function EventForm({ artists, venues, moCoordinators }: EventForm
                 </label>
               )}
             />
-            {errors.postDateFeedback && <p className='text-xs text-destructive'>{errors.postDateFeedback.message as string}</p>}
+            {errors.postDateFeedback && (
+              <p className='text-xs text-destructive'>
+                {errors.postDateFeedback.message as string}
+              </p>
+            )}
           </div>
 
           <div className='flex flex-col'>
@@ -708,7 +891,11 @@ export default function EventForm({ artists, venues, moCoordinators }: EventForm
               render={({ field }) => (
                 <label
                   htmlFor='bordereau'
-                  className={cn('flex items-center gap-2 text-sm cursor-pointer', field.value && 'text-zinc-400', errors.bordereau && 'text-destructive')}
+                  className={cn(
+                    'flex items-center gap-2 text-sm cursor-pointer',
+                    field.value && 'text-zinc-400',
+                    errors.bordereau && 'text-destructive',
+                  )}
                 >
                   <Checkbox
                     id='bordereau'
@@ -719,7 +906,9 @@ export default function EventForm({ artists, venues, moCoordinators }: EventForm
                 </label>
               )}
             />
-            {errors.bordereau && <p className='text-xs text-destructive'>{errors.bordereau.message as string}</p>}
+            {errors.bordereau && (
+              <p className='text-xs text-destructive'>{errors.bordereau.message as string}</p>
+            )}
           </div>
         </TabsContent>
       </Tabs>

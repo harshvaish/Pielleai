@@ -10,7 +10,10 @@ import { z } from 'zod/v4';
 import { AppError } from '@/lib/classes/AppError';
 import { idValidation } from '@/lib/validation/_general';
 
-export const removeManagedArtist = async (managerProfileId: number, artistId: number): Promise<ServerActionResponse<null>> => {
+export const removeManagedArtist = async (
+  managerProfileId: number,
+  artistId: number,
+): Promise<ServerActionResponse<null>> => {
   try {
     const headersList = await headers();
 
@@ -31,11 +34,21 @@ export const removeManagedArtist = async (managerProfileId: number, artistId: nu
     const validation = schema.safeParse({ managerProfileId, artistId });
 
     if (!validation.success) {
-      console.error('[removeManagedArtist] - Error: validation failed - ', validation.error.issues[0]);
+      console.error(
+        '[removeManagedArtist] - Error: validation failed - ',
+        validation.error.issues[0],
+      );
       throw new AppError('Dati inviati non corretti.');
     }
 
-    const result = await database.delete(managerArtists).where(and(eq(managerArtists.managerProfileId, managerProfileId), eq(managerArtists.artistId, artistId)));
+    const result = await database
+      .delete(managerArtists)
+      .where(
+        and(
+          eq(managerArtists.managerProfileId, managerProfileId),
+          eq(managerArtists.artistId, artistId),
+        ),
+      );
 
     const deletedRows = result.rowCount;
 
@@ -53,7 +66,8 @@ export const removeManagedArtist = async (managerProfileId: number, artistId: nu
 
     return {
       success: false,
-      message: error instanceof AppError ? error.message : 'Rimozione artista gestito non riuscita.',
+      message:
+        error instanceof AppError ? error.message : 'Rimozione artista gestito non riuscita.',
       data: null,
     };
   }

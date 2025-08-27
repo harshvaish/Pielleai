@@ -8,8 +8,12 @@ import { eq } from 'drizzle-orm';
 import { venues } from '@/lib/database/schema';
 import { venueS3FormSchema, VenueS3FormSchema } from '@/lib/validation/venueFormSchema';
 import { AppError } from '@/lib/classes/AppError';
+import { revalidateTag } from 'next/cache';
 
-export const updateVenueSocialData = async (venueId: number, data: VenueS3FormSchema): Promise<ServerActionResponse<null>> => {
+export const updateVenueSocialData = async (
+  venueId: number,
+  data: VenueS3FormSchema,
+): Promise<ServerActionResponse<null>> => {
   try {
     const headersList = await headers();
 
@@ -25,11 +29,14 @@ export const updateVenueSocialData = async (venueId: number, data: VenueS3FormSc
     const validation = venueS3FormSchema.safeParse(data);
 
     if (!validation.success) {
-      console.error('[updateVenueSocialData] - Error: validation failed', validation.error.issues[0]);
+      console.error(
+        '[updateVenueSocialData] - Error: validation failed',
+        validation.error.issues[0],
+      );
       throw new AppError('Dati inviati non corretti.');
     }
 
-    await database
+    const updateResult = await database
       .update(venues)
       .set({
         tiktokUrl: validation.data.tiktokUrl,
@@ -54,7 +61,13 @@ export const updateVenueSocialData = async (venueId: number, data: VenueS3FormSc
 
         updatedAt: new Date(),
       })
-      .where(eq(venues.id, venueId));
+      .where(eq(venues.id, venueId))
+      .returning({ slug: venues.slug });
+
+    const slug = updateResult[0]?.slug;
+    if (slug) revalidateTag(`venue:${slug}`);
+    revalidateTag('venues');
+    revalidateTag('paginated-venues');
 
     return {
       success: true,

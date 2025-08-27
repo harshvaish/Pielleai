@@ -11,6 +11,8 @@ import { getArtistsCached } from '@/lib/cache/artists';
 import { getArtistManagersCached } from '@/lib/cache/artist-managers';
 import { getVenuesCached } from '@/lib/cache/venues';
 import { getMoCoordinatorsCached } from '@/lib/cache/mo-coordinators';
+import { eventsFiltersSchema } from '@/lib/validation/filters/events-filters-schema';
+import { notFound } from 'next/navigation';
 
 type EventsPageProps = {
   searchParams?: Promise<{
@@ -40,6 +42,12 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
     startDate: sp?.start ? new Date(sp.start) : null,
     endDate: sp?.end ? new Date(sp.end) : null,
   };
+
+  const validation = eventsFiltersSchema.safeParse(filters);
+
+  if (!validation.success) {
+    notFound();
+  }
 
   const [{ data: events, totalPages }, artists, artistManagers, venues, moCoordinators] =
     await Promise.all([

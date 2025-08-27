@@ -5,13 +5,25 @@ import { headers } from 'next/headers';
 import { ServerActionResponse } from '@/lib/types';
 import { database } from '@/lib/database/connection';
 import { eq, inArray } from 'drizzle-orm';
-import { profileLanguages, profiles, countries, languages as languagesTable, subdivisions } from '@/lib/database/schema';
+import {
+  profileLanguages,
+  profiles,
+  countries,
+  languages as languagesTable,
+  subdivisions,
+} from '@/lib/database/schema';
 import { APIError } from 'better-auth/api';
 import { getBetterAuthErrorMessage } from '@/lib/utils';
-import { venueManagerFormSchema, VenueManagerFormSchema } from '@/lib/validation/venueManagerFormSchema';
+import {
+  venueManagerFormSchema,
+  VenueManagerFormSchema,
+} from '@/lib/validation/venueManagerFormSchema';
 import { AppError } from '@/lib/classes/AppError';
+import { revalidateTag } from 'next/cache';
 
-export const createVenueManager = async (data: VenueManagerFormSchema): Promise<ServerActionResponse<null>> => {
+export const createVenueManager = async (
+  data: VenueManagerFormSchema,
+): Promise<ServerActionResponse<null>> => {
   const headersList = await headers();
   let newUserId: string | undefined;
 
@@ -32,14 +44,21 @@ export const createVenueManager = async (data: VenueManagerFormSchema): Promise<
       throw new AppError('Dati inviati non corretti.');
     }
 
-    const { name, signUpEmail, signUpPassword, languages, countryId, subdivisionId } = validation.data;
+    const { name, signUpEmail, signUpPassword, languages, countryId, subdivisionId } =
+      validation.data;
 
     const [languagesCheck, countryCheck, subdivisionCheck] = await Promise.all([
-      database.select({ id: languagesTable.id }).from(languagesTable).where(inArray(languagesTable.id, languages)),
+      database
+        .select({ id: languagesTable.id })
+        .from(languagesTable)
+        .where(inArray(languagesTable.id, languages)),
 
       database.select({ id: countries.id }).from(countries).where(eq(countries.id, countryId)),
 
-      database.select({ id: subdivisions.id, countryId: subdivisions.countryId }).from(subdivisions).where(eq(subdivisions.id, subdivisionId)),
+      database
+        .select({ id: subdivisions.id, countryId: subdivisions.countryId })
+        .from(subdivisions)
+        .where(eq(subdivisions.id, subdivisionId)),
     ]);
 
     if (languagesCheck.length !== languages.length) {
@@ -95,12 +114,17 @@ export const createVenueManager = async (data: VenueManagerFormSchema): Promise<
           city: data.city,
           zipCode: data.zipCode,
         })
-        .returning({ id: profiles.id });
+        .returning({ id: profiles.id, userId: profiles.userId });
 
       const profileId = profileResult[0]?.id;
       if (!profileId) {
         throw new AppError('Recupero id utente non riuscito.');
       }
+
+      const uid = profileResult[0]?.userId;
+      if (uid) revalidateTag(`venue-manager:${uid}`);
+      revalidateTag('venue-managers');
+      revalidateTag('paginated-venue-managers');
 
       const languageInserts = (data.languages || []).map((languageId: number) => ({
         profileId,

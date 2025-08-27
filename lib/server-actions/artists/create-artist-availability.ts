@@ -5,12 +5,16 @@ import { AppError } from '@/lib/classes/AppError';
 import { database } from '@/lib/database/connection';
 import { artistAvailabilities, artists } from '@/lib/database/schema';
 import { ServerActionResponse, Availability } from '@/lib/types';
+import { stringDateValidation } from '@/lib/validation/_general';
 import { addDays } from 'date-fns';
 import { eq, and, sql, count } from 'drizzle-orm';
 import { headers } from 'next/headers';
 import { z } from 'zod/v4';
 
-export async function createArtistAvailability(artistSlug: string, newAvailability: Availability): Promise<ServerActionResponse<null>> {
+export async function createArtistAvailability(
+  artistSlug: string,
+  newAvailability: Availability,
+): Promise<ServerActionResponse<null>> {
   try {
     const headersList = await headers();
 
@@ -26,8 +30,8 @@ export async function createArtistAvailability(artistSlug: string, newAvailabili
     const schema = z.object({
       artistSlug: z.uuid("Seleziona un'opzione valida."),
       newAvailability: z.object({
-        startDate: z.date('Data di inizio non valida'),
-        endDate: z.date('Data di inizio non valida'),
+        startDate: stringDateValidation,
+        endDate: stringDateValidation,
       }),
     });
 
@@ -57,7 +61,12 @@ export async function createArtistAvailability(artistSlug: string, newAvailabili
     const [check] = await database
       .select({ count: count() })
       .from(artistAvailabilities)
-      .where(and(eq(artistAvailabilities.artistId, artistId), sql`${artistAvailabilities.timeRange} && ${availabilityWindow}`));
+      .where(
+        and(
+          eq(artistAvailabilities.artistId, artistId),
+          sql`${artistAvailabilities.timeRange} && ${availabilityWindow}`,
+        ),
+      );
 
     if (check.count > 0) {
       throw new AppError('La nuova disponibilità è in conflitto con una già presente.');
@@ -80,7 +89,10 @@ export async function createArtistAvailability(artistSlug: string, newAvailabili
 
     return {
       success: false,
-      message: error instanceof AppError ? error.message : 'Aggiornamento disponibilità artista non riuscito',
+      message:
+        error instanceof AppError
+          ? error.message
+          : 'Aggiornamento disponibilità artista non riuscito',
       data: null,
     };
   }

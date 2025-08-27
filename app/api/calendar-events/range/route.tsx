@@ -4,7 +4,7 @@ import { type NextRequest, NextResponse } from 'next/server';
 import { headers } from 'next/headers';
 import { auth } from '@/lib/auth';
 import { z } from 'zod/v4';
-import { stringIdValidation } from '@/lib/validation/_general';
+import { stringDateValidation, stringIdValidation } from '@/lib/validation/_general';
 import { ApiResponse, CalendarEvent, EventStatus } from '@/lib/types';
 import { eventStatus } from '@/lib/database/schema';
 
@@ -45,14 +45,8 @@ export async function GET(
     const venueIds = splitCsv(venueParam);
 
     const schema = z.object({
-      startDate: z
-        .string()
-        .transform((val) => new Date(val))
-        .refine((date) => !isNaN(date.getTime())),
-      endDate: z
-        .string()
-        .transform((val) => new Date(val))
-        .refine((date) => !isNaN(date.getTime())),
+      startDate: stringDateValidation,
+      endDate: stringDateValidation,
       artistIds: z.array(stringIdValidation),
       venueIds: z.array(stringIdValidation),
       status: z.array(z.enum(eventStatus.enumValues)),

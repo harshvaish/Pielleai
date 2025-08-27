@@ -5,10 +5,19 @@ import { headers } from 'next/headers';
 import { ServerActionResponse } from '@/lib/types';
 import { database } from '@/lib/database/connection';
 import { and, count, eq, gt } from 'drizzle-orm';
-import { profiles, users, artists, venues, events, eventNotes, artistAvailabilities } from '@/lib/database/schema';
+import {
+  profiles,
+  users,
+  artists,
+  venues,
+  events,
+  eventNotes,
+  artistAvailabilities,
+} from '@/lib/database/schema';
 import { eventFormSchema, EventFormSchema } from '@/lib/validation/eventFormSchema';
 import { isBefore } from 'date-fns';
 import { AppError } from '@/lib/classes/AppError';
+import { revalidateTag } from 'next/cache';
 
 export const createEvent = async (data: EventFormSchema): Promise<ServerActionResponse<null>> => {
   try {
@@ -40,7 +49,13 @@ export const createEvent = async (data: EventFormSchema): Promise<ServerActionRe
       const [availability] = await database
         .select({ count: count() })
         .from(artistAvailabilities)
-        .where(and(eq(artistAvailabilities.id, availabilityId), eq(artistAvailabilities.artistId, artistId), gt(artistAvailabilities.endDate, now)));
+        .where(
+          and(
+            eq(artistAvailabilities.id, availabilityId),
+            eq(artistAvailabilities.artistId, artistId),
+            gt(artistAvailabilities.endDate, now),
+          ),
+        );
 
       if (availability.count === 0) {
         throw new AppError('Disponibilità selezionata non trovata o scaduta.');
@@ -151,7 +166,9 @@ export const createEvent = async (data: EventFormSchema): Promise<ServerActionRe
           soundCheckStart: validation.data.soundCheckStart || null,
           soundCheckEnd: validation.data.soundCheckEnd || null,
           tecnicalRiderUrl: validTecnicalRider ? validation.data.tecnicalRiderDocument!.url : null,
-          tecnicalRiderName: validTecnicalRider ? validation.data.tecnicalRiderDocument!.name : null,
+          tecnicalRiderName: validTecnicalRider
+            ? validation.data.tecnicalRiderDocument!.name
+            : null,
 
           contractSigning: validation.data.contractSigning,
           depositInvoiceIssuing: validation.data.depositInvoiceIssuing,
@@ -183,6 +200,8 @@ export const createEvent = async (data: EventFormSchema): Promise<ServerActionRe
         await tx.insert(eventNotes).values(noteInserts);
       }
     });
+
+    revalidateTag('paginated-events');
 
     return {
       success: true,

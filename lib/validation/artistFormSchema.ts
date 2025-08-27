@@ -1,5 +1,14 @@
 import * as z from 'zod/v4';
-import { birthDateValidation, emailValidation, idValidation, nameValidation, phoneValidation } from './_general';
+import {
+  addressValidation,
+  birthDateValidation,
+  companyValidation,
+  emailValidation,
+  idValidation,
+  nameValidation,
+  phoneValidation,
+  taxCodeValidation,
+} from './_general';
 import { profileGenders } from '../database/schema';
 
 const genderEnum = z.enum(profileGenders.enumValues, "Seleziona un'opzione valida.");
@@ -14,7 +23,11 @@ export const artistS1FormSchema = z.object({
 
   surname: nameValidation,
 
-  stageName: z.string('Campo malformato.').min(2, 'Minimo 2 caratteri.').max(100, 'Massimo 100 caratteri.').trim(),
+  stageName: z
+    .string('Campo malformato.')
+    .min(2, 'Minimo 2 caratteri.')
+    .max(100, 'Massimo 100 caratteri.')
+    .trim(),
 
   phone: phoneValidation,
 
@@ -22,11 +35,15 @@ export const artistS1FormSchema = z.object({
 
   birthDate: birthDateValidation,
 
-  birthPlace: z.string('Campo malformato.').min(2, 'Minimo 2 caratteri.').max(100, 'Massimo 100 caratteri.').trim(),
+  birthPlace: z
+    .string('Campo malformato.')
+    .min(2, 'Minimo 2 caratteri.')
+    .max(100, 'Massimo 100 caratteri.')
+    .trim(),
 
   languages: z.array(idValidation, 'Campo malformato').min(1, 'Campo obbligatorio.'),
 
-  address: z.string('Campo malformato.').min(5, 'Minimo 5 caratteri.').max(150, 'Massimo 150 caratteri.').trim(),
+  address: addressValidation,
 
   countryId: idValidation,
 
@@ -65,16 +82,16 @@ export type ArtistS1FormSchema = z.infer<typeof artistS1FormSchema>;
 
 export const artistS2FormSchema = z
   .object({
-    company: z.string('Campo malformato.').min(2, 'Minimo 2 caratteri.').max(100, 'Massimo 100 caratteri.').trim(),
+    company: companyValidation,
 
-    taxCode: z
+    taxCode: taxCodeValidation,
+
+    ipiCode: z
       .string('Campo malformato.')
-      .min(1, 'Minimo 5 caratteri.')
-      .max(100, 'Massimo 100 caratteri.')
-      .regex(/^[A-Z0-9\-]+$/, 'Può contenere solo lettere maiuscole, numeri e trattini.')
+      .min(9, 'Minimo 9 cifre.')
+      .max(20, 'Massimo 20 cifre.')
+      .regex(/^\d+$/, 'Può contenere solo numeri.')
       .trim(),
-
-    ipiCode: z.string('Campo malformato.').min(9, 'Minimo 9 cifre.').max(20, 'Massimo 20 cifre.').regex(/^\d+$/, 'Può contenere solo numeri.').trim(),
 
     bicCode: z
       .string()
@@ -84,7 +101,13 @@ export const artistS2FormSchema = z
       .trim()
       .optional(),
 
-    abaRoutingNumber: z.string().min(5, 'Minimo 5 cifre.').max(12, 'Massimo 12 cifre.').regex(/^\d+$/, 'Può contenere solo numeri.').trim().optional(),
+    abaRoutingNumber: z
+      .string()
+      .min(5, 'Minimo 5 cifre.')
+      .max(12, 'Massimo 12 cifre.')
+      .regex(/^\d+$/, 'Può contenere solo numeri.')
+      .trim()
+      .optional(),
 
     iban: z
       .string('Campo malformato.')
@@ -100,7 +123,7 @@ export const artistS2FormSchema = z
       .trim()
       .optional(),
 
-    billingAddress: z.string('Campo malformato.').min(5, 'Minimo 5 caratteri.').max(150, 'Massimo 150 caratteri.').trim(),
+    billingAddress: addressValidation,
 
     billingCountry: z.object(
       {
@@ -109,7 +132,7 @@ export const artistS2FormSchema = z
         code: z.string().length(2, "Seleziona un'opzione valida."),
         isEu: z.boolean("Seleziona un'opzione valida."),
       },
-      "Seleziona un'opzione valida."
+      "Seleziona un'opzione valida.",
     ),
 
     billingSubdivisionId: idValidation,
@@ -134,9 +157,11 @@ export const artistS2FormSchema = z
 
     billingPec: emailValidation,
 
-    taxableInvoice: z.string('Campo malformato.').refine((val) => val === 'true' || val === 'false', {
-      message: "Seleziona un'opzione valida",
-    }),
+    taxableInvoice: z
+      .string('Campo malformato.')
+      .refine((val) => val === 'true' || val === 'false', {
+        message: "Seleziona un'opzione valida",
+      }),
   })
   .check((ctx) => {
     const { billingCountry, bicCode, abaRoutingNumber, sdiRecipientCode } = ctx.value;
@@ -180,7 +205,7 @@ export const artistS3FormSchema = z.object({
       .url('Inserisci un link valido.')
       .refine((url) => url.startsWith(`https://www.tiktok.com/`), 'Campo non valido.')
       .trim()
-      .optional()
+      .optional(),
   ),
 
   tiktokUsername: z.preprocess(
@@ -189,12 +214,18 @@ export const artistS3FormSchema = z.object({
       .string('Campo malformato.')
       .min(2, 'Minimo 2 caratteri.')
       .max(24, 'Massimo 24 caratteri.')
-      .regex(/^[A-Za-z0-9_.]{1,23}[A-Za-z0-9_]$/, 'Può contenere solo lettere, numeri, underscore o punti (non terminare con punto).')
+      .regex(
+        /^[A-Za-z0-9_.]{1,23}[A-Za-z0-9_]$/,
+        'Può contenere solo lettere, numeri, underscore o punti (non terminare con punto).',
+      )
       .trim()
-      .optional()
+      .optional(),
   ),
 
-  tiktokFollowers: z.preprocess((val) => (typeof val === 'number' && !isNaN(val) ? val : undefined), z.number('Campo malformato.').positive('Può contenere solo numeri positivi.').optional()),
+  tiktokFollowers: z.preprocess(
+    (val) => (typeof val === 'number' && !isNaN(val) ? val : undefined),
+    z.number('Campo malformato.').positive('Può contenere solo numeri positivi.').optional(),
+  ),
 
   tiktokCreatedAt: z.preprocess(
     (val) => (typeof val === 'string' && val.trim() !== '' ? val : undefined),
@@ -205,7 +236,7 @@ export const artistS3FormSchema = z.object({
         const date = new Date(dateStr);
         return !isNaN(date.getTime());
       }, 'Formato non corretto.')
-      .optional()
+      .optional(),
   ),
 
   facebookUrl: z.preprocess(
@@ -214,7 +245,7 @@ export const artistS3FormSchema = z.object({
       .url('Inserisci un link valido.')
       .refine((url) => url.startsWith(`https://www.facebook.com/`), 'Campo non valido.')
       .trim()
-      .optional()
+      .optional(),
   ),
 
   facebookUsername: z.preprocess(
@@ -225,10 +256,13 @@ export const artistS3FormSchema = z.object({
       .max(50, 'Massimo 50 caratteri.')
       .regex(/^[A-Za-z0-9.]{1,50}$/, 'Può contenere solo lettere, numeri o punti.')
       .trim()
-      .optional()
+      .optional(),
   ),
 
-  facebookFollowers: z.preprocess((val) => (typeof val === 'number' && !isNaN(val) ? val : undefined), z.number('Campo malformato.').positive('Può contenere solo numeri positivi.').optional()),
+  facebookFollowers: z.preprocess(
+    (val) => (typeof val === 'number' && !isNaN(val) ? val : undefined),
+    z.number('Campo malformato.').positive('Può contenere solo numeri positivi.').optional(),
+  ),
 
   facebookCreatedAt: z.preprocess(
     (val) => (typeof val === 'string' && val.trim() !== '' ? val : undefined),
@@ -239,7 +273,7 @@ export const artistS3FormSchema = z.object({
         const date = new Date(dateStr);
         return !isNaN(date.getTime());
       }, 'Formato non corretto.')
-      .optional()
+      .optional(),
   ),
 
   instagramUrl: z.preprocess(
@@ -248,7 +282,7 @@ export const artistS3FormSchema = z.object({
       .url('Inserisci un link valido.')
       .refine((url) => url.startsWith(`https://www.instagram.com/`), 'Campo non valido.')
       .trim()
-      .optional()
+      .optional(),
   ),
 
   instagramUsername: z.preprocess(
@@ -259,10 +293,13 @@ export const artistS3FormSchema = z.object({
       .max(30, 'Massimo 30 caratteri.')
       .regex(/^[A-Za-z0-9._]{1,30}$/, 'Può contenere solo lettere, numeri, underscore o punti.')
       .trim()
-      .optional()
+      .optional(),
   ),
 
-  instagramFollowers: z.preprocess((val) => (typeof val === 'number' && !isNaN(val) ? val : undefined), z.number('Campo malformato.').positive('Può contenere solo numeri positivi.').optional()),
+  instagramFollowers: z.preprocess(
+    (val) => (typeof val === 'number' && !isNaN(val) ? val : undefined),
+    z.number('Campo malformato.').positive('Può contenere solo numeri positivi.').optional(),
+  ),
 
   instagramCreatedAt: z.preprocess(
     (val) => (typeof val === 'string' && val.trim() !== '' ? val : undefined),
@@ -273,16 +310,19 @@ export const artistS3FormSchema = z.object({
         const date = new Date(dateStr);
         return !isNaN(date.getTime());
       }, 'Formato non corretto.')
-      .optional()
+      .optional(),
   ),
 
   xUrl: z.preprocess(
     (val) => (typeof val === 'string' && val.trim() !== '' ? val : undefined),
     z
       .url('Inserisci un link valido.')
-      .refine((url) => url.startsWith('https://twitter.com/') || url.startsWith('https://x.com/'), 'Campo non valido.')
+      .refine(
+        (url) => url.startsWith('https://twitter.com/') || url.startsWith('https://x.com/'),
+        'Campo non valido.',
+      )
       .trim()
-      .optional()
+      .optional(),
   ),
 
   xUsername: z.preprocess(
@@ -293,10 +333,13 @@ export const artistS3FormSchema = z.object({
       .max(15, 'Massimo 15 caratteri.')
       .regex(/^[A-Za-z0-9_]{1,15}$/, 'Può contenere solo lettere, numeri o underscore.')
       .trim()
-      .optional()
+      .optional(),
   ),
 
-  xFollowers: z.preprocess((val) => (typeof val === 'number' && !isNaN(val) ? val : undefined), z.number('Campo malformato.').positive('Può contenere solo numeri positivi.').optional()),
+  xFollowers: z.preprocess(
+    (val) => (typeof val === 'number' && !isNaN(val) ? val : undefined),
+    z.number('Campo malformato.').positive('Può contenere solo numeri positivi.').optional(),
+  ),
 
   xCreatedAt: z.preprocess(
     (val) => (typeof val === 'string' && val.trim() !== '' ? val : undefined),
@@ -307,7 +350,7 @@ export const artistS3FormSchema = z.object({
         const date = new Date(dateStr);
         return !isNaN(date.getTime());
       }, 'Formato non corretto.')
-      .optional()
+      .optional(),
   ),
 });
 

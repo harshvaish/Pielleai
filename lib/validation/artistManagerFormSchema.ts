@@ -1,5 +1,14 @@
 import * as z from 'zod/v4';
-import { birthDateValidation, emailValidation, idValidation, nameValidation, phoneValidation } from './_general';
+import {
+  addressValidation,
+  birthDateValidation,
+  companyValidation,
+  emailValidation,
+  idValidation,
+  nameValidation,
+  phoneValidation,
+  taxCodeValidation,
+} from './_general';
 import { profileGenders } from '../database/schema';
 
 const genderEnum = z.enum(profileGenders.enumValues, "Seleziona un'opzione valida.");
@@ -20,11 +29,15 @@ export const artistManagerS1FormSchema = z.object({
 
   birthDate: birthDateValidation,
 
-  birthPlace: z.string('Campo malformato.').min(2, 'Minimo 2 caratteri.').max(100, 'Massimo 100 caratteri.').trim(),
+  birthPlace: z
+    .string('Campo malformato.')
+    .min(2, 'Minimo 2 caratteri.')
+    .max(100, 'Massimo 100 caratteri.')
+    .trim(),
 
   languages: z.array(idValidation, 'Campo malformato').min(1, 'Campo obbligatorio.'),
 
-  address: z.string('Campo malformato.').min(5, 'Minimo 5 caratteri.').max(150, 'Massimo 150 caratteri.').trim(),
+  address: addressValidation,
 
   countryId: idValidation,
 
@@ -51,16 +64,16 @@ export type ArtistManagerS1FormSchema = z.infer<typeof artistManagerS1FormSchema
 
 export const artistManagerS2FormSchema = z
   .object({
-    company: z.string('Campo malformato.').min(2, 'Minimo 2 caratteri.').max(100, 'Massimo 100 caratteri.').trim(),
+    company: companyValidation,
 
-    taxCode: z
+    taxCode: taxCodeValidation,
+
+    ipiCode: z
       .string('Campo malformato.')
-      .min(1, 'Minimo 5 caratteri.')
-      .max(100, 'Massimo 100 caratteri.')
-      .regex(/^[A-Z0-9\-]+$/, 'Può contenere solo lettere maiuscole, numeri e trattini.')
+      .min(9, 'Minimo 9 cifre.')
+      .max(20, 'Massimo 20 cifre.')
+      .regex(/^\d+$/, 'Può contenere solo numeri.')
       .trim(),
-
-    ipiCode: z.string('Campo malformato.').min(9, 'Minimo 9 cifre.').max(20, 'Massimo 20 cifre.').regex(/^\d+$/, 'Può contenere solo numeri.').trim(),
 
     bicCode: z
       .string()
@@ -70,7 +83,13 @@ export const artistManagerS2FormSchema = z
       .trim()
       .optional(),
 
-    abaRoutingNumber: z.string().min(5, 'Minimo 5 cifre.').max(12, 'Massimo 12 cifre.').regex(/^\d+$/, 'Può contenere solo numeri.').trim().optional(),
+    abaRoutingNumber: z
+      .string()
+      .min(5, 'Minimo 5 cifre.')
+      .max(12, 'Massimo 12 cifre.')
+      .regex(/^\d+$/, 'Può contenere solo numeri.')
+      .trim()
+      .optional(),
 
     iban: z
       .string('Campo malformato.')
@@ -86,7 +105,7 @@ export const artistManagerS2FormSchema = z
       .trim()
       .optional(),
 
-    billingAddress: z.string('Campo malformato.').min(5, 'Minimo 5 caratteri.').max(150, 'Massimo 150 caratteri.').trim(),
+    billingAddress: addressValidation,
 
     billingCountry: z.object(
       {
@@ -95,7 +114,7 @@ export const artistManagerS2FormSchema = z
         code: z.string().length(2, "Seleziona un'opzione valida."),
         isEu: z.boolean("Seleziona un'opzione valida."),
       },
-      "Seleziona un'opzione valida."
+      "Seleziona un'opzione valida.",
     ),
 
     billingSubdivisionId: idValidation,
@@ -120,9 +139,11 @@ export const artistManagerS2FormSchema = z
 
     billingPec: emailValidation,
 
-    taxableInvoice: z.string('Campo malformato.').refine((val) => val === 'true' || val === 'false', {
-      message: "Seleziona un'opzione valida",
-    }),
+    taxableInvoice: z
+      .string('Campo malformato.')
+      .refine((val) => val === 'true' || val === 'false', {
+        message: "Seleziona un'opzione valida",
+      }),
   })
   .check((ctx) => {
     const { billingCountry, bicCode, abaRoutingNumber, sdiRecipientCode } = ctx.value;
@@ -161,7 +182,11 @@ export type ArtistManagerS2FormSchema = z.infer<typeof artistManagerS2FormSchema
 
 export const artistManagerS3FormSchema = z.object({
   signUpEmail: emailValidation,
-  signUpPassword: z.string('Campo malformato.').min(1, 'Campo obbligatorio.').min(8, 'Almeno 8 caratteri.').max(16, 'Massimo 16 caratteri.'),
+  signUpPassword: z
+    .string('Campo malformato.')
+    .min(1, 'Campo obbligatorio.')
+    .min(8, 'Almeno 8 caratteri.')
+    .max(16, 'Massimo 16 caratteri.'),
 });
 
 export const artistManagerFormSchema = z.object({

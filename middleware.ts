@@ -18,7 +18,7 @@ export async function middleware(request: NextRequest) {
   if (PUBLIC_ROUTES.includes(pathname)) {
     // Already signed-in? – don’t show the auth page again
     if (isLoggedIn) {
-      return NextResponse.redirect(new URL('/', request.url));
+      return NextResponse.redirect(new URL('/dashboard', request.url));
     }
     // Guest? – allow the request to continue
     return NextResponse.next();

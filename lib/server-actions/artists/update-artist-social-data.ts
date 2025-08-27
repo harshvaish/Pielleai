@@ -8,8 +8,12 @@ import { eq } from 'drizzle-orm';
 import { artists } from '@/lib/database/schema';
 import { artistS3FormSchema, ArtistS3FormSchema } from '@/lib/validation/artistFormSchema';
 import { AppError } from '@/lib/classes/AppError';
+import { revalidateTag } from 'next/cache';
 
-export const updateArtistSocialData = async (artistId: number, data: ArtistS3FormSchema): Promise<ServerActionResponse<null>> => {
+export const updateArtistSocialData = async (
+  artistId: number,
+  data: ArtistS3FormSchema,
+): Promise<ServerActionResponse<null>> => {
   try {
     const headersList = await headers();
 
@@ -25,11 +29,14 @@ export const updateArtistSocialData = async (artistId: number, data: ArtistS3For
     const validation = artistS3FormSchema.safeParse(data);
 
     if (!validation.success) {
-      console.error('[updateArtistSocialData] - Error: validation failed', validation.error.issues[0]);
+      console.error(
+        '[updateArtistSocialData] - Error: validation failed',
+        validation.error.issues[0],
+      );
       throw new AppError('I dati inviati non sono corretti.');
     }
 
-    await database
+    const updateResult = await database
       .update(artists)
       .set({
         tiktokUrl: validation.data.tiktokUrl,
@@ -54,7 +61,13 @@ export const updateArtistSocialData = async (artistId: number, data: ArtistS3For
 
         updatedAt: new Date(),
       })
-      .where(eq(artists.id, artistId));
+      .where(eq(artists.id, artistId))
+      .returning({ slug: artists.slug });
+
+    const slug = updateResult[0]?.slug;
+    if (slug) revalidateTag(`artist:${slug}`);
+    revalidateTag('artists');
+    revalidateTag('paginated-artists');
 
     return {
       success: true,

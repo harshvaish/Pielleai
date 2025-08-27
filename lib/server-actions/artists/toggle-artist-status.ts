@@ -7,10 +7,14 @@ import { artists, userStatus } from '@/lib/database/schema';
 import { ServerActionResponse, UserStatus } from '@/lib/types';
 import { idValidation } from '@/lib/validation/_general';
 import { eq } from 'drizzle-orm';
+import { revalidateTag } from 'next/cache';
 import { headers } from 'next/headers';
 import { z } from 'zod/v4';
 
-export async function toggleArtistStatus(artistId: number, initialStatus: UserStatus): Promise<ServerActionResponse<null>> {
+export async function toggleArtistStatus(
+  artistId: number,
+  initialStatus: UserStatus,
+): Promise<ServerActionResponse<null>> {
   try {
     const headersList = await headers();
 
@@ -37,13 +41,19 @@ export async function toggleArtistStatus(artistId: number, initialStatus: UserSt
 
     const newStatus: UserStatus = initialStatus === 'active' ? 'disabled' : 'active';
 
-    await database
+    const updateResult = await database
       .update(artists)
       .set({
         status: newStatus,
         updatedAt: new Date(),
       })
-      .where(eq(artists.id, artistId));
+      .where(eq(artists.id, artistId))
+      .returning({ slug: artists.slug });
+
+    const slug = updateResult[0]?.slug;
+    if (slug) revalidateTag(`artist:${slug}`);
+    revalidateTag('artists');
+    revalidateTag('paginated-artists');
 
     return {
       success: true,

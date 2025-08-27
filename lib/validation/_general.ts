@@ -1,6 +1,8 @@
 import { z } from 'zod/v4';
 
-export const timeValidation = z.string('Campo malformato.').regex(/^([01]\d|2[0-3]):[0-5]\d$/, 'Può contenere solo numeri o ":".');
+export const timeValidation = z
+  .string('Campo malformato.')
+  .regex(/^([01]\d|2[0-3]):[0-5]\d$/, 'Può contenere solo numeri o ":".');
 
 export const nameValidation = z
   .string('Campo malformato.')
@@ -11,7 +13,11 @@ export const nameValidation = z
 
 export const emailValidation = z.email('Formato non valido. (Es. info@eaglebooking.it)').trim();
 
-export const passwordValidation = z.string('Campo malformato.').min(1, 'Password obbligatoria.').min(8, 'Almeno 8 caratteri.').max(16, 'Massimo 16 caratteri.');
+export const passwordValidation = z
+  .string('Campo malformato.')
+  .min(1, 'Password obbligatoria.')
+  .min(8, 'Almeno 8 caratteri.')
+  .max(16, 'Massimo 16 caratteri.');
 
 export const phoneValidation = z
   .string('Campo malformato.')
@@ -20,9 +26,42 @@ export const phoneValidation = z
   .regex(/^\+\d{1,3}\s?\d+$/, 'Formato non valido. Esempio: +39 123456789')
   .trim();
 
-export const idValidation = z.number("Seleziona un'opzione valida.").min(1, 'Campo obbligatorio.').positive("Seleziona un'opzione valida.");
+export const companyValidation = z
+  .string('Campo malformato.')
+  .min(2, 'Minimo 2 caratteri.')
+  .max(100, 'Massimo 100 caratteri.')
+  .trim();
 
-export const stringIdValidation = z.string('Campo malformato.').regex(/^[1-9]\d*$/, 'Può contenere solo numeri positivi.');
+export const taxCodeValidation = z
+  .string('Campo malformato.')
+  .min(1, 'Minimo 5 caratteri.')
+  .max(100, 'Massimo 100 caratteri.')
+  .regex(/^[A-Z0-9\-]+$/, 'Può contenere solo lettere maiuscole, numeri e trattini.')
+  .trim();
+
+export const addressValidation = z
+  .string('Campo malformato.')
+  .min(5, 'Minimo 5 caratteri.')
+  .max(150, 'Massimo 150 caratteri.')
+  .trim();
+
+export const idValidation = z
+  .number("Seleziona un'opzione valida.")
+  .min(1, 'Campo obbligatorio.')
+  .positive("Seleziona un'opzione valida.");
+
+export const stringIdValidation = z
+  .string('Campo malformato.')
+  .regex(/^[1-9]\d*$/, 'Può contenere solo numeri positivi.');
+
+export const dateValidation = z
+  .date('Campo malformato')
+  .refine((date) => !isNaN(date.getTime()), 'Può contenere solo date.');
+
+export const stringDateValidation = z
+  .string('Campo malformato.')
+  .transform((val) => new Date(val))
+  .refine((date) => !isNaN(date.getTime()), 'Può contenere solo date.');
 
 const today = new Date();
 const subtractYears = (date: Date, years: number): Date => {

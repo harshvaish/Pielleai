@@ -5,12 +5,27 @@ import { headers } from 'next/headers';
 import { ServerActionResponse } from '@/lib/types';
 import { database } from '@/lib/database/connection';
 import { and, eq, inArray } from 'drizzle-orm';
-import { profiles, countries, languages as languagesTable, subdivisions, zones as zonesTable, users, artists, artistLanguages, managerArtists, artistZones } from '@/lib/database/schema';
+import {
+  profiles,
+  countries,
+  languages as languagesTable,
+  subdivisions,
+  zones as zonesTable,
+  users,
+  artists,
+  artistLanguages,
+  managerArtists,
+  artistZones,
+} from '@/lib/database/schema';
 import { artistS1FormSchema, ArtistS1FormSchema } from '@/lib/validation/artistFormSchema';
 import { areSame } from '@/lib/utils';
 import { AppError } from '@/lib/classes/AppError';
+import { revalidateTag } from 'next/cache';
 
-export const updateArtistPersonalData = async (artistId: number, data: ArtistS1FormSchema): Promise<ServerActionResponse<null>> => {
+export const updateArtistPersonalData = async (
+  artistId: number,
+  data: ArtistS1FormSchema,
+): Promise<ServerActionResponse<null>> => {
   try {
     const headersList = await headers();
 
@@ -26,18 +41,27 @@ export const updateArtistPersonalData = async (artistId: number, data: ArtistS1F
     const validation = artistS1FormSchema.safeParse(data);
 
     if (!validation.success) {
-      console.error('[updateArtistPersonalData] - Error: validation failed', validation.error.issues[0]);
+      console.error(
+        '[updateArtistPersonalData] - Error: validation failed',
+        validation.error.issues[0],
+      );
       throw new AppError('I dati inviati non sono corretti.');
     }
 
     const { languages, countryId, subdivisionId, zones, artistManagers } = validation.data;
 
     const [languagesCheck, countryCheck, subdivisionCheck, zonesCheck] = await Promise.all([
-      database.select({ id: languagesTable.id }).from(languagesTable).where(inArray(languagesTable.id, languages)),
+      database
+        .select({ id: languagesTable.id })
+        .from(languagesTable)
+        .where(inArray(languagesTable.id, languages)),
 
       database.select({ id: countries.id }).from(countries).where(eq(countries.id, countryId)),
 
-      database.select({ id: subdivisions.id, countryId: subdivisions.countryId }).from(subdivisions).where(eq(subdivisions.id, subdivisionId)),
+      database
+        .select({ id: subdivisions.id, countryId: subdivisions.countryId })
+        .from(subdivisions)
+        .where(eq(subdivisions.id, subdivisionId)),
 
       database.select({ id: zonesTable.id }).from(zonesTable).where(inArray(zonesTable.id, zones)),
     ]);
@@ -75,9 +99,18 @@ export const updateArtistPersonalData = async (artistId: number, data: ArtistS1F
     }
 
     const [existingLanguages, existingZones, existingManagers] = await Promise.all([
-      database.select({ languageId: artistLanguages.languageId }).from(artistLanguages).where(eq(artistLanguages.artistId, artistId)),
-      database.select({ zoneId: artistZones.zoneId }).from(artistZones).where(eq(artistZones.artistId, artistId)),
-      database.select({ managerProfileId: managerArtists.managerProfileId }).from(managerArtists).where(eq(managerArtists.artistId, artistId)),
+      database
+        .select({ languageId: artistLanguages.languageId })
+        .from(artistLanguages)
+        .where(eq(artistLanguages.artistId, artistId)),
+      database
+        .select({ zoneId: artistZones.zoneId })
+        .from(artistZones)
+        .where(eq(artistZones.artistId, artistId)),
+      database
+        .select({ managerProfileId: managerArtists.managerProfileId })
+        .from(managerArtists)
+        .where(eq(managerArtists.artistId, artistId)),
     ]);
 
     const existingLanguageIds = existingLanguages.map((l) => l.languageId);
@@ -85,7 +118,7 @@ export const updateArtistPersonalData = async (artistId: number, data: ArtistS1F
     const existingManagerIds = existingManagers.map((m) => m.managerProfileId);
 
     await database.transaction(async (tx) => {
-      await tx
+      const updateResult = await tx
         .update(artists)
         .set({
           avatarUrl: validation.data.avatarUrl,
@@ -108,7 +141,13 @@ export const updateArtistPersonalData = async (artistId: number, data: ArtistS1F
           tourManagerPhone: validation.data.tourManagerPhone,
           updatedAt: new Date(),
         })
-        .where(eq(artists.id, artistId));
+        .where(eq(artists.id, artistId))
+        .returning({ slug: artists.slug });
+
+      const slug = updateResult[0]?.slug;
+      if (slug) revalidateTag(`artist:${slug}`);
+      revalidateTag('artists');
+      revalidateTag('paginated-artists');
 
       if (!areSame(existingLanguageIds, validation.data.languages)) {
         await tx.delete(artistLanguages).where(eq(artistLanguages.artistId, artistId));
@@ -117,7 +156,7 @@ export const updateArtistPersonalData = async (artistId: number, data: ArtistS1F
             validation.data.languages.map((languageId) => ({
               artistId,
               languageId,
-            }))
+            })),
           );
         }
       }
@@ -125,7 +164,9 @@ export const updateArtistPersonalData = async (artistId: number, data: ArtistS1F
       if (!areSame(existingZoneIds, validation.data.zones)) {
         await tx.delete(artistZones).where(eq(artistZones.artistId, artistId));
         if (validation.data.zones.length > 0) {
-          await tx.insert(artistZones).values(validation.data.zones.map((zoneId) => ({ artistId, zoneId })));
+          await tx
+            .insert(artistZones)
+            .values(validation.data.zones.map((zoneId) => ({ artistId, zoneId })));
         }
       }
 
@@ -136,7 +177,7 @@ export const updateArtistPersonalData = async (artistId: number, data: ArtistS1F
             artistManagers.map((managerProfileId) => ({
               artistId,
               managerProfileId,
-            }))
+            })),
           );
         }
       }

@@ -1,5 +1,12 @@
 import { Event as RbcEvent } from 'react-big-calendar';
-import { availabilityStatus, eventStatus, profileGenders, userRoles, userStatus, venueTypes } from './database/schema';
+import {
+  availabilityStatus,
+  eventStatus,
+  profileGenders,
+  userRoles,
+  userStatus,
+  venueTypes,
+} from './database/schema';
 
 // project
 export type ServerActionResponse<T = unknown> =
@@ -14,7 +21,9 @@ export type ServerActionResponse<T = unknown> =
       data: null;
     };
 
-export type ApiResponse<T = unknown> = { success: true; message: null; data: T } | { success: false; message: string; data: null };
+export type ApiResponse<T = unknown> =
+  | { success: true; message: null; data: T }
+  | { success: false; message: string; data: null };
 
 // enums
 export type AvailabilityStatus = (typeof availabilityStatus.enumValues)[number];
@@ -96,11 +105,11 @@ export type MoCoordinator = {
 // artist manager
 export type ArtistManagersTableFilters = {
   currentPage: number;
-  fullName: string;
-  email: string;
-  phone: string;
+  fullName: string | null;
+  email: string | null;
+  phone: string | null;
   artistIds: string[];
-  company: string;
+  company: string | null;
 };
 
 export type ArtistManagerData<T = ArtistListData | ArtistSelectData> = {
@@ -144,16 +153,32 @@ export type ArtistManagerData<T = ArtistListData | ArtistSelectData> = {
   taxableInvoice: boolean;
 };
 
-export type ArtistManagerTableData = Pick<ArtistManagerData, 'id' | 'profileId' | 'status' | 'createdAt' | 'avatarUrl' | 'name' | 'surname' | 'phone' | 'email' | 'company' | 'artists'>;
+export type ArtistManagerTableData = Pick<
+  ArtistManagerData,
+  | 'id'
+  | 'profileId'
+  | 'status'
+  | 'createdAt'
+  | 'avatarUrl'
+  | 'name'
+  | 'surname'
+  | 'phone'
+  | 'email'
+  | 'company'
+  | 'artists'
+>;
 
-export type ArtistManagerSelectData = Pick<ArtistManagerData, 'id' | 'profileId' | 'avatarUrl' | 'name' | 'surname' | 'status'>;
+export type ArtistManagerSelectData = Pick<
+  ArtistManagerData,
+  'id' | 'profileId' | 'avatarUrl' | 'name' | 'surname' | 'status'
+>;
 
 // artist
 export type ArtistsTableFilters = {
   currentPage: number;
-  fullName: string;
-  email: string;
-  phone: string;
+  fullName: string | null;
+  email: string | null;
+  phone: string | null;
   managerIds: string[];
   zoneIds: string[];
 };
@@ -226,21 +251,51 @@ export type ArtistData = {
   xCreatedAt: string | null;
 };
 
-export type ArtistTableData = Pick<ArtistData, 'id' | 'slug' | 'status' | 'zones' | 'createdAt' | 'avatarUrl' | 'name' | 'surname' | 'stageName' | 'phone' | 'email' | 'company' | 'managers'>;
+export type ArtistTableData = Pick<
+  ArtistData,
+  | 'id'
+  | 'slug'
+  | 'status'
+  | 'zones'
+  | 'createdAt'
+  | 'avatarUrl'
+  | 'name'
+  | 'surname'
+  | 'stageName'
+  | 'phone'
+  | 'email'
+  | 'company'
+  | 'managers'
+>;
 
 export type ArtistListData = Pick<
   ArtistData,
-  'id' | 'slug' | 'status' | 'avatarUrl' | 'name' | 'surname' | 'stageName' | 'phone' | 'email' | 'tourManagerEmail' | 'tourManagerName' | 'tourManagerSurname' | 'tourManagerPhone'
+  | 'id'
+  | 'slug'
+  | 'status'
+  | 'avatarUrl'
+  | 'name'
+  | 'surname'
+  | 'stageName'
+  | 'phone'
+  | 'email'
+  | 'tourManagerEmail'
+  | 'tourManagerName'
+  | 'tourManagerSurname'
+  | 'tourManagerPhone'
 >;
 
-export type ArtistSelectData = Pick<ArtistData, 'id' | 'slug' | 'status' | 'avatarUrl' | 'name' | 'surname' | 'stageName'>;
+export type ArtistSelectData = Pick<
+  ArtistData,
+  'id' | 'slug' | 'status' | 'avatarUrl' | 'name' | 'surname' | 'stageName'
+>;
 
 // venue manager
 export type VenueManagersTableFilters = {
   currentPage: number;
-  fullName: string;
-  email: string;
-  phone: string;
+  fullName: string | null;
+  email: string | null;
+  phone: string | null;
   venueIds: string[];
 };
 
@@ -270,20 +325,35 @@ export type VenueManagerData<T = VenueTableData | VenueListData | VenueBadgeData
   gender: Gender;
 };
 
-export type VenueManagerTableData = Pick<VenueManagerData, 'id' | 'profileId' | 'status' | 'createdAt' | 'avatarUrl' | 'name' | 'surname' | 'phone' | 'email' | 'venues'>;
+export type VenueManagerTableData = Pick<
+  VenueManagerData,
+  | 'id'
+  | 'profileId'
+  | 'status'
+  | 'createdAt'
+  | 'avatarUrl'
+  | 'name'
+  | 'surname'
+  | 'phone'
+  | 'email'
+  | 'venues'
+>;
 
-export type VenueManagerSelectData = Pick<VenueManagerData, 'id' | 'profileId' | 'avatarUrl' | 'name' | 'surname' | 'status'>;
+export type VenueManagerSelectData = Pick<
+  VenueManagerData,
+  'id' | 'profileId' | 'avatarUrl' | 'name' | 'surname' | 'status'
+>;
 
 // venue
 export type VenuesTableFilters = {
   currentPage: number;
-  name: string;
-  company: string;
-  taxCode: string;
-  address: string;
+  name: string | null;
+  company: string | null;
+  taxCode: string | null;
+  address: string | null;
   types: VenueType[];
   managerIds: string[];
-  capacity: string;
+  capacity: string | null;
 };
 
 export type VenueData = {
@@ -343,11 +413,40 @@ export type VenueData = {
   xCreatedAt: string | null;
 };
 
-export type VenueTableData = Pick<VenueData, 'id' | 'slug' | 'status' | 'avatarUrl' | 'name' | 'company' | 'taxCode' | 'address' | 'manager' | 'type' | 'capacity' | 'createdAt'>;
+export type VenueTableData = Pick<
+  VenueData,
+  | 'id'
+  | 'slug'
+  | 'status'
+  | 'avatarUrl'
+  | 'name'
+  | 'company'
+  | 'taxCode'
+  | 'address'
+  | 'manager'
+  | 'type'
+  | 'capacity'
+  | 'createdAt'
+>;
 
-export type VenueSelectData = Pick<VenueData, 'id' | 'slug' | 'status' | 'avatarUrl' | 'name' | 'address' | 'manager'>;
+export type VenueSelectData = Pick<
+  VenueData,
+  'id' | 'slug' | 'status' | 'avatarUrl' | 'name' | 'address' | 'manager'
+>;
 
-export type VenueListData = Pick<VenueData, 'id' | 'slug' | 'status' | 'avatarUrl' | 'name' | 'company' | 'taxCode' | 'address' | 'type' | 'capacity'>;
+export type VenueListData = Pick<
+  VenueData,
+  | 'id'
+  | 'slug'
+  | 'status'
+  | 'avatarUrl'
+  | 'name'
+  | 'company'
+  | 'taxCode'
+  | 'address'
+  | 'type'
+  | 'capacity'
+>;
 
 export type VenueBadgeData = Pick<VenueData, 'id' | 'slug' | 'status' | 'avatarUrl' | 'name'>;
 

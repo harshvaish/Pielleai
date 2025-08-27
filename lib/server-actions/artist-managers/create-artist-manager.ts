@@ -3,15 +3,27 @@
 import { auth } from '@/lib/auth';
 import { headers } from 'next/headers';
 import { ServerActionResponse } from '@/lib/types';
-import { artistManagerFormSchema, ArtistManagerFormSchema } from '@/lib/validation/artistManagerFormSchema';
+import {
+  artistManagerFormSchema,
+  ArtistManagerFormSchema,
+} from '@/lib/validation/artistManagerFormSchema';
 import { database } from '@/lib/database/connection';
 import { eq, inArray } from 'drizzle-orm';
-import { profileLanguages, profiles, countries, languages as languagesTable, subdivisions } from '@/lib/database/schema';
+import {
+  profileLanguages,
+  profiles,
+  countries,
+  languages as languagesTable,
+  subdivisions,
+} from '@/lib/database/schema';
 import { APIError } from 'better-auth/api';
 import { getBetterAuthErrorMessage } from '@/lib/utils';
 import { AppError } from '@/lib/classes/AppError';
+import { revalidateTag } from 'next/cache';
 
-export const createArtistManager = async (data: ArtistManagerFormSchema): Promise<ServerActionResponse<null>> => {
+export const createArtistManager = async (
+  data: ArtistManagerFormSchema,
+): Promise<ServerActionResponse<null>> => {
   const headersList = await headers();
   let newUserId: string | undefined;
 
@@ -32,18 +44,45 @@ export const createArtistManager = async (data: ArtistManagerFormSchema): Promis
       throw new AppError('Dati inviati non validi.');
     }
 
-    const { name, signUpEmail, signUpPassword, languages, countryId, subdivisionId, billingCountry, billingSubdivisionId } = validation.data;
+    const {
+      name,
+      signUpEmail,
+      signUpPassword,
+      languages,
+      countryId,
+      subdivisionId,
+      billingCountry,
+      billingSubdivisionId,
+    } = validation.data;
 
-    const [languagesCheck, countryCheck, subdivisionCheck, billingCountryCheck, billingSubdivisionCheck] = await Promise.all([
-      database.select({ id: languagesTable.id }).from(languagesTable).where(inArray(languagesTable.id, languages)),
+    const [
+      languagesCheck,
+      countryCheck,
+      subdivisionCheck,
+      billingCountryCheck,
+      billingSubdivisionCheck,
+    ] = await Promise.all([
+      database
+        .select({ id: languagesTable.id })
+        .from(languagesTable)
+        .where(inArray(languagesTable.id, languages)),
 
       database.select({ id: countries.id }).from(countries).where(eq(countries.id, countryId)),
 
-      database.select({ id: subdivisions.id, countryId: subdivisions.countryId }).from(subdivisions).where(eq(subdivisions.id, subdivisionId)),
+      database
+        .select({ id: subdivisions.id, countryId: subdivisions.countryId })
+        .from(subdivisions)
+        .where(eq(subdivisions.id, subdivisionId)),
 
-      database.select({ id: countries.id }).from(countries).where(eq(countries.id, billingCountry.id)),
+      database
+        .select({ id: countries.id })
+        .from(countries)
+        .where(eq(countries.id, billingCountry.id)),
 
-      database.select({ id: subdivisions.id, countryId: subdivisions.countryId }).from(subdivisions).where(eq(subdivisions.id, billingSubdivisionId)),
+      database
+        .select({ id: subdivisions.id, countryId: subdivisions.countryId })
+        .from(subdivisions)
+        .where(eq(subdivisions.id, billingSubdivisionId)),
     ]);
 
     if (languagesCheck.length !== languages.length) {
@@ -71,7 +110,9 @@ export const createArtistManager = async (data: ArtistManagerFormSchema): Promis
     }
 
     if (billingSubdivisionCheck[0].countryId != billingCountry.id) {
-      throw new AppError('La provincia fatturazione non appartiene allo stato fatturazione selezionato.');
+      throw new AppError(
+        'La provincia fatturazione non appartiene allo stato fatturazione selezionato.',
+      );
     }
 
     await database.transaction(async (tx) => {
@@ -128,12 +169,18 @@ export const createArtistManager = async (data: ArtistManagerFormSchema): Promis
           billingPec: data.billingPec,
           taxableInvoice: data.taxableInvoice === 'true',
         })
-        .returning({ id: profiles.id });
+        .returning({ id: profiles.id, userId: profiles.userId });
 
       const profileId = profileResult[0]?.id;
+
       if (!profileId) {
         throw new AppError('Recupero id utente non riuscito.');
       }
+
+      const uid = profileResult[0]?.userId;
+      if (uid) revalidateTag(`artist-manager:${uid}`);
+      revalidateTag('artist-managers');
+      revalidateTag('paginated-artist-managers');
 
       const languageInserts = (data.languages || []).map((languageId: number) => ({
         profileId,

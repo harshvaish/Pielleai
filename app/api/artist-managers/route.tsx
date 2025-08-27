@@ -33,7 +33,7 @@ export async function GET(
       );
     }
 
-    const validation = idValidation.safeParse(artistIdParam);
+    const validation = idValidation.safeParse(artistId);
 
     if (!validation.success) {
       return NextResponse.json(

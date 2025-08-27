@@ -5,9 +5,21 @@ import { headers } from 'next/headers';
 import { ServerActionResponse } from '@/lib/types';
 import { database } from '@/lib/database/connection';
 import { and, eq, inArray } from 'drizzle-orm';
-import { profiles, countries, languages as languagesTable, subdivisions, zones as zonesTable, users, artists, artistLanguages, managerArtists, artistZones } from '@/lib/database/schema';
+import {
+  profiles,
+  countries,
+  languages as languagesTable,
+  subdivisions,
+  zones as zonesTable,
+  users,
+  artists,
+  artistLanguages,
+  managerArtists,
+  artistZones,
+} from '@/lib/database/schema';
 import { artistFormSchema, ArtistFormSchema } from '@/lib/validation/artistFormSchema';
 import { AppError } from '@/lib/classes/AppError';
+import { revalidateTag } from 'next/cache';
 
 export const createArtist = async (data: ArtistFormSchema): Promise<ServerActionResponse<null>> => {
   try {
@@ -29,18 +41,45 @@ export const createArtist = async (data: ArtistFormSchema): Promise<ServerAction
       throw new AppError('I dati inviati non sono corretti.');
     }
 
-    const { languages, countryId, subdivisionId, billingCountry, billingSubdivisionId, zones, artistManagers } = validation.data;
+    const {
+      languages,
+      countryId,
+      subdivisionId,
+      billingCountry,
+      billingSubdivisionId,
+      zones,
+      artistManagers,
+    } = validation.data;
 
-    const [languagesCheck, countryCheck, subdivisionCheck, billingCountryCheck, billingSubdivisionCheck, zonesCheck] = await Promise.all([
-      database.select({ id: languagesTable.id }).from(languagesTable).where(inArray(languagesTable.id, languages)),
+    const [
+      languagesCheck,
+      countryCheck,
+      subdivisionCheck,
+      billingCountryCheck,
+      billingSubdivisionCheck,
+      zonesCheck,
+    ] = await Promise.all([
+      database
+        .select({ id: languagesTable.id })
+        .from(languagesTable)
+        .where(inArray(languagesTable.id, languages)),
 
       database.select({ id: countries.id }).from(countries).where(eq(countries.id, countryId)),
 
-      database.select({ id: subdivisions.id, countryId: subdivisions.countryId }).from(subdivisions).where(eq(subdivisions.id, subdivisionId)),
+      database
+        .select({ id: subdivisions.id, countryId: subdivisions.countryId })
+        .from(subdivisions)
+        .where(eq(subdivisions.id, subdivisionId)),
 
-      database.select({ id: countries.id }).from(countries).where(eq(countries.id, billingCountry.id)),
+      database
+        .select({ id: countries.id })
+        .from(countries)
+        .where(eq(countries.id, billingCountry.id)),
 
-      database.select({ id: subdivisions.id, countryId: subdivisions.countryId }).from(subdivisions).where(eq(subdivisions.id, billingSubdivisionId)),
+      database
+        .select({ id: subdivisions.id, countryId: subdivisions.countryId })
+        .from(subdivisions)
+        .where(eq(subdivisions.id, billingSubdivisionId)),
 
       database.select({ id: zonesTable.id }).from(zonesTable).where(inArray(zonesTable.id, zones)),
     ]);
@@ -70,7 +109,9 @@ export const createArtist = async (data: ArtistFormSchema): Promise<ServerAction
     }
 
     if (billingSubdivisionCheck[0].countryId != billingCountry.id) {
-      throw new AppError('La provincia fatturazione non appartiene allo stato fatturazione selezionato.');
+      throw new AppError(
+        'La provincia fatturazione non appartiene allo stato fatturazione selezionato.',
+      );
     }
 
     if (zonesCheck.length !== zones.length) {
@@ -151,12 +192,17 @@ export const createArtist = async (data: ArtistFormSchema): Promise<ServerAction
           xFollowers: validation.data.xFollowers || null,
           xCreatedAt: validation.data.xCreatedAt || null,
         })
-        .returning({ id: artists.id });
+        .returning({ id: artists.id, slug: artists.slug });
 
       const newArtistId = artistResult[0]?.id;
       if (!newArtistId) {
         throw new AppError('Recupero id artista non riuscito.');
       }
+
+      const slug = artistResult[0]?.slug;
+      if (slug) revalidateTag(`artist:${slug}`);
+      revalidateTag('artists');
+      revalidateTag('paginated-artists');
 
       const languageInserts = (data.languages || []).map((languageId: number) => ({
         artistId: newArtistId,

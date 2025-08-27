@@ -3,13 +3,20 @@
 import { auth } from '@/lib/auth';
 import { headers } from 'next/headers';
 import { ServerActionResponse } from '@/lib/types';
-import { ArtistManagerS2FormSchema, artistManagerS2FormSchema } from '@/lib/validation/artistManagerFormSchema';
+import {
+  ArtistManagerS2FormSchema,
+  artistManagerS2FormSchema,
+} from '@/lib/validation/artistManagerFormSchema';
 import { database } from '@/lib/database/connection';
 import { eq } from 'drizzle-orm';
 import { profiles, countries, subdivisions } from '@/lib/database/schema';
 import { AppError } from '@/lib/classes/AppError';
+import { revalidateTag } from 'next/cache';
 
-export const updateArtistManagerBillingData = async (profileId: number, data: ArtistManagerS2FormSchema): Promise<ServerActionResponse<null>> => {
+export const updateArtistManagerBillingData = async (
+  profileId: number,
+  data: ArtistManagerS2FormSchema,
+): Promise<ServerActionResponse<null>> => {
   try {
     const headersList = await headers();
 
@@ -25,16 +32,25 @@ export const updateArtistManagerBillingData = async (profileId: number, data: Ar
     const validation = artistManagerS2FormSchema.safeParse(data);
 
     if (!validation.success) {
-      console.error('[updateArtistManagerBillingData] - Error: validation failed', validation.error.issues[0]);
+      console.error(
+        '[updateArtistManagerBillingData] - Error: validation failed',
+        validation.error.issues[0],
+      );
       throw new AppError('I dati inviati non sono corretti.');
     }
 
     const { billingCountry, billingSubdivisionId } = validation.data;
 
     const [billingCountryCheck, billingSubdivisionCheck] = await Promise.all([
-      database.select({ id: countries.id }).from(countries).where(eq(countries.id, billingCountry.id)),
+      database
+        .select({ id: countries.id })
+        .from(countries)
+        .where(eq(countries.id, billingCountry.id)),
 
-      database.select({ id: subdivisions.id, countryId: subdivisions.countryId }).from(subdivisions).where(eq(subdivisions.id, billingSubdivisionId)),
+      database
+        .select({ id: subdivisions.id, countryId: subdivisions.countryId })
+        .from(subdivisions)
+        .where(eq(subdivisions.id, billingSubdivisionId)),
     ]);
 
     if (billingCountryCheck.length !== 1) {
@@ -46,10 +62,12 @@ export const updateArtistManagerBillingData = async (profileId: number, data: Ar
     }
 
     if (billingSubdivisionCheck[0].countryId != billingCountry.id) {
-      throw new AppError('La provincia fatturazione non appartiene allo stato fatturazione selezionato.');
+      throw new AppError(
+        'La provincia fatturazione non appartiene allo stato fatturazione selezionato.',
+      );
     }
 
-    await database
+    const updateResult = await database
       .update(profiles)
       .set({
         company: data.company,
@@ -70,7 +88,13 @@ export const updateArtistManagerBillingData = async (profileId: number, data: Ar
         taxableInvoice: data.taxableInvoice === 'true',
         updatedAt: new Date(),
       })
-      .where(eq(profiles.id, profileId));
+      .where(eq(profiles.id, profileId))
+      .returning({ userId: profiles.userId });
+
+    const uid = updateResult[0]?.userId;
+    if (uid) revalidateTag(`artist-manager:${uid}`);
+    revalidateTag('artist-managers');
+    revalidateTag('paginated-artist-managers');
 
     return {
       success: true,

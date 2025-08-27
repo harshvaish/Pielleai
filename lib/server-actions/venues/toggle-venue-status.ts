@@ -7,10 +7,14 @@ import { userStatus, venues } from '@/lib/database/schema';
 import { ServerActionResponse, UserStatus } from '@/lib/types';
 import { idValidation } from '@/lib/validation/_general';
 import { eq } from 'drizzle-orm';
+import { revalidateTag } from 'next/cache';
 import { headers } from 'next/headers';
 import { z } from 'zod/v4';
 
-export async function toggleVenueStatus(venueId: number, initialStatus: UserStatus): Promise<ServerActionResponse<null>> {
+export async function toggleVenueStatus(
+  venueId: number,
+  initialStatus: UserStatus,
+): Promise<ServerActionResponse<null>> {
   try {
     const headersList = await headers();
 
@@ -35,13 +39,19 @@ export async function toggleVenueStatus(venueId: number, initialStatus: UserStat
 
     const newStatus: UserStatus = initialStatus === 'active' ? 'disabled' : 'active';
 
-    await database
+    const updateResult = await database
       .update(venues)
       .set({
         status: newStatus,
         updatedAt: new Date(),
       })
-      .where(eq(venues.id, venueId));
+      .where(eq(venues.id, venueId))
+      .returning({ slug: venues.slug });
+
+    const slug = updateResult[0]?.slug;
+    if (slug) revalidateTag(`venue:${slug}`);
+    revalidateTag('venues');
+    revalidateTag('paginated-venues');
 
     return {
       success: true,

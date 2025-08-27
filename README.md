@@ -23,3 +23,7 @@ Convert received UTC values back to the business timezone for display.
 - rls on database
 - create subfolders for upload based on entity
 - static params on dynamic param routes?
+- validate filters before passing down
+
+- send email when pre-confirm or confirm
+- check everithing

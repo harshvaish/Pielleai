@@ -1,7 +1,7 @@
 import { auth } from '@/lib/auth';
 import { getArtistDateAvailabilities } from '@/lib/data/artists/get-artist-date-availabilities';
 import { ApiResponse, ArtistAvailability } from '@/lib/types';
-import { idValidation } from '@/lib/validation/_general';
+import { idValidation, stringDateValidation } from '@/lib/validation/_general';
 import { headers } from 'next/headers';
 import { type NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod/v4';
@@ -47,10 +47,7 @@ export async function GET(
     const schema = z.object({
       artistId: idValidation.nullable(),
       artistSlug: z.uuid().nullable(),
-      startDate: z
-        .string()
-        .transform((val) => new Date(val))
-        .refine((date) => !isNaN(date.getTime())),
+      startDate: stringDateValidation,
     });
 
     const validation = schema.safeParse({

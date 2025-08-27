@@ -3,13 +3,26 @@
 import { auth } from '@/lib/auth';
 import { headers } from 'next/headers';
 import { ServerActionResponse } from '@/lib/types';
-import { ArtistManagerS1FormSchema, artistManagerS1FormSchema } from '@/lib/validation/artistManagerFormSchema';
+import {
+  ArtistManagerS1FormSchema,
+  artistManagerS1FormSchema,
+} from '@/lib/validation/artistManagerFormSchema';
 import { database } from '@/lib/database/connection';
 import { eq, inArray } from 'drizzle-orm';
-import { profileLanguages, profiles, countries, languages as languagesTable, subdivisions } from '@/lib/database/schema';
+import {
+  profileLanguages,
+  profiles,
+  countries,
+  languages as languagesTable,
+  subdivisions,
+} from '@/lib/database/schema';
 import { AppError } from '@/lib/classes/AppError';
+import { revalidateTag } from 'next/cache';
 
-export const updateArtistManagerPersonalData = async (profileId: number, data: ArtistManagerS1FormSchema): Promise<ServerActionResponse<null>> => {
+export const updateArtistManagerPersonalData = async (
+  profileId: number,
+  data: ArtistManagerS1FormSchema,
+): Promise<ServerActionResponse<null>> => {
   try {
     const headersList = await headers();
 
@@ -25,18 +38,27 @@ export const updateArtistManagerPersonalData = async (profileId: number, data: A
     const validation = artistManagerS1FormSchema.safeParse(data);
 
     if (!validation.success) {
-      console.error('[updateArtistManagerPersonalData] - Error: validation failed', validation.error.issues[0]);
+      console.error(
+        '[updateArtistManagerPersonalData] - Error: validation failed',
+        validation.error.issues[0],
+      );
       throw new AppError('I dati inviati non sono corretti.');
     }
 
     const { languages, countryId, subdivisionId } = validation.data;
 
     const [languagesCheck, countryCheck, subdivisionCheck] = await Promise.all([
-      database.select({ id: languagesTable.id }).from(languagesTable).where(inArray(languagesTable.id, languages)),
+      database
+        .select({ id: languagesTable.id })
+        .from(languagesTable)
+        .where(inArray(languagesTable.id, languages)),
 
       database.select({ id: countries.id }).from(countries).where(eq(countries.id, countryId)),
 
-      database.select({ id: subdivisions.id, countryId: subdivisions.countryId }).from(subdivisions).where(eq(subdivisions.id, subdivisionId)),
+      database
+        .select({ id: subdivisions.id, countryId: subdivisions.countryId })
+        .from(subdivisions)
+        .where(eq(subdivisions.id, subdivisionId)),
     ]);
 
     if (languagesCheck.length !== languages.length) {
@@ -56,7 +78,7 @@ export const updateArtistManagerPersonalData = async (profileId: number, data: A
     }
 
     await database.transaction(async (tx) => {
-      await tx
+      const updateResult = await tx
         .update(profiles)
         .set({
           avatarUrl: data.avatarUrl,
@@ -73,7 +95,13 @@ export const updateArtistManagerPersonalData = async (profileId: number, data: A
           zipCode: data.zipCode,
           updatedAt: new Date(),
         })
-        .where(eq(profiles.id, profileId));
+        .where(eq(profiles.id, profileId))
+        .returning({ userId: profiles.userId });
+
+      const uid = updateResult[0]?.userId;
+      if (uid) revalidateTag(`artist-manager:${uid}`);
+      revalidateTag('artist-managers');
+      revalidateTag('paginated-artist-managers');
 
       // First delete existing languages
       await tx.delete(profileLanguages).where(eq(profileLanguages.profileId, profileId));

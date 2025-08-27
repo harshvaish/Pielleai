@@ -36,8 +36,8 @@ export default function UpdateEventForm({
       artistManagerProfileId: event.artistManager?.profileId || undefined,
       availability: {
         id: event.availability.id,
-        startDate: event.availability.startDate,
-        endDate: event.availability.endDate,
+        startDate: event.availability.startDate.toISOString(),
+        endDate: event.availability.endDate.toISOString(),
       },
       venueId: event.venue.id,
 

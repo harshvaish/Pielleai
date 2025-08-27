@@ -5,11 +5,24 @@ import { headers } from 'next/headers';
 import { ServerActionResponse } from '@/lib/types';
 import { database } from '@/lib/database/connection';
 import { eq, inArray } from 'drizzle-orm';
-import { profileLanguages, profiles, countries, languages as languagesTable, subdivisions } from '@/lib/database/schema';
-import { venueManagerS1FormSchema, VenueManagerS1FormSchema } from '@/lib/validation/venueManagerFormSchema';
+import {
+  profileLanguages,
+  profiles,
+  countries,
+  languages as languagesTable,
+  subdivisions,
+} from '@/lib/database/schema';
+import {
+  venueManagerS1FormSchema,
+  VenueManagerS1FormSchema,
+} from '@/lib/validation/venueManagerFormSchema';
 import { AppError } from '@/lib/classes/AppError';
+import { revalidateTag } from 'next/cache';
 
-export const updateVenueManagerPersonalData = async (profileId: number, data: VenueManagerS1FormSchema): Promise<ServerActionResponse<null>> => {
+export const updateVenueManagerPersonalData = async (
+  profileId: number,
+  data: VenueManagerS1FormSchema,
+): Promise<ServerActionResponse<null>> => {
   try {
     const headersList = await headers();
 
@@ -25,18 +38,27 @@ export const updateVenueManagerPersonalData = async (profileId: number, data: Ve
     const validation = venueManagerS1FormSchema.safeParse(data);
 
     if (!validation.success) {
-      console.error('[updateVenueManagerPersonalData] - Error: validation failed', validation.error.issues[0]);
+      console.error(
+        '[updateVenueManagerPersonalData] - Error: validation failed',
+        validation.error.issues[0],
+      );
       throw new AppError('I dati inviati non sono corretti.');
     }
 
     const { languages, countryId, subdivisionId } = validation.data;
 
     const [languagesCheck, countryCheck, subdivisionCheck] = await Promise.all([
-      database.select({ id: languagesTable.id }).from(languagesTable).where(inArray(languagesTable.id, languages)),
+      database
+        .select({ id: languagesTable.id })
+        .from(languagesTable)
+        .where(inArray(languagesTable.id, languages)),
 
       database.select({ id: countries.id }).from(countries).where(eq(countries.id, countryId)),
 
-      database.select({ id: subdivisions.id, countryId: subdivisions.countryId }).from(subdivisions).where(eq(subdivisions.id, subdivisionId)),
+      database
+        .select({ id: subdivisions.id, countryId: subdivisions.countryId })
+        .from(subdivisions)
+        .where(eq(subdivisions.id, subdivisionId)),
     ]);
 
     if (languagesCheck.length !== languages.length) {
@@ -56,7 +78,7 @@ export const updateVenueManagerPersonalData = async (profileId: number, data: Ve
     }
 
     await database.transaction(async (tx) => {
-      await tx
+      const updateResult = await tx
         .update(profiles)
         .set({
           avatarUrl: data.avatarUrl,
@@ -73,7 +95,13 @@ export const updateVenueManagerPersonalData = async (profileId: number, data: Ve
           zipCode: data.zipCode,
           updatedAt: new Date(),
         })
-        .where(eq(profiles.id, profileId));
+        .where(eq(profiles.id, profileId))
+        .returning({ userId: profiles.userId });
+
+      const uid = updateResult[0]?.userId;
+      if (uid) revalidateTag(`venue-manager:${uid}`);
+      revalidateTag('venue-managers');
+      revalidateTag('paginated-venue-managers');
 
       // First delete existing languages
       await tx.delete(profileLanguages).where(eq(profileLanguages.profileId, profileId));

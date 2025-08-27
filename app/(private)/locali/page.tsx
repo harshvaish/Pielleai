@@ -19,6 +19,8 @@ import { splitCsv } from '@/lib/utils';
 import { getCountriesCached } from '@/lib/cache/countries';
 import { getVenueManagersCached } from '@/lib/cache/venue-managers';
 import { getPaginatedVenuesCached } from '@/lib/cache/venues';
+import { notFound } from 'next/navigation';
+import { venuesTableFiltersSchema } from '@/lib/validation/filters/venues-table-filters-schema';
 
 type VenuesPageProps = {
   searchParams?: Promise<{
@@ -43,14 +45,20 @@ export default async function VenuesPage({ searchParams }: VenuesPageProps) {
 
   const filters: VenuesTableFilters = {
     currentPage: currentPage,
-    name: sp?.name || '',
-    company: sp?.company || '',
-    taxCode: sp?.taxCode || '',
-    address: sp?.address || '',
+    name: sp?.name || null,
+    company: sp?.company || null,
+    taxCode: sp?.taxCode || null,
+    address: sp?.address || null,
     types: splitCsv(sp?.type) as VenueType[],
     managerIds: splitCsv(sp?.manager),
-    capacity: sp?.capacity || '',
+    capacity: sp?.capacity || null,
   };
+
+  const validation = venuesTableFiltersSchema.safeParse(filters);
+
+  if (!validation.success) {
+    notFound();
+  }
 
   const [{ data: venues, totalPages }, countries, venueManagers] = await Promise.all([
     getPaginatedVenuesCached(filters),

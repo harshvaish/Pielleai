@@ -5,11 +5,23 @@ import { headers } from 'next/headers';
 import { ServerActionResponse } from '@/lib/types';
 import { database } from '@/lib/database/connection';
 import { and, count, eq, gt, ne } from 'drizzle-orm';
-import { profiles, users, artists, artistAvailabilities, venues, events, eventNotes } from '@/lib/database/schema';
+import {
+  profiles,
+  users,
+  artists,
+  artistAvailabilities,
+  venues,
+  events,
+  eventNotes,
+} from '@/lib/database/schema';
 import { eventFormSchema, EventFormSchema } from '@/lib/validation/eventFormSchema';
 import { AppError } from '@/lib/classes/AppError';
+import { revalidateTag } from 'next/cache';
 
-export const updateEvent = async (eventId: number, data: EventFormSchema): Promise<ServerActionResponse<null>> => {
+export const updateEvent = async (
+  eventId: number,
+  data: EventFormSchema,
+): Promise<ServerActionResponse<null>> => {
   try {
     const session = await auth.api.getSession({ headers: await headers() });
     if (!session?.user || session.user.role !== 'admin') {
@@ -19,7 +31,14 @@ export const updateEvent = async (eventId: number, data: EventFormSchema): Promi
     const validation = eventFormSchema.safeParse(data);
     if (!validation.success) throw new AppError('I dati inviati non sono corretti.');
 
-    const { artistId, artistManagerProfileId, venueId, availability, status: desiredStatus, tecnicalRiderDocument } = validation.data;
+    const {
+      artistId,
+      artistManagerProfileId,
+      venueId,
+      availability,
+      status: desiredStatus,
+      tecnicalRiderDocument,
+    } = validation.data;
 
     // 1) Load current event (to know current availability/status)
     const [currentEvent] = await database
@@ -57,16 +76,25 @@ export const updateEvent = async (eventId: number, data: EventFormSchema): Promi
     const now = new Date();
 
     if (!targetAvailabilityId) {
-      if (endDate <= startDate) throw new AppError("L'orario di fine deve essere successivo all'orario di inizio.");
-      if (startDate <= now) throw new AppError('Nuova disponibilità inserita già iniziata e quindi scaduta.');
+      if (endDate <= startDate)
+        throw new AppError("L'orario di fine deve essere successivo all'orario di inizio.");
+      if (startDate <= now)
+        throw new AppError('Nuova disponibilità inserita già iniziata e quindi scaduta.');
     } else {
       // Reuse existing availability: must belong to artist and not be expired
       const [availabilityCheck] = await database
         .select({ count: count() })
         .from(artistAvailabilities)
-        .where(and(eq(artistAvailabilities.id, targetAvailabilityId), eq(artistAvailabilities.artistId, artistId), gt(artistAvailabilities.endDate, now)))
+        .where(
+          and(
+            eq(artistAvailabilities.id, targetAvailabilityId),
+            eq(artistAvailabilities.artistId, artistId),
+            gt(artistAvailabilities.endDate, now),
+          ),
+        )
         .limit(1);
-      if (availabilityCheck.count === 0) throw new AppError('Disponibilità selezionata non trovata o scaduta.');
+      if (availabilityCheck.count === 0)
+        throw new AppError('Disponibilità selezionata non trovata o scaduta.');
     }
 
     // 4) Tech rider integrity
@@ -111,7 +139,13 @@ export const updateEvent = async (eventId: number, data: EventFormSchema): Promi
         const [already] = await tx
           .select({ count: count() })
           .from(events)
-          .where(and(eq(events.availabilityId, targetAvailabilityId!), eq(events.status, 'confirmed'), ne(events.id, eventId)))
+          .where(
+            and(
+              eq(events.availabilityId, targetAvailabilityId!),
+              eq(events.status, 'confirmed'),
+              ne(events.id, eventId),
+            ),
+          )
           .limit(1);
         if (already.count > 0) {
           throw new AppError('Un altro evento è già confermato per questa disponibilità.');
@@ -119,7 +153,10 @@ export const updateEvent = async (eventId: number, data: EventFormSchema): Promi
       }
 
       // prevent activating a non-confirmed event on a booked availability
-      if (['proposed', 'pre-confirmed'].includes(desiredStatus) && targetAvail.status === 'booked') {
+      if (
+        ['proposed', 'pre-confirmed'].includes(desiredStatus) &&
+        targetAvail.status === 'booked'
+      ) {
         throw new AppError('Questa disponibilità è già prenotata da un evento confermato.');
       }
 
@@ -192,6 +229,8 @@ export const updateEvent = async (eventId: number, data: EventFormSchema): Promi
         await tx.insert(eventNotes).values(notes);
       }
     });
+
+    revalidateTag('paginated-events');
 
     return { success: true, message: null, data: null };
   } catch (error) {

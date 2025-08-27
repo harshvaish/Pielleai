@@ -21,6 +21,8 @@ import { getLanguagesCached } from '@/lib/cache/languages';
 import { getCountriesCached } from '@/lib/cache/countries';
 import { getArtistManagersCached } from '@/lib/cache/artist-managers';
 import { getZonesCached } from '@/lib/cache/zones';
+import { artistsTableFiltersSchema } from '@/lib/validation/filters/artists-table-filters-schema';
+import { notFound } from 'next/navigation';
 
 type ArtistsPageProps = {
   searchParams?: Promise<{
@@ -43,12 +45,18 @@ export default async function ArtistsPage({ searchParams }: ArtistsPageProps) {
 
   const filters: ArtistsTableFilters = {
     currentPage: currentPage,
-    fullName: sp?.fullName || '',
-    email: sp?.email || '',
-    phone: sp?.phone || '',
+    fullName: sp?.fullName || null,
+    email: sp?.email || null,
+    phone: sp?.phone || null,
     managerIds: splitCsv(sp?.manager),
     zoneIds: splitCsv(sp?.zone),
   };
+
+  const validation = artistsTableFiltersSchema.safeParse(filters);
+
+  if (!validation.success) {
+    notFound();
+  }
 
   const [{ data: artists, totalPages }, languages, countries, artistManagers, zones] =
     await Promise.all([

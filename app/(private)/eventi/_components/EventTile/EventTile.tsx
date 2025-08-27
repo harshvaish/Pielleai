@@ -31,6 +31,19 @@ export default function EventTile({ event, artists, venues, moCoordinators }: Ev
   const eventStartTime = format(event.availability.startDate, 'HH:mm', { locale: it });
   const eventEndTime = format(event.availability.endDate, 'HH:mm', { locale: it });
 
+  const activityCount = Object.values({
+    contractSigning: event.contractSigning,
+    depositInvoiceIssuing: event.depositInvoiceIssuing,
+    depositReceiptVerification: event.depositReceiptVerification,
+    techSheetSubmission: event.techSheetSubmission,
+    artistEngagement: event.artistEngagement,
+    professionalsEngagement: event.professionalsEngagement,
+    accompanyingPersonsEngagement: event.accompanyingPersonsEngagement,
+    performance: event.performance,
+    postDateFeedback: event.postDateFeedback,
+    bordereau: event.bordereau,
+  }).filter(Boolean).length;
+
   if (isDesktop)
     return (
       <div
@@ -49,8 +62,16 @@ export default function EventTile({ event, artists, venues, moCoordinators }: Ev
 
           {/* general info */}
           <div className='space-y-4'>
-            <div>
+            <div className='flex justify-start items-center gap-4'>
               <ArtistsBadge artists={[event.artist]} />
+              <div className='flex items-center gap-2'>
+                <div className='w-3 h-3 flex justify-center items-center bg-zinc-400 rounded-xs'>
+                  <Check className='size-2 text-white' />
+                </div>
+                <span className='text-xs text-zinc-400 font-normal'>
+                  Attività completate: {activityCount}/10
+                </span>
+              </div>
             </div>
             <div className='grid grid-cols-2 gap-4'>
               <div className='flex items-center gap-4'>
@@ -119,7 +140,9 @@ export default function EventTile({ event, artists, venues, moCoordinators }: Ev
                     />
                     <span className='text-xs text-zinc-600'>Amministrazione</span>
                   </div>
-                  <span className='text-xs text-zinc-500 font-semibold'>{event.administrationEmail}</span>
+                  <span className='text-xs text-zinc-500 font-semibold'>
+                    {event.administrationEmail}
+                  </span>
                 </div>
               )}
             </div>
@@ -155,7 +178,7 @@ export default function EventTile({ event, artists, venues, moCoordinators }: Ev
               className={cn(
                 "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-2xl text-sm font-semibold transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
                 'bg-zinc-200 text-secondary-foreground hover:bg-zinc-200/80', // secondary variant
-                'h-10 min-w-20 rounded-xl gap-1.5 px-3 has-[>svg]:px-2.5' // sm size
+                'h-10 min-w-20 rounded-xl gap-1.5 px-3 has-[>svg]:px-2.5', // sm size
               )}
             >
               Modifica <ChevronDown />
@@ -206,7 +229,15 @@ export default function EventTile({ event, artists, venues, moCoordinators }: Ev
       </div>
 
       <div className='flex flex-col sm:flex-row justify-between sm:items-end gap-4'>
-        <ArtistsBadge artists={[event.artist]} />
+        <div className='flex justify-between items-center gap-4'>
+          <ArtistsBadge artists={[event.artist]} />
+          <div className='flex items-center gap-2'>
+            <div className='w-3 h-3 flex justify-center items-center bg-zinc-400 rounded-xs'>
+              <Check className='size-2 text-white' />
+            </div>
+            <span className='text-xs text-zinc-400 font-normal'>{activityCount}/10</span>
+          </div>
+        </div>
 
         <div className='flex items-center gap-4'>
           <div className='flex items-center gap-1 text-sm text-zinc-700'>

@@ -1,6 +1,7 @@
 import { auth } from '@/lib/auth';
 import { getArtistRangeAvailabilities } from '@/lib/data/artists/get-artist-range-availabilities';
 import { ApiResponse, ArtistAvailability } from '@/lib/types';
+import { stringDateValidation } from '@/lib/validation/_general';
 import { headers } from 'next/headers';
 import { type NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod/v4';
@@ -43,14 +44,8 @@ export async function GET(
 
     const schema = z.object({
       artistSlug: z.uuid(),
-      startDate: z
-        .string()
-        .transform((val) => new Date(val))
-        .refine((date) => !isNaN(date.getTime())),
-      endDate: z
-        .string()
-        .transform((val) => new Date(val))
-        .refine((date) => !isNaN(date.getTime())),
+      startDate: stringDateValidation,
+      endDate: stringDateValidation,
     });
 
     const validation = schema.safeParse({ artistSlug, startDate, endDate });

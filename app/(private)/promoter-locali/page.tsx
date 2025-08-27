@@ -19,6 +19,8 @@ import { getPaginatedVenueManagersCached } from '@/lib/cache/venue-managers';
 import { getLanguagesCached } from '@/lib/cache/languages';
 import { getCountriesCached } from '@/lib/cache/countries';
 import { getVenuesCached } from '@/lib/cache/venues';
+import { notFound } from 'next/navigation';
+import { venueManagersTableFiltersSchema } from '@/lib/validation/filters/venue-managers-table-filters-schema';
 
 type VenueManagersPageProps = {
   searchParams?: Promise<{
@@ -40,11 +42,17 @@ export default async function VenueManagersPage({ searchParams }: VenueManagersP
 
   const filters: VenueManagersTableFilters = {
     currentPage: currentPage,
-    fullName: sp?.fullName || '',
-    email: sp?.email || '',
-    phone: sp?.phone || '',
+    fullName: sp?.fullName || null,
+    email: sp?.email || null,
+    phone: sp?.phone || null,
     venueIds: splitCsv(sp?.venue),
   };
+
+  const validation = venueManagersTableFiltersSchema.safeParse(filters);
+
+  if (!validation.success) {
+    notFound();
+  }
 
   const [{ data: managers, totalPages }, languages, countries, venues] = await Promise.all([
     getPaginatedVenueManagersCached(filters),

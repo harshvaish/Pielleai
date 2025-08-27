@@ -6,10 +6,14 @@ import { database } from '@/lib/database/connection';
 import { users, userStatus } from '@/lib/database/schema';
 import { ServerActionResponse, UserStatus } from '@/lib/types';
 import { eq } from 'drizzle-orm';
+import { revalidateTag } from 'next/cache';
 import { headers } from 'next/headers';
 import { z } from 'zod/v4';
 
-export async function updateUserStatus(userId: string, newStatus: UserStatus): Promise<ServerActionResponse<null>> {
+export async function updateUserStatus(
+  userId: string,
+  newStatus: UserStatus,
+): Promise<ServerActionResponse<null>> {
   try {
     const headersList = await headers();
 
@@ -32,13 +36,31 @@ export async function updateUserStatus(userId: string, newStatus: UserStatus): P
       throw new AppError('Dati inviati non corretti.');
     }
 
-    await database
+    const updateResult = await database
       .update(users)
       .set({
         status: newStatus,
         updatedAt: new Date(),
       })
-      .where(eq(users.id, userId));
+      .where(eq(users.id, userId))
+      .returning({ id: users.id, role: users.role });
+
+    const uid = updateResult[0]?.id;
+    const role = updateResult[0]?.role;
+
+    if (uid) {
+      if (role === 'artist-manager') {
+        revalidateTag(`artist-manager:${uid}`);
+        revalidateTag('artist-managers');
+        revalidateTag('paginated-artist-managers');
+      }
+
+      if (role === 'venue-manager') {
+        revalidateTag(`venue-manager:${uid}`);
+        revalidateTag('venue-managers');
+        revalidateTag('paginated-venue-managers');
+      }
+    }
 
     return {
       success: true,
