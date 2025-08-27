@@ -2,7 +2,13 @@
 
 import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { ArtistManagerFormSchema, artistManagerS1FormSchema, artistManagerS2FormSchema, artistManagerS3FormSchema, artistManagerFormSchema } from '@/lib/validation/artistManagerFormSchema';
+import {
+  ArtistManagerFormSchema,
+  artistManagerS1FormSchema,
+  artistManagerS2FormSchema,
+  artistManagerS3FormSchema,
+  artistManagerFormSchema,
+} from '@/lib/validation/artistManagerFormSchema';
 import { useState } from 'react';
 import StepOne from '../form/StepOne';
 import StepTwo from '../form/StepTwo';
@@ -28,9 +34,17 @@ function getFormFieldsForStep(step: number): Array<keyof ArtistManagerFormSchema
   return [];
 }
 
-export default function CreateArtistManagerForm({ languages, countries, closeDialog }: { languages: Language[]; countries: Country[]; closeDialog: () => void }) {
+export default function CreateArtistManagerForm({
+  languages,
+  countries,
+  closeDialog,
+}: {
+  languages: Language[];
+  countries: Country[];
+  closeDialog: () => void;
+}) {
   const [step, setStep] = useState<number>(1);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+
   const methods = useForm({
     resolver: zodResolver(artistManagerFormSchema),
     defaultValues: {
@@ -70,6 +84,7 @@ export default function CreateArtistManagerForm({ languages, countries, closeDia
       signUpPassword: '',
     },
   });
+
   const router = useRouter();
 
   const onNext = async () => {
@@ -84,7 +99,6 @@ export default function CreateArtistManagerForm({ languages, countries, closeDia
   const onPrev = () => setStep((prev) => prev - 1);
 
   const onSubmit = async (data: ArtistManagerFormSchema) => {
-    setIsLoading(true);
     const response = await createArtistManager(data);
 
     if (response.success) {
@@ -94,8 +108,6 @@ export default function CreateArtistManagerForm({ languages, countries, closeDia
     } else {
       toast.error(response.message);
     }
-
-    setIsLoading(false);
   };
 
   return (
@@ -170,10 +182,10 @@ export default function CreateArtistManagerForm({ languages, countries, closeDia
               ) : (
                 <Button
                   type='submit'
-                  disabled={isLoading}
+                  disabled={methods.formState.isSubmitting}
                   className='w-full md:w-auto'
                 >
-                  {isLoading ? 'Creazione utente...' : 'Crea utente'}
+                  {methods.formState.isSubmitting ? 'Creazione utente...' : 'Crea utente'}
                 </Button>
               )}
             </div>

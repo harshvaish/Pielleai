@@ -8,7 +8,6 @@ import { ArtistSelectData, MoCoordinator, VenueSelectData } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
 import { EventFormSchema, eventFormSchema } from '@/lib/validation/eventFormSchema';
-import { useState } from 'react';
 import { createEvent } from '@/lib/server-actions/events/create-event';
 import EventForm from '../form/EventForm';
 
@@ -19,9 +18,13 @@ type CreateEventFormProps = {
   closeDialog: () => void;
 };
 
-export default function CreateEventForm({ artists, venues, moCoordinators, closeDialog }: CreateEventFormProps) {
+export default function CreateEventForm({
+  artists,
+  venues,
+  moCoordinators,
+  closeDialog,
+}: CreateEventFormProps) {
   const router = useRouter();
-  const [loading, setLoading] = useState<boolean>(false);
 
   const methods = useForm({
     resolver: zodResolver(eventFormSchema),
@@ -75,10 +78,12 @@ export default function CreateEventForm({ artists, venues, moCoordinators, close
     },
   });
 
-  const { handleSubmit } = methods;
+  const {
+    handleSubmit,
+    formState: { isSubmitting },
+  } = methods;
 
   const onSubmit = async (data: EventFormSchema) => {
-    setLoading(true);
     const response = await createEvent(data);
 
     if (response.success) {
@@ -88,8 +93,6 @@ export default function CreateEventForm({ artists, venues, moCoordinators, close
     } else {
       toast.error(response.message);
     }
-
-    setLoading(false);
   };
 
   return (
@@ -114,15 +117,15 @@ export default function CreateEventForm({ artists, venues, moCoordinators, close
               onClick={closeDialog}
               variant='ghost'
               className='text-destructive'
-              disabled={loading}
+              disabled={isSubmitting}
             >
               <X /> Annulla
             </Button>
             <Button
               type='submit'
-              disabled={loading}
+              disabled={isSubmitting}
             >
-              {loading ? 'Creazione evento...' : 'Crea evento'}
+              {isSubmitting ? 'Creazione evento...' : 'Crea evento'}
             </Button>
           </div>
         </form>

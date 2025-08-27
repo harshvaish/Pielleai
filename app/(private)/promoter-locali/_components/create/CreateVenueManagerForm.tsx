@@ -2,7 +2,12 @@
 
 import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { venueManagerFormSchema, VenueManagerFormSchema, venueManagerS1FormSchema, venueManagerS2FormSchema } from '@/lib/validation/venueManagerFormSchema';
+import {
+  venueManagerFormSchema,
+  VenueManagerFormSchema,
+  venueManagerS1FormSchema,
+  venueManagerS2FormSchema,
+} from '@/lib/validation/venueManagerFormSchema';
 import { useState } from 'react';
 import StepOne from '../form/StepOne';
 import { toast } from 'sonner';
@@ -24,11 +29,18 @@ function getFormFieldsForStep(step: number): Array<keyof VenueManagerFormSchema>
   return [];
 }
 
-type CreateVenueManagerFormProps = { languages: Language[]; countries: Country[]; closeDialog: () => void };
+type CreateVenueManagerFormProps = {
+  languages: Language[];
+  countries: Country[];
+  closeDialog: () => void;
+};
 
-export default function CreateVenueManagerForm({ languages, countries, closeDialog }: CreateVenueManagerFormProps) {
+export default function CreateVenueManagerForm({
+  languages,
+  countries,
+  closeDialog,
+}: CreateVenueManagerFormProps) {
   const [step, setStep] = useState<number>(1);
-  const [loading, setLoading] = useState<boolean>(false);
   const methods = useForm({
     resolver: zodResolver(venueManagerFormSchema),
     defaultValues: {
@@ -65,7 +77,6 @@ export default function CreateVenueManagerForm({ languages, countries, closeDial
   const onPrev = () => setStep((prev) => prev - 1);
 
   const onSubmit = async (data: VenueManagerFormSchema) => {
-    setLoading(true);
     const response = await createVenueManager(data);
 
     if (response.success) {
@@ -75,8 +86,6 @@ export default function CreateVenueManagerForm({ languages, countries, closeDial
     } else {
       toast.error(response.message);
     }
-
-    setLoading(false);
   };
 
   return (
@@ -142,10 +151,10 @@ export default function CreateVenueManagerForm({ languages, countries, closeDial
               ) : (
                 <Button
                   type='submit'
-                  disabled={loading}
+                  disabled={methods.formState.isSubmitting}
                   className='w-full md:w-auto'
                 >
-                  {loading ? 'Creazione utente...' : 'Crea utente'}
+                  {methods.formState.isSubmitting ? 'Creazione utente...' : 'Crea utente'}
                 </Button>
               )}
             </div>

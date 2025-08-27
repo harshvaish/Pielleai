@@ -1,18 +1,27 @@
 import { FormProvider, useForm } from 'react-hook-form';
 import { ArtistManagerData, Country } from '@/lib/types';
 import { toast } from 'sonner';
-import { ArtistManagerS2FormSchema, artistManagerS2FormSchema } from '@/lib/validation/artistManagerFormSchema';
+import {
+  ArtistManagerS2FormSchema,
+  artistManagerS2FormSchema,
+} from '@/lib/validation/artistManagerFormSchema';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
 import { updateArtistManagerBillingData } from '@/lib/server-actions/artist-managers/update-artist-manager-billing-data';
 import { X } from 'lucide-react';
 import StepTwo from '@/app/(private)/manager-artisti/_components/form/StepTwo';
 
-export default function BillingDataForm({ userData, countries, closeDialog }: { userData: ArtistManagerData; countries: Country[]; closeDialog: () => void }) {
-  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
-
+export default function BillingDataForm({
+  userData,
+  countries,
+  closeDialog,
+}: {
+  userData: ArtistManagerData;
+  countries: Country[];
+  closeDialog: () => void;
+}) {
   const defaultValues = useMemo(
     () => ({
       company: userData.company || '',
@@ -32,7 +41,7 @@ export default function BillingDataForm({ userData, countries, closeDialog }: { 
       billingPec: userData.billingPec || '',
       taxableInvoice: userData.taxableInvoice.toString() || 'false',
     }),
-    [userData]
+    [userData],
   );
 
   const methods = useForm({
@@ -42,7 +51,7 @@ export default function BillingDataForm({ userData, countries, closeDialog }: { 
   const router = useRouter();
 
   const {
-    formState: { isDirty },
+    formState: { isDirty, isSubmitting },
   } = methods;
 
   const onSubmit = async (data: ArtistManagerS2FormSchema) => {
@@ -50,8 +59,6 @@ export default function BillingDataForm({ userData, countries, closeDialog }: { 
       toast.info('Nessun dato modificato.');
       return;
     }
-
-    setIsSubmitting(true);
 
     const response = await updateArtistManagerBillingData(userData.profileId, data);
 
@@ -62,7 +69,6 @@ export default function BillingDataForm({ userData, countries, closeDialog }: { 
     } else {
       toast.error(response.message);
     }
-    setIsSubmitting(false);
   };
 
   return (

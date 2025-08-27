@@ -5,7 +5,7 @@ import { Country, VenueData, VenueManagerSelectData } from '@/lib/types';
 import { toast } from 'sonner';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { X } from 'lucide-react';
 import { EditVenueS1FormSchema, editVenueS1FormSchema } from '@/lib/validation/venueFormSchema';
@@ -19,9 +19,12 @@ type GeneralDataFormProps = {
   closeDialog: () => void;
 };
 
-export default function GeneralDataForm({ venueData, countries, venueManagers, closeDialog }: GeneralDataFormProps) {
-  const [submitting, setSubmitting] = useState<boolean>(false);
-
+export default function GeneralDataForm({
+  venueData,
+  countries,
+  venueManagers,
+  closeDialog,
+}: GeneralDataFormProps) {
   const defaultValues = useMemo(
     () => ({
       avatarUrl: venueData.avatarUrl || '',
@@ -35,7 +38,7 @@ export default function GeneralDataForm({ venueData, countries, venueManagers, c
       zipCode: venueData.zipCode || '',
       venueManagerId: venueData.manager.profileId || 0,
     }),
-    [venueData]
+    [venueData],
   );
 
   const methods = useForm({
@@ -46,7 +49,7 @@ export default function GeneralDataForm({ venueData, countries, venueManagers, c
   const router = useRouter();
 
   const {
-    formState: { isDirty },
+    formState: { isDirty, isSubmitting },
   } = methods;
 
   const onSubmit = async (data: EditVenueS1FormSchema) => {
@@ -54,7 +57,6 @@ export default function GeneralDataForm({ venueData, countries, venueManagers, c
       toast.info('Nessun dato modificato.');
       return;
     }
-    setSubmitting(true);
 
     const response = await updateVenueGeneralData(venueData.id, data);
 
@@ -66,7 +68,6 @@ export default function GeneralDataForm({ venueData, countries, venueManagers, c
     } else {
       toast.error(response.message);
     }
-    setSubmitting(false);
   };
 
   return (
@@ -86,16 +87,16 @@ export default function GeneralDataForm({ venueData, countries, venueManagers, c
             onClick={closeDialog}
             variant='ghost'
             className='text-destructive'
-            disabled={submitting}
+            disabled={isSubmitting}
           >
             <X className='size-4' /> Annulla
           </Button>
 
           <Button
             type='submit'
-            disabled={submitting}
+            disabled={isSubmitting}
           >
-            {submitting ? 'Salvataggio...' : 'Salva'}
+            {isSubmitting ? 'Salvataggio...' : 'Salva'}
           </Button>
         </div>
       </form>

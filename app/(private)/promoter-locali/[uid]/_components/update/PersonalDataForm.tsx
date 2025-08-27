@@ -5,18 +5,29 @@ import { Country, Language, VenueManagerData } from '@/lib/types';
 import { toast } from 'sonner';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { X } from 'lucide-react';
-import { VenueManagerS1FormSchema, venueManagerS1FormSchema } from '@/lib/validation/venueManagerFormSchema';
+import {
+  VenueManagerS1FormSchema,
+  venueManagerS1FormSchema,
+} from '@/lib/validation/venueManagerFormSchema';
 import { updateVenueManagerPersonalData } from '@/lib/server-actions/venue-managers/update-venue-manager-personal-data';
 import StepOne from '../../../_components/form/StepOne';
 
-type PersonalDataForm = { userData: VenueManagerData; languages: Language[]; countries: Country[]; closeDialog: () => void };
+type PersonalDataForm = {
+  userData: VenueManagerData;
+  languages: Language[];
+  countries: Country[];
+  closeDialog: () => void;
+};
 
-export default function PersonalDataForm({ userData, languages, countries, closeDialog }: PersonalDataForm) {
-  const [submitting, setSubmitting] = useState<boolean>(false);
-
+export default function PersonalDataForm({
+  userData,
+  languages,
+  countries,
+  closeDialog,
+}: PersonalDataForm) {
   const languageIds = userData.languages.map((lang) => lang.id);
 
   const defaultValues = useMemo(
@@ -36,7 +47,7 @@ export default function PersonalDataForm({ userData, languages, countries, close
       zipCode: userData.zipCode || '',
       gender: userData.gender || 'maschile',
     }),
-    [userData]
+    [userData],
   );
 
   const methods = useForm({
@@ -47,7 +58,7 @@ export default function PersonalDataForm({ userData, languages, countries, close
   const router = useRouter();
 
   const {
-    formState: { isDirty },
+    formState: { isDirty, isSubmitting },
   } = methods;
 
   const onSubmit = async (data: VenueManagerS1FormSchema) => {
@@ -55,7 +66,6 @@ export default function PersonalDataForm({ userData, languages, countries, close
       toast.info('Nessun dato modificato.');
       return;
     }
-    setSubmitting(true);
 
     const response = await updateVenueManagerPersonalData(userData.profileId, data);
 
@@ -67,7 +77,6 @@ export default function PersonalDataForm({ userData, languages, countries, close
     } else {
       toast.error(response.message);
     }
-    setSubmitting(false);
   };
 
   return (
@@ -87,16 +96,16 @@ export default function PersonalDataForm({ userData, languages, countries, close
             onClick={closeDialog}
             variant='ghost'
             className='text-destructive'
-            disabled={submitting}
+            disabled={isSubmitting}
           >
             <X className='size-4' /> Annulla
           </Button>
 
           <Button
             type='submit'
-            disabled={submitting}
+            disabled={isSubmitting}
           >
-            {submitting ? 'Salvataggio...' : 'Salva'}
+            {isSubmitting ? 'Salvataggio...' : 'Salva'}
           </Button>
         </div>
       </form>

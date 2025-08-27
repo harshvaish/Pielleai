@@ -4,7 +4,6 @@ import { FormProvider, useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
-import { useState } from 'react';
 import InputPassword from '../InputPassword';
 import { ChangePasswordSchema, changePasswordSchema } from '@/lib/validation/changePasswordSchema';
 import { signIn } from '@/lib/auth-client';
@@ -16,9 +15,11 @@ type ChangePasswordFormProps = {
   closeDialog: () => void;
 };
 
-export default function ChangePasswordForm({ userId, email, closeDialog }: ChangePasswordFormProps) {
-  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
-
+export default function ChangePasswordForm({
+  userId,
+  email,
+  closeDialog,
+}: ChangePasswordFormProps) {
   const methods = useForm({
     resolver: zodResolver(changePasswordSchema),
     defaultValues: {},
@@ -26,15 +27,12 @@ export default function ChangePasswordForm({ userId, email, closeDialog }: Chang
 
   const {
     register,
-    formState: { errors },
+    formState: { errors, isSubmitting },
   } = methods;
 
   const onSubmit = async (data: ChangePasswordSchema) => {
-    setIsSubmitting(true);
-
     if (!email) {
       toast.error('Utente non autenticato');
-      setIsSubmitting(false);
       return;
     }
 
@@ -46,7 +44,6 @@ export default function ChangePasswordForm({ userId, email, closeDialog }: Chang
 
     if (signInResponse.error) {
       toast.error('La vecchia password non è corretta.');
-      setIsSubmitting(false);
       return;
     }
 
@@ -59,8 +56,6 @@ export default function ChangePasswordForm({ userId, email, closeDialog }: Chang
     } else {
       toast.error(updateResponse.message || "Errore durante l'aggiornamento.");
     }
-
-    setIsSubmitting(false);
   };
 
   return (
@@ -75,7 +70,9 @@ export default function ChangePasswordForm({ userId, email, closeDialog }: Chang
             {...register('oldPassword')}
             error={!!errors.oldPassword}
           />
-          {errors.oldPassword && <p className='text-xs text-destructive mt-2'>{errors.oldPassword.message as string}</p>}
+          {errors.oldPassword && (
+            <p className='text-xs text-destructive mt-2'>{errors.oldPassword.message as string}</p>
+          )}
         </div>
 
         <div className='flex flex-col'>
@@ -84,7 +81,9 @@ export default function ChangePasswordForm({ userId, email, closeDialog }: Chang
             {...register('newPassword')}
             error={!!errors.newPassword}
           />
-          {errors.newPassword && <p className='text-xs text-destructive mt-2'>{errors.newPassword.message as string}</p>}
+          {errors.newPassword && (
+            <p className='text-xs text-destructive mt-2'>{errors.newPassword.message as string}</p>
+          )}
         </div>
 
         <div className='flex flex-col'>
@@ -93,7 +92,11 @@ export default function ChangePasswordForm({ userId, email, closeDialog }: Chang
             {...register('newPasswordConfirm')}
             error={!!errors.newPasswordConfirm}
           />
-          {errors.newPasswordConfirm && <p className='text-xs text-destructive mt-2'>{errors.newPasswordConfirm.message as string}</p>}
+          {errors.newPasswordConfirm && (
+            <p className='text-xs text-destructive mt-2'>
+              {errors.newPasswordConfirm.message as string}
+            </p>
+          )}
         </div>
 
         <div className='grid grid-cols-2 md:flex justify-end gap-4 mt-4'>

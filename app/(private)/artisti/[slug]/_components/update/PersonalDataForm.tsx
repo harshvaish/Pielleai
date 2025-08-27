@@ -5,7 +5,7 @@ import { ArtistManagerSelectData, ArtistData, Country, Language, Zone } from '@/
 import { toast } from 'sonner';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { X } from 'lucide-react';
 import { ArtistS1FormSchema, artistS1FormSchema } from '@/lib/validation/artistFormSchema';
@@ -21,9 +21,14 @@ type PersonalDataFormProps = {
   closeDialog: () => void;
 };
 
-export default function PersonalDataForm({ userData, languages, countries, zones, artistManagers, closeDialog }: PersonalDataFormProps) {
-  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
-
+export default function PersonalDataForm({
+  userData,
+  languages,
+  countries,
+  zones,
+  artistManagers,
+  closeDialog,
+}: PersonalDataFormProps) {
   const languageIds = userData.languages.map((lang) => lang.id);
   const zonesIds = userData.zones.map((zone) => zone.id);
   const managersIds = userData.managers.map((manager) => manager.profileId);
@@ -55,7 +60,7 @@ export default function PersonalDataForm({ userData, languages, countries, zones
       tourManagerSurname: userData.tourManagerSurname || '',
       tourManagerPhone: userData.tourManagerPhone || '',
     }),
-    [userData]
+    [userData],
   );
 
   const methods = useForm({
@@ -66,7 +71,7 @@ export default function PersonalDataForm({ userData, languages, countries, zones
   const router = useRouter();
 
   const {
-    formState: { isDirty },
+    formState: { isDirty, isSubmitting },
   } = methods;
 
   const onSubmit = async (data: ArtistS1FormSchema) => {
@@ -74,7 +79,6 @@ export default function PersonalDataForm({ userData, languages, countries, zones
       toast.info('Nessun dato modificato.');
       return;
     }
-    setIsSubmitting(true);
 
     const response = await updateArtistPersonalData(userData.id, data);
 
@@ -86,7 +90,6 @@ export default function PersonalDataForm({ userData, languages, countries, zones
     } else {
       toast.error(response.message);
     }
-    setIsSubmitting(false);
   };
 
   return (

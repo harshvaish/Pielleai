@@ -13,7 +13,7 @@ import {
 import { avatarUploadSchema } from '@/lib/validation/avatarUploadSchema';
 import { Plus, UserRound } from 'lucide-react';
 import Image from 'next/image';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useTransition } from 'react';
 import { toast } from 'sonner';
 
 type AvatarUploadInputProps = {
@@ -31,7 +31,7 @@ export default function AvatarUploadInput({
 }: AvatarUploadInputProps) {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [preview, setPreview] = useState<string | null>(value ?? null);
-  const [uploading, setUploading] = useState<boolean>(false);
+  const [isPending, startTransition] = useTransition();
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -43,26 +43,25 @@ export default function AvatarUploadInput({
       return;
     }
 
-    try {
-      setUploading(true);
-      const magicNumber = await getFileMagicNumber(file);
+    startTransition(async () => {
+      try {
+        const magicNumber = await getFileMagicNumber(file);
 
-      if (!isValidImageMagicNumber(magicNumber)) {
-        toast.error("Il contenuto dell'immagine non è valido.");
-        return;
+        if (!isValidImageMagicNumber(magicNumber)) {
+          toast.error("Il contenuto dell'immagine non è valido.");
+          return;
+        }
+
+        const compressedFile = await compressImage(file);
+        const base64 = await fileToBase64(compressedFile);
+        setPreview(base64);
+
+        await uploadImage(compressedFile);
+      } catch {
+        toast.error('Caricamento immagine non riuscito.');
+        setPreview(null);
       }
-
-      const compressedFile = await compressImage(file);
-      const base64 = await fileToBase64(compressedFile);
-      setPreview(base64);
-
-      await uploadImage(compressedFile);
-    } catch {
-      toast.error('Caricamento immagine non riuscito.');
-      setPreview(null);
-    } finally {
-      setUploading(false);
-    }
+    });
   };
 
   const uploadImage = async (file: File) => {
@@ -132,7 +131,7 @@ export default function AvatarUploadInput({
         accept='image/*'
         onChange={handleFileChange}
         className='hidden absolute -top-full -left-full'
-        disabled={uploading}
+        disabled={isPending}
       />
       <div
         className={cn(
@@ -141,7 +140,7 @@ export default function AvatarUploadInput({
         )}
         onClick={() => fileInputRef.current?.click()}
       >
-        {uploading ? (
+        {isPending ? (
           <SpinnerLoading />
         ) : preview ? (
           <Image

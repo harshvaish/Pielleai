@@ -2,7 +2,13 @@
 
 import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { ArtistFormSchema, artistS1FormSchema, artistS2FormSchema, artistS3FormSchema, artistFormSchema } from '@/lib/validation/artistFormSchema';
+import {
+  ArtistFormSchema,
+  artistS1FormSchema,
+  artistS2FormSchema,
+  artistS3FormSchema,
+  artistFormSchema,
+} from '@/lib/validation/artistFormSchema';
 import { useState } from 'react';
 import StepOne from '../form/StepOne';
 import StepTwo from '../form/StepTwo';
@@ -42,7 +48,7 @@ export default function CreateArtistForm({
   closeDialog: () => void;
 }) {
   const [step, setStep] = useState<number>(1);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+
   const methods = useForm({
     resolver: zodResolver(artistFormSchema),
     defaultValues: {
@@ -113,7 +119,6 @@ export default function CreateArtistForm({
   const onPrev = () => setStep((prev) => prev - 1);
 
   const onSubmit = async (data: ArtistFormSchema) => {
-    setIsLoading(true);
     const response = await createArtist(data);
 
     if (response.success) {
@@ -123,8 +128,6 @@ export default function CreateArtistForm({
     } else {
       toast.error(response.message);
     }
-
-    setIsLoading(false);
   };
 
   return (
@@ -205,10 +208,10 @@ export default function CreateArtistForm({
               ) : (
                 <Button
                   type='submit'
-                  disabled={isLoading}
+                  disabled={methods.formState.isSubmitting}
                   className='w-full md:w-auto'
                 >
-                  {isLoading ? 'Creazione utente...' : 'Crea utente'}
+                  {methods.formState.isSubmitting ? 'Creazione utente...' : 'Crea utente'}
                 </Button>
               )}
             </div>

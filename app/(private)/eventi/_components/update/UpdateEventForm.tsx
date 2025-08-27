@@ -8,7 +8,6 @@ import { ArtistSelectData, Event, MoCoordinator, VenueSelectData } from '@/lib/t
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
 import { EventFormSchema, eventFormSchema } from '@/lib/validation/eventFormSchema';
-import { useState } from 'react';
 import { updateEvent } from '@/lib/server-actions/events/update-event';
 import EventForm from '../form/EventForm';
 
@@ -20,9 +19,14 @@ type UpdateEventFormProps = {
   closeDialog: () => void;
 };
 
-export default function UpdateEventForm({ event, artists, venues, moCoordinators, closeDialog }: UpdateEventFormProps) {
+export default function UpdateEventForm({
+  event,
+  artists,
+  venues,
+  moCoordinators,
+  closeDialog,
+}: UpdateEventFormProps) {
   const router = useRouter();
-  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const methods = useForm({
     resolver: zodResolver(eventFormSchema),
@@ -85,10 +89,12 @@ export default function UpdateEventForm({ event, artists, venues, moCoordinators
     },
   });
 
-  const { handleSubmit } = methods;
+  const {
+    handleSubmit,
+    formState: { isSubmitting },
+  } = methods;
 
   const onSubmit = async (data: EventFormSchema) => {
-    setIsLoading(true);
     const response = await updateEvent(event.id, data);
 
     if (response.success) {
@@ -98,8 +104,6 @@ export default function UpdateEventForm({ event, artists, venues, moCoordinators
     } else {
       toast.error(response.message);
     }
-
-    setIsLoading(false);
   };
 
   return (
@@ -124,15 +128,15 @@ export default function UpdateEventForm({ event, artists, venues, moCoordinators
               onClick={closeDialog}
               variant='ghost'
               className='text-destructive'
-              disabled={isLoading}
+              disabled={isSubmitting}
             >
               <X /> Annulla
             </Button>
             <Button
               type='submit'
-              disabled={isLoading}
+              disabled={isSubmitting}
             >
-              {isLoading ? 'Aggiornamento...' : 'Modifica'}
+              {isSubmitting ? 'Aggiornamento...' : 'Modifica'}
             </Button>
           </div>
         </form>

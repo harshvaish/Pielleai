@@ -2,7 +2,7 @@ import { FormProvider, useForm } from 'react-hook-form';
 import { Country, VenueData } from '@/lib/types';
 import { toast } from 'sonner';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
 import { X } from 'lucide-react';
@@ -12,9 +12,11 @@ import StepTwo from '../../../_components/form/StepTwo';
 
 type BillingDataFormProps = { venueData: VenueData; countries: Country[]; closeDialog: () => void };
 
-export default function BillingDataForm({ venueData, countries, closeDialog }: BillingDataFormProps) {
-  const [submitting, setSubmitting] = useState<boolean>(false);
-
+export default function BillingDataForm({
+  venueData,
+  countries,
+  closeDialog,
+}: BillingDataFormProps) {
   const defaultValues = useMemo(
     () => ({
       company: venueData.company || '',
@@ -34,7 +36,7 @@ export default function BillingDataForm({ venueData, countries, closeDialog }: B
       billingPec: venueData.billingPec || '',
       taxableInvoice: venueData.taxableInvoice.toString() || 'false',
     }),
-    [venueData]
+    [venueData],
   );
 
   const methods = useForm({
@@ -44,7 +46,7 @@ export default function BillingDataForm({ venueData, countries, closeDialog }: B
   const router = useRouter();
 
   const {
-    formState: { isDirty },
+    formState: { isDirty, isSubmitting },
   } = methods;
 
   const onSubmit = async (data: VenueS2FormSchema) => {
@@ -52,8 +54,6 @@ export default function BillingDataForm({ venueData, countries, closeDialog }: B
       toast.info('Nessun dato modificato.');
       return;
     }
-
-    setSubmitting(true);
 
     const response = await updateVenueBillingData(venueData.id, data);
 
@@ -64,7 +64,6 @@ export default function BillingDataForm({ venueData, countries, closeDialog }: B
     } else {
       toast.error(response.message);
     }
-    setSubmitting(false);
   };
 
   return (
@@ -81,16 +80,16 @@ export default function BillingDataForm({ venueData, countries, closeDialog }: B
             onClick={closeDialog}
             variant='ghost'
             className='text-destructive'
-            disabled={submitting}
+            disabled={isSubmitting}
           >
             <X className='size-4' /> Annulla
           </Button>
 
           <Button
             type='submit'
-            disabled={submitting}
+            disabled={isSubmitting}
           >
-            {submitting ? 'Salvataggio...' : 'Salva'}
+            {isSubmitting ? 'Salvataggio...' : 'Salva'}
           </Button>
         </div>
       </form>

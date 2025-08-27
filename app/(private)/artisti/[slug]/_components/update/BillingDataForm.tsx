@@ -2,7 +2,7 @@ import { FormProvider, useForm } from 'react-hook-form';
 import { ArtistData, Country } from '@/lib/types';
 import { toast } from 'sonner';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
 import { X } from 'lucide-react';
@@ -12,9 +12,11 @@ import StepTwo from '@/app/(private)/artisti/_components/form/StepTwo';
 
 type BillingDataFormProps = { userData: ArtistData; countries: Country[]; closeDialog: () => void };
 
-export default function BillingDataForm({ userData, countries, closeDialog }: BillingDataFormProps) {
-  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
-
+export default function BillingDataForm({
+  userData,
+  countries,
+  closeDialog,
+}: BillingDataFormProps) {
   const defaultValues = useMemo(
     () => ({
       company: userData.company || '',
@@ -34,17 +36,18 @@ export default function BillingDataForm({ userData, countries, closeDialog }: Bi
       billingPec: userData.billingPec || '',
       taxableInvoice: userData.taxableInvoice.toString() || 'false',
     }),
-    [userData]
+    [userData],
   );
 
   const methods = useForm({
     resolver: zodResolver(artistS2FormSchema),
     defaultValues: defaultValues,
   });
+
   const router = useRouter();
 
   const {
-    formState: { isDirty },
+    formState: { isDirty, isSubmitting },
   } = methods;
 
   const onSubmit = async (data: ArtistS2FormSchema) => {
@@ -52,8 +55,6 @@ export default function BillingDataForm({ userData, countries, closeDialog }: Bi
       toast.info('Nessun dato modificato.');
       return;
     }
-
-    setIsSubmitting(true);
 
     const response = await updateArtistBillingData(userData.id, data);
 
@@ -64,7 +65,6 @@ export default function BillingDataForm({ userData, countries, closeDialog }: Bi
     } else {
       toast.error(response.message);
     }
-    setIsSubmitting(false);
   };
 
   return (

@@ -4,14 +4,14 @@ import { Button } from '@/components/ui/button';
 import { forgetPassword } from '@/lib/auth-client';
 import { RPE_BLOCK_DURATION, RPE_BLOCK_STORAGE_NAME } from '@/lib/constants';
 import { getBetterAuthErrorMessage } from '@/lib/utils';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useTransition } from 'react';
 import { toast } from 'sonner';
 import * as z from 'zod/v4';
 
 export default function ButtonResendEmail({ email }: { email: string }) {
-  const [isLoading, setIsLoading] = useState(false);
   const [blockedUntil, setBlockedUntil] = useState<number | null>(null);
   const [timeLeft, setTimeLeft] = useState<number>(0);
+  const [isPending, startTransition] = useTransition();
 
   // On mount, check if we are still in cooldown
   useEffect(() => {
@@ -48,45 +48,43 @@ export default function ButtonResendEmail({ email }: { email: string }) {
   }, [blockedUntil]);
 
   const onClickHandler = async () => {
-    setIsLoading(true);
-
     const validation = z.email('Formato non valido').safeParse(email);
 
     if (!validation.success) {
       toast.error('Email non trovata o malformata, riprova più tardi');
-      setIsLoading(false);
       return;
     }
 
-    await forgetPassword({
-      email,
-      redirectTo: '/reset-password',
-      fetchOptions: {
-        onSuccess: () => {
-          const now = Date.now();
-          const expiresAt = now + RPE_BLOCK_DURATION;
-          localStorage.setItem(RPE_BLOCK_STORAGE_NAME, now.toString());
-          setBlockedUntil(expiresAt);
-          setTimeLeft(Math.ceil(RPE_BLOCK_DURATION / 1000));
-          toast.success('Email inviata con successo!');
+    startTransition(async () => {
+      await forgetPassword({
+        email,
+        redirectTo: '/reset-password',
+        fetchOptions: {
+          onSuccess: () => {
+            const now = Date.now();
+            const expiresAt = now + RPE_BLOCK_DURATION;
+            localStorage.setItem(RPE_BLOCK_STORAGE_NAME, now.toString());
+            setBlockedUntil(expiresAt);
+            setTimeLeft(Math.ceil(RPE_BLOCK_DURATION / 1000));
+            toast.success('Email inviata con successo!');
+          },
+          onError: (ctx) => {
+            const code = ctx?.error?.code ?? 'UNKNOWN_ERROR';
+            const message = getBetterAuthErrorMessage(code);
+            toast.error(message);
+          },
         },
-        onError: (ctx) => {
-          const code = ctx?.error?.code ?? 'UNKNOWN_ERROR';
-          const message = getBetterAuthErrorMessage(code);
-          toast.error(message);
-        },
-      },
+      });
     });
-    setIsLoading(false);
   };
 
   return (
     <Button
       onClick={onClickHandler}
       className='w-full mb-8'
-      disabled={isLoading || !!blockedUntil}
+      disabled={isPending || !!blockedUntil}
     >
-      {isLoading
+      {isPending
         ? 'Invio email...'
         : blockedUntil
           ? `Invia nuovamente in ${timeLeft} secondi`

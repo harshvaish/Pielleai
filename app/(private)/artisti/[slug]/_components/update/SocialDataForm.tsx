@@ -5,7 +5,7 @@ import { ArtistData } from '@/lib/types';
 import { toast } from 'sonner';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { X } from 'lucide-react';
 import { ArtistS3FormSchema, artistS3FormSchema } from '@/lib/validation/artistFormSchema';
@@ -16,31 +16,37 @@ import StepThree from '@/app/(private)/artisti/_components/form/StepThree';
 type SocialDataFormProps = { userData: ArtistData; closeDialog: () => void };
 
 export default function SocialDataForm({ userData, closeDialog }: SocialDataFormProps) {
-  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
-
   const defaultValues = useMemo(
     () => ({
       tiktokUrl: userData.tiktokUrl || '',
       tiktokUsername: userData.tiktokUsername || '',
       tiktokFollowers: userData.tiktokFollowers || undefined,
-      tiktokCreatedAt: userData.tiktokCreatedAt ? format(new Date(userData.tiktokCreatedAt), 'yyyy-MM-dd') : undefined,
+      tiktokCreatedAt: userData.tiktokCreatedAt
+        ? format(new Date(userData.tiktokCreatedAt), 'yyyy-MM-dd')
+        : undefined,
 
       facebookUrl: userData.facebookUrl || '',
       facebookUsername: userData.facebookUsername || '',
       facebookFollowers: userData.facebookFollowers || undefined,
-      facebookCreatedAt: userData.facebookCreatedAt ? format(new Date(userData.facebookCreatedAt), 'yyyy-MM-dd') : undefined,
+      facebookCreatedAt: userData.facebookCreatedAt
+        ? format(new Date(userData.facebookCreatedAt), 'yyyy-MM-dd')
+        : undefined,
 
       instagramUrl: userData.instagramUrl || '',
       instagramUsername: userData.instagramUsername || '',
       instagramFollowers: userData.instagramFollowers || undefined,
-      instagramCreatedAt: userData.instagramCreatedAt ? format(new Date(userData.instagramCreatedAt), 'yyyy-MM-dd') : undefined,
+      instagramCreatedAt: userData.instagramCreatedAt
+        ? format(new Date(userData.instagramCreatedAt), 'yyyy-MM-dd')
+        : undefined,
 
       xUrl: userData.xUrl || '',
       xUsername: userData.xUsername || '',
       xFollowers: userData.xFollowers || undefined,
-      xCreatedAt: userData.xCreatedAt ? format(new Date(userData.xCreatedAt), 'yyyy-MM-dd') : undefined,
+      xCreatedAt: userData.xCreatedAt
+        ? format(new Date(userData.xCreatedAt), 'yyyy-MM-dd')
+        : undefined,
     }),
-    [userData]
+    [userData],
   );
 
   const methods = useForm({
@@ -51,7 +57,7 @@ export default function SocialDataForm({ userData, closeDialog }: SocialDataForm
   const router = useRouter();
 
   const {
-    formState: { isDirty },
+    formState: { isDirty, isSubmitting },
   } = methods;
 
   const onSubmit = async (data: ArtistS3FormSchema) => {
@@ -59,7 +65,6 @@ export default function SocialDataForm({ userData, closeDialog }: SocialDataForm
       toast.info('Nessun dato modificato.');
       return;
     }
-    setIsSubmitting(true);
 
     const response = await updateArtistSocialData(userData.id, data);
 
@@ -71,7 +76,6 @@ export default function SocialDataForm({ userData, closeDialog }: SocialDataForm
     } else {
       toast.error(response.message);
     }
-    setIsSubmitting(false);
   };
 
   return (
