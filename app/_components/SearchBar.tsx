@@ -32,17 +32,22 @@ export default function SearchBar() {
   };
 
   const [debouncedSearch] = useDebounce(search, 500);
-  const fetchUrl = `/api/search?value=${debouncedSearch}`;
+  const fetchUrl = `/api/search?v=${debouncedSearch}`;
 
-  const { data, error, isLoading } = useSWR(debouncedSearch ? fetchUrl : null, fetcher);
-
-  useEffect(() => {
-    setItems(data?.items ?? []);
-  }, [data]);
+  const { data: response, isLoading } = useSWR(debouncedSearch ? fetchUrl : null, fetcher);
 
   useEffect(() => {
-    if (error) toast.error('Recupero suggerimenti ricerca non riuscito.');
-  }, [error]);
+    if (!response) return;
+
+    if (!response.success) {
+      toast.error(response.message || 'Recupero suggerimenti ricerca non riuscito');
+      return;
+    }
+
+    if (response.data && response.data.length > 0) {
+      setItems(response.data);
+    }
+  }, [response]);
 
   return (
     <Popover open={open}>

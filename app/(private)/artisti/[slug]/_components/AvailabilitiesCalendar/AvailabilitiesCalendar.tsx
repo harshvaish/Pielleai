@@ -36,24 +36,26 @@ export default function AvailabilitiesCalendar() {
   if (!slug || typeof slug !== 'string') notFound();
 
   const [calendarDate, setCalendarDate] = useState<Date>(new Date());
-  const [calendarRange, setCalendarRange] = useState<{ start: Date; end: Date }>(() => calculateRange(new Date(), 'week'));
+  const [calendarRange, setCalendarRange] = useState<{ start: Date; end: Date }>(() =>
+    calculateRange(new Date(), 'week'),
+  );
   const [view, setView] = useState<View>('week');
 
   const [availabilities, setAvailabilities] = useState<CalendarAvailability[]>([]);
 
   const startDateUTC = fromZonedTime(
     startOfDay(calendarRange.start), // set to 00:00 in local TZ
-    TIME_ZONE // your app’s locale time zone, e.g. 'Europe/Rome'
+    TIME_ZONE, // your app’s locale time zone, e.g. 'Europe/Rome'
   ).toISOString(); // convert to UTC string
 
   const endDateUTC = fromZonedTime(
     endOfDay(calendarRange.end), // set to 23:59 in local TZ
-    TIME_ZONE // your app’s locale time zone, e.g. 'Europe/Rome'
+    TIME_ZONE, // your app’s locale time zone, e.g. 'Europe/Rome'
   ).toISOString(); // convert to UTC string
 
   const fetchUrl = `/api/artist-availabilities/range?s=${slug}&sd=${startDateUTC}&ed=${endDateUTC}`;
 
-  const { data, error, isLoading } = useSWR(fetchUrl, fetcher);
+  const { data: response, isLoading } = useSWR(fetchUrl, fetcher);
 
   const onNavigateHandler = (newDate: Date) => {
     setCalendarDate(newDate);
@@ -72,21 +74,21 @@ export default function AvailabilitiesCalendar() {
   };
 
   useEffect(() => {
-    if (!data?.availabilities) return;
+    if (!response) return;
 
-    // Backend is UTC → convert to business TZ for display only
+    if (!response.success) {
+      toast.error(response.message || 'Recupero disponibilità artista non riuscito.');
+      return;
+    }
+
     setAvailabilities(
-      data.availabilities.map((a: ArtistAvailability) => ({
-        start: toZonedTime(a.startDate, TIME_ZONE),
-        end: toZonedTime(a.endDate, TIME_ZONE),
-        status: a.status,
-      }))
+      response.data.map((a: ArtistAvailability) => ({
+        ...a,
+        startDate: toZonedTime(a.startDate, TIME_ZONE),
+        endDate: toZonedTime(a.endDate, TIME_ZONE),
+      })),
     );
-  }, [data]);
-
-  useEffect(() => {
-    if (error) toast.error('Recupero disponibilità artista non riuscito.');
-  }, [error]);
+  }, [response]);
 
   return (
     <div className='relative'>

@@ -1,13 +1,24 @@
 'use client';
 
-import { Calendar as BigCalendar, dateFnsLocalizer, View, ToolbarProps as RBCToolbarProps } from 'react-big-calendar';
+import {
+  Calendar as BigCalendar,
+  dateFnsLocalizer,
+  View,
+  ToolbarProps as RBCToolbarProps,
+} from 'react-big-calendar';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import '@/app/(private)/_components/Calendar/calendar-overrides.css';
 import { endOfDay, format, getDay, parse, startOfDay, startOfWeek } from 'date-fns';
 import { CALENDAR_VIEWS, TIME_ZONE } from '@/lib/constants';
 import ShowMore from './ShowMore';
 import { useEffect, useState } from 'react';
-import { ArtistSelectData, CalendarEvent, EventsCalendarFilters, EventStatus, VenueSelectData } from '@/lib/types';
+import {
+  ArtistSelectData,
+  CalendarEvent,
+  EventsCalendarFilters,
+  EventStatus,
+  VenueSelectData,
+} from '@/lib/types';
 import useSWR from 'swr';
 import { calculateRange, fetcher, splitCsv } from '@/lib/utils';
 import { toast } from 'sonner';
@@ -36,23 +47,29 @@ export default function EventsCalendar({ artists, venues }: EventsCalendarProps)
   const searchParams = useSearchParams();
 
   const [calendarDate, setCalendarDate] = useState<Date>(new Date());
-  const [calendarRange, setCalendarRange] = useState<{ start: Date; end: Date }>(() => calculateRange(new Date(), 'week'));
+  const [calendarRange, setCalendarRange] = useState<{ start: Date; end: Date }>(() =>
+    calculateRange(new Date(), 'week'),
+  );
   const [view, setView] = useState<View>('week');
 
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [dialogOpen, setDialogOpen] = useState<boolean>(false);
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
 
-  const filters: EventsCalendarFilters = { artistIds: splitCsv(searchParams.get('a')), venueIds: splitCsv(searchParams.get('v')), status: splitCsv(searchParams.get('s')) as EventStatus[] };
+  const filters: EventsCalendarFilters = {
+    artistIds: splitCsv(searchParams.get('a')),
+    venueIds: splitCsv(searchParams.get('v')),
+    status: splitCsv(searchParams.get('s')) as EventStatus[],
+  };
 
   const startDateUTC = fromZonedTime(
     startOfDay(calendarRange.start), // set to 00:00 in local TZ
-    TIME_ZONE // your app’s locale time zone, e.g. 'Europe/Rome'
+    TIME_ZONE, // your app’s locale time zone, e.g. 'Europe/Rome'
   ).toISOString(); // convert to UTC string
 
   const endDateUTC = fromZonedTime(
     endOfDay(calendarRange.end), // set to 23:59 in local TZ
-    TIME_ZONE // your app’s locale time zone, e.g. 'Europe/Rome'
+    TIME_ZONE, // your app’s locale time zone, e.g. 'Europe/Rome'
   ).toISOString(); // convert to UTC string
 
   const qs = new URLSearchParams(searchParams.toString());
@@ -60,7 +77,7 @@ export default function EventsCalendar({ artists, venues }: EventsCalendarProps)
   qs.set('ed', endDateUTC);
   const fetchUrl = `/api/calendar-events/range?${qs.toString()}`;
 
-  const { data, error, isLoading } = useSWR(fetchUrl, fetcher, { keepPreviousData: true });
+  const { data: response, isLoading } = useSWR(fetchUrl, fetcher, { keepPreviousData: true });
 
   const onNavigateHandler = (newDate: Date) => {
     setCalendarDate(newDate);
@@ -75,19 +92,21 @@ export default function EventsCalendar({ artists, venues }: EventsCalendarProps)
   const eventPropGetter = ({ status }: CalendarEvent) => ({ className: status });
 
   useEffect(() => {
-    if (!data?.events) return;
+    if (!response) return;
+
+    if (!response.success) {
+      toast.error(response.message || 'Recupero eventi calendario non riuscito.');
+      return;
+    }
+
     setEvents(
-      data.events.map((event: CalendarEvent) => ({
+      response.data.map((event: CalendarEvent) => ({
         ...event,
         start: toZonedTime(event.start, TIME_ZONE),
         end: toZonedTime(event.end, TIME_ZONE),
-      }))
+      })),
     );
-  }, [data]);
-
-  useEffect(() => {
-    if (error) toast.error('Recupero eventi calendario non riuscito.');
-  }, [error]);
+  }, [response]);
 
   return (
     <div className='relative'>

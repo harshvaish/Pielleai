@@ -2,7 +2,14 @@
 
 import { SpinnerLoading } from '@/app/_components/SpinnerLoading';
 import { AU_LOCAL_STORAGE_TTL } from '@/lib/constants';
-import { cn, compressImage, fileToBase64, getFileMagicNumber, isValidImageMagicNumber } from '@/lib/utils';
+import { ApiResponse } from '@/lib/types';
+import {
+  cn,
+  compressImage,
+  fileToBase64,
+  getFileMagicNumber,
+  isValidImageMagicNumber,
+} from '@/lib/utils';
 import { avatarUploadSchema } from '@/lib/validation/avatarUploadSchema';
 import { Plus, UserRound } from 'lucide-react';
 import Image from 'next/image';
@@ -16,7 +23,12 @@ type AvatarUploadInputProps = {
   hasError: boolean;
 };
 
-export default function AvatarUploadInput({ localStorageKey, value, onChange, hasError }: AvatarUploadInputProps) {
+export default function AvatarUploadInput({
+  localStorageKey,
+  value,
+  onChange,
+  hasError,
+}: AvatarUploadInputProps) {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [preview, setPreview] = useState<string | null>(value ?? null);
   const [uploading, setUploading] = useState<boolean>(false);
@@ -54,7 +66,7 @@ export default function AvatarUploadInput({ localStorageKey, value, onChange, ha
   };
 
   const uploadImage = async (file: File) => {
-    const response = await fetch('/api/upload/avatar', {
+    const fetchResponse = await fetch('/api/upload/avatar', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -64,12 +76,14 @@ export default function AvatarUploadInput({ localStorageKey, value, onChange, ha
       }),
     });
 
-    if (!response.ok) {
-      toast.error('Caricamento immagine non riuscito.');
+    const response: ApiResponse<{ signedUrl: string; path: string }> = await fetchResponse.json();
+
+    if (!response.success) {
+      toast.error(response.message || 'Caricamento immagine non riuscito.');
       return;
     }
 
-    const { signedUrl, path } = await response.json();
+    const { signedUrl, path } = response.data;
 
     const uploadResponse = await fetch(signedUrl, {
       method: 'PUT',
@@ -121,7 +135,10 @@ export default function AvatarUploadInput({ localStorageKey, value, onChange, ha
         disabled={uploading}
       />
       <div
-        className={cn('relative w-16 h-16 flex justify-center items-center bg-muted rounded-full group hover:cursor-pointer', hasError && 'border border-destructive')}
+        className={cn(
+          'relative w-16 h-16 flex justify-center items-center bg-muted rounded-full group hover:cursor-pointer',
+          hasError && 'border border-destructive',
+        )}
         onClick={() => fileInputRef.current?.click()}
       >
         {uploading ? (

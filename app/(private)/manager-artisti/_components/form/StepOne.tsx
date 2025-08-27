@@ -1,3 +1,5 @@
+'use client';
+
 import { useFormContext, Controller } from 'react-hook-form';
 import AvatarUploadInput from '@/app/(private)/_components/form/AvatarUploadInput';
 import { Input } from '@/components/ui/input';
@@ -8,11 +10,17 @@ import { Select, SelectContent, SelectItem, SelectTrigger } from '@/components/u
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import useSWR from 'swr';
 import { Country, Gender, Language, Subdivision } from '@/lib/types';
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { profileGenders } from '@/lib/database/schema';
 
-export default function StepOne({ languages, countries }: { languages: Language[]; countries: Country[] }) {
+export default function StepOne({
+  languages,
+  countries,
+}: {
+  languages: Language[];
+  countries: Country[];
+}) {
   const {
     register,
     control,
@@ -21,20 +29,34 @@ export default function StepOne({ languages, countries }: { languages: Language[
     formState: { errors },
   } = useFormContext();
 
+  const [subdivisions, setSubdivisions] = useState<Subdivision[]>([]);
+
   const selectedCountryId = watch('countryId');
   const selectedSubdivisionId = watch('subdivisionId');
 
-  const { data, error, isLoading } = useSWR(selectedCountryId ? `/api/country-subdivisions?country=${selectedCountryId}` : null, fetcher);
-
-  const subdivisions: Subdivision[] = useMemo(() => {
-    return data?.subdivisions ?? [];
-  }, [data?.subdivisions]);
+  const { data: response, isLoading } = useSWR(
+    selectedCountryId ? `/api/country-subdivisions?c=${selectedCountryId}` : null,
+    fetcher,
+  );
 
   const subdivisionPlaceholder = useMemo(() => {
     if (isLoading) return 'Caricamento province...';
     if (!selectedCountryId) return 'Seleziona stato';
     return 'Seleziona provincia';
   }, [isLoading, selectedCountryId]);
+
+  useEffect(() => {
+    if (!response) return;
+
+    if (!response.success) {
+      toast.error(response.message || 'Recupero province non riuscito.');
+      return;
+    }
+
+    if (response.data && response.data.length > 0) {
+      setSubdivisions(response.data);
+    }
+  }, [response]);
 
   useEffect(() => {
     if (!selectedCountryId || isLoading || !subdivisions.length) return;
@@ -45,12 +67,6 @@ export default function StepOne({ languages, countries }: { languages: Language[
       resetField('subdivisionId', { defaultValue: 0 });
     }
   }, [selectedCountryId, selectedSubdivisionId, subdivisions, isLoading, resetField]);
-
-  useEffect(() => {
-    if (error) {
-      toast.error('Recupero delle province non riuscito.');
-    }
-  }, [error]);
 
   return (
     <>
@@ -68,7 +84,9 @@ export default function StepOne({ languages, countries }: { languages: Language[
               />
             )}
           />
-          {errors.avatarUrl && <p className='text-xs text-destructive mt-2'>{errors.avatarUrl.message as string}</p>}
+          {errors.avatarUrl && (
+            <p className='text-xs text-destructive mt-2'>{errors.avatarUrl.message as string}</p>
+          )}
         </div>
         <div className='flex flex-col'>
           <label
@@ -84,7 +102,9 @@ export default function StepOne({ languages, countries }: { languages: Language[
             className={errors.name ? 'border-destructive text-destructive' : ''}
             autoComplete='name'
           />
-          {errors.name && <p className='text-xs text-destructive mt-2'>{errors.name.message as string}</p>}
+          {errors.name && (
+            <p className='text-xs text-destructive mt-2'>{errors.name.message as string}</p>
+          )}
         </div>
         <div className='flex flex-col'>
           <label
@@ -100,7 +120,9 @@ export default function StepOne({ languages, countries }: { languages: Language[
             className={errors.surname ? 'border-destructive text-destructive' : ''}
             autoComplete='family-name'
           />
-          {errors.surname && <p className='text-xs text-destructive mt-2'>{errors.surname.message as string}</p>}
+          {errors.surname && (
+            <p className='text-xs text-destructive mt-2'>{errors.surname.message as string}</p>
+          )}
         </div>
       </div>
 
@@ -118,7 +140,9 @@ export default function StepOne({ languages, countries }: { languages: Language[
           className={errors.phone ? 'border-destructive text-destructive' : ''}
           autoComplete='tel'
         />
-        {errors.phone && <p className='text-xs text-destructive mt-2'>{errors.phone.message as string}</p>}
+        {errors.phone && (
+          <p className='text-xs text-destructive mt-2'>{errors.phone.message as string}</p>
+        )}
       </div>
 
       <div className='flex flex-col'>
@@ -135,7 +159,9 @@ export default function StepOne({ languages, countries }: { languages: Language[
           className={errors.email ? 'border-destructive text-destructive' : ''}
           autoComplete='email'
         />
-        {errors.email && <p className='text-xs text-destructive mt-2'>{errors.email.message as string}</p>}
+        {errors.email && (
+          <p className='text-xs text-destructive mt-2'>{errors.email.message as string}</p>
+        )}
       </div>
 
       <Separator className='my-4' />
@@ -154,13 +180,18 @@ export default function StepOne({ languages, countries }: { languages: Language[
             render={({ field }) => (
               <Input
                 id='birthDate'
-                className={cn('block w-full', errors.birthDate && 'border-destructive text-destructive')}
+                className={cn(
+                  'block w-full',
+                  errors.birthDate && 'border-destructive text-destructive',
+                )}
                 type='date'
                 {...field}
               />
             )}
           />
-          {errors.birthDate && <p className='text-xs text-destructive mt-2'>{errors.birthDate.message as string}</p>}
+          {errors.birthDate && (
+            <p className='text-xs text-destructive mt-2'>{errors.birthDate.message as string}</p>
+          )}
         </div>
 
         <div className='flex flex-col'>
@@ -176,7 +207,9 @@ export default function StepOne({ languages, countries }: { languages: Language[
             placeholder='Milano'
             className={errors.birthPlace ? 'border-destructive text-destructive' : ''}
           />
-          {errors.birthPlace && <p className='text-xs text-destructive mt-2'>{errors.birthPlace.message as string}</p>}
+          {errors.birthPlace && (
+            <p className='text-xs text-destructive mt-2'>{errors.birthPlace.message as string}</p>
+          )}
         </div>
       </div>
 
@@ -199,7 +232,9 @@ export default function StepOne({ languages, countries }: { languages: Language[
             />
           )}
         />
-        {errors.languages && <p className='text-xs text-destructive mt-2'>{errors.languages.message as string}</p>}
+        {errors.languages && (
+          <p className='text-xs text-destructive mt-2'>{errors.languages.message as string}</p>
+        )}
       </div>
 
       <Separator className='my-4' />
@@ -218,7 +253,9 @@ export default function StepOne({ languages, countries }: { languages: Language[
           className={errors.address ? 'border-destructive text-destructive' : ''}
           autoComplete='street-address'
         />
-        {errors.address && <p className='text-xs text-destructive mt-2'>{errors.address.message as string}</p>}
+        {errors.address && (
+          <p className='text-xs text-destructive mt-2'>{errors.address.message as string}</p>
+        )}
       </div>
 
       <div className='grid grid-cols-2 gap-4'>
@@ -240,7 +277,10 @@ export default function StepOne({ languages, countries }: { languages: Language[
               >
                 <SelectTrigger
                   id='countryId'
-                  className={cn('w-full', errors.countryId && 'border-destructive text-destructive')}
+                  className={cn(
+                    'w-full',
+                    errors.countryId && 'border-destructive text-destructive',
+                  )}
                   size='sm'
                 >
                   {countries.find((c) => c.id == field.value)?.name || 'seleziona stato'}
@@ -258,7 +298,9 @@ export default function StepOne({ languages, countries }: { languages: Language[
               </Select>
             )}
           />
-          {errors.countryId && <p className='text-xs text-destructive mt-2'>{errors.countryId.message as string}</p>}
+          {errors.countryId && (
+            <p className='text-xs text-destructive mt-2'>{errors.countryId.message as string}</p>
+          )}
         </div>
 
         <div className='flex flex-col'>
@@ -279,7 +321,10 @@ export default function StepOne({ languages, countries }: { languages: Language[
               >
                 <SelectTrigger
                   id='subdivisionId'
-                  className={cn('w-full', errors.subdivisionId && 'border-destructive text-destructive')}
+                  className={cn(
+                    'w-full',
+                    errors.subdivisionId && 'border-destructive text-destructive',
+                  )}
                   size='sm'
                 >
                   {subdivisions.find((s) => s.id == field.value)?.name || subdivisionPlaceholder}
@@ -297,7 +342,11 @@ export default function StepOne({ languages, countries }: { languages: Language[
               </Select>
             )}
           />
-          {errors.subdivisionId && <p className='text-xs text-destructive mt-2'>{errors.subdivisionId.message as string}</p>}
+          {errors.subdivisionId && (
+            <p className='text-xs text-destructive mt-2'>
+              {errors.subdivisionId.message as string}
+            </p>
+          )}
         </div>
       </div>
 
@@ -315,7 +364,9 @@ export default function StepOne({ languages, countries }: { languages: Language[
             placeholder='Milano'
             className={errors.city ? 'border-destructive text-destructive' : ''}
           />
-          {errors.city && <p className='text-xs text-destructive mt-2'>{errors.city.message as string}</p>}
+          {errors.city && (
+            <p className='text-xs text-destructive mt-2'>{errors.city.message as string}</p>
+          )}
         </div>
 
         <div className='flex flex-col'>
@@ -335,7 +386,9 @@ export default function StepOne({ languages, countries }: { languages: Language[
             placeholder='20100'
             className={errors.zipCode ? 'border-destructive text-destructive' : ''}
           />
-          {errors.zipCode && <p className='text-xs text-destructive mt-2'>{errors.zipCode.message as string}</p>}
+          {errors.zipCode && (
+            <p className='text-xs text-destructive mt-2'>{errors.zipCode.message as string}</p>
+          )}
         </div>
       </div>
 
@@ -356,7 +409,10 @@ export default function StepOne({ languages, countries }: { languages: Language[
                 <label
                   key={gender}
                   htmlFor={`gender-${gender}`}
-                  className={cn('h-10 flex items-center gap-2 text-sm p-2 rounded-xl capitalize border hover:cursor-pointer', errors.gender && 'border-destructive text-destructive')}
+                  className={cn(
+                    'h-10 flex items-center gap-2 text-sm p-2 rounded-xl capitalize border hover:cursor-pointer',
+                    errors.gender && 'border-destructive text-destructive',
+                  )}
                 >
                   <RadioGroupItem
                     id={`gender-${gender}`}
@@ -368,7 +424,9 @@ export default function StepOne({ languages, countries }: { languages: Language[
             </RadioGroup>
           )}
         />
-        {errors.gender && <p className='text-xs text-destructive mt-2'>{errors.gender.message as string}</p>}
+        {errors.gender && (
+          <p className='text-xs text-destructive mt-2'>{errors.gender.message as string}</p>
+        )}
       </div>
     </>
   );

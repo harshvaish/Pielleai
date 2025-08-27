@@ -26,4 +26,3 @@ Convert received UTC values back to the business timezone for display.
 - general fetches in the pages: cache
 - add swr options
 - genders enum shouls be in english in db
-- all api should have auth and validation of params

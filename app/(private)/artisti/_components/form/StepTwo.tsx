@@ -1,17 +1,14 @@
+'use client';
+
 import { useFormContext, Controller } from 'react-hook-form';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import { cn, fetcher } from '@/lib/utils';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-} from '@/components/ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger } from '@/components/ui/select';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Country, Subdivision } from '@/lib/types';
 import useSWR from 'swr';
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
 export default function StepTwo({ countries }: { countries: Country[] }) {
@@ -23,6 +20,8 @@ export default function StepTwo({ countries }: { countries: Country[] }) {
     formState: { errors },
   } = useFormContext();
 
+  const [subdivisions, setSubdivisions] = useState<Subdivision[]>([]);
+
   const selectedCountry = watch('billingCountry');
   const selectedSubdivisionId = watch('billingSubdivisionId');
 
@@ -30,22 +29,31 @@ export default function StepTwo({ countries }: { countries: Country[] }) {
   const isUSA = selectedCountry?.code === 'US';
   const isITA = selectedCountry?.code === 'IT';
 
-  const { data, error, isLoading } = useSWR(
+  const { data: response, isLoading } = useSWR(
     selectedCountry && selectedCountry.id
-      ? `/api/country-subdivisions?country=${selectedCountry.id}`
+      ? `/api/country-subdivisions?c=${selectedCountry.id}`
       : null,
-    fetcher
+    fetcher,
   );
-
-  const subdivisions: Subdivision[] = useMemo(() => {
-    return data?.subdivisions ?? [];
-  }, [data?.subdivisions]);
 
   const subdivisionPlaceholder = useMemo(() => {
     if (isLoading) return 'Caricamento province...';
     if (!selectedCountry) return 'seleziona stato';
     return 'seleziona provincia';
   }, [isLoading, selectedCountry]);
+
+  useEffect(() => {
+    if (!response) return;
+
+    if (!response.success) {
+      toast.error(response.message || 'Recupero province non riuscito.');
+      return;
+    }
+
+    if (response.data && response.data.length > 0) {
+      setSubdivisions(response.data);
+    }
+  }, [response]);
 
   useEffect(() => {
     if (!selectedCountry) return;
@@ -63,26 +71,12 @@ export default function StepTwo({ countries }: { countries: Country[] }) {
   useEffect(() => {
     if (!selectedCountry || isLoading || !subdivisions.length) return;
 
-    const isValid = subdivisions.some(
-      (sub) => sub.id === selectedSubdivisionId
-    );
+    const isValid = subdivisions.some((sub) => sub.id === selectedSubdivisionId);
 
     if (!isValid) {
       setValue('billingSubdivisionId', 0);
     }
-  }, [
-    selectedCountry,
-    selectedSubdivisionId,
-    subdivisions,
-    isLoading,
-    setValue,
-  ]);
-
-  useEffect(() => {
-    if (error) {
-      toast.error('Recupero delle province di fatturazione non riuscito.');
-    }
-  }, [error]);
+  }, [selectedCountry, selectedSubdivisionId, subdivisions, isLoading, setValue]);
 
   return (
     <>
@@ -97,14 +91,10 @@ export default function StepTwo({ countries }: { countries: Country[] }) {
           id='company'
           {...register('company')}
           placeholder='Milano Ovest'
-          className={
-            errors.company ? 'border-destructive text-destructive' : ''
-          }
+          className={errors.company ? 'border-destructive text-destructive' : ''}
         />
         {errors.company && (
-          <p className='text-xs text-destructive mt-2'>
-            {errors.company.message as string}
-          </p>
+          <p className='text-xs text-destructive mt-2'>{errors.company.message as string}</p>
         )}
       </div>
       <div className='grid grid-cols-2 gap-4'>
@@ -123,14 +113,10 @@ export default function StepTwo({ countries }: { countries: Country[] }) {
               },
             })}
             placeholder='AAAAAAAAAA1234'
-            className={
-              errors.taxCode ? 'border-destructive text-destructive' : ''
-            }
+            className={errors.taxCode ? 'border-destructive text-destructive' : ''}
           />
           {errors.taxCode && (
-            <p className='text-xs text-destructive mt-2'>
-              {errors.taxCode.message as string}
-            </p>
+            <p className='text-xs text-destructive mt-2'>{errors.taxCode.message as string}</p>
           )}
         </div>
         <div className='flex flex-col'>
@@ -149,14 +135,10 @@ export default function StepTwo({ countries }: { countries: Country[] }) {
                 e.target.value = e.target.value.replace(/\D/g, '');
               },
             })}
-            className={
-              errors.ipiCode ? 'border-destructive text-destructive' : ''
-            }
+            className={errors.ipiCode ? 'border-destructive text-destructive' : ''}
           />
           {errors.ipiCode && (
-            <p className='text-xs text-destructive mt-2'>
-              {errors.ipiCode.message as string}
-            </p>
+            <p className='text-xs text-destructive mt-2'>{errors.ipiCode.message as string}</p>
           )}
         </div>
       </div>
@@ -178,9 +160,7 @@ export default function StepTwo({ countries }: { countries: Country[] }) {
           className={errors.iban ? 'border-destructive text-destructive' : ''}
         />
         {errors.iban && (
-          <p className='text-xs text-destructive mt-2'>
-            {errors.iban.message as string}
-          </p>
+          <p className='text-xs text-destructive mt-2'>{errors.iban.message as string}</p>
         )}
       </div>
       <Separator className='my-4' />
@@ -195,14 +175,10 @@ export default function StepTwo({ countries }: { countries: Country[] }) {
           id='billingAddress'
           {...register('billingAddress')}
           placeholder='Via Duomo 1'
-          className={
-            errors.billingAddress ? 'border-destructive text-destructive' : ''
-          }
+          className={errors.billingAddress ? 'border-destructive text-destructive' : ''}
         />
         {errors.billingAddress && (
-          <p className='text-xs text-destructive mt-2'>
-            {errors.billingAddress.message as string}
-          </p>
+          <p className='text-xs text-destructive mt-2'>{errors.billingAddress.message as string}</p>
         )}
       </div>
       <div className='grid grid-cols-2 gap-4'>
@@ -220,17 +196,14 @@ export default function StepTwo({ countries }: { countries: Country[] }) {
               <Select
                 value={field.value?.id.toString() ?? ''}
                 onValueChange={(selectedId) => {
-                  const selectedCountry = countries.find(
-                    (c) => c.id === parseInt(selectedId)
-                  );
+                  const selectedCountry = countries.find((c) => c.id === parseInt(selectedId));
                   field.onChange(selectedCountry || null);
                 }}
               >
                 <SelectTrigger
                   className={cn(
                     'w-full',
-                    errors.billingCountry &&
-                      'border-destructive text-destructive'
+                    errors.billingCountry && 'border-destructive text-destructive',
                   )}
                   size='sm'
                 >
@@ -276,13 +249,11 @@ export default function StepTwo({ countries }: { countries: Country[] }) {
                 <SelectTrigger
                   className={cn(
                     'w-full',
-                    errors.billingSubdivisionId &&
-                      'border-destructive text-destructive'
+                    errors.billingSubdivisionId && 'border-destructive text-destructive',
                   )}
                   size='sm'
                 >
-                  {subdivisions.find((s) => s.id == field.value)?.name ||
-                    subdivisionPlaceholder}
+                  {subdivisions.find((s) => s.id == field.value)?.name || subdivisionPlaceholder}
                 </SelectTrigger>
                 <SelectContent>
                   {subdivisions.map((subdivision: Subdivision) => (
@@ -316,14 +287,10 @@ export default function StepTwo({ countries }: { countries: Country[] }) {
             id='billingCity'
             {...register('billingCity')}
             placeholder='Milano'
-            className={
-              errors.billingCity ? 'border-destructive text-destructive' : ''
-            }
+            className={errors.billingCity ? 'border-destructive text-destructive' : ''}
           />
           {errors.billingCity && (
-            <p className='text-xs text-destructive mt-2'>
-              {errors.billingCity.message as string}
-            </p>
+            <p className='text-xs text-destructive mt-2'>{errors.billingCity.message as string}</p>
           )}
         </div>
 
@@ -342,9 +309,7 @@ export default function StepTwo({ countries }: { countries: Country[] }) {
               },
             })}
             placeholder='20100'
-            className={
-              errors.billingZipCode ? 'border-destructive text-destructive' : ''
-            }
+            className={errors.billingZipCode ? 'border-destructive text-destructive' : ''}
           />
           {errors.billingZipCode && (
             <p className='text-xs text-destructive mt-2'>
@@ -367,14 +332,10 @@ export default function StepTwo({ countries }: { countries: Country[] }) {
             type='email'
             {...register('billingEmail')}
             placeholder='fatturazione@eaglebooking.it'
-            className={
-              errors.billingEmail ? 'border-destructive text-destructive' : ''
-            }
+            className={errors.billingEmail ? 'border-destructive text-destructive' : ''}
           />
           {errors.billingEmail && (
-            <p className='text-xs text-destructive mt-2'>
-              {errors.billingEmail.message as string}
-            </p>
+            <p className='text-xs text-destructive mt-2'>{errors.billingEmail.message as string}</p>
           )}
         </div>
         <div className='flex flex-col'>
@@ -388,15 +349,11 @@ export default function StepTwo({ countries }: { countries: Country[] }) {
             id='billingPhone'
             {...register('billingPhone')}
             placeholder='+39 123456789'
-            className={
-              errors.billingPhone ? 'border-destructive text-destructive' : ''
-            }
+            className={errors.billingPhone ? 'border-destructive text-destructive' : ''}
             autoComplete='tel'
           />
           {errors.billingPhone && (
-            <p className='text-xs text-destructive mt-2'>
-              {errors.billingPhone.message as string}
-            </p>
+            <p className='text-xs text-destructive mt-2'>{errors.billingPhone.message as string}</p>
           )}
         </div>
       </div>
@@ -411,14 +368,10 @@ export default function StepTwo({ countries }: { countries: Country[] }) {
           id='billingPec'
           {...register('billingPec')}
           placeholder='Milano Ovest'
-          className={
-            errors.billingPec ? 'border-destructive text-destructive' : ''
-          }
+          className={errors.billingPec ? 'border-destructive text-destructive' : ''}
         />
         {errors.billingPec && (
-          <p className='text-xs text-destructive mt-2'>
-            {errors.billingPec.message as string}
-          </p>
+          <p className='text-xs text-destructive mt-2'>{errors.billingPec.message as string}</p>
         )}
       </div>
       {!isEU && (
@@ -437,14 +390,10 @@ export default function StepTwo({ countries }: { countries: Country[] }) {
               },
             })}
             placeholder='AAAA1234'
-            className={
-              errors.bicCode ? 'border-destructive text-destructive' : ''
-            }
+            className={errors.bicCode ? 'border-destructive text-destructive' : ''}
           />
           {errors.bicCode && (
-            <p className='text-xs text-destructive mt-2'>
-              {errors.bicCode.message as string}
-            </p>
+            <p className='text-xs text-destructive mt-2'>{errors.bicCode.message as string}</p>
           )}
         </div>
       )}
@@ -465,11 +414,7 @@ export default function StepTwo({ countries }: { countries: Country[] }) {
               },
             })}
             placeholder='123456789'
-            className={
-              errors.abaRoutingNumber
-                ? 'border-destructive text-destructive'
-                : ''
-            }
+            className={errors.abaRoutingNumber ? 'border-destructive text-destructive' : ''}
           />
           {errors.abaRoutingNumber && (
             <p className='text-xs text-destructive mt-2'>
@@ -494,11 +439,7 @@ export default function StepTwo({ countries }: { countries: Country[] }) {
               },
             })}
             placeholder='ABC1234'
-            className={
-              errors.sdiRecipientCode
-                ? 'border-destructive text-destructive'
-                : ''
-            }
+            className={errors.sdiRecipientCode ? 'border-destructive text-destructive' : ''}
           />
           {errors.sdiRecipientCode && (
             <p className='text-xs text-destructive mt-2'>
@@ -527,7 +468,7 @@ export default function StepTwo({ countries }: { countries: Country[] }) {
               <label
                 className={cn(
                   'h-10 flex items-center gap-2 text-sm p-2 rounded-xl border hover:cursor-pointer',
-                  errors.taxableInvoice && 'border-destructive text-destructive'
+                  errors.taxableInvoice && 'border-destructive text-destructive',
                 )}
               >
                 <RadioGroupItem value={'true'} />
@@ -536,7 +477,7 @@ export default function StepTwo({ countries }: { countries: Country[] }) {
               <label
                 className={cn(
                   'h-10 flex items-center gap-2 text-sm p-2 rounded-xl border hover:cursor-pointer',
-                  errors.taxableInvoice && 'border-destructive text-destructive'
+                  errors.taxableInvoice && 'border-destructive text-destructive',
                 )}
               >
                 <RadioGroupItem value={'false'} />
@@ -546,9 +487,7 @@ export default function StepTwo({ countries }: { countries: Country[] }) {
           )}
         />
         {errors.taxableInvoice && (
-          <p className='text-xs text-destructive mt-2'>
-            {errors.taxableInvoice.message as string}
-          </p>
+          <p className='text-xs text-destructive mt-2'>{errors.taxableInvoice.message as string}</p>
         )}
       </div>
     </>

@@ -3,35 +3,34 @@
 import useSWR from 'swr';
 import { Controller, useFormContext } from 'react-hook-form';
 import { toast } from 'sonner';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-} from '@/components/ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger } from '@/components/ui/select';
 import { cn, fetcher } from '@/lib/utils';
 import { ArtistManagerSelectData } from '@/lib/types';
 import Image from 'next/image';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { EventFormSchema } from '@/lib/validation/eventFormSchema';
 
 export default function ArtistManagerSelect() {
   const { watch, control, formState } = useFormContext<EventFormSchema>();
+  const [managers, setManagers] = useState<ArtistManagerSelectData[]>([]);
 
   const artistId = watch('artistId');
 
-  const { data, error, isLoading } = useSWR(
-    artistId ? `/api/artist-managers?artist=${artistId}` : null,
-    fetcher
+  const { data: response, isLoading } = useSWR(
+    artistId ? `/api/artist-managers?a=${artistId}` : null,
+    fetcher,
   );
 
-  const managers: ArtistManagerSelectData[] = data?.managers || [];
-
   useEffect(() => {
-    if (error) {
-      toast.error('Recupero dei managers artista non riuscito.');
+    if (!response) return;
+
+    if (!response.success) {
+      toast.error(response.message || 'Recupero disponibilità artista non riuscito.');
+      return;
     }
-  }, [error]);
+
+    setManagers(response.data);
+  }, [response]);
 
   return (
     <Controller
@@ -47,18 +46,13 @@ export default function ArtistManagerSelect() {
             id='artistManagerProfileId'
             className={cn(
               'w-full',
-              formState.errors.artistManagerProfileId &&
-                'border-destructive text-destructive'
+              formState.errors.artistManagerProfileId && 'border-destructive text-destructive',
             )}
             size='sm'
           >
             {(() => {
-              const selected = managers.find(
-                (m) => m.profileId === field.value
-              );
-              return selected
-                ? `${selected.name} ${selected.surname}`
-                : 'Seleziona un manager';
+              const selected = managers.find((m) => m.profileId === field.value);
+              return selected ? `${selected.name} ${selected.surname}` : 'Seleziona un manager';
             })()}
           </SelectTrigger>
           <SelectContent>
