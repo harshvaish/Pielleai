@@ -49,7 +49,7 @@ export default function PersonalDataForm({
       subdivisionId: userData.subdivision.id || 0,
       city: userData.city || '',
       zipCode: userData.zipCode || '',
-      gender: userData.gender || 'maschile',
+      gender: userData.gender || 'male',
 
       zones: zonesIds || [],
 

@@ -8,26 +8,28 @@ import { auth } from '@/lib/auth';
 import NotesSection from '../../_components/notes/NotesSection';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
-import { getLanguages } from '@/lib/data/get-languages';
-import { getCountries } from '@/lib/data/get-countries';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import PersonalDataTab from './_components/tabs/PersonalDataTab';
 import StatusBadge from '../../_components/badges/StatusBadge';
-import { getArtist } from '@/lib/data/artists/get-artist';
 import { getArtistNotes } from '@/lib/data/notes/get-artist-notes';
 import BillingDataTab from '../../_components/tabs/BillingDataTab';
 import SocialDataTab from '../../_components/tabs/SocialDataTab';
 import ToggleArtistBlockButton from './_components/ToggleArtistBlockButton';
-import { getZones } from '@/lib/data/artists/get-zones';
-import { getArtistManagers } from '@/lib/data/artist-managers/get-artist-managers';
 import EditArtistButton from './_components/update/EditArtistButton';
 import AvailabilitiesTab from './_components/tabs/AvailabilitiesTab';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Ellipsis } from 'lucide-react';
+import { getLanguagesCached } from '@/lib/cache/languages';
+import { getCountriesCached } from '@/lib/cache/countries';
+import { getZonesCached } from '@/lib/cache/zones';
+import { getArtistManagersCached } from '@/lib/cache/artist-managers';
+import { getArtistCached } from '@/lib/cache/artists';
 
 type ArtistDetailPageProps = {
   params: Promise<{ slug: string }>;
 };
+
+export const dynamic = 'force-dynamic';
 
 export default async function ArtistDetailPage({ params }: ArtistDetailPageProps) {
   const p = await params;
@@ -48,7 +50,13 @@ export default async function ArtistDetailPage({ params }: ArtistDetailPageProps
     redirect('/accedi');
   }
 
-  const [userData, languages, countries, zones, artistManagers] = await Promise.all([getArtist(slug), getLanguages(), getCountries(), getZones(), getArtistManagers()]);
+  const [userData, languages, countries, zones, artistManagers] = await Promise.all([
+    getArtistCached(slug),
+    getLanguagesCached(),
+    getCountriesCached(),
+    getZonesCached(),
+    getArtistManagersCached(),
+  ]);
 
   if (!userData) notFound();
 
@@ -107,14 +115,19 @@ export default async function ArtistDetailPage({ params }: ArtistDetailPageProps
                 alt='Icona profilo artista'
                 width={60}
                 height={60}
-                className={cn('shrink-0 w-[60px] h-[60px] rounded-full object-cover', isDisabled ? 'grayscale' : '')}
+                className={cn(
+                  'shrink-0 w-[60px] h-[60px] rounded-full object-cover',
+                  isDisabled ? 'grayscale' : '',
+                )}
               />
 
               <div className='flex flex-col'>
                 <div className='text-2xl font-bold line-clamp-1'>
                   {userData.name} {userData.surname}
                 </div>
-                <div className='font-medium text-zinc-500 line-clamp-1 mb-2'>@{userData.stageName}</div>
+                <div className='font-medium text-zinc-500 line-clamp-1 mb-2'>
+                  @{userData.stageName}
+                </div>
                 <div className='flex items-center gap-2'>
                   <Badge variant={isDisabled ? 'disabled' : 'orange'}>Artista</Badge>
                   {isDisabled && <StatusBadge status='disabled' />}
@@ -123,9 +136,15 @@ export default async function ArtistDetailPage({ params }: ArtistDetailPageProps
             </div>
 
             <div className='max-w-full flex flex-col lg:items-end gap-0.5 overflow-x-auto'>
-              <div className='flex flex-col lg:flex-row text-sm font-semibold text-zinc-500 whitespace-nowrap'>ID: {userData.id}</div>
-              <div className='text-xs font-semibold text-zinc-400'>Data di creazione {format(userData.createdAt, 'dd/MM/yyyy, HH:mm')}</div>
-              <div className='text-xs font-semibold text-zinc-400'>Data di aggiornamento {format(userData.updatedAt, 'dd/MM/yyyy, HH:mm')}</div>
+              <div className='flex flex-col lg:flex-row text-sm font-semibold text-zinc-500 whitespace-nowrap'>
+                ID: {userData.id}
+              </div>
+              <div className='text-xs font-semibold text-zinc-400'>
+                Data di creazione {format(userData.createdAt, 'dd/MM/yyyy, HH:mm')}
+              </div>
+              <div className='text-xs font-semibold text-zinc-400'>
+                Data di aggiornamento {format(userData.updatedAt, 'dd/MM/yyyy, HH:mm')}
+              </div>
             </div>
           </div>
           <Separator className='my-6' />

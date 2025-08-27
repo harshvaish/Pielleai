@@ -1,17 +1,24 @@
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { getPaginatedVenueManagers } from '@/lib/data/venue-managers/get-paginated-venue-managers';
-import { getLanguages } from '@/lib/data/get-languages';
-import { getCountries } from '@/lib/data/get-countries';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { TablePagination } from '../_components/form/TablePagination';
 import UserBadge from '../_components/badges/UserBadge';
 import StatusBadge from '../_components/badges/StatusBadge';
 import { NEW_USER_TIME } from '@/lib/constants';
 import CreateButton from './_components/create/CreateButton';
 import VenuesBadge from '../_components/badges/VenuesBadge';
-import { getVenues } from '@/lib/data/venues/get-venues';
 import FiltersButton from './_components/filters/FiltersButton';
 import { VenueManagersTableFilters } from '@/lib/types';
 import { splitCsv } from '@/lib/utils';
+import { getPaginatedVenueManagersCached } from '@/lib/cache/venue-managers';
+import { getLanguagesCached } from '@/lib/cache/languages';
+import { getCountriesCached } from '@/lib/cache/countries';
+import { getVenuesCached } from '@/lib/cache/venues';
 
 type VenueManagersPageProps = {
   searchParams?: Promise<{
@@ -23,6 +30,8 @@ type VenueManagersPageProps = {
     venue?: string;
   }>;
 };
+
+export const dynamic = 'force-dynamic';
 
 export default async function VenueManagersPage({ searchParams }: VenueManagersPageProps) {
   const sp = await searchParams;
@@ -37,7 +46,12 @@ export default async function VenueManagersPage({ searchParams }: VenueManagersP
     venueIds: splitCsv(sp?.venue),
   };
 
-  const [{ data: managers, totalPages }, languages, countries, venues] = await Promise.all([getPaginatedVenueManagers(filters), getLanguages(), getCountries(), getVenues()]);
+  const [{ data: managers, totalPages }, languages, countries, venues] = await Promise.all([
+    getPaginatedVenueManagersCached(filters),
+    getLanguagesCached(),
+    getCountriesCached(),
+    getVenuesCached(),
+  ]);
 
   return (
     <div className='h-full grid grid-rows-[min-content_1fr_min-content] gap-4'>
@@ -70,7 +84,8 @@ export default async function VenueManagersPage({ searchParams }: VenueManagersP
           <TableBody>
             {managers.map((manager, index) => {
               const isDisabled = manager.status === 'disabled';
-              const isNew = new Date().getTime() - new Date(manager.createdAt).getTime() < NEW_USER_TIME;
+              const isNew =
+                new Date().getTime() - new Date(manager.createdAt).getTime() < NEW_USER_TIME;
 
               const badgeStatus = isDisabled ? 'disabled' : isNew ? 'new' : undefined;
 
@@ -104,7 +119,9 @@ export default async function VenueManagersPage({ searchParams }: VenueManagersP
       ) : (
         <section className='max-h-80 flex flex-col justify-center items-center bg-white rounded-2xl p-8'>
           <h2 className='text-base font-bold'>Nessun promoter locali</h2>
-          <div className='text-sm font-medium text-zinc-400'>Aggiungine uno per vederlo nella lista</div>
+          <div className='text-sm font-medium text-zinc-400'>
+            Aggiungine uno per vederlo nella lista
+          </div>
         </section>
       )}
       {managers.length > 0 && (

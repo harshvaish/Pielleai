@@ -2,11 +2,25 @@
 
 import { PAGINATED_TABLE_ROWS_X_PAGE } from '@/lib/constants';
 import { database } from '@/lib/database/connection';
-import { artists, artistZones, zones, managerArtists, profiles, users } from '@/lib/database/schema';
+import {
+  artists,
+  artistZones,
+  zones,
+  managerArtists,
+  profiles,
+  users,
+} from '@/lib/database/schema';
 import { ArtistTableData, ArtistManagerSelectData, Zone, ArtistsTableFilters } from '@/lib/types';
 import { and, count, desc, eq, ilike, inArray, or } from 'drizzle-orm';
 
-export async function getPaginatedArtists({ currentPage, fullName, email, phone, managerIds, zoneIds }: ArtistsTableFilters): Promise<{
+export async function getPaginatedArtists({
+  currentPage,
+  fullName,
+  email,
+  phone,
+  managerIds,
+  zoneIds,
+}: ArtistsTableFilters): Promise<{
   data: ArtistTableData[];
   totalPages: number;
   currentPage: number;
@@ -60,11 +74,14 @@ export async function getPaginatedArtists({ currentPage, fullName, email, phone,
 
     // Build reusable filters
     const filters = and(
-      or(fullName ? ilike(artists.name, `%${fullName}%`) : undefined, fullName ? ilike(artists.surname, `%${fullName}%`) : undefined),
+      or(
+        fullName ? ilike(artists.name, `%${fullName}%`) : undefined,
+        fullName ? ilike(artists.surname, `%${fullName}%`) : undefined,
+      ),
       email ? ilike(artists.email, `%${email}%`) : undefined,
       phone ? ilike(artists.phone, `%${phone}%`) : undefined,
       managerFilteredArtistIds ? inArray(artists.id, managerFilteredArtistIds) : undefined,
-      zoneFilteredArtistIds ? inArray(artists.id, zoneFilteredArtistIds) : undefined
+      zoneFilteredArtistIds ? inArray(artists.id, zoneFilteredArtistIds) : undefined,
     );
 
     // Get paginated artists

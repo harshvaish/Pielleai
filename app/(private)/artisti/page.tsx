@@ -1,12 +1,14 @@
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { getLanguages } from '@/lib/data/get-languages';
-import { getCountries } from '@/lib/data/get-countries';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { NEW_USER_TIME } from '@/lib/constants';
 import { TablePagination } from '../_components/form/TablePagination';
 import StatusBadge from '../_components/badges/StatusBadge';
-import { getPaginatedArtists } from '@/lib/data/artists/get-paginated-artists';
-import { getZones } from '@/lib/data/artists/get-zones';
-import { getArtistManagers } from '@/lib/data/artist-managers/get-artist-managers';
 import ZonesBadge from '../_components/badges/ZonesBadge';
 import ManagersBadge from '../_components/badges/ManagersBadge';
 import { ArtistsTableFilters } from '@/lib/types';
@@ -14,6 +16,11 @@ import FiltersButton from './_components/filters/FiltersButton';
 import CreateButton from './_components/create/CreateButton';
 import { splitCsv } from '@/lib/utils';
 import ArtistsBadge from '../_components/badges/ArtistsBadge';
+import { getPaginatedArtistsCached } from '@/lib/cache/artists';
+import { getLanguagesCached } from '@/lib/cache/languages';
+import { getCountriesCached } from '@/lib/cache/countries';
+import { getArtistManagersCached } from '@/lib/cache/artist-managers';
+import { getZonesCached } from '@/lib/cache/zones';
 
 type ArtistsPageProps = {
   searchParams?: Promise<{
@@ -26,6 +33,8 @@ type ArtistsPageProps = {
     zone?: string;
   }>;
 };
+
+export const dynamic = 'force-dynamic';
 
 export default async function ArtistsPage({ searchParams }: ArtistsPageProps) {
   const sp = await searchParams;
@@ -41,13 +50,14 @@ export default async function ArtistsPage({ searchParams }: ArtistsPageProps) {
     zoneIds: splitCsv(sp?.zone),
   };
 
-  const [{ data: artists, totalPages }, languages, countries, artistManagers, zones] = await Promise.all([
-    getPaginatedArtists(filters),
-    getLanguages(),
-    getCountries(),
-    getArtistManagers(),
-    getZones(),
-  ]);
+  const [{ data: artists, totalPages }, languages, countries, artistManagers, zones] =
+    await Promise.all([
+      getPaginatedArtistsCached(filters),
+      getLanguagesCached(),
+      getCountriesCached(),
+      getArtistManagersCached(),
+      getZonesCached(),
+    ]);
 
   return (
     <div className='h-full grid grid-rows-[min-content_1fr_min-content] gap-4'>
@@ -84,7 +94,8 @@ export default async function ArtistsPage({ searchParams }: ArtistsPageProps) {
           <TableBody>
             {artists.map((artist, index) => {
               const isDisabled = artist.status === 'disabled';
-              const isNew = new Date().getTime() - new Date(artist.createdAt).getTime() < NEW_USER_TIME;
+              const isNew =
+                new Date().getTime() - new Date(artist.createdAt).getTime() < NEW_USER_TIME;
 
               const badgeStatus = isDisabled ? 'disabled' : isNew ? 'new' : undefined;
 
@@ -118,7 +129,9 @@ export default async function ArtistsPage({ searchParams }: ArtistsPageProps) {
       ) : (
         <section className='max-h-80 flex flex-col justify-center items-center bg-white rounded-2xl p-8'>
           <h2 className='text-base font-bold'>Nessun artista</h2>
-          <div className='text-sm font-medium text-zinc-400'>Aggiungine uno per vederlo nella lista</div>
+          <div className='text-sm font-medium text-zinc-400'>
+            Aggiungine uno per vederlo nella lista
+          </div>
         </section>
       )}
       {artists.length > 0 && (

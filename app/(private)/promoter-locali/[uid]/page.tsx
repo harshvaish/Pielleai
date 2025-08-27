@@ -8,20 +8,22 @@ import { auth } from '@/lib/auth';
 import { getProfileNotes } from '@/lib/data/notes/get-profile-notes';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
-import { getLanguages } from '@/lib/data/get-languages';
-import { getCountries } from '@/lib/data/get-countries';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import PersonalDataTab from './_components/tabs/PersonalDataTab';
 import StatusBadge from '../../_components/badges/StatusBadge';
 import NotesSection from '../../_components/notes/NotesSection';
-import { getVenueManager } from '@/lib/data/venue-managers/get-venue-manager';
 import ToggleBlockButton from '../../_components/ToggleBlockButton';
 import UpdateButton from './_components/update/UpdateButton';
 import ManagedVenuesTab from './_components/tabs/ManagedVenuesTab';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Ellipsis } from 'lucide-react';
+import { getLanguagesCached } from '@/lib/cache/languages';
+import { getCountriesCached } from '@/lib/cache/countries';
+import { getVenueManagerCached } from '@/lib/cache/venue-managers';
 
 type VenueManagerDetailPageProps = { params: Promise<{ uid: string }> };
+
+export const dynamic = 'force-dynamic';
 
 export default async function VenueManagerDetailPage({ params }: VenueManagerDetailPageProps) {
   const p = await params;
@@ -42,7 +44,11 @@ export default async function VenueManagerDetailPage({ params }: VenueManagerDet
     redirect('/accedi');
   }
 
-  const [userData, languages, countries] = await Promise.all([getVenueManager(uid), getLanguages(), getCountries()]);
+  const [userData, languages, countries] = await Promise.all([
+    getVenueManagerCached(uid),
+    getLanguagesCached(),
+    getCountriesCached(),
+  ]);
 
   if (!userData) notFound();
 
@@ -97,7 +103,10 @@ export default async function VenueManagerDetailPage({ params }: VenueManagerDet
                 alt='Icona profilo promoter locali'
                 width={60}
                 height={60}
-                className={cn('shrink-0 w-[60px] h-[60px] rounded-full object-cover', isDisabled ? 'grayscale' : '')}
+                className={cn(
+                  'shrink-0 w-[60px] h-[60px] rounded-full object-cover',
+                  isDisabled ? 'grayscale' : '',
+                )}
               />
 
               <div className='flex flex-col gap-1.5'>
@@ -112,9 +121,15 @@ export default async function VenueManagerDetailPage({ params }: VenueManagerDet
             </div>
 
             <div className='max-w-full flex flex-col lg:items-end gap-0.5 overflow-x-auto'>
-              <div className='flex flex-col lg:flex-row text-sm font-semibold text-zinc-500 whitespace-nowrap'>ID: {userData.id}</div>
-              <div className='text-xs font-semibold text-zinc-400'>Data di creazione {format(userData.createdAt, 'dd/MM/yyyy, HH:mm')}</div>
-              <div className='text-xs font-semibold text-zinc-400'>Data di aggiornamento {format(userData.updatedAt, 'dd/MM/yyyy, HH:mm')}</div>
+              <div className='flex flex-col lg:flex-row text-sm font-semibold text-zinc-500 whitespace-nowrap'>
+                ID: {userData.id}
+              </div>
+              <div className='text-xs font-semibold text-zinc-400'>
+                Data di creazione {format(userData.createdAt, 'dd/MM/yyyy, HH:mm')}
+              </div>
+              <div className='text-xs font-semibold text-zinc-400'>
+                Data di aggiornamento {format(userData.updatedAt, 'dd/MM/yyyy, HH:mm')}
+              </div>
             </div>
           </div>
           <Separator className='my-6' />

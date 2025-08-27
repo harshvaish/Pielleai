@@ -4,11 +4,8 @@ import { format } from 'date-fns';
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import { cn } from '@/lib/utils';
-import { getCountries } from '@/lib/data/get-countries';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import BillingDataTab from '../../_components/tabs/BillingDataTab';
-import { getVenueManagers } from '@/lib/data/venue-managers/get-venue-managers';
-import { getVenue } from '@/lib/data/venues/get-venue';
 import VenueTypeBadge from '../../_components/badges/VenueTypeBadge';
 import UserBadge from '../../_components/badges/UserBadge';
 import SocialDataTab from '../../_components/tabs/SocialDataTab';
@@ -16,14 +13,23 @@ import ToggleVenueBlockButton from './_components/ToggleVenueBlockButton';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Ellipsis } from 'lucide-react';
 import UpdateButton from './_components/update/UpdateButton';
+import { getVenueCached } from '@/lib/cache/venues';
+import { getCountriesCached } from '@/lib/cache/countries';
+import { getVenueManagersCached } from '@/lib/cache/venue-managers';
 
 type VenueDetailPageProps = { params: Promise<{ slug: string }> };
+
+export const dynamic = 'force-dynamic';
 
 export default async function VenueDetailPage({ params }: VenueDetailPageProps) {
   const p = await params;
   const { slug } = p;
 
-  const [venue, countries, venueManagers] = await Promise.all([getVenue(slug), getCountries(), getVenueManagers()]);
+  const [venue, countries, venueManagers] = await Promise.all([
+    getVenueCached(slug),
+    getCountriesCached(),
+    getVenueManagersCached(),
+  ]);
 
   if (!venue) notFound();
 
@@ -74,11 +80,16 @@ export default async function VenueDetailPage({ params }: VenueDetailPageProps) 
                 alt='Icona profilo locale'
                 width={60}
                 height={60}
-                className={cn('shrink-0 w-[60px] h-[60px] rounded-full object-cover', isDisabled ? 'grayscale' : '')}
+                className={cn(
+                  'shrink-0 w-[60px] h-[60px] rounded-full object-cover',
+                  isDisabled ? 'grayscale' : '',
+                )}
               />
               <div>
                 <div className='lg:flex items-center gap-2 lg:gap-4 space-y-2 mb-2'>
-                  <div className='text-2xl font-bold line-clamp-1 text-ellipsis break-all overflow-hidden'>{venue.name}</div>
+                  <div className='text-2xl font-bold line-clamp-1 text-ellipsis break-all overflow-hidden'>
+                    {venue.name}
+                  </div>
                   <VenueTypeBadge
                     type={venue.type}
                     isDisabled={isDisabled}
@@ -132,9 +143,15 @@ export default async function VenueDetailPage({ params }: VenueDetailPageProps) 
           </div>
 
           <div className='flex flex-col lg:items-end gap-0.5'>
-            <div className='text-sm font-semibold text-zinc-500 whitespace-nowrap'>ID: {venue.id}</div>
-            <div className='text-xs font-semibold text-zinc-400'>Data di creazione {format(venue.createdAt, 'dd/MM/yyyy, HH:mm')}</div>
-            <div className='text-xs font-semibold text-zinc-400'>Data di aggiornamento {format(venue.updatedAt, 'dd/MM/yyyy, HH:mm')}</div>
+            <div className='text-sm font-semibold text-zinc-500 whitespace-nowrap'>
+              ID: {venue.id}
+            </div>
+            <div className='text-xs font-semibold text-zinc-400'>
+              Data di creazione {format(venue.createdAt, 'dd/MM/yyyy, HH:mm')}
+            </div>
+            <div className='text-xs font-semibold text-zinc-400'>
+              Data di aggiornamento {format(venue.updatedAt, 'dd/MM/yyyy, HH:mm')}
+            </div>
           </div>
         </div>
 

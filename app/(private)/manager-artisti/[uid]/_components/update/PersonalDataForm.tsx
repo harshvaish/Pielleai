@@ -3,7 +3,10 @@
 import { FormProvider, useForm } from 'react-hook-form';
 import { ArtistManagerData, Country, Language } from '@/lib/types';
 import { toast } from 'sonner';
-import { ArtistManagerS1FormSchema, artistManagerS1FormSchema } from '@/lib/validation/artistManagerFormSchema';
+import {
+  ArtistManagerS1FormSchema,
+  artistManagerS1FormSchema,
+} from '@/lib/validation/artistManagerFormSchema';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
 import { useMemo, useState } from 'react';
@@ -12,7 +15,17 @@ import { useRouter } from 'next/navigation';
 import { X } from 'lucide-react';
 import StepOne from '@/app/(private)/manager-artisti/_components/form/StepOne';
 
-export default function PersonalDataForm({ userData, languages, countries, closeDialog }: { userData: ArtistManagerData; languages: Language[]; countries: Country[]; closeDialog: () => void }) {
+export default function PersonalDataForm({
+  userData,
+  languages,
+  countries,
+  closeDialog,
+}: {
+  userData: ArtistManagerData;
+  languages: Language[];
+  countries: Country[];
+  closeDialog: () => void;
+}) {
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
   const languageIds = userData.languages.map((lang) => lang.id);
@@ -32,9 +45,9 @@ export default function PersonalDataForm({ userData, languages, countries, close
       subdivisionId: userData.subdivision.id || 0,
       city: userData.city || '',
       zipCode: userData.zipCode || '',
-      gender: userData.gender || 'maschile',
+      gender: userData.gender || 'male',
     }),
-    [userData]
+    [userData],
   );
 
   const methods = useForm({

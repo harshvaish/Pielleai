@@ -57,7 +57,7 @@ export default function CreateVenueManagerForm({
       subdivisionId: 0,
       city: '',
       zipCode: '',
-      gender: 'maschile',
+      gender: 'male',
 
       signUpEmail: '',
       signUpPassword: '',

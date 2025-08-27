@@ -66,7 +66,7 @@ export default function CreateArtistForm({
       subdivisionId: 0,
       city: '',
       zipCode: '',
-      gender: 'maschile',
+      gender: 'male',
       zones: [],
       artistManagers: [],
 

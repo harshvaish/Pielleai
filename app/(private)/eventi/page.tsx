@@ -1,16 +1,16 @@
-import { getArtists } from '@/lib/data/artists/get-artists';
-import { getVenues } from '@/lib/data/venues/get-venues';
 import CreateButton from './_components/create/CreateButton';
-import { getMoCoordinators } from '@/lib/data/get-mo-coordinators';
-import { getEvents } from '@/lib/data/events/get-events';
 import { TablePagination } from '../_components/form/TablePagination';
 import EventTile from './_components/EventTile/EventTile';
 import StatusFilterButton from './_components/filters/StatusFilterButton';
 import FiltersButton from './_components/filters/FiltersButton';
 import { EventsTableFilters, EventStatus } from '@/lib/types';
-import { getArtistManagers } from '@/lib/data/artist-managers/get-artist-managers';
 import DatesFilterButton from './_components/filters/DatesFilterButton';
 import { splitCsv } from '@/lib/utils';
+import { getEventsCached } from '@/lib/cache/events';
+import { getArtistsCached } from '@/lib/cache/artists';
+import { getArtistManagersCached } from '@/lib/cache/artist-managers';
+import { getVenuesCached } from '@/lib/cache/venues';
+import { getMoCoordinatorsCached } from '@/lib/cache/mo-coordinators';
 
 type EventsPageProps = {
   searchParams?: Promise<{
@@ -23,6 +23,8 @@ type EventsPageProps = {
     end?: string;
   }>;
 };
+
+export const dynamic = 'force-dynamic';
 
 export default async function EventsPage({ searchParams }: EventsPageProps) {
   const sp = await searchParams;
@@ -39,7 +41,14 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
     endDate: sp?.end ? new Date(sp.end) : null,
   };
 
-  const [{ data: events, totalPages }, artists, artistManagers, venues, moCoordinators] = await Promise.all([getEvents(filters), getArtists(), getArtistManagers(), getVenues(), getMoCoordinators()]);
+  const [{ data: events, totalPages }, artists, artistManagers, venues, moCoordinators] =
+    await Promise.all([
+      getEventsCached(filters),
+      getArtistsCached(),
+      getArtistManagersCached(),
+      getVenuesCached(),
+      getMoCoordinatorsCached(),
+    ]);
 
   return (
     <div className='h-full grid grid-rows-[min-content_min-content_1fr_min-content] gap-4'>
@@ -104,7 +113,9 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
       ) : (
         <section className='flex flex-col justify-center items-center bg-white rounded-2xl p-8'>
           <h2 className='text-base font-bold'>Nessun evento</h2>
-          <div className='text-sm font-medium text-zinc-400'>Aggiungine uno per vederlo nella lista</div>
+          <div className='text-sm font-medium text-zinc-400'>
+            Aggiungine uno per vederlo nella lista
+          </div>
         </section>
       )}
       {events.length > 0 && (

@@ -1,9 +1,13 @@
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { getCountries } from '@/lib/data/get-countries';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { TablePagination } from '../_components/form/TablePagination';
 import UserBadge from '../_components/badges/UserBadge';
-import { getVenueManagers } from '@/lib/data/venue-managers/get-venue-managers';
-import { getPaginatedVenues } from '@/lib/data/venues/get-paginated-venues';
 import ManagersBadge from '../_components/badges/ManagersBadge';
 import VenueTypeBadge from '../_components/badges/VenueTypeBadge';
 import { NEW_USER_TIME } from '@/lib/constants';
@@ -12,6 +16,9 @@ import FiltersButton from './_components/filters/FiltersButton';
 import CreateButton from './_components/create/CreateButton';
 import StatusBadge from '../_components/badges/StatusBadge';
 import { splitCsv } from '@/lib/utils';
+import { getCountriesCached } from '@/lib/cache/countries';
+import { getVenueManagersCached } from '@/lib/cache/venue-managers';
+import { getPaginatedVenuesCached } from '@/lib/cache/venues';
 
 type VenuesPageProps = {
   searchParams?: Promise<{
@@ -26,6 +33,8 @@ type VenuesPageProps = {
     capacity?: string;
   }>;
 };
+
+export const dynamic = 'force-dynamic';
 
 export default async function VenuesPage({ searchParams }: VenuesPageProps) {
   const sp = await searchParams;
@@ -43,7 +52,11 @@ export default async function VenuesPage({ searchParams }: VenuesPageProps) {
     capacity: sp?.capacity || '',
   };
 
-  const [{ data: venues, totalPages }, countries, venueManagers] = await Promise.all([getPaginatedVenues(filters), getCountries(), getVenueManagers()]);
+  const [{ data: venues, totalPages }, countries, venueManagers] = await Promise.all([
+    getPaginatedVenuesCached(filters),
+    getCountriesCached(),
+    getVenueManagersCached(),
+  ]);
 
   return (
     <div className='h-full grid grid-rows-[min-content_1fr_min-content] gap-4'>
@@ -80,7 +93,8 @@ export default async function VenuesPage({ searchParams }: VenuesPageProps) {
             {venues.map((venue, index) => {
               const isDisabled = venue.status === 'disabled';
 
-              const isNew = new Date().getTime() - new Date(venue.createdAt).getTime() < NEW_USER_TIME;
+              const isNew =
+                new Date().getTime() - new Date(venue.createdAt).getTime() < NEW_USER_TIME;
 
               const badgeStatus = isDisabled ? 'disabled' : isNew ? 'new' : undefined;
 
@@ -122,7 +136,9 @@ export default async function VenuesPage({ searchParams }: VenuesPageProps) {
       ) : (
         <section className='max-h-80 flex flex-col justify-center items-center bg-white rounded-2xl p-8'>
           <h2 className='text-base font-bold'>Nessun locale</h2>
-          <div className='text-sm font-medium text-zinc-400'>Aggiungine uno per vederlo nella lista</div>
+          <div className='text-sm font-medium text-zinc-400'>
+            Aggiungine uno per vederlo nella lista
+          </div>
         </section>
       )}
       {venues.length > 0 && (

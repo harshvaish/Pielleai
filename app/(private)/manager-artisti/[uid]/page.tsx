@@ -1,6 +1,5 @@
 import BackButton from '@/app/_components/BackButton';
 import { Separator } from '@/components/ui/separator';
-import { getArtistManager } from '@/lib/data/artist-managers/get-artist-manager';
 import { format } from 'date-fns';
 import Image from 'next/image';
 import { notFound, redirect } from 'next/navigation';
@@ -10,8 +9,6 @@ import { getProfileNotes } from '@/lib/data/notes/get-profile-notes';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import UpdateButton from './_components/update/UpdateButton';
-import { getLanguages } from '@/lib/data/get-languages';
-import { getCountries } from '@/lib/data/get-countries';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import PersonalDataTab from './_components/tabs/PersonalDataTab';
 import BillingDataTab from '../../_components/tabs/BillingDataTab';
@@ -23,6 +20,9 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Ellipsis } from 'lucide-react';
 import { toZonedTime } from 'date-fns-tz';
 import { TIME_ZONE } from '@/lib/constants';
+import { getLanguagesCached } from '@/lib/cache/languages';
+import { getCountriesCached } from '@/lib/cache/countries';
+import { getArtistManagerCached } from '@/lib/cache/artist-managers';
 
 type ArtistManagerDetailPageProps = { params: Promise<{ uid: string }> };
 
@@ -45,7 +45,11 @@ export default async function ArtistManagerDetailPage({ params }: ArtistManagerD
     redirect('/accedi');
   }
 
-  const [userData, languages, countries] = await Promise.all([getArtistManager(uid), getLanguages(), getCountries()]);
+  const [userData, languages, countries] = await Promise.all([
+    getArtistManagerCached(uid),
+    getLanguagesCached(),
+    getCountriesCached(),
+  ]);
 
   if (!userData) notFound();
 
@@ -102,7 +106,10 @@ export default async function ArtistManagerDetailPage({ params }: ArtistManagerD
                 alt='Icona profilo manager artista'
                 width={60}
                 height={60}
-                className={cn('shrink-0 w-[60px] h-[60px] rounded-full object-cover', isDisabled ? 'grayscale' : '')}
+                className={cn(
+                  'shrink-0 w-[60px] h-[60px] rounded-full object-cover',
+                  isDisabled ? 'grayscale' : '',
+                )}
               />
 
               <div className='flex flex-col gap-1.5'>
@@ -117,9 +124,15 @@ export default async function ArtistManagerDetailPage({ params }: ArtistManagerD
             </div>
 
             <div className='max-w-full flex flex-col lg:items-end gap-0.5 overflow-x-auto'>
-              <div className='flex flex-col lg:flex-row text-sm font-semibold text-zinc-500 whitespace-nowrap'>ID {userData.id}</div>
-              <div className='text-xs font-semibold text-zinc-400'>Data di creazione: {createdAtZoned}</div>
-              <div className='text-xs font-semibold text-zinc-400'>Data di aggiornamento: {updatedAtZoned}</div>
+              <div className='flex flex-col lg:flex-row text-sm font-semibold text-zinc-500 whitespace-nowrap'>
+                ID {userData.id}
+              </div>
+              <div className='text-xs font-semibold text-zinc-400'>
+                Data di creazione: {createdAtZoned}
+              </div>
+              <div className='text-xs font-semibold text-zinc-400'>
+                Data di aggiornamento: {updatedAtZoned}
+              </div>
             </div>
           </div>
           <Separator className='my-6' />

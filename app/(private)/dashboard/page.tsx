@@ -1,19 +1,21 @@
 import { Separator } from '@/components/ui/separator';
-import { getUsersToApprove } from '@/lib/data/users/get-users-to-approve';
 import UserToApproveTile from './_components/UserToApproveTile';
-import { getEvents } from '@/lib/data/events/get-events';
 import EventTile from '../eventi/_components/EventTile/EventTile';
 import Link from 'next/link';
 import { ChevronRight } from 'lucide-react';
-import { getArtists } from '@/lib/data/artists/get-artists';
-import { getMoCoordinators } from '@/lib/data/get-mo-coordinators';
-import { getVenues } from '@/lib/data/venues/get-venues';
 import EventsCalendar from './_components/EventsCalendar/EventsCalendar';
+import { getUsersToApproveCached } from '@/lib/cache/users';
+import { getEventsCached } from '@/lib/cache/events';
+import { getArtistsCached } from '@/lib/cache/artists';
+import { getMoCoordinatorsCached } from '@/lib/cache/mo-coordinators';
+import { getVenuesCached } from '@/lib/cache/venues';
+
+export const dynamic = 'force-dynamic';
 
 export default async function DashboardPage() {
   const [usersToApprove, eventsToApprove, artists, moCoordinators, venues] = await Promise.all([
-    getUsersToApprove(),
-    getEvents({
+    getUsersToApproveCached(),
+    getEventsCached({
       currentPage: null,
       status: ['proposed'],
       artistIds: [],
@@ -22,9 +24,9 @@ export default async function DashboardPage() {
       startDate: null,
       endDate: null,
     }),
-    getArtists(),
-    getMoCoordinators(),
-    getVenues(),
+    getArtistsCached(),
+    getMoCoordinatorsCached(),
+    getVenuesCached(),
   ]);
 
   return (

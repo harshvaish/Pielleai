@@ -61,7 +61,7 @@ export default function CreateArtistManagerForm({
       subdivisionId: 0,
       city: '',
       zipCode: '',
-      gender: 'maschile',
+      gender: 'male',
 
       company: '',
       taxCode: '',

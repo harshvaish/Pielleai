@@ -1,20 +1,31 @@
 import { clsx, type ClassValue } from 'clsx';
 import { View } from 'react-big-calendar';
 import { twMerge } from 'tailwind-merge';
-import { format, startOfWeek, endOfWeek, isBefore, startOfDay, startOfISOWeek, endOfISOWeek, startOfMonth, endOfMonth, endOfDay, parse } from 'date-fns';
+import {
+  format,
+  startOfWeek,
+  endOfWeek,
+  isBefore,
+  startOfDay,
+  startOfISOWeek,
+  endOfISOWeek,
+  startOfMonth,
+  endOfMonth,
+  endOfDay,
+} from 'date-fns';
 import { it } from 'date-fns/locale';
 import imageCompression from 'browser-image-compression';
-import { Availability, TimeRange } from './types';
-import { fromZonedTime } from 'date-fns-tz';
-import { TIME_ZONE } from './constants';
+import { Availability } from './types';
 
+// general
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
 export const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
-export const areSame = (a: number[], b: number[]) => a.length === b.length && a.every((id) => b.includes(id));
+export const areSame = (a: number[], b: number[]) =>
+  a.length === b.length && a.every((id) => b.includes(id));
 
 export const splitCsv = (v: string | null | undefined) =>
   v
@@ -24,7 +35,7 @@ export const splitCsv = (v: string | null | undefined) =>
         .filter(Boolean)
     : [];
 
-// CALENDAR --------------------------------------------------------
+// calendar
 export function buildCalendarLabel(date: Date, view: View): string {
   switch (view) {
     case 'day': {
@@ -41,15 +52,24 @@ export function buildCalendarLabel(date: Date, view: View): string {
 
       if (sameMonth) {
         // 01-07 Gennaio 2025
-        return `${format(start, 'd', { locale: it })}-${format(end, 'd MMMM yyyy', { locale: it })}`.replace(/\b\w/g, (c) => c.toUpperCase());
+        return `${format(start, 'd', { locale: it })}-${format(end, 'd MMMM yyyy', { locale: it })}`.replace(
+          /\b\w/g,
+          (c) => c.toUpperCase(),
+        );
       }
       // 31 Gennaio - 06 Febbraio 2026
       if (sameYear) {
-        return `${format(start, 'd MMMM', { locale: it })} - ${format(end, 'dd MMMM yyyy', { locale: it })}`.replace(/\b\w/g, (c) => c.toUpperCase());
+        return `${format(start, 'd MMMM', { locale: it })} - ${format(end, 'dd MMMM yyyy', { locale: it })}`.replace(
+          /\b\w/g,
+          (c) => c.toUpperCase(),
+        );
       }
 
       // 31 Dicembre 2025 - 06 Gennaio 2026
-      return `${format(start, 'd MMMM yyyy', { locale: it })} - ${format(end, 'dd MMMM yyyy', { locale: it })}`.replace(/\b\w/g, (c) => c.toUpperCase());
+      return `${format(start, 'd MMMM yyyy', { locale: it })} - ${format(end, 'dd MMMM yyyy', { locale: it })}`.replace(
+        /\b\w/g,
+        (c) => c.toUpperCase(),
+      );
     }
 
     case 'month':
@@ -59,25 +79,7 @@ export function buildCalendarLabel(date: Date, view: View): string {
   }
 }
 
-export function toUTCRange(start?: string, end?: string) {
-  let startUtc: Date | null = null;
-  let endUtc: Date | null = null;
-
-  if (!start || !end || start > end) {
-    return { startUtc, endUtc };
-  }
-
-  const dStart = parse(`${start} 00:00`, 'yyyy-MM-dd HH:mm', new Date());
-  startUtc = fromZonedTime(dStart, TIME_ZONE);
-
-  const dEnd = parse(`${end} 23:59:59.999`, 'yyyy-MM-dd HH:mm:ss.SSS', new Date());
-  endUtc = fromZonedTime(dEnd, TIME_ZONE);
-
-  return { startUtc, endUtc };
-}
-// CALENDAR --------------------------------------------------------
-
-// IMAGE UPLOAD --------------------------------------------------------
+// upload
 export async function getFileMagicNumber(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -142,9 +144,8 @@ export async function compressImage(file: File): Promise<File> {
   const compressedFile = await imageCompression(file, options);
   return compressedFile;
 }
-// IMAGE UPLOAD --------------------------------------------------------
 
-// BETTER AUTH --------------------------------------------------------
+// better auth
 export function getBetterAuthErrorMessage(code: string): string {
   switch (code) {
     case 'INVALID_EMAIL_OR_PASSWORD':
@@ -199,9 +200,8 @@ export function getBetterAuthErrorMessage(code: string): string {
       return 'Errore imprevisto. Riprova più tardi.';
   }
 }
-// BETTER AUTH --------------------------------------------------------
 
-// AVAILABILITIES --------------------------------------------------------
+// availabilities
 export function calculateRange(date: Date, view: View): { start: Date; end: Date } {
   switch (view) {
     case 'day':
@@ -218,59 +218,13 @@ export function calculateRange(date: Date, view: View): { start: Date; end: Date
   }
 }
 
-export function isOverlapping(aStart: string, aEnd: string, bStart: string, bEnd: string) {
-  return aStart < bEnd && bStart < aEnd;
-}
-
-export function checkTimeRanges(
-  date: string,
-  timeRanges: TimeRange[]
-):
-  | {
-      success: true;
-      message: null;
-    }
-  | {
-      success: false;
-      message: string;
-    } {
-  if (!date || isBefore(startOfDay(new Date(date)), startOfDay(new Date()))) {
-    return {
-      success: false,
-      message: 'Data selezionata non valida o scaduta.',
-    };
-  }
-
-  for (let i = 0; i < timeRanges.length; i++) {
-    const { startTime: startA, endTime: endA } = timeRanges[i];
-    if (!startA || !endA || startA >= endA) {
-      return {
-        success: false,
-        message: 'Correggi le disponibilità presenti per poter procedere.',
-      };
-    }
-
-    for (let j = i + 1; j < timeRanges.length; j++) {
-      const { startTime: startB, endTime: endB } = timeRanges[j];
-      if (isOverlapping(startA, endA, startB, endB)) {
-        return {
-          success: false,
-          message: 'Alcune disponibilità sono in conflitto di orario, rimuovi il conflitto per procedere.',
-        };
-      }
-    }
-  }
-  return {
-    success: true,
-    message: null,
-  };
-}
-
 function isOverlappingRange(aStart: Date, aEnd: Date, bStart: Date, bEnd: Date): boolean {
   return aStart < bEnd && bStart < aEnd;
 }
 
-export function checkAvailabilities(availabilities: Availability[]): { success: true; message: null } | { success: false; message: string } {
+export function checkAvailabilities(
+  availabilities: Availability[],
+): { success: true; message: null } | { success: false; message: string } {
   const today = startOfDay(new Date());
 
   for (let i = 0; i < availabilities.length; i++) {
@@ -298,7 +252,8 @@ export function checkAvailabilities(availabilities: Availability[]): { success: 
       if (isOverlappingRange(startDate, endDate, startB, endB)) {
         return {
           success: false,
-          message: 'Alcuni intervalli di date sono in conflitto, rimuovi il conflitto per procedere.',
+          message:
+            'Alcuni intervalli di date sono in conflitto, rimuovi il conflitto per procedere.',
         };
       }
     }
@@ -309,4 +264,8 @@ export function checkAvailabilities(availabilities: Availability[]): { success: 
     message: null,
   };
 }
-// AVAILABILITIES --------------------------------------------------------
+
+// cache
+export function hashKey(obj: object) {
+  return JSON.stringify(obj, Object.keys(obj).sort());
+}
