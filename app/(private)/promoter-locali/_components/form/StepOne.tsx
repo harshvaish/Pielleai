@@ -13,6 +13,7 @@ import { Country, Gender, Language, Subdivision } from '@/lib/types';
 import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { profileGenders } from '@/lib/database/schema';
+import { GENDERS_LABELS } from '@/lib/constants';
 
 type StepOneProps = { languages: Language[]; countries: Country[] };
 
@@ -415,7 +416,7 @@ export default function StepOne({ languages, countries }: StepOneProps) {
                     id={`gender-${gender}`}
                     value={gender}
                   />
-                  {gender}
+                  {GENDERS_LABELS[gender]}
                 </label>
               ))}
             </RadioGroup>

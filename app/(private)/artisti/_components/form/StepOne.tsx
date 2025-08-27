@@ -15,6 +15,7 @@ import { toast } from 'sonner';
 import ArtistManagersSelect from '../create/ArtistManagersSelect';
 import { Checkbox } from '@/components/ui/checkbox';
 import { profileGenders } from '@/lib/database/schema';
+import { GENDERS_LABELS } from '@/lib/constants';
 
 export default function StepOne({
   languages,
@@ -442,7 +443,7 @@ export default function StepOne({
                     id={`gender-${gender}`}
                     value={gender}
                   />
-                  {gender}
+                  {GENDERS_LABELS[gender]}
                 </label>
               ))}
             </RadioGroup>

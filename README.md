@@ -22,7 +22,5 @@ Convert received UTC values back to the business timezone for display.
 - change email sender in send-reset-password-email
 - rls on database
 - create subfolders for upload based on entity
-- transitions sui filtri
 - general fetches in the pages: cache
 - add swr options
-- genders enum shouls be in english in db

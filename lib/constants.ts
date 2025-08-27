@@ -1,5 +1,5 @@
 import { View } from 'react-big-calendar';
-import { EventStatus, VenueType } from './types';
+import { EventStatus, Gender, VenueType } from './types';
 
 export const TIME_ZONE = 'Europe/Rome';
 
@@ -68,6 +68,13 @@ export const NEW_USER_TIME = 1000 * 60 * 60 * 24 * 7; // 1 week
 
 // calendars
 export const CALENDAR_VIEWS: View[] = ['day', 'week', 'month'];
+
+//genders
+export const GENDERS_LABELS: Record<Gender, string> = {
+  'male': 'Maschile',
+  'female': 'Femminile',
+  'non-binary': 'Non-binary',
+};
 
 //events
 export const EVENT_STATUS_LABELS: Record<EventStatus, string> = {
