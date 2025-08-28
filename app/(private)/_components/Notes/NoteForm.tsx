@@ -39,8 +39,14 @@ export function NoteForm({
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const validation = newNoteSchema.safeParse({ writerId, receiverProfileId, newNoteContent });
+    const validation = newNoteSchema.safeParse({
+      writerId,
+      receiverId: receiverProfileId,
+      content: newNoteContent,
+    });
+
     if (!validation.success) {
+      console.error(validation.error.issues[0]);
       setError(validation.error.issues[0].message);
       return;
     }

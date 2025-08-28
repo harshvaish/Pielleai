@@ -8,8 +8,12 @@ import { eq } from 'drizzle-orm';
 import { countries, subdivisions, venues } from '@/lib/database/schema';
 import { venueS2FormSchema, VenueS2FormSchema } from '@/lib/validation/venueFormSchema';
 import { AppError } from '@/lib/classes/AppError';
+import { revalidateTag } from 'next/cache';
 
-export const updateVenueBillingData = async (venueId: number, data: VenueS2FormSchema): Promise<ServerActionResponse<null>> => {
+export const updateVenueBillingData = async (
+  venueId: number,
+  data: VenueS2FormSchema,
+): Promise<ServerActionResponse<null>> => {
   try {
     const headersList = await headers();
 
@@ -25,16 +29,25 @@ export const updateVenueBillingData = async (venueId: number, data: VenueS2FormS
     const validation = venueS2FormSchema.safeParse(data);
 
     if (!validation.success) {
-      console.error('[updateVenueBillingData] - Error: validation failed', validation.error.issues[0]);
+      console.error(
+        '[updateVenueBillingData] - Error: validation failed',
+        validation.error.issues[0],
+      );
       throw new AppError('Dati inviati non corretti.');
     }
 
     const { billingCountry, billingSubdivisionId } = validation.data;
 
     const [billingCountryCheck, billingSubdivisionCheck] = await Promise.all([
-      database.select({ id: countries.id }).from(countries).where(eq(countries.id, billingCountry.id)),
+      database
+        .select({ id: countries.id })
+        .from(countries)
+        .where(eq(countries.id, billingCountry.id)),
 
-      database.select({ id: subdivisions.id, countryId: subdivisions.countryId }).from(subdivisions).where(eq(subdivisions.id, billingSubdivisionId)),
+      database
+        .select({ id: subdivisions.id, countryId: subdivisions.countryId })
+        .from(subdivisions)
+        .where(eq(subdivisions.id, billingSubdivisionId)),
     ]);
 
     if (billingCountryCheck.length !== 1) {
@@ -46,10 +59,12 @@ export const updateVenueBillingData = async (venueId: number, data: VenueS2FormS
     }
 
     if (billingSubdivisionCheck[0].countryId != billingCountry.id) {
-      throw new AppError('La provincia fatturazione non appartiene allo stato fatturazione selezionato.');
+      throw new AppError(
+        'La provincia fatturazione non appartiene allo stato fatturazione selezionato.',
+      );
     }
 
-    await database
+    const updateResult = await database
       .update(venues)
       .set({
         company: validation.data.company,
@@ -70,7 +85,13 @@ export const updateVenueBillingData = async (venueId: number, data: VenueS2FormS
         taxableInvoice: validation.data.taxableInvoice === 'true',
         updatedAt: new Date(),
       })
-      .where(eq(venues.id, venueId));
+      .where(eq(venues.id, venueId))
+      .returning({ slug: venues.slug });
+
+    const slug = updateResult[0]?.slug;
+    if (slug) revalidateTag(`venue:${slug}`);
+    revalidateTag('venues');
+    revalidateTag('paginated-venues');
 
     return {
       success: true,

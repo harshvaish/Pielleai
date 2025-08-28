@@ -1,5 +1,5 @@
 import * as z from 'zod/v4';
-import { emailValidation, idValidation, stringDateValidation } from './_general';
+import { dateValidation, emailValidation, idValidation } from './_general';
 import { eventStatus } from '../database/schema';
 
 export const eventFormSchema = z.object({
@@ -12,8 +12,8 @@ export const eventFormSchema = z.object({
   availability: z.object(
     {
       id: idValidation.optional(),
-      startDate: stringDateValidation,
-      endDate: stringDateValidation,
+      startDate: dateValidation,
+      endDate: dateValidation,
     },
     "Seleziona un'opzione valida.",
   ),

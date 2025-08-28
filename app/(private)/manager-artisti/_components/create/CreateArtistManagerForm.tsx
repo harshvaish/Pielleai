@@ -9,7 +9,7 @@ import {
   artistManagerS3FormSchema,
   artistManagerFormSchema,
 } from '@/lib/validation/artistManagerFormSchema';
-import { useState } from 'react';
+import { MouseEvent, useState } from 'react';
 import StepOne from '../form/StepOne';
 import StepTwo from '../form/StepTwo';
 import { toast } from 'sonner';
@@ -87,7 +87,9 @@ export default function CreateArtistManagerForm({
 
   const router = useRouter();
 
-  const onNext = async () => {
+  const onNext = async (event: MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+
     const isValid = await methods.trigger(getFormFieldsForStep(step));
     if (isValid) {
       setStep((prev) => prev + 1);
@@ -96,7 +98,11 @@ export default function CreateArtistManagerForm({
     }
   };
 
-  const onPrev = () => setStep((prev) => prev - 1);
+  const onPrev = (event: MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+
+    setStep((prev) => prev - 1);
+  };
 
   const onSubmit = async (data: ArtistManagerFormSchema) => {
     const response = await createArtistManager(data);

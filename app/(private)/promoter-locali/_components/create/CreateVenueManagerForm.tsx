@@ -8,7 +8,7 @@ import {
   venueManagerS1FormSchema,
   venueManagerS2FormSchema,
 } from '@/lib/validation/venueManagerFormSchema';
-import { useState } from 'react';
+import { MouseEvent, useState } from 'react';
 import StepOne from '../form/StepOne';
 import { toast } from 'sonner';
 import StepTwo from '../form/StepTwo';
@@ -65,7 +65,9 @@ export default function CreateVenueManagerForm({
   });
   const router = useRouter();
 
-  const onNext = async () => {
+  const onNext = async (event: MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+
     const isValid = await methods.trigger(getFormFieldsForStep(step));
     if (isValid) {
       setStep((prev) => prev + 1);
@@ -74,7 +76,11 @@ export default function CreateVenueManagerForm({
     }
   };
 
-  const onPrev = () => setStep((prev) => prev - 1);
+  const onPrev = (event: MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+
+    setStep((prev) => prev - 1);
+  };
 
   const onSubmit = async (data: VenueManagerFormSchema) => {
     const response = await createVenueManager(data);

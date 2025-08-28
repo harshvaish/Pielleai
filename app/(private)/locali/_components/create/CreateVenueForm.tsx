@@ -2,7 +2,7 @@
 
 import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useState } from 'react';
+import { MouseEvent, useState } from 'react';
 import StepOne from '../form/StepOne';
 import StepTwo from '../form/StepTwo';
 import { toast } from 'sonner';
@@ -95,7 +95,9 @@ export default function CreateVenueForm({
   });
   const router = useRouter();
 
-  const onNext = async () => {
+  const onNext = async (event: MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+
     const isValid = await methods.trigger(getFormFieldsForStep(step));
     if (isValid) {
       setStep((prev) => prev + 1);
@@ -104,7 +106,11 @@ export default function CreateVenueForm({
     }
   };
 
-  const onPrev = () => setStep((prev) => prev - 1);
+  const onPrev = (event: MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+
+    setStep((prev) => prev - 1);
+  };
 
   const onSubmit = async (data: VenueFormSchema) => {
     const response = await createVenue(data);

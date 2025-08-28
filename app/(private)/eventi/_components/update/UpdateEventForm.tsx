@@ -28,6 +28,9 @@ export default function UpdateEventForm({
 }: UpdateEventFormProps) {
   const router = useRouter();
 
+  event.availability.startDate = new Date(event.availability.startDate);
+  event.availability.endDate = new Date(event.availability.endDate);
+
   const methods = useForm({
     resolver: zodResolver(eventFormSchema),
     defaultValues: {
@@ -36,8 +39,8 @@ export default function UpdateEventForm({
       artistManagerProfileId: event.artistManager?.profileId || undefined,
       availability: {
         id: event.availability.id,
-        startDate: event.availability.startDate.toISOString(),
-        endDate: event.availability.endDate.toISOString(),
+        startDate: event.availability.startDate,
+        endDate: event.availability.endDate,
       },
       venueId: event.venue.id,
 

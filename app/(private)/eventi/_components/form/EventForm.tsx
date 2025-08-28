@@ -35,8 +35,6 @@ export default function EventForm({ artists, venues, moCoordinators }: EventForm
   const selectedVenueId = watch('venueId');
   const selectedVenue = venues.find((venue) => venue.id == selectedVenueId);
 
-  console.dir(errors.availability, { depth: null });
-
   return (
     <>
       <div className='flex justify-between items-center gap-2'>

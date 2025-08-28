@@ -67,7 +67,7 @@ export const artistS1FormSchema = z.object({
 
   zones: z.array(idValidation, 'Campo malformato').min(1, 'Campo obbligatorio.'),
 
-  artistManagers: z.array(idValidation, 'Campo malformato').min(1, 'Campo obbligatorio.'),
+  artistManagers: z.array(idValidation, 'Campo malformato'),
 
   tourManagerName: nameValidation,
 

@@ -8,8 +8,12 @@ import { and, eq } from 'drizzle-orm';
 import { profiles, countries, subdivisions, users, venues } from '@/lib/database/schema';
 import { editVenueS1FormSchema, EditVenueS1FormSchema } from '@/lib/validation/venueFormSchema';
 import { AppError } from '@/lib/classes/AppError';
+import { revalidateTag } from 'next/cache';
 
-export const updateVenueGeneralData = async (venueId: number, data: EditVenueS1FormSchema): Promise<ServerActionResponse<null>> => {
+export const updateVenueGeneralData = async (
+  venueId: number,
+  data: EditVenueS1FormSchema,
+): Promise<ServerActionResponse<null>> => {
   try {
     const headersList = await headers();
 
@@ -25,7 +29,10 @@ export const updateVenueGeneralData = async (venueId: number, data: EditVenueS1F
     const validation = editVenueS1FormSchema.safeParse(data);
 
     if (!validation.success) {
-      console.error('[updateVenueGeneralData] - Error: validation failed', validation.error.issues[0]);
+      console.error(
+        '[updateVenueGeneralData] - Error: validation failed',
+        validation.error.issues[0],
+      );
       throw new AppError('I dati inviati non sono corretti.');
     }
 
@@ -34,7 +41,10 @@ export const updateVenueGeneralData = async (venueId: number, data: EditVenueS1F
     const [countryCheck, subdivisionCheck, venueManagerCheck] = await Promise.all([
       database.select({ id: countries.id }).from(countries).where(eq(countries.id, countryId)),
 
-      database.select({ id: subdivisions.id, countryId: subdivisions.countryId }).from(subdivisions).where(eq(subdivisions.id, subdivisionId)),
+      database
+        .select({ id: subdivisions.id, countryId: subdivisions.countryId })
+        .from(subdivisions)
+        .where(eq(subdivisions.id, subdivisionId)),
 
       database
         .select({ id: profiles.id })
@@ -59,7 +69,7 @@ export const updateVenueGeneralData = async (venueId: number, data: EditVenueS1F
       throw new AppError('Manager selezionato non valido.');
     }
 
-    await database
+    const updateResult = await database
       .update(venues)
       .set({
         avatarUrl: validation.data.avatarUrl,
@@ -74,7 +84,13 @@ export const updateVenueGeneralData = async (venueId: number, data: EditVenueS1F
         managerProfileId: venueManagerId,
         updatedAt: new Date(),
       })
-      .where(eq(venues.id, venueId));
+      .where(eq(venues.id, venueId))
+      .returning({ slug: venues.slug });
+
+    const slug = updateResult[0]?.slug;
+    if (slug) revalidateTag(`venue:${slug}`);
+    revalidateTag('venues');
+    revalidateTag('paginated-venues');
 
     return {
       success: true,

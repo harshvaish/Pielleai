@@ -37,6 +37,7 @@ export default function GeneralDataForm({
       city: venueData.city || '',
       zipCode: venueData.zipCode || '',
       venueManagerId: venueData.manager.profileId || 0,
+      acceptTerms: true,
     }),
     [venueData],
   );
