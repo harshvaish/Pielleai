@@ -7,7 +7,7 @@ import {
   ToolbarProps as RBCToolbarProps,
 } from 'react-big-calendar';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
-import '@/app/(private)/_components/Calendar/calendar-overrides.css';
+import './calendar-overrides.css';
 import { endOfDay, format, getDay, parse, startOfDay, startOfWeek } from 'date-fns';
 import { CALENDAR_VIEWS, TIME_ZONE } from '@/lib/constants';
 import ShowMore from './ShowMore';
