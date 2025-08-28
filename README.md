@@ -26,6 +26,6 @@ Convert received UTC values back to the business timezone for display.
 - validate filters before passing down
 
 - send email when pre-confirm or confirm
-- check everithing
+- button export
 
 - se ad un evento in conflitto cambio sia locale che disponibilità gli altri rimangono in conflitto ( o cambio stato manualmente)
