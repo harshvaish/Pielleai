@@ -2,11 +2,28 @@
 
 import { PAGINATED_TABLE_ROWS_X_PAGE } from '@/lib/constants';
 import { database } from '@/lib/database/connection';
-import { artists, events, artistAvailabilities, venues, eventNotes, profiles, users, moCoordinators } from '@/lib/database/schema';
+import {
+  artists,
+  events,
+  artistAvailabilities,
+  venues,
+  eventNotes,
+  profiles,
+  users,
+  moCoordinators,
+} from '@/lib/database/schema';
 import { Event, EventNote, EventsTableFilters } from '@/lib/types';
 import { and, count, desc, eq, inArray, sql } from 'drizzle-orm';
 
-export async function getEvents({ currentPage, status, artistIds, artistManagerIds, venueIds, startDate, endDate }: EventsTableFilters): Promise<{
+export async function getEvents({
+  currentPage,
+  status,
+  artistIds,
+  artistManagerIds,
+  venueIds,
+  startDate,
+  endDate,
+}: EventsTableFilters): Promise<{
   data: Event[];
   totalPages: number;
   currentPage: number;
@@ -29,9 +46,11 @@ export async function getEvents({ currentPage, status, artistIds, artistManagerI
     const filters = and(
       status.length > 0 ? inArray(events.status, status) : undefined,
       artistIds.length > 0 ? inArray(events.artistId, artistIds.map(Number)) : undefined,
-      artistManagerIds.length > 0 ? inArray(events.artistManagerProfileId, artistManagerIds.map(Number)) : undefined,
+      artistManagerIds.length > 0
+        ? inArray(events.artistManagerProfileId, artistManagerIds.map(Number))
+        : undefined,
       venueIds.length > 0 ? inArray(events.venueId, venueIds.map(Number)) : undefined,
-      rangeWindow ? sql`${artistAvailabilities.timeRange} && ${rangeWindow}` : undefined
+      rangeWindow ? sql`${artistAvailabilities.timeRange} && ${rangeWindow}` : undefined,
     );
 
     // Base query
@@ -60,6 +79,7 @@ export async function getEvents({ currentPage, status, artistIds, artistManagerI
           slug: venues.slug,
           avatarUrl: venues.avatarUrl,
           name: venues.name,
+          address: venues.address,
         },
 
         status: events.status,
@@ -157,7 +177,11 @@ export async function getEvents({ currentPage, status, artistIds, artistManagerI
             .where(inArray(eventNotes.eventId, eventIds))
             .orderBy(eventNotes.createdAt)
         : Promise.resolve([]),
-      database.select({ eventCount: count() }).from(events).innerJoin(artistAvailabilities, eq(events.availabilityId, artistAvailabilities.id)).where(filters),
+      database
+        .select({ eventCount: count() })
+        .from(events)
+        .innerJoin(artistAvailabilities, eq(events.availabilityId, artistAvailabilities.id))
+        .where(filters),
     ]);
 
     // Group notes by eventId

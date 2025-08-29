@@ -5,7 +5,7 @@ import { useFormContext } from 'react-hook-form';
 import { Plus, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { EventFormSchema } from '@/lib/validation/eventFormSchema';
+import { EventFormSchema } from '@/lib/validation/event-form-schema';
 import { cn } from '@/lib/utils';
 
 export default function EventNotesInput() {
@@ -94,7 +94,11 @@ export default function EventNotesInput() {
           </div>
         ))}
 
-      {!isInputVisible && notes.length === 0 && <div className='py-1 text-sm text-zinc-400'>Premi il pulsante + per aggiungere una nota.</div>}
+      {!isInputVisible && notes.length === 0 && (
+        <div className='py-1 text-sm text-zinc-400'>
+          Premi il pulsante + per aggiungere una nota.
+        </div>
+      )}
     </div>
   );
 }

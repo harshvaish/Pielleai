@@ -24,7 +24,9 @@ export function FiltersButton({ filters, artists, venues }: FiltersButtonProps) 
   const [open, setOpen] = useState<boolean>(false);
   const [isPending, startTransition] = useTransition();
 
-  const active = Boolean(filters.artistIds.length && filters.venueIds.length && filters.status.length);
+  const active = Boolean(
+    filters.artistIds.length || filters.venueIds.length || filters.status.length,
+  );
 
   const [artistIds, setArtistIds] = useState<string[]>(filters.artistIds || []);
   const [venueIds, setVenueIds] = useState<string[]>(filters.venueIds || []);
@@ -37,7 +39,9 @@ export function FiltersButton({ filters, artists, venues }: FiltersButtonProps) 
   };
 
   const toggleStatus = (value: EventStatus, next: boolean) => {
-    setStatus((prev) => (next ? Array.from(new Set([...prev, value])) : prev.filter((v) => v !== value)));
+    setStatus((prev) =>
+      next ? Array.from(new Set([...prev, value])) : prev.filter((v) => v !== value),
+    );
   };
 
   const submitHandler = async () => {

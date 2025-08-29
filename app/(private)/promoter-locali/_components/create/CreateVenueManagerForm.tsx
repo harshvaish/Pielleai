@@ -7,7 +7,7 @@ import {
   VenueManagerFormSchema,
   venueManagerS1FormSchema,
   venueManagerS2FormSchema,
-} from '@/lib/validation/venueManagerFormSchema';
+} from '@/lib/validation/venue-manager-form-schema';
 import { MouseEvent, useState } from 'react';
 import StepOne from '../form/StepOne';
 import { toast } from 'sonner';

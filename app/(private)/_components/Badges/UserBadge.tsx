@@ -28,14 +28,14 @@ export default function UserBadge({
           src={avatarUrl}
           className={cn(isDisabled ? 'grayscale' : '')}
         />
-        <AvatarFallback>{name.substring(0, 1)}</AvatarFallback>
+        <AvatarFallback>{name.substring(0, 1).toUpperCase()}</AvatarFallback>
       </Avatar>
 
       <span
         className={cn(
           'font-semibold line-clamp-1 text-ellipsis',
           isSmall ? 'text-xs' : 'text-sm',
-          isDisabled ? 'text-zinc-500' : 'text-zinc-700'
+          isDisabled ? 'text-zinc-500' : 'text-zinc-700',
         )}
       >
         {name} {surname}

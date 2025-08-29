@@ -14,7 +14,12 @@ type ArtistManagersSelectProps = {
   hasError: boolean;
 };
 
-export default function ArtistManagersSelect({ artistManagers, value, onChange, hasError }: ArtistManagersSelectProps) {
+export default function ArtistManagersSelect({
+  artistManagers,
+  value,
+  onChange,
+  hasError,
+}: ArtistManagersSelectProps) {
   const handleAddManager = (profileId: string) => {
     const id = parseInt(profileId);
     if (value.includes(id)) return;
@@ -45,7 +50,7 @@ export default function ArtistManagersSelect({ artistManagers, value, onChange, 
               <div className='flex items-center gap-2 flex-nowrap'>
                 <Avatar className='w-6 h-6'>
                   <AvatarImage src={manager.avatarUrl} />
-                  <AvatarFallback>{manager.name.substring(0, 1)}</AvatarFallback>
+                  <AvatarFallback>{manager.name.substring(0, 1).toUpperCase()}</AvatarFallback>
                 </Avatar>
                 {manager.name} {manager.surname}
               </div>

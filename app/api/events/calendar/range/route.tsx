@@ -1,7 +1,6 @@
 import { getCalendarEvents } from '@/lib/data/events/get-calendar-events';
 import { splitCsv } from '@/lib/utils';
 import { type NextRequest, NextResponse } from 'next/server';
-import { headers } from 'next/headers';
 import { auth } from '@/lib/auth';
 import { z } from 'zod/v4';
 import { stringDateValidation, stringIdValidation } from '@/lib/validation/_general';
@@ -12,9 +11,8 @@ export async function GET(
   request: NextRequest,
 ): Promise<NextResponse<ApiResponse<CalendarEvent[]>>> {
   try {
-    const requestHeaders = await headers();
     const session = await auth.api.getSession({
-      headers: requestHeaders,
+      headers: request.headers,
     });
 
     if (!session || session.user.role !== 'admin') {

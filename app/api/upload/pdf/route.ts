@@ -1,4 +1,4 @@
-import { pdfUploadSchema } from '@/lib/validation/pdfUploadSchema';
+import { pdfUploadSchema } from '@/lib/validation/pdf-upload-schema';
 import { supabaseServerClient } from '../../../../lib/supabase-server-client';
 import { NextRequest, NextResponse } from 'next/server';
 import { sanitizeFileName } from '@/lib/utils';

@@ -6,7 +6,7 @@ import { ServerActionResponse } from '@/lib/types';
 import {
   ArtistManagerS1FormSchema,
   artistManagerS1FormSchema,
-} from '@/lib/validation/artistManagerFormSchema';
+} from '@/lib/validation/artist-manager-form-schema';
 import { database } from '@/lib/database/connection';
 import { eq, inArray } from 'drizzle-orm';
 import {

@@ -117,7 +117,7 @@ export default function SearchBar() {
                     src={item.avatarUrl}
                     className='w-full'
                   />
-                  <AvatarFallback>{item.fullName.substring(0, 1)}</AvatarFallback>
+                  <AvatarFallback>{item.fullName.substring(0, 1).toUpperCase()}</AvatarFallback>
                 </Avatar>
                 <span className='grow text-xs font-medium truncate'>{item.fullName}</span>
                 <span className='text-xs font-light text-zinc-400 truncate'>{item.role}</span>

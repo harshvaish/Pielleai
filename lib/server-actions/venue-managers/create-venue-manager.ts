@@ -17,7 +17,7 @@ import { getBetterAuthErrorMessage } from '@/lib/utils';
 import {
   venueManagerFormSchema,
   VenueManagerFormSchema,
-} from '@/lib/validation/venueManagerFormSchema';
+} from '@/lib/validation/venue-manager-form-schema';
 import { AppError } from '@/lib/classes/AppError';
 import { revalidateTag } from 'next/cache';
 

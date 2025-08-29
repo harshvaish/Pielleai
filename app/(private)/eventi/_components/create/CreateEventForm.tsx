@@ -7,7 +7,7 @@ import { X } from 'lucide-react';
 import { ArtistSelectData, MoCoordinator, VenueSelectData } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
-import { EventFormSchema, eventFormSchema } from '@/lib/validation/eventFormSchema';
+import { EventFormSchema, eventFormSchema } from '@/lib/validation/event-form-schema';
 import { createEvent } from '@/lib/server-actions/events/create-event';
 import EventForm from '../form/EventForm';
 

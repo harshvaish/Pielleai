@@ -5,10 +5,14 @@ import { AppError } from '@/lib/classes/AppError';
 import { database } from '@/lib/database/connection';
 import { artistNotes } from '@/lib/database/schema';
 import { ProfileNote, ServerActionResponse } from '@/lib/types';
-import { newNoteSchema } from '@/lib/validation/newNoteSchema';
+import { newNoteSchema } from '@/lib/validation/new-note-schema';
 import { headers } from 'next/headers';
 
-export async function createArtistNote(writerId: string, artistId: number, content: string): Promise<ServerActionResponse<ProfileNote | null>> {
+export async function createArtistNote(
+  writerId: string,
+  artistId: number,
+  content: string,
+): Promise<ServerActionResponse<ProfileNote | null>> {
   try {
     const headersList = await headers();
 

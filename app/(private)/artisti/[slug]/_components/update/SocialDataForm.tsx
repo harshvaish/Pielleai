@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { X } from 'lucide-react';
-import { ArtistS3FormSchema, artistS3FormSchema } from '@/lib/validation/artistFormSchema';
+import { ArtistS3FormSchema, artistS3FormSchema } from '@/lib/validation/artist-form-schema';
 import { format } from 'date-fns';
 import { updateArtistSocialData } from '@/lib/server-actions/artists/update-artist-social-data';
 import StepThree from '@/app/(private)/artisti/_components/form/StepThree';

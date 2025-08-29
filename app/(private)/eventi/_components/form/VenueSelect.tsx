@@ -5,7 +5,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger } from '@/components/u
 import { cn } from '@/lib/utils';
 import { VenueSelectData } from '@/lib/types';
 import Image from 'next/image';
-import { EventFormSchema } from '@/lib/validation/eventFormSchema';
+import { EventFormSchema } from '@/lib/validation/event-form-schema';
 
 type VenueSelectProps = { venues: VenueSelectData[] };
 

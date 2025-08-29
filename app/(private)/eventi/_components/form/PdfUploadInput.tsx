@@ -2,8 +2,8 @@
 
 import { Button } from '@/components/ui/button';
 import { cn, getFileMagicNumber, isValidPdfMagicNumber } from '@/lib/utils';
-import { pdfUploadSchema } from '@/lib/validation/pdfUploadSchema';
-import { EventFormSchema } from '@/lib/validation/eventFormSchema';
+import { pdfUploadSchema } from '@/lib/validation/pdf-upload-schema';
+import { EventFormSchema } from '@/lib/validation/event-form-schema';
 import { Trash2, Upload } from 'lucide-react';
 import React, { useRef, useState } from 'react';
 import { useFormContext } from 'react-hook-form';

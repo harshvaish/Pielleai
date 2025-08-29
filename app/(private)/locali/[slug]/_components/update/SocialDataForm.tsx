@@ -9,7 +9,7 @@ import { useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { X } from 'lucide-react';
 import { format } from 'date-fns';
-import { venueS3FormSchema, VenueS3FormSchema } from '@/lib/validation/venueFormSchema';
+import { venueS3FormSchema, VenueS3FormSchema } from '@/lib/validation/venue-form-schema';
 import { updateVenueSocialData } from '@/lib/server-actions/venues/update-venue-social-data';
 import StepThree from '../../../_components/form/StepThree';
 

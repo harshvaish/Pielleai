@@ -17,7 +17,7 @@ import {
   managerArtists,
   artistZones,
 } from '@/lib/database/schema';
-import { artistFormSchema, ArtistFormSchema } from '@/lib/validation/artistFormSchema';
+import { artistFormSchema, ArtistFormSchema } from '@/lib/validation/artist-form-schema';
 import { AppError } from '@/lib/classes/AppError';
 import { revalidateTag } from 'next/cache';
 

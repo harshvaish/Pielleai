@@ -6,7 +6,7 @@ import { ServerActionResponse } from '@/lib/types';
 import { database } from '@/lib/database/connection';
 import { eq } from 'drizzle-orm';
 import { countries, subdivisions, venues } from '@/lib/database/schema';
-import { venueS2FormSchema, VenueS2FormSchema } from '@/lib/validation/venueFormSchema';
+import { venueS2FormSchema, VenueS2FormSchema } from '@/lib/validation/venue-form-schema';
 import { AppError } from '@/lib/classes/AppError';
 import { revalidateTag } from 'next/cache';
 

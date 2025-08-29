@@ -1,7 +1,14 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from '@/components/ui/command';
 import { ArtistManagerSelectData } from '@/lib/types';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Check, Eraser } from 'lucide-react';
@@ -77,13 +84,20 @@ export default function ArtistManagerSelect({
                       <div className='flex items-center gap-2 truncate'>
                         <Avatar className='w-6 h-6'>
                           <AvatarImage src={manager.avatarUrl} />
-                          <AvatarFallback>{manager.name.substring(0, 1)}</AvatarFallback>
+                          <AvatarFallback>
+                            {manager.name.substring(0, 1).toUpperCase()}
+                          </AvatarFallback>
                         </Avatar>
                         <span className='truncate'>
                           {manager.name} {manager.surname}
                         </span>
                       </div>
-                      <Check className={cn('transition-opacity', isSelected ? 'opacity-100' : 'opacity-0')} />
+                      <Check
+                        className={cn(
+                          'transition-opacity',
+                          isSelected ? 'opacity-100' : 'opacity-0',
+                        )}
+                      />
                     </div>
                   </CommandItem>
                 );

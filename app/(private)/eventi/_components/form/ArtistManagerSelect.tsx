@@ -8,7 +8,7 @@ import { cn, fetcher } from '@/lib/utils';
 import { ArtistManagerSelectData } from '@/lib/types';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
-import { EventFormSchema } from '@/lib/validation/eventFormSchema';
+import { EventFormSchema } from '@/lib/validation/event-form-schema';
 
 export default function ArtistManagerSelect() {
   const { watch, control, formState } = useFormContext<EventFormSchema>();

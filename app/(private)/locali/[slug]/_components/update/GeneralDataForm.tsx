@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { X } from 'lucide-react';
-import { EditVenueS1FormSchema, editVenueS1FormSchema } from '@/lib/validation/venueFormSchema';
+import { EditVenueS1FormSchema, editVenueS1FormSchema } from '@/lib/validation/venue-form-schema';
 import { updateVenueGeneralData } from '@/lib/server-actions/venues/update-venue-general-data';
 import StepOne from '../../../_components/form/StepOne';
 

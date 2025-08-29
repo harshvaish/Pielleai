@@ -2,12 +2,19 @@
 
 import ResponsivePopover from '@/app/_components/ResponsivePopover';
 import { Button } from '@/components/ui/button';
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from '@/components/ui/command';
 import { cn } from '@/lib/utils';
 import { useEffect, useState } from 'react';
 import { Check, Eraser } from 'lucide-react';
-import VenueTypeBadge from '../badges/VenueTypeBadge';
 import { venueTypes } from '@/lib/database/schema';
+import VenueTypeBadge from '../badges/VenueTypeBadge';
 
 type VenueTypeSelectProps = { initialValue: string[]; onConfirm: (selected: string[]) => void };
 
@@ -68,7 +75,12 @@ export default function VenueTypeSelect({ initialValue, onConfirm }: VenueTypeSe
                   >
                     <div className='w-full flex justify-between items-center gap-2 hover:cursor-pointer'>
                       <VenueTypeBadge type={type} />
-                      <Check className={cn('transition-opacity', isSelected ? 'opacity-100' : 'opacity-0')} />
+                      <Check
+                        className={cn(
+                          'transition-opacity',
+                          isSelected ? 'opacity-100' : 'opacity-0',
+                        )}
+                      />
                     </div>
                   </CommandItem>
                 );

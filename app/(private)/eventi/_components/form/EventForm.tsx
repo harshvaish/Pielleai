@@ -16,7 +16,7 @@ import EventNotesInput from './EventNotesInput';
 import { Controller, useFormContext } from 'react-hook-form';
 import ArtistSelect from './ArtistSelect';
 import { eventStatus } from '@/lib/database/schema';
-import { EventFormSchema } from '@/lib/validation/eventFormSchema';
+import { EventFormSchema } from '@/lib/validation/event-form-schema';
 
 type EventForm = {
   artists: ArtistSelectData[];

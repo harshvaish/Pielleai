@@ -9,17 +9,17 @@ import { getProfileNotes } from '@/lib/data/notes/get-profile-notes';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import PersonalDataTab from './_components/tabs/PersonalDataTab';
 import StatusBadge from '../../_components/badges/StatusBadge';
 import NotesSection from '../../_components/notes/NotesSection';
 import ToggleBlockButton from '../../_components/ToggleBlockButton';
 import UpdateButton from './_components/update/UpdateButton';
-import ManagedVenuesTab from './_components/tabs/ManagedVenuesTab';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Ellipsis } from 'lucide-react';
 import { getLanguagesCached } from '@/lib/cache/languages';
 import { getCountriesCached } from '@/lib/cache/countries';
 import { getVenueManagerCached } from '@/lib/cache/venue-managers';
+import ManagedVenuesTab from './_components/Tabs/ManagedVenuesTab';
+import PersonalDataTab from './_components/Tabs/PersonalDataTab';
 
 type VenueManagerDetailPageProps = { params: Promise<{ uid: string }> };
 

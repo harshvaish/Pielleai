@@ -15,7 +15,7 @@ import {
 import {
   venueManagerS1FormSchema,
   VenueManagerS1FormSchema,
-} from '@/lib/validation/venueManagerFormSchema';
+} from '@/lib/validation/venue-manager-form-schema';
 import { AppError } from '@/lib/classes/AppError';
 import { revalidateTag } from 'next/cache';
 

@@ -6,7 +6,7 @@ import { useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
 import { X } from 'lucide-react';
-import { ArtistS2FormSchema, artistS2FormSchema } from '@/lib/validation/artistFormSchema';
+import { ArtistS2FormSchema, artistS2FormSchema } from '@/lib/validation/artist-form-schema';
 import { updateArtistBillingData } from '@/lib/server-actions/artists/update-artist-billing-data';
 import StepTwo from '@/app/(private)/artisti/_components/form/StepTwo';
 

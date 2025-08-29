@@ -1,4 +1,4 @@
-import { avatarUploadSchema } from '@/lib/validation/avatarUploadSchema';
+import { avatarUploadSchema } from '@/lib/validation/avatar-upload-schema';
 import { supabaseServerClient } from '../../../../lib/supabase-server-client';
 import { NextRequest, NextResponse } from 'next/server';
 import { sanitizeFileName } from '@/lib/utils';

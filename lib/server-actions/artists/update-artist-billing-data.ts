@@ -6,7 +6,7 @@ import { ServerActionResponse } from '@/lib/types';
 import { database } from '@/lib/database/connection';
 import { eq } from 'drizzle-orm';
 import { countries, subdivisions, artists } from '@/lib/database/schema';
-import { artistS2FormSchema, ArtistS2FormSchema } from '@/lib/validation/artistFormSchema';
+import { artistS2FormSchema, ArtistS2FormSchema } from '@/lib/validation/artist-form-schema';
 import { AppError } from '@/lib/classes/AppError';
 import { revalidateTag } from 'next/cache';
 

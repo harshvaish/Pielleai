@@ -5,10 +5,14 @@ import { AppError } from '@/lib/classes/AppError';
 import { database } from '@/lib/database/connection';
 import { profileNotes } from '@/lib/database/schema';
 import { ProfileNote, ServerActionResponse } from '@/lib/types';
-import { newNoteSchema } from '@/lib/validation/newNoteSchema';
+import { newNoteSchema } from '@/lib/validation/new-note-schema';
 import { headers } from 'next/headers';
 
-export async function createProfileNote(writerId: string, receiverProfileId: number, content: string): Promise<ServerActionResponse<ProfileNote | null>> {
+export async function createProfileNote(
+  writerId: string,
+  receiverProfileId: number,
+  content: string,
+): Promise<ServerActionResponse<ProfileNote | null>> {
   try {
     const headersList = await headers();
 
@@ -21,7 +25,11 @@ export async function createProfileNote(writerId: string, receiverProfileId: num
       throw new AppError('Non sei autorizzato.');
     }
 
-    const validation = newNoteSchema.safeParse({ writerId, receiverId: receiverProfileId, content });
+    const validation = newNoteSchema.safeParse({
+      writerId,
+      receiverId: receiverProfileId,
+      content,
+    });
     if (!validation.success) {
       throw new AppError('Dati inviati non corretti.');
     }

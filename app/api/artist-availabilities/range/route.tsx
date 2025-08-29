@@ -2,7 +2,6 @@ import { auth } from '@/lib/auth';
 import { getArtistRangeAvailabilities } from '@/lib/data/artists/get-artist-range-availabilities';
 import { ApiResponse, ArtistAvailability } from '@/lib/types';
 import { stringDateValidation } from '@/lib/validation/_general';
-import { headers } from 'next/headers';
 import { type NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod/v4';
 
@@ -10,9 +9,8 @@ export async function GET(
   request: NextRequest,
 ): Promise<NextResponse<ApiResponse<ArtistAvailability[]>>> {
   try {
-    const requestHeaders = await headers();
     const session = await auth.api.getSession({
-      headers: requestHeaders,
+      headers: request.headers,
     });
 
     if (!session || session.user.role !== 'admin') {

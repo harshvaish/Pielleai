@@ -18,7 +18,7 @@ import {
   venueS1FormSchema,
   venueS2FormSchema,
   venueS3FormSchema,
-} from '@/lib/validation/venueFormSchema';
+} from '@/lib/validation/venue-form-schema';
 import { createVenue } from '@/lib/server-actions/venues/create-venue';
 
 function getFormFieldsForStep(step: number): Array<keyof VenueFormSchema> {

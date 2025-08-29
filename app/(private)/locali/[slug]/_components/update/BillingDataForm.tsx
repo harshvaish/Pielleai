@@ -6,7 +6,7 @@ import { useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
 import { X } from 'lucide-react';
-import { VenueS2FormSchema, venueS2FormSchema } from '@/lib/validation/venueFormSchema';
+import { VenueS2FormSchema, venueS2FormSchema } from '@/lib/validation/venue-form-schema';
 import { updateVenueBillingData } from '@/lib/server-actions/venues/update-venue-billing-data';
 import StepTwo from '../../../_components/form/StepTwo';
 

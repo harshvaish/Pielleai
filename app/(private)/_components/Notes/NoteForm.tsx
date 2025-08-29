@@ -6,7 +6,7 @@ import { useState, useTransition } from 'react';
 import { toast } from 'sonner';
 import { createProfileNote } from '@/lib/server-actions/notes/create-profile-note';
 import { ProfileNote } from '@/lib/types';
-import { newNoteSchema } from '@/lib/validation/newNoteSchema';
+import { newNoteSchema } from '@/lib/validation/new-note-schema';
 import { createArtistNote } from '@/lib/server-actions/notes/create-artist-note';
 
 export function NoteForm({

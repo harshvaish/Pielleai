@@ -1,7 +1,11 @@
 'use client';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { ArtistSelectData } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { ChevronDown } from 'lucide-react';
@@ -34,13 +38,15 @@ export default function ArtistsBadge({ artists }: { artists: ArtistSelectData[] 
                 className='w-5 h-5'
               >
                 <AvatarImage src={artist.avatarUrl} />
-                <AvatarFallback>{artist.stageName.substring(0, 1)}</AvatarFallback>
+                <AvatarFallback>{artist.stageName.substring(0, 1).toUpperCase()}</AvatarFallback>
               </Avatar>
             );
           })}
         </div>
         <span className='text-xs font-semibold text-zinc-700 truncate'>{count} Artisti</span>
-        <ChevronDown className={cn('size-4 transition-transform', isDropdownOpen ? 'rotate-180' : '')} />
+        <ChevronDown
+          className={cn('size-4 transition-transform', isDropdownOpen ? 'rotate-180' : '')}
+        />
       </DropdownMenuTrigger>
 
       <DropdownMenuContent className='flex flex-col gap-2 p-2'>
@@ -70,11 +76,23 @@ function ArtistBadge({ artist }: { artist: ArtistSelectData }) {
           src={artist.avatarUrl}
           className={isDisabled ? 'grayscale' : ''}
         />
-        <AvatarFallback>{artist.stageName.substring(0, 1)}</AvatarFallback>
+        <AvatarFallback>{artist.stageName.substring(0, 1).toUpperCase()}</AvatarFallback>
       </Avatar>
       <div className='max-w-full overflow-hidden'>
-        <div className={cn('text-xs font-semibold truncate', isDisabled ? 'text-zinc-400' : 'text-zinc-700')}>@{artist.stageName}</div>
-        <div className={cn('text-[10px] font-medium truncate', isDisabled ? 'text-zinc-300' : 'text-zinc-500')}>
+        <div
+          className={cn(
+            'text-xs font-semibold truncate',
+            isDisabled ? 'text-zinc-400' : 'text-zinc-700',
+          )}
+        >
+          @{artist.stageName}
+        </div>
+        <div
+          className={cn(
+            'text-[10px] font-medium truncate',
+            isDisabled ? 'text-zinc-300' : 'text-zinc-500',
+          )}
+        >
           {artist.name} {artist.surname}
         </div>
       </div>

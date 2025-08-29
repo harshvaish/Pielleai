@@ -14,7 +14,7 @@ import {
   eventNotes,
   artistAvailabilities,
 } from '@/lib/database/schema';
-import { eventFormSchema, EventFormSchema } from '@/lib/validation/eventFormSchema';
+import { eventFormSchema, EventFormSchema } from '@/lib/validation/event-form-schema';
 import { isBefore } from 'date-fns';
 import { AppError } from '@/lib/classes/AppError';
 import { revalidateTag } from 'next/cache';

@@ -9,7 +9,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { EventFormSchema } from '@/lib/validation/eventFormSchema';
+import { EventFormSchema } from '@/lib/validation/event-form-schema';
 import { Check, Minus, Plus } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { useFormContext } from 'react-hook-form';

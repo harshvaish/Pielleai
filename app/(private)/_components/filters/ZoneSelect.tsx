@@ -2,14 +2,25 @@
 
 import ResponsivePopover from '@/app/_components/ResponsivePopover';
 import { Button } from '@/components/ui/button';
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from '@/components/ui/command';
 import { cn } from '@/lib/utils';
 import { useEffect, useState } from 'react';
-import { ZoneBadge } from '../badges/ZonesBadge';
 import { Check, Eraser } from 'lucide-react';
 import { Zone } from '@/lib/types';
+import { ZoneBadge } from '../badges/ZonesBadge';
 
-type ZoneSelectProps = { initialValue: string[]; zones: Zone[]; onConfirm: (selected: string[]) => void };
+type ZoneSelectProps = {
+  initialValue: string[];
+  zones: Zone[];
+  onConfirm: (selected: string[]) => void;
+};
 
 export default function ZoneSelect({ initialValue, zones, onConfirm }: ZoneSelectProps) {
   const [open, setOpen] = useState<boolean>(false);
@@ -69,7 +80,12 @@ export default function ZoneSelect({ initialValue, zones, onConfirm }: ZoneSelec
                   >
                     <div className='w-full flex justify-between items-center gap-2 hover:cursor-pointer'>
                       <ZoneBadge zone={zone} />
-                      <Check className={cn('transition-opacity', isSelected ? 'opacity-100' : 'opacity-0')} />
+                      <Check
+                        className={cn(
+                          'transition-opacity',
+                          isSelected ? 'opacity-100' : 'opacity-0',
+                        )}
+                      />
                     </div>
                   </CommandItem>
                 );

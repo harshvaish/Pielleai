@@ -3,13 +3,20 @@
 import * as React from 'react';
 
 import { Button } from '@/components/ui/button';
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from '@/components/ui/command';
 import { ArtistSelectData } from '@/lib/types';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Check, ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useFormContext } from 'react-hook-form';
-import { EventFormSchema } from '@/lib/validation/eventFormSchema';
+import { EventFormSchema } from '@/lib/validation/event-form-schema';
 import ResponsivePopover from '@/app/_components/ResponsivePopover';
 
 type ArtistSelectProps = {
@@ -44,13 +51,17 @@ export default function ArtistSelect({ artists, value, setValue, hasError }: Art
         <Button
           variant='outline'
           size='sm'
-          className={cn('min-w-40 justify-start text-sm font-normal', hasError && 'border-destructive')}
+          className={cn(
+            'min-w-40 justify-start text-sm font-normal',
+            hasError && 'border-destructive',
+          )}
         >
           {selectedArtist ? (
             selectedArtist.stageName
           ) : (
             <span className='flex justify-start items-center gap-2 text-zinc-400'>
-              Seleziona artista <ChevronDown className={cn('transition-transform', open ? 'rotate-180' : '')} />
+              Seleziona artista{' '}
+              <ChevronDown className={cn('transition-transform', open ? 'rotate-180' : '')} />
             </span>
           )}
         </Button>
@@ -76,11 +87,18 @@ export default function ArtistSelect({ artists, value, setValue, hasError }: Art
                       <div className='flex items-center gap-2 truncate'>
                         <Avatar className='w-6 h-6'>
                           <AvatarImage src={artist.avatarUrl} />
-                          <AvatarFallback>{artist.stageName.substring(0, 1)}</AvatarFallback>
+                          <AvatarFallback>
+                            {artist.stageName.substring(0, 1).toUpperCase()}
+                          </AvatarFallback>
                         </Avatar>
                         <span className='truncate'>{artist.stageName}</span>
                       </div>
-                      <Check className={cn('transition-opacity', isSelected ? 'opacity-100' : 'opacity-0')} />
+                      <Check
+                        className={cn(
+                          'transition-opacity',
+                          isSelected ? 'opacity-100' : 'opacity-0',
+                        )}
+                      />
                     </div>
                   </CommandItem>
                 );

@@ -10,12 +10,10 @@ import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import UpdateButton from './_components/update/UpdateButton';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import PersonalDataTab from './_components/tabs/PersonalDataTab';
 import BillingDataTab from '../../_components/tabs/BillingDataTab';
 import StatusBadge from '../../_components/badges/StatusBadge';
 import NotesSection from '../../_components/notes/NotesSection';
 import ToggleBlockButton from '../../_components/ToggleBlockButton';
-import ManagedArtistsTab from './_components/tabs/ManagedArtistsTab';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Ellipsis } from 'lucide-react';
 import { toZonedTime } from 'date-fns-tz';
@@ -23,6 +21,8 @@ import { TIME_ZONE } from '@/lib/constants';
 import { getLanguagesCached } from '@/lib/cache/languages';
 import { getCountriesCached } from '@/lib/cache/countries';
 import { getArtistManagerCached } from '@/lib/cache/artist-managers';
+import ManagedArtistsTab from './_components/Tabs/ManagedArtistsTab';
+import PersonalDataTab from './_components/Tabs/PersonalDataTab';
 
 type ArtistManagerDetailPageProps = { params: Promise<{ uid: string }> };
 

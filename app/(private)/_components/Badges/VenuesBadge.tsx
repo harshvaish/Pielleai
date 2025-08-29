@@ -1,7 +1,11 @@
 'use client';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { VenueBadgeData } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { ChevronDown } from 'lucide-react';
@@ -34,13 +38,17 @@ export default function VenuesBadge({ venues }: { venues: VenueBadgeData[] }) {
                 className='w-5 h-5'
               >
                 <AvatarImage src={venue.avatarUrl} />
-                <AvatarFallback>{venue.name.substring(0, 1)}</AvatarFallback>
+                <AvatarFallback>{venue.name.substring(0, 1).toUpperCase()}</AvatarFallback>
               </Avatar>
             );
           })}
         </div>
-        <span className='text-xs font-semibold text-zinc-700 whitespace-nowrap'>{count} Locali</span>
-        <ChevronDown className={cn('size-4 transition-transform', isDropdownOpen ? 'rotate-180' : '')} />
+        <span className='text-xs font-semibold text-zinc-700 whitespace-nowrap'>
+          {count} Locali
+        </span>
+        <ChevronDown
+          className={cn('size-4 transition-transform', isDropdownOpen ? 'rotate-180' : '')}
+        />
       </DropdownMenuTrigger>
 
       <DropdownMenuContent className='flex flex-col gap-2 p-2'>
@@ -70,10 +78,17 @@ function VenueBadge({ venue }: { venue: VenueBadgeData }) {
           src={venue.avatarUrl}
           className={isDisabled ? 'grayscale' : ''}
         />
-        <AvatarFallback>{venue.name.substring(0, 1)}</AvatarFallback>
+        <AvatarFallback>{venue.name.substring(0, 1).toUpperCase()}</AvatarFallback>
       </Avatar>
       <div className='max-w-full overflow-hidden'>
-        <div className={cn('text-xs font-semibold truncate', isDisabled ? 'text-zinc-400' : 'text-zinc-700')}>{venue.name}</div>
+        <div
+          className={cn(
+            'text-xs font-semibold truncate',
+            isDisabled ? 'text-zinc-400' : 'text-zinc-700',
+          )}
+        >
+          {venue.name}
+        </div>
       </div>
     </Link>
   );

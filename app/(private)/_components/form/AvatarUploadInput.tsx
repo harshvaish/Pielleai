@@ -10,7 +10,7 @@ import {
   getFileMagicNumber,
   isValidImageMagicNumber,
 } from '@/lib/utils';
-import { avatarUploadSchema } from '@/lib/validation/avatarUploadSchema';
+import { avatarUploadSchema } from '@/lib/validation/avatar-upload-schema';
 import { Plus, UserRound } from 'lucide-react';
 import Image from 'next/image';
 import React, { useEffect, useRef, useState, useTransition } from 'react';

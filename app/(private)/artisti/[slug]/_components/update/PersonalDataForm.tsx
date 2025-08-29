@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { X } from 'lucide-react';
-import { ArtistS1FormSchema, artistS1FormSchema } from '@/lib/validation/artistFormSchema';
+import { ArtistS1FormSchema, artistS1FormSchema } from '@/lib/validation/artist-form-schema';
 import { updateArtistPersonalData } from '@/lib/server-actions/artists/update-artist-personal-data';
 import StepOne from '@/app/(private)/artisti/_components/form/StepOne';
 

@@ -14,7 +14,7 @@ import {
   events,
   eventNotes,
 } from '@/lib/database/schema';
-import { eventFormSchema, EventFormSchema } from '@/lib/validation/eventFormSchema';
+import { eventFormSchema, EventFormSchema } from '@/lib/validation/event-form-schema';
 import { AppError } from '@/lib/classes/AppError';
 import { revalidateTag } from 'next/cache';
 
@@ -130,34 +130,36 @@ export const updateEvent = async (
       if (!targetAvail) throw new AppError('Disponibilità selezionata non trovata.');
 
       // 5c) Pre-checks for the final status we’re going to set
-      if (desiredStatus === 'conflict') {
-        throw new AppError("Lo stato 'conflitto' è gestito automaticamente dal sistema.");
-      }
-
-      if (desiredStatus === 'confirmed') {
-        // UX pre-check (unique partial index will enforce anyway)
-        const [already] = await tx
-          .select({ count: count() })
-          .from(events)
-          .where(
-            and(
-              eq(events.availabilityId, targetAvailabilityId!),
-              eq(events.status, 'confirmed'),
-              ne(events.id, eventId),
-            ),
-          )
-          .limit(1);
-        if (already.count > 0) {
-          throw new AppError('Un altro evento è già confermato per questa disponibilità.');
+      if (currentEvent.status !== desiredStatus) {
+        if (desiredStatus === 'conflict') {
+          throw new AppError("Lo stato 'conflitto' è gestito automaticamente dal sistema.");
         }
-      }
 
-      // prevent activating a non-confirmed event on a booked availability
-      if (
-        ['proposed', 'pre-confirmed'].includes(desiredStatus) &&
-        targetAvail.status === 'booked'
-      ) {
-        throw new AppError('Questa disponibilità è già prenotata da un evento confermato.');
+        if (desiredStatus === 'confirmed') {
+          // UX pre-check (unique partial index will enforce anyway)
+          const [already] = await tx
+            .select({ count: count() })
+            .from(events)
+            .where(
+              and(
+                eq(events.availabilityId, targetAvailabilityId!),
+                eq(events.status, 'confirmed'),
+                ne(events.id, eventId),
+              ),
+            )
+            .limit(1);
+          if (already.count > 0) {
+            throw new AppError('Un altro evento è già confermato per questa disponibilità.');
+          }
+        }
+
+        // prevent activating a non-confirmed event on a booked availability
+        if (
+          ['proposed', 'pre-confirmed'].includes(desiredStatus) &&
+          targetAvail.status === 'booked'
+        ) {
+          throw new AppError('Questa disponibilità è già prenotata da un evento confermato.');
+        }
       }
 
       // 5d) update the event
@@ -168,7 +170,8 @@ export const updateEvent = async (
           availabilityId: targetAvailabilityId!,
           venueId,
 
-          status: desiredStatus, // triggers handle conflicts/booking
+          status: desiredStatus, // triggers handle conflicts/booking,
+          previousStatus: events.status,
 
           artistManagerProfileId: artistManagerProfileId || null,
           administrationEmail: validation.data.administrationEmail || null,

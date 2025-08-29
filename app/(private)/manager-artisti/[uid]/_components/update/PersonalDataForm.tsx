@@ -6,7 +6,7 @@ import { toast } from 'sonner';
 import {
   ArtistManagerS1FormSchema,
   artistManagerS1FormSchema,
-} from '@/lib/validation/artistManagerFormSchema';
+} from '@/lib/validation/artist-manager-form-schema';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
 import { useMemo, useState } from 'react';

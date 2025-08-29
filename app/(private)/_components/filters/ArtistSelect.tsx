@@ -1,7 +1,14 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from '@/components/ui/command';
 import { ArtistSelectData } from '@/lib/types';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Check, Eraser } from 'lucide-react';
@@ -9,7 +16,15 @@ import { cn } from '@/lib/utils';
 import { useEffect, useState } from 'react';
 import ResponsivePopover from '@/app/_components/ResponsivePopover';
 
-export default function ArtistSelect({ initialValue, artists, onConfirm }: { initialValue: string[]; artists: ArtistSelectData[]; onConfirm: (selected: string[]) => void }) {
+export default function ArtistSelect({
+  initialValue,
+  artists,
+  onConfirm,
+}: {
+  initialValue: string[];
+  artists: ArtistSelectData[];
+  onConfirm: (selected: string[]) => void;
+}) {
   const [open, setOpen] = useState<boolean>(false);
   const [value, setValue] = useState<string[]>(initialValue);
 
@@ -70,11 +85,18 @@ export default function ArtistSelect({ initialValue, artists, onConfirm }: { ini
                       <div className='flex items-center gap-2 truncate'>
                         <Avatar className='w-6 h-6'>
                           <AvatarImage src={artist.avatarUrl} />
-                          <AvatarFallback>{artist.stageName.substring(0, 1)}</AvatarFallback>
+                          <AvatarFallback>
+                            {artist.stageName.substring(0, 1).toUpperCase()}
+                          </AvatarFallback>
                         </Avatar>
                         <span className='truncate'>{artist.stageName}</span>
                       </div>
-                      <Check className={cn('transition-opacity', isSelected ? 'opacity-100' : 'opacity-0')} />
+                      <Check
+                        className={cn(
+                          'transition-opacity',
+                          isSelected ? 'opacity-100' : 'opacity-0',
+                        )}
+                      />
                     </div>
                   </CommandItem>
                 );

@@ -43,12 +43,16 @@ export default function NavbarButton() {
         <PopoverTrigger asChild>
           <div className='w-40 flex flex-nowrap justify-between items-center gap-2 bg-zinc-50 hover:bg-white p-2 rounded-2xl hover:cursor-pointer transition-colors'>
             <Avatar className='w-8 h-8'>
-              <AvatarFallback className='bg-zinc-200'>{user.name.substring(0, 1)}</AvatarFallback>
+              <AvatarFallback className='bg-zinc-200'>
+                {user.name.substring(0, 1).toUpperCase()}
+              </AvatarFallback>
             </Avatar>
 
-            <span className='text-sm font-semibold truncate text-zinc-700'>{user.name}</span>
+            <span className='grow text-sm font-semibold truncate text-zinc-700'>{user.name}</span>
 
-            <ChevronDown className={cn('shrink-0 size-4 transition-transform', isOpen ? 'rotate-180' : '')} />
+            <ChevronDown
+              className={cn('shrink-0 size-4 transition-transform', isOpen ? 'rotate-180' : '')}
+            />
           </div>
         </PopoverTrigger>
         <PopoverContent

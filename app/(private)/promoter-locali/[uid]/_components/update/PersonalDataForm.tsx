@@ -11,7 +11,7 @@ import { X } from 'lucide-react';
 import {
   VenueManagerS1FormSchema,
   venueManagerS1FormSchema,
-} from '@/lib/validation/venueManagerFormSchema';
+} from '@/lib/validation/venue-manager-form-schema';
 import { updateVenueManagerPersonalData } from '@/lib/server-actions/venue-managers/update-venue-manager-personal-data';
 import StepOne from '../../../_components/form/StepOne';
 

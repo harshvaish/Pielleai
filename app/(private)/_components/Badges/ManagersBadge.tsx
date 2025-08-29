@@ -1,7 +1,11 @@
 'use client';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { ArtistManagerSelectData, VenueManagerSelectData } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { ChevronDown } from 'lucide-react';
@@ -9,7 +13,13 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useState } from 'react';
 
-export default function ManagersBadge({ managers, pathSegment }: { managers: ArtistManagerSelectData[] | VenueManagerSelectData[]; pathSegment: string }) {
+export default function ManagersBadge({
+  managers,
+  pathSegment,
+}: {
+  managers: ArtistManagerSelectData[] | VenueManagerSelectData[];
+  pathSegment: string;
+}) {
   const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
   const count = managers.length;
 
@@ -51,13 +61,17 @@ export default function ManagersBadge({ managers, pathSegment }: { managers: Art
                 className='w-5 h-5'
               >
                 <AvatarImage src={manager.avatarUrl} />
-                <AvatarFallback>{manager.name.substring(0, 1)}</AvatarFallback>
+                <AvatarFallback>{manager.name.substring(0, 1).toUpperCase()}</AvatarFallback>
               </Avatar>
             );
           })}
         </div>
-        <span className='text-xs font-semibold text-zinc-700 whitespace-nowrap'>{count} Manager</span>
-        <ChevronDown className={cn('size-4 transition-transform', isDropdownOpen ? 'rotate-180' : '')} />
+        <span className='text-xs font-semibold text-zinc-700 whitespace-nowrap'>
+          {count} Manager
+        </span>
+        <ChevronDown
+          className={cn('size-4 transition-transform', isDropdownOpen ? 'rotate-180' : '')}
+        />
       </DropdownMenuTrigger>
 
       <DropdownMenuContent className='flex flex-col gap-2 p-2'>
@@ -75,7 +89,13 @@ export default function ManagersBadge({ managers, pathSegment }: { managers: Art
   );
 }
 
-function ManagerBadge({ manager, pathSegment }: { manager: ArtistManagerSelectData | VenueManagerSelectData; pathSegment: string }) {
+function ManagerBadge({
+  manager,
+  pathSegment,
+}: {
+  manager: ArtistManagerSelectData | VenueManagerSelectData;
+  pathSegment: string;
+}) {
   const isDisabled = manager.status === 'disabled';
 
   return (
@@ -88,11 +108,16 @@ function ManagerBadge({ manager, pathSegment }: { manager: ArtistManagerSelectDa
           src={manager.avatarUrl}
           className={isDisabled ? 'grayscale' : ''}
         />
-        <AvatarFallback>{manager.name.substring(0, 1)}</AvatarFallback>
+        <AvatarFallback>{manager.name.substring(0, 1).toUpperCase()}</AvatarFallback>
       </Avatar>
 
       <div className='max-w-full overflow-hidden'>
-        <div className={cn('text-xs font-semibold truncate', isDisabled ? 'text-zinc-400' : 'text-zinc-700')}>
+        <div
+          className={cn(
+            'text-xs font-semibold truncate',
+            isDisabled ? 'text-zinc-400' : 'text-zinc-700',
+          )}
+        >
           {manager.name} {manager.surname}
         </div>
       </div>

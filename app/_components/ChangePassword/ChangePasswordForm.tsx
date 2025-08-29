@@ -5,7 +5,10 @@ import { toast } from 'sonner';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
 import InputPassword from '../InputPassword';
-import { ChangePasswordSchema, changePasswordSchema } from '@/lib/validation/changePasswordSchema';
+import {
+  ChangePasswordSchema,
+  changePasswordSchema,
+} from '@/lib/validation/change-password-schema';
 import { signIn } from '@/lib/auth-client';
 import { updateUserPassword } from '@/lib/server-actions/users/update-user-password';
 

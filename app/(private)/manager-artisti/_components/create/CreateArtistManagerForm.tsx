@@ -8,7 +8,7 @@ import {
   artistManagerS2FormSchema,
   artistManagerS3FormSchema,
   artistManagerFormSchema,
-} from '@/lib/validation/artistManagerFormSchema';
+} from '@/lib/validation/artist-manager-form-schema';
 import { MouseEvent, useState } from 'react';
 import StepOne from '../form/StepOne';
 import StepTwo from '../form/StepTwo';

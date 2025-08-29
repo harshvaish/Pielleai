@@ -2,7 +2,12 @@
 
 import { Button } from '@/components/ui/button';
 import { Eraser, ListFilter } from 'lucide-react';
-import { ArtistManagerSelectData, ArtistSelectData, EventsTableFilters, VenueSelectData } from '@/lib/types';
+import {
+  ArtistManagerSelectData,
+  ArtistSelectData,
+  EventsTableFilters,
+  VenueSelectData,
+} from '@/lib/types';
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import ResponsivePopover from '@/app/_components/ResponsivePopover';
@@ -17,17 +22,26 @@ type FiltersButtonProps = {
   venues: VenueSelectData[];
 };
 
-export default function FiltersButton({ filters, artists, artistManagers, venues }: FiltersButtonProps) {
+export default function FiltersButton({
+  filters,
+  artists,
+  artistManagers,
+  venues,
+}: FiltersButtonProps) {
   const router = useRouter();
 
   const [open, setOpen] = useState<boolean>(false);
   const [isPending, startTransition] = useTransition();
 
   const [artistIds, setArtistIds] = useState<string[]>(filters.artistIds || []);
-  const [artistManagerIds, setArtistManagerIds] = useState<string[]>(filters.artistManagerIds || []);
+  const [artistManagerIds, setArtistManagerIds] = useState<string[]>(
+    filters.artistManagerIds || [],
+  );
   const [venueIds, setVenueIds] = useState<string[]>(filters.venueIds || []);
 
-  const active = Boolean(filters.artistIds.length && filters.artistManagerIds.length && filters.venueIds.length);
+  const active = Boolean(
+    filters.artistIds.length || filters.artistManagerIds.length || filters.venueIds.length,
+  );
 
   const resetHandler = () => {
     setArtistIds([]);

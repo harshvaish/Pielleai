@@ -2,14 +2,12 @@ import { auth } from '@/lib/auth';
 import { getCountrySubdivisions } from '@/lib/data/get-country-subdivisions';
 import { ApiResponse, Subdivision } from '@/lib/types';
 import { idValidation } from '@/lib/validation/_general';
-import { headers } from 'next/headers';
 import { type NextRequest, NextResponse } from 'next/server';
 
 export async function GET(request: NextRequest): Promise<NextResponse<ApiResponse<Subdivision[]>>> {
   try {
-    const requestHeaders = await headers();
     const session = await auth.api.getSession({
-      headers: requestHeaders,
+      headers: request.headers,
     });
 
     if (!session || session.user.role !== 'admin') {

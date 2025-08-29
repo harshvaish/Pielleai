@@ -13,6 +13,7 @@ import { getVenuesCached } from '@/lib/cache/venues';
 import { getMoCoordinatorsCached } from '@/lib/cache/mo-coordinators';
 import { eventsFiltersSchema } from '@/lib/validation/filters/events-filters-schema';
 import { notFound } from 'next/navigation';
+import ExportButton from './_components/ExportButton';
 
 type EventsPageProps = {
   searchParams?: Promise<{
@@ -62,7 +63,8 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
     <div className='h-full grid grid-rows-[min-content_min-content_1fr_min-content] gap-4'>
       <div className='flex justify-between items-center'>
         <h1 className='text-xl md:text-2xl font-bold'>Eventi</h1>
-        <div className='flex items-center gap-4'>
+        <div className='flex items-center gap-2'>
+          <ExportButton filters={filters} />
           <CreateButton
             artists={artists}
             venues={venues}
@@ -94,7 +96,7 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
             label='Rifiutato'
           />
         </div>
-        <div className='flex items-center gap-1'>
+        <div className='flex items-center gap-2'>
           <FiltersButton
             filters={filters}
             artists={artists}

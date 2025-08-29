@@ -75,7 +75,7 @@ export default function EventsCalendar({ artists, venues }: EventsCalendarProps)
   const qs = new URLSearchParams(searchParams.toString());
   qs.set('sd', startDateUTC);
   qs.set('ed', endDateUTC);
-  const fetchUrl = `/api/calendar-events/range?${qs.toString()}`;
+  const fetchUrl = `/api/events/calendar/range?${qs.toString()}`;
 
   const { data: response, isLoading } = useSWR(fetchUrl, fetcher, { keepPreviousData: true });
 
