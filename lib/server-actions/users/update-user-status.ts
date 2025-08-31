@@ -5,6 +5,7 @@ import { AppError } from '@/lib/classes/AppError';
 import { database } from '@/lib/database/connection';
 import { users, userStatus } from '@/lib/database/schema';
 import { ServerActionResponse, UserStatus } from '@/lib/types';
+import { userIdValidation } from '@/lib/validation/_general';
 import { eq } from 'drizzle-orm';
 import { revalidateTag } from 'next/cache';
 import { headers } from 'next/headers';
@@ -27,7 +28,7 @@ export async function updateUserStatus(
     }
 
     const schema = z.object({
-      userId: z.uuid('Campo malformato.'),
+      userId: userIdValidation,
       newStatus: z.enum(userStatus.enumValues, "Scegli un'opzione valida."),
     });
 

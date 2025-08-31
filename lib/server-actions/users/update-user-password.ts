@@ -7,9 +7,12 @@ import { ServerActionResponse } from '@/lib/types';
 import { z } from 'zod/v4';
 import { headers } from 'next/headers';
 import { AppError } from '@/lib/classes/AppError';
-import { passwordValidation } from '@/lib/validation/_general';
+import { passwordValidation, userIdValidation } from '@/lib/validation/_general';
 
-export const updateUserPassword = async (userId: string, newPassword: string): Promise<ServerActionResponse<null>> => {
+export const updateUserPassword = async (
+  userId: string,
+  newPassword: string,
+): Promise<ServerActionResponse<null>> => {
   try {
     const headersList = await headers();
 
@@ -23,7 +26,7 @@ export const updateUserPassword = async (userId: string, newPassword: string): P
     }
 
     const schema = z.object({
-      userId: z.uuid('Campo malformato.'),
+      userId: userIdValidation,
       newPassword: passwordValidation,
     });
 

@@ -45,6 +45,10 @@ export const addressValidation = z
   .max(150, 'Massimo 150 caratteri.')
   .trim();
 
+export const userIdValidation = z
+  .string('Campo malformato')
+  .regex(/^[a-zA-Z0-9]+$/, 'Può contenere solo lettere e numeri.');
+
 export const idValidation = z
   .number("Seleziona un'opzione valida.")
   .min(1, 'Campo obbligatorio.')
