@@ -72,8 +72,8 @@ export default function ArtistAvailabilitySelect() {
     setAvailabilities(
       response.data.map((a: ArtistAvailability) => ({
         ...a,
-        startDate: toZonedTime(a.startDate, TIME_ZONE),
-        endDate: toZonedTime(a.endDate, TIME_ZONE),
+        start: toZonedTime(a.startDate, TIME_ZONE),
+        end: toZonedTime(a.endDate, TIME_ZONE),
       })),
     );
   }, [response]);

@@ -474,6 +474,9 @@ export type TimeRange = {
 export interface CalendarAvailability extends RbcEvent {
   id: number;
   status: AvailabilityStatus;
+
+  start: Date;
+  end: Date;
 }
 
 // event
