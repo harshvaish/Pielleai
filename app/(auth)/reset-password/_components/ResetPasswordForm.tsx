@@ -2,7 +2,10 @@
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { resetPasswordSchema, ResetPasswordSchema } from '@/lib/validation/auth/resetPasswordSchema';
+import {
+  resetPasswordSchema,
+  ResetPasswordSchema,
+} from '@/lib/validation/auth/resetPasswordSchema';
 import { resetPassword } from '@/lib/auth-client';
 import InputPassword from '@/app/_components/InputPassword';
 import { toast } from 'sonner';
@@ -63,10 +66,12 @@ export default function ResetPasswordForm({ token }: { token: string }) {
 
   return (
     <>
-      <Card className='w-full max-w-xl items-center p-6 md:p-8 rounded-2xl'>
+      <Card className='w-full max-w-xl max-h-max items-center p-6 md:p-8 rounded-2xl'>
         <CardHeader className='w-full max-w-sm gap-0 text-center p-0'>
           <CardTitle className='text-2xl font-semibold mb-2'>Reset password</CardTitle>
-          <CardDescription className='text-xs md:text-sm'>Crea una password sicura per proteggere il tuo account</CardDescription>
+          <CardDescription className='text-xs md:text-sm'>
+            Crea una password sicura per proteggere il tuo account
+          </CardDescription>
         </CardHeader>
 
         <CardContent className='w-full max-w-sm p-0'>
@@ -82,7 +87,9 @@ export default function ResetPasswordForm({ token }: { token: string }) {
                   {...register('password')}
                   error={!!errors.password}
                 />
-                {errors.password && <p className='text-xs text-destructive mt-2'>{errors.password.message}</p>}
+                {errors.password && (
+                  <p className='text-xs text-destructive mt-2'>{errors.password.message}</p>
+                )}
               </div>
 
               <div className='mb-8'>
@@ -92,7 +99,9 @@ export default function ResetPasswordForm({ token }: { token: string }) {
                   {...register('confirmPassword')}
                   error={!!errors.confirmPassword}
                 />
-                {errors.confirmPassword && <p className='text-xs text-destructive mt-2'>{errors.confirmPassword.message}</p>}
+                {errors.confirmPassword && (
+                  <p className='text-xs text-destructive mt-2'>{errors.confirmPassword.message}</p>
+                )}
               </div>
 
               <Button

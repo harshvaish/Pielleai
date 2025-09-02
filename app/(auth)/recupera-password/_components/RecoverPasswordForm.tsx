@@ -9,7 +9,10 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { RPE_BLOCK_STORAGE_NAME } from '@/lib/constants';
-import { recoverPasswordSchema, RecoverPasswordSchema } from '@/lib/validation/auth/recoverPasswordSchema';
+import {
+  recoverPasswordSchema,
+  RecoverPasswordSchema,
+} from '@/lib/validation/auth/recoverPasswordSchema';
 import { FormProvider, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { getBetterAuthErrorMessage } from '@/lib/utils';
@@ -50,7 +53,7 @@ export default function RecoverPasswordForm() {
   };
 
   return (
-    <Card className='w-full max-w-xl items-center p-6 md:p-8 lg:p-12 rounded-2xl'>
+    <Card className='w-full max-w-xl max-h-max items-center p-6 md:p-8 lg:p-12 rounded-2xl'>
       <CardHeader className='w-full max-w-sm gap-0 text-center p-0'>
         <CardTitle className='text-2xl font-semibold mb-2'>Recupera password</CardTitle>
         <CardDescription className='text-xs md:text-sm'>
@@ -76,7 +79,9 @@ export default function RecoverPasswordForm() {
                 autoFocus={true}
                 autoComplete='email'
               />
-              {errors.email && <p className='text-xs text-destructive mt-2'>{errors.email.message}</p>}
+              {errors.email && (
+                <p className='text-xs text-destructive mt-2'>{errors.email.message}</p>
+              )}
             </div>
             <Button
               className='w-full mb-12'

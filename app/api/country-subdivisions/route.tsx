@@ -10,7 +10,7 @@ export async function GET(request: NextRequest): Promise<NextResponse<ApiRespons
       headers: request.headers,
     });
 
-    if (!session || session.user.role !== 'admin') {
+    if (!session || !session.user) {
       return NextResponse.json(
         { success: false, message: 'Non sei autorizzato.', data: null },
         { status: 401 },

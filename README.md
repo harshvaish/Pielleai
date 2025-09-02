@@ -61,3 +61,7 @@ TODO
 - create subfolders for upload based on entity
 - static params on dynamic param routes?
 - send email when pre-confirm or confirm
+- crone job to make the events and availabilities expired
+- add active status on navbar tiles
+- change all the db checks with count where needed
+- login check if user is disabled

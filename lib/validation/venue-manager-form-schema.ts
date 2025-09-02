@@ -1,5 +1,12 @@
 import * as z from 'zod/v4';
-import { birthDateValidation, emailValidation, idValidation, nameValidation, passwordValidation, phoneValidation } from './_general';
+import {
+  birthDateValidation,
+  emailValidation,
+  idValidation,
+  nameValidation,
+  passwordValidation,
+  phoneValidation,
+} from './_general';
 import { profileGenders } from '../database/schema';
 
 const genderEnum = z.enum(profileGenders.enumValues, "Seleziona un'opzione valida.");
@@ -20,11 +27,19 @@ export const venueManagerS1FormSchema = z.object({
 
   birthDate: birthDateValidation,
 
-  birthPlace: z.string('Campo malformato.').min(2, 'Minimo 2 caratteri.').max(100, 'Massimo 100 caratteri.').trim(),
+  birthPlace: z
+    .string('Campo malformato.')
+    .min(2, 'Minimo 2 caratteri.')
+    .max(100, 'Massimo 100 caratteri.')
+    .trim(),
 
   languages: z.array(idValidation, 'Campo malformato').min(1, 'Campo obbligatorio.'),
 
-  address: z.string('Campo malformato.').min(5, 'Minimo 5 caratteri.').max(150, 'Massimo 150 caratteri.').trim(),
+  address: z
+    .string('Campo malformato.')
+    .min(5, 'Minimo 5 caratteri.')
+    .max(150, 'Massimo 150 caratteri.')
+    .trim(),
 
   countryId: idValidation,
 

@@ -16,6 +16,7 @@ import {
 import { it } from 'date-fns/locale';
 import imageCompression from 'browser-image-compression';
 import { Availability } from './types';
+import { User } from './auth';
 
 // general
 export function cn(...inputs: ClassValue[]) {
@@ -201,6 +202,33 @@ export function getBetterAuthErrorMessage(code: string): string {
   }
 }
 
+export function getBetterAuthOTPErrorMessage(code: string): string {
+  switch (code) {
+    case 'INVALID_OTP':
+    case 'OTP_INVALID':
+    case 'INVALID_OTP_CODE':
+      return 'Codice OTP non valido.';
+    case 'OTP_EXPIRED':
+    case 'EXPIRED_OTP':
+    case 'OTP_CODE_EXPIRED':
+      return 'Il codice OTP è scaduto. Richiedi un nuovo codice.';
+    case 'MAX_ATTEMPTS_EXCEEDED':
+    case 'TOO_MANY_OTP_ATTEMPTS':
+      return 'Hai superato i tentativi disponibili. Richiedi un nuovo codice.';
+    case 'OTP_NOT_FOUND':
+    case 'VERIFICATION_NOT_FOUND':
+      return 'Codice OTP non trovato o non più valido.';
+    case 'OTP_TYPE_MISMATCH':
+      return 'Questo codice non è valido per questa operazione.';
+    case 'OTP_REQUIRED':
+      return 'Inserisci il codice OTP.';
+    case 'EMAIL_ALREADY_VERIFIED':
+      return 'Email già verificata.';
+    default:
+      return 'Verifica codice non riuscita.';
+  }
+}
+
 // availabilities
 export function calculateRange(date: Date, view: View): { start: Date; end: Date } {
   switch (view) {
@@ -268,4 +296,15 @@ export function checkAvailabilities(
 // cache
 export function hashKey(obj: object) {
   return JSON.stringify(obj, Object.keys(obj).sort());
+}
+
+// auth redirect
+export function resolveNextPath(opts: { user: User; hasProfile: boolean }) {
+  const { user, hasProfile } = opts;
+
+  if (user.role === 'admin') return '/dashboard';
+  if (!user.emailVerified) return '/conferma-email';
+  if (!hasProfile) return '/completa-profilo';
+  if (user.status === 'waiting-for-approval') return '/attesa-approvazione';
+  return '/dashboard';
 }

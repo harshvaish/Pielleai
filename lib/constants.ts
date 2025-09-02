@@ -7,6 +7,11 @@ export const TIME_ZONE = 'Europe/Rome';
 export const RPE_BLOCK_DURATION = 30 * 1000;
 export const RPE_BLOCK_STORAGE_NAME = 'rpe_send_at';
 
+// confirm email
+export const CE_EMAIL_STORAGE_NAME = 'ce_email';
+export const CE_BLOCK_STORAGE_NAME = 'ce_send_at';
+export const CE_BLOCK_DURATION = 5 * 60 * 1000; // 10min
+
 // navbar
 export const NAVBAR_LINKS = [
   {

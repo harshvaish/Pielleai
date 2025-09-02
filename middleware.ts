@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSessionCookie } from 'better-auth/cookies';
 
 const PUBLIC_ROUTES = [
+  '/registrati',
+  '/conferma-email',
   '/accedi',
   '/recupera-password',
   '/recupera-password/conferma-invio',
@@ -13,6 +15,7 @@ export async function middleware(request: NextRequest) {
   const sessionToken = getSessionCookie(request, {
     cookiePrefix: process.env.BETTER_AUTH_COOKIE_PREFIX,
   });
+
   const isLoggedIn = !!sessionToken;
 
   if (PUBLIC_ROUTES.includes(pathname)) {

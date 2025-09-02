@@ -180,6 +180,13 @@ export const artistManagerS2FormSchema = z
 
 export type ArtistManagerS2FormSchema = z.infer<typeof artistManagerS2FormSchema>;
 
+export const artistManagerProfileFormSchema = z.object({
+  ...artistManagerS1FormSchema.shape,
+  ...artistManagerS2FormSchema.shape,
+});
+
+export type ArtistManagerProfileFormSchema = z.infer<typeof artistManagerProfileFormSchema>;
+
 export const artistManagerS3FormSchema = z.object({
   signUpEmail: emailValidation,
   signUpPassword: z

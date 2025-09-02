@@ -1,5 +1,11 @@
 import { z } from 'zod/v4';
 
+export function getZodErrors(errorObj: z.core.$ZodError<unknown>): string[] {
+  const validationErrors = z.treeifyError(errorObj).errors;
+
+  return validationErrors;
+}
+
 export const timeValidation = z
   .string('Campo malformato.')
   .regex(/^([01]\d|2[0-3]):[0-5]\d$/, 'Può contenere solo numeri o ":".');
@@ -92,3 +98,9 @@ export const birthDateValidation = z
     const date = new Date(dateStr);
     return date >= maxBirthDate;
   }, `Fuori dal range accettato. (maggiore)`);
+
+export const otpValidation = z
+  .string('Campo malformato.')
+  .min(6, 'Deve contenere 6 cifre.')
+  .max(6, 'Deve contenere 6 cifre.')
+  .regex(/^[0-9]+$/, 'Può contenere solo numeri.');

@@ -49,9 +49,9 @@ export default function SignInForm() {
   };
 
   return (
-    <Card className='w-full max-w-xl items-center p-6 xl:p-12 rounded-2xl'>
+    <Card className='w-full max-w-xl max-h-max items-center p-6 xl:p-12 rounded-2xl'>
       <CardHeader className='w-full gap-0 text-center p-0'>
-        <CardTitle className='text-2xl font-semibold'>Autenticazione</CardTitle>
+        <CardTitle className='text-2xl font-semibold'>Accedi</CardTitle>
       </CardHeader>
       <CardContent className='w-full max-w-sm p-0'>
         <FormProvider {...methods}>
@@ -68,14 +68,10 @@ export default function SignInForm() {
                 autoComplete='email'
                 autoFocus={true}
                 {...register('email')}
-                className={
-                  errors.email ? 'border-destructive text-destructive' : ''
-                }
+                className={errors.email ? 'border-destructive text-destructive' : ''}
               />
               {errors.email && (
-                <p className='text-xs text-destructive mt-2'>
-                  {errors.email.message}
-                </p>
+                <p className='text-xs text-destructive mt-2'>{errors.email.message}</p>
               )}
             </div>
 
@@ -86,9 +82,7 @@ export default function SignInForm() {
                 error={!!errors.password}
               />
               {errors.password && (
-                <p className='text-xs text-destructive mt-2'>
-                  {errors.password.message}
-                </p>
+                <p className='text-xs text-destructive mt-2'>{errors.password.message}</p>
               )}
             </div>
 
@@ -107,6 +101,14 @@ export default function SignInForm() {
             >
               {isSubmitting ? 'Accesso...' : 'Accedi'}
             </Button>
+
+            <Link
+              href='/registrati'
+              prefetch={false}
+              className='block text-sm font-semibold text-center mb-8'
+            >
+              Non hai un account? Registrati
+            </Link>
           </form>
         </FormProvider>
       </CardContent>

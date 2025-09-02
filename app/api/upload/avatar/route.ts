@@ -15,7 +15,7 @@ export async function POST(
       headers: requestHeaders,
     });
 
-    if (!session || session.user.role !== 'admin') {
+    if (!session || !session.user) {
       return NextResponse.json(
         { success: false, message: 'Non sei autorizzato.', data: null },
         { status: 401 },

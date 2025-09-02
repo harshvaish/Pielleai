@@ -3,35 +3,20 @@
 import sgMail from '@sendgrid/mail';
 import { ServerActionResponse } from '../types';
 import { z } from 'zod/v4';
-import { auth } from '../auth';
-import { headers } from 'next/headers';
 import { AppError } from '../classes/AppError';
-import { emailValidation, nameValidation } from '../validation/_general';
+import { emailValidation } from '../validation/_general';
 
-export const sendResetPasswordEmail = async (
+export const sendOTPEmail = async (
   userEmail: string,
-  userName: string,
-  url: string,
+  code: string,
 ): Promise<ServerActionResponse<null>> => {
   try {
-    const headersList = await headers();
-
-    const session = await auth.api.getSession({
-      headers: headersList,
-    });
-
-    if (!session?.user || session.user.role != 'admin') {
-      console.error('[sendResetPasswordEmail] - Error: unauthorized', session);
-      throw new AppError('Non sei autorizzato.');
-    }
-
     const schema = z.object({
       userEmail: emailValidation,
-      userName: nameValidation,
-      url: z.url('Inserisci un link valido.').trim(),
+      code: z.string().trim(),
     });
 
-    const validation = schema.safeParse({ userEmail, userName, url });
+    const validation = schema.safeParse({ userEmail, code });
     if (!validation.success) {
       throw new AppError('Dati inviati non corretti.');
     }
@@ -48,10 +33,10 @@ export const sendResetPasswordEmail = async (
     const msg = {
       to: userEmail,
       from: 'tech@uilconvenzioni.it',
-      templateId: 'd-874a04c239354062bb98ac9c87c3819c',
+      templateId: 'd-31cad32ba6a7471c993aa92279090b49',
       dynamic_template_data: {
-        name: userName,
-        reset_link: url,
+        redirect_url: `${process.env.NEXT_PUBLIC_APP_URL}/conferma-email/manager-artisti`,
+        code: code,
       },
     };
 
@@ -64,7 +49,7 @@ export const sendResetPasswordEmail = async (
       data: null,
     };
   } catch (error) {
-    console.error('[sendResetPasswordEmail] transaction failed:', error);
+    console.error('[sendOTPEmail] transaction failed:', error);
 
     return {
       success: false,
