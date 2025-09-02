@@ -5,7 +5,7 @@ import { AppError } from '@/lib/classes/AppError';
 import { database } from '@/lib/database/connection';
 import { artistAvailabilities, artists } from '@/lib/database/schema';
 import { ServerActionResponse, Availability } from '@/lib/types';
-import { stringDateValidation } from '@/lib/validation/_general';
+import { dateValidation } from '@/lib/validation/_general';
 import { addDays } from 'date-fns';
 import { eq, and, sql, count } from 'drizzle-orm';
 import { headers } from 'next/headers';
@@ -30,8 +30,8 @@ export async function createArtistAvailability(
     const schema = z.object({
       artistSlug: z.uuid("Seleziona un'opzione valida."),
       newAvailability: z.object({
-        startDate: stringDateValidation,
-        endDate: stringDateValidation,
+        startDate: dateValidation,
+        endDate: dateValidation,
       }),
     });
 
