@@ -57,6 +57,7 @@ WORKFLOW
 
 TODO
 
+- change timestampz of better auth schemas
 - change email sender in send-reset-password-email
 - create subfolders for upload based on entity
 - static params on dynamic param routes?

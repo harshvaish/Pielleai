@@ -3,10 +3,8 @@ import { Separator } from '@/components/ui/separator';
 import { format } from 'date-fns';
 import Image from 'next/image';
 import { notFound, redirect } from 'next/navigation';
-import { headers } from 'next/headers';
-import { auth } from '@/lib/auth';
 import { getProfileNotes } from '@/lib/data/notes/get-profile-notes';
-import { cn } from '@/lib/utils';
+import { cn, resolveNextPath } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import UpdateButton from './_components/update/UpdateButton';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -23,27 +21,20 @@ import { getCountriesCached } from '@/lib/cache/countries';
 import { getArtistManagerCached } from '@/lib/cache/artist-managers';
 import ManagedArtistsTab from './_components/Tabs/ManagedArtistsTab';
 import PersonalDataTab from './_components/Tabs/PersonalDataTab';
+import { userHasProfile } from '@/lib/data/profiles/userHasProfile';
+import getSession from '@/lib/data/auth/get-session';
 
 type ArtistManagerDetailPageProps = { params: Promise<{ uid: string }> };
 
 export default async function ArtistManagerDetailPage({ params }: ArtistManagerDetailPageProps) {
+  const { session, user } = await getSession();
+  if (!session || !user) redirect('/accedi');
+  const hasProfile = await userHasProfile(user.id);
+  const target = resolveNextPath({ user, hasProfile });
+  if (target) redirect(target);
+
   const p = await params;
   const { uid } = p;
-
-  const requestHeaders = await headers();
-  const session = await auth.api.getSession({
-    headers: requestHeaders,
-  });
-
-  if (!session || !session.user || !session.user.id) {
-    await auth.api
-      .signOut({
-        headers: requestHeaders,
-      })
-      .catch((error) => console.error(error));
-
-    redirect('/accedi');
-  }
 
   const [userData, languages, countries] = await Promise.all([
     getArtistManagerCached(uid),
@@ -151,7 +142,7 @@ export default async function ArtistManagerDetailPage({ params }: ArtistManagerD
         <NotesSection
           isArtist={false}
           initialNotes={initialNotesData.data || []}
-          writerId={session.user.id}
+          writerId={user.id}
           receiverProfileId={userData.profileId}
         />
       </div>

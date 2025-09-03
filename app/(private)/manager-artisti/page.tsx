@@ -14,13 +14,15 @@ import ArtistsBadge from '../_components/badges/ArtistsBadge';
 import FiltersButton from './_components/filters/FiltersButton';
 import { ArtistManagersTableFilters } from '@/lib/types';
 import CreateButton from './_components/create/CreateButton';
-import { splitCsv } from '@/lib/utils';
+import { resolveNextPath, splitCsv } from '@/lib/utils';
 import { getLanguagesCached } from '@/lib/cache/languages';
 import { getCountriesCached } from '@/lib/cache/countries';
 import { getArtistsCached } from '@/lib/cache/artists';
 import { getPaginatedArtistManagersCached } from '@/lib/cache/artist-managers';
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import { artistManagersTableFiltersSchema } from '@/lib/validation/filters/artist-managers-table-filters-schema';
+import { userHasProfile } from '@/lib/data/profiles/userHasProfile';
+import getSession from '@/lib/data/auth/get-session';
 
 type ArtistManagersPageProps = {
   searchParams?: Promise<{
@@ -36,8 +38,13 @@ type ArtistManagersPageProps = {
 export const dynamic = 'force-dynamic';
 
 export default async function ArtistManagersPage({ searchParams }: ArtistManagersPageProps) {
-  const sp = await searchParams;
+  const { session, user } = await getSession();
+  if (!session || !user) redirect('/accedi');
+  const hasProfile = await userHasProfile(user.id);
+  const target = resolveNextPath({ user, hasProfile });
+  if (target) redirect(target);
 
+  const sp = await searchParams;
   const currentPage = Number(sp?.page ?? '1');
 
   const filters: ArtistManagersTableFilters = {

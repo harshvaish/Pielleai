@@ -3,9 +3,7 @@ import { Separator } from '@/components/ui/separator';
 import { format } from 'date-fns';
 import Image from 'next/image';
 import { notFound, redirect } from 'next/navigation';
-import { headers } from 'next/headers';
-import { auth } from '@/lib/auth';
-import { cn } from '@/lib/utils';
+import { cn, resolveNextPath } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import StatusBadge from '../../_components/badges/StatusBadge';
@@ -24,6 +22,8 @@ import PersonalDataTab from './_components/tabs/PersonalDataTab';
 import BillingDataTab from '../../_components/tabs/BillingDataTab';
 import AvailabilitiesTab from './_components/tabs/AvailabilitiesTab';
 import SocialDataTab from '../../_components/tabs/SocialDataTab';
+import getSession from '@/lib/data/auth/get-session';
+import { userHasProfile } from '@/lib/data/profiles/userHasProfile';
 
 type ArtistDetailPageProps = {
   params: Promise<{ slug: string }>;
@@ -32,23 +32,14 @@ type ArtistDetailPageProps = {
 export const dynamic = 'force-dynamic';
 
 export default async function ArtistDetailPage({ params }: ArtistDetailPageProps) {
+  const { session, user } = await getSession();
+  if (!session || !user) redirect('/accedi');
+  const hasProfile = await userHasProfile(user.id);
+  const target = resolveNextPath({ user, hasProfile });
+  if (target) redirect(target);
+
   const p = await params;
   const { slug } = p;
-
-  const requestHeaders = await headers();
-  const session = await auth.api.getSession({
-    headers: requestHeaders,
-  });
-
-  if (!session || !session.user || !session.user.id) {
-    await auth.api
-      .signOut({
-        headers: requestHeaders,
-      })
-      .catch((error) => console.error(error));
-
-    redirect('/accedi');
-  }
 
   const [userData, languages, countries, zones, artistManagers] = await Promise.all([
     getArtistCached(slug),
@@ -163,7 +154,7 @@ export default async function ArtistDetailPage({ params }: ArtistDetailPageProps
         <NotesSection
           isArtist={true}
           initialNotes={initialNotesData.data || []}
-          writerId={session.user.id}
+          writerId={user.id}
           receiverProfileId={userData.id}
         />
       </div>

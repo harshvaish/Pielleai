@@ -5,7 +5,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import InputPassword from '../../../_components/InputPassword';
 import { toast } from 'sonner';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -14,7 +13,6 @@ import { signIn } from '@/lib/auth-client';
 import { getBetterAuthErrorMessage } from '@/lib/utils';
 
 export default function SignInForm() {
-  const router = useRouter();
   const methods = useForm<SignInSchema>({
     resolver: zodResolver(signInSchema),
     defaultValues: {
@@ -35,10 +33,9 @@ export default function SignInForm() {
     await signIn.email({
       email,
       password,
+      rememberMe: false,
+      callbackURL: '/dashboard',
       fetchOptions: {
-        onSuccess: () => {
-          router.replace('/dashboard');
-        },
         onError: (ctx) => {
           const code = ctx?.error?.code ?? 'UNKNOWN_ERROR';
           const message = getBetterAuthErrorMessage(code);
@@ -49,7 +46,7 @@ export default function SignInForm() {
   };
 
   return (
-    <Card className='w-full max-w-xl max-h-max items-center p-6 xl:p-12 rounded-2xl'>
+    <Card className='w-full max-w-xl items-center p-6 xl:p-12 rounded-2xl'>
       <CardHeader className='w-full gap-0 text-center p-0'>
         <CardTitle className='text-2xl font-semibold'>Accedi</CardTitle>
       </CardHeader>

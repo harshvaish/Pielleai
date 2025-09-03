@@ -1,29 +1,15 @@
-import { redirect } from 'next/navigation';
 import Header from '../_components/Header';
 import { Separator } from '@/components/ui/separator';
 import Image from 'next/image';
 import { Fragment } from 'react';
 import Link from 'next/link';
 import { NAVBAR_LINKS } from '@/lib/constants';
-import { getProfile } from '@/lib/data/profiles/get-profile';
-import getSession from '@/lib/data/auth/get-session';
-import { resolveNextPath } from '@/lib/utils';
 
 export default async function PrivateLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const { session, user } = await getSession();
-
-  if (!session || !user) redirect('/accedi');
-
-  const profile = await getProfile(user.id);
-
-  const target = resolveNextPath({ user: user, hasProfile: Boolean(profile) });
-
-  if (target !== '/dashboard') redirect(target);
-
   return (
     <>
       <Header />

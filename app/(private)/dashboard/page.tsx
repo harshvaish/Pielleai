@@ -9,10 +9,20 @@ import { getEventsCached } from '@/lib/cache/events';
 import { getArtistsCached } from '@/lib/cache/artists';
 import { getMoCoordinatorsCached } from '@/lib/cache/mo-coordinators';
 import { getVenuesCached } from '@/lib/cache/venues';
+import getSession from '@/lib/data/auth/get-session';
+import { redirect } from 'next/navigation';
+import { userHasProfile } from '@/lib/data/profiles/userHasProfile';
+import { resolveNextPath } from '@/lib/utils';
 
 export const dynamic = 'force-dynamic';
 
 export default async function DashboardPage() {
+  const { session, user } = await getSession();
+  if (!session || !user) redirect('/accedi');
+  const hasProfile = await userHasProfile(user.id);
+  const target = resolveNextPath({ user, hasProfile });
+  if (target && target != '/dahsboard') redirect(target);
+
   const [usersToApprove, eventsToApprove, artists, moCoordinators, venues] = await Promise.all([
     getUsersToApproveCached(),
     getEventsCached({

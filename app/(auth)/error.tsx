@@ -10,7 +10,9 @@ export default function ErrorPage() {
   return (
     <Card className='w-full max-w-xl items-center p-6 xl:p-12 rounded-2xl'>
       <CardHeader className='w-full gap-0 text-center p-0'>
-        <CardTitle className='text-2xl font-semibold mb-4'>Ops! Qualcosa è andato storto.</CardTitle>
+        <CardTitle className='text-2xl font-semibold mb-4'>
+          Ops! Qualcosa è andato storto.
+        </CardTitle>
         <CardDescription>
           Stiamo lavorando per risolvere il problema. <br /> Ti invitiamo a riprovare più tardi.
         </CardDescription>

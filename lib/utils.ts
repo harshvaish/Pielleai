@@ -299,12 +299,13 @@ export function hashKey(obj: object) {
 }
 
 // auth redirect
-export function resolveNextPath(opts: { user: User; hasProfile: boolean }) {
+export function resolveNextPath(opts: { user: User; hasProfile: boolean }): string | null {
   const { user, hasProfile } = opts;
 
   if (user.role === 'admin') return '/dashboard';
   if (!user.emailVerified) return '/conferma-email';
   if (!hasProfile) return '/completa-profilo';
   if (user.status === 'waiting-for-approval') return '/attesa-approvazione';
-  return '/dashboard';
+
+  return null;
 }

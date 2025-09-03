@@ -6,11 +6,15 @@ import { redirect } from 'next/navigation';
 import ArtistManagerProfileForm from './_components/ArtistManagerProfileForm';
 import getSession from '@/lib/data/auth/get-session';
 import VenueManagerProfileForm from './_components/VenueManagerProfileForm';
+import { userHasProfile } from '@/lib/data/profiles/userHasProfile';
+import { resolveNextPath } from '@/lib/utils';
 
 export default async function CompleteProfilePage() {
   const { session, user } = await getSession();
-
-  if (!session || !user) redirect('accedi');
+  if (!session || !user) redirect('/accedi');
+  const hasProfile = await userHasProfile(user.id);
+  const target = resolveNextPath({ user, hasProfile });
+  if (target && target !== '/completa-profilo') redirect(target);
 
   const [languages, countries] = await Promise.all([getLanguagesCached(), getCountriesCached()]);
 

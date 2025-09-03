@@ -2,8 +2,8 @@ import BackButton from '@/app/_components/BackButton';
 import { Separator } from '@/components/ui/separator';
 import { format } from 'date-fns';
 import Image from 'next/image';
-import { notFound } from 'next/navigation';
-import { cn } from '@/lib/utils';
+import { notFound, redirect } from 'next/navigation';
+import { cn, resolveNextPath } from '@/lib/utils';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import BillingDataTab from '../../_components/tabs/BillingDataTab';
 import VenueTypeBadge from '../../_components/badges/VenueTypeBadge';
@@ -16,12 +16,20 @@ import UpdateButton from './_components/update/UpdateButton';
 import { getVenueCached } from '@/lib/cache/venues';
 import { getCountriesCached } from '@/lib/cache/countries';
 import { getVenueManagersCached } from '@/lib/cache/venue-managers';
+import { userHasProfile } from '@/lib/data/profiles/userHasProfile';
+import getSession from '@/lib/data/auth/get-session';
 
 type VenueDetailPageProps = { params: Promise<{ slug: string }> };
 
 export const dynamic = 'force-dynamic';
 
 export default async function VenueDetailPage({ params }: VenueDetailPageProps) {
+  const { session, user } = await getSession();
+  if (!session || !user) redirect('/accedi');
+  const hasProfile = await userHasProfile(user.id);
+  const target = resolveNextPath({ user, hasProfile });
+  if (target) redirect(target);
+
   const p = await params;
   const { slug } = p;
 

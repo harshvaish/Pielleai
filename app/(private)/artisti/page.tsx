@@ -14,7 +14,7 @@ import ManagersBadge from '../_components/badges/ManagersBadge';
 import { ArtistsTableFilters } from '@/lib/types';
 import FiltersButton from './_components/filters/FiltersButton';
 import CreateButton from './_components/create/CreateButton';
-import { splitCsv } from '@/lib/utils';
+import { resolveNextPath, splitCsv } from '@/lib/utils';
 import ArtistsBadge from '../_components/badges/ArtistsBadge';
 import { getPaginatedArtistsCached } from '@/lib/cache/artists';
 import { getLanguagesCached } from '@/lib/cache/languages';
@@ -22,7 +22,9 @@ import { getCountriesCached } from '@/lib/cache/countries';
 import { getArtistManagersCached } from '@/lib/cache/artist-managers';
 import { getZonesCached } from '@/lib/cache/zones';
 import { artistsTableFiltersSchema } from '@/lib/validation/filters/artists-table-filters-schema';
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
+import getSession from '@/lib/data/auth/get-session';
+import { userHasProfile } from '@/lib/data/profiles/userHasProfile';
 
 type ArtistsPageProps = {
   searchParams?: Promise<{
@@ -39,8 +41,13 @@ type ArtistsPageProps = {
 export const dynamic = 'force-dynamic';
 
 export default async function ArtistsPage({ searchParams }: ArtistsPageProps) {
-  const sp = await searchParams;
+  const { session, user } = await getSession();
+  if (!session || !user) redirect('/accedi');
+  const hasProfile = await userHasProfile(user.id);
+  const target = resolveNextPath({ user, hasProfile });
+  if (target) redirect(target);
 
+  const sp = await searchParams;
   const currentPage = Number(sp?.page ?? '1');
 
   const filters: ArtistsTableFilters = {

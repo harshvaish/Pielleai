@@ -3,10 +3,8 @@ import { Separator } from '@/components/ui/separator';
 import { format } from 'date-fns';
 import Image from 'next/image';
 import { notFound, redirect } from 'next/navigation';
-import { headers } from 'next/headers';
-import { auth } from '@/lib/auth';
 import { getProfileNotes } from '@/lib/data/notes/get-profile-notes';
-import { cn } from '@/lib/utils';
+import { cn, resolveNextPath } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import StatusBadge from '../../_components/badges/StatusBadge';
@@ -20,29 +18,22 @@ import { getCountriesCached } from '@/lib/cache/countries';
 import { getVenueManagerCached } from '@/lib/cache/venue-managers';
 import ManagedVenuesTab from './_components/Tabs/ManagedVenuesTab';
 import PersonalDataTab from './_components/Tabs/PersonalDataTab';
+import getSession from '@/lib/data/auth/get-session';
+import { userHasProfile } from '@/lib/data/profiles/userHasProfile';
 
 type VenueManagerDetailPageProps = { params: Promise<{ uid: string }> };
 
 export const dynamic = 'force-dynamic';
 
 export default async function VenueManagerDetailPage({ params }: VenueManagerDetailPageProps) {
+  const { session, user } = await getSession();
+  if (!session || !user) redirect('/accedi');
+  const hasProfile = await userHasProfile(user.id);
+  const target = resolveNextPath({ user, hasProfile });
+  if (target) redirect(target);
+
   const p = await params;
   const { uid } = p;
-
-  const requestHeaders = await headers();
-  const session = await auth.api.getSession({
-    headers: requestHeaders,
-  });
-
-  if (!session || !session.user || !session.user.id) {
-    await auth.api
-      .signOut({
-        headers: requestHeaders,
-      })
-      .catch((error) => console.error(error));
-
-    redirect('/accedi');
-  }
 
   const [userData, languages, countries] = await Promise.all([
     getVenueManagerCached(uid),
@@ -144,7 +135,7 @@ export default async function VenueManagerDetailPage({ params }: VenueManagerDet
         <NotesSection
           isArtist={false}
           initialNotes={initialNotesData.data || []}
-          writerId={session.user.id}
+          writerId={user.id}
           receiverProfileId={userData.profileId}
         />
       </div>

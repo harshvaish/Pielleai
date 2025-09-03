@@ -3,7 +3,6 @@ import { betterAuth } from 'better-auth';
 import { database } from '@/lib/database/connection';
 import * as schema from '@/lib/database/schema';
 import { nextCookies } from 'better-auth/next-js';
-// import { createAuthMiddleware, APIError } from 'better-auth/api';
 import { sendResetPasswordEmail } from './server-actions/send-reset-password-email';
 import { admin } from 'better-auth/plugins/admin';
 import { emailOTP } from 'better-auth/plugins';
@@ -47,33 +46,16 @@ export const auth = betterAuth({
     maxPasswordLength: 16,
   },
   session: {
-    expiresIn: 60 * 60 * 24 * 30, // 1 mese
+    expiresIn: 60 * 60 * 24 * 30, // 1mo
+    disableSessionRefresh: true,
+    cookieCache: {
+      enabled: true,
+      maxAge: 5 * 60, // 5min
+    },
   },
   advanced: {
     cookiePrefix: process.env.BETTER_AUTH_COOKIE_PREFIX,
   },
-  // hooks: {
-  //   before: createAuthMiddleware(async (ctx) => {
-  //     if (ctx.path !== '/sign-in/email') return;
-
-  //     const email = ctx.body?.email as string | undefined;
-  //     if (!email) return;
-
-  //     const user: User | null = await ctx.context.adapter.findOne({
-  //       model: 'user',
-  //       where: [{ field: 'email', operator: 'eq', value: email }],
-  //     });
-
-  //     if (!user) return;
-
-  //     if (user.role !== 'admin') {
-  //       throw new APIError('UNAUTHORIZED', {
-  //         code: 'NOT_ADMIN_USER',
-  //         message: 'Solo gli amministratori possono accedere a questa piattaforma',
-  //       });
-  //     }
-  //   }),
-  // },
   plugins: [
     nextCookies(),
     admin(adminConfig),
@@ -89,4 +71,5 @@ export const auth = betterAuth({
   ],
 });
 
+export type Session = typeof auth.$Infer.Session;
 export type User = (typeof auth.$Infer.Session)['user'];

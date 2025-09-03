@@ -5,15 +5,17 @@ import StatusFilterButton from './_components/filters/StatusFilterButton';
 import FiltersButton from './_components/filters/FiltersButton';
 import { EventsTableFilters, EventStatus } from '@/lib/types';
 import DatesFilterButton from './_components/filters/DatesFilterButton';
-import { splitCsv } from '@/lib/utils';
+import { resolveNextPath, splitCsv } from '@/lib/utils';
 import { getEventsCached } from '@/lib/cache/events';
 import { getArtistsCached } from '@/lib/cache/artists';
 import { getArtistManagersCached } from '@/lib/cache/artist-managers';
 import { getVenuesCached } from '@/lib/cache/venues';
 import { getMoCoordinatorsCached } from '@/lib/cache/mo-coordinators';
 import { eventsFiltersSchema } from '@/lib/validation/filters/events-filters-schema';
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import ExportButton from './_components/ExportButton';
+import { userHasProfile } from '@/lib/data/profiles/userHasProfile';
+import getSession from '@/lib/data/auth/get-session';
 
 type EventsPageProps = {
   searchParams?: Promise<{
@@ -30,8 +32,13 @@ type EventsPageProps = {
 export const dynamic = 'force-dynamic';
 
 export default async function EventsPage({ searchParams }: EventsPageProps) {
-  const sp = await searchParams;
+  const { session, user } = await getSession();
+  if (!session || !user) redirect('/accedi');
+  const hasProfile = await userHasProfile(user.id);
+  const target = resolveNextPath({ user, hasProfile });
+  if (target) redirect(target);
 
+  const sp = await searchParams;
   const currentPage = Number(sp?.page ?? '1');
 
   const filters: EventsTableFilters = {
