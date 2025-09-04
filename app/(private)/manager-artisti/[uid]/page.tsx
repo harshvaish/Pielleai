@@ -4,7 +4,7 @@ import { format } from 'date-fns';
 import Image from 'next/image';
 import { notFound, redirect } from 'next/navigation';
 import { getProfileNotes } from '@/lib/data/notes/get-profile-notes';
-import { cn, resolveNextPath } from '@/lib/utils';
+import { cn, hasRole, resolveNextPath } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import UpdateButton from './_components/update/UpdateButton';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -21,16 +21,21 @@ import { getCountriesCached } from '@/lib/cache/countries';
 import { getArtistManagerCached } from '@/lib/cache/artist-managers';
 import ManagedArtistsTab from './_components/Tabs/ManagedArtistsTab';
 import PersonalDataTab from './_components/Tabs/PersonalDataTab';
-import { userHasProfile } from '@/lib/data/profiles/userHasProfile';
 import getSession from '@/lib/data/auth/get-session';
+import { getUserProfileIdCached } from '@/lib/cache/users';
 
 type ArtistManagerDetailPageProps = { params: Promise<{ uid: string }> };
 
 export default async function ArtistManagerDetailPage({ params }: ArtistManagerDetailPageProps) {
   const { session, user } = await getSession();
   if (!session || !user) redirect('/accedi');
-  const hasProfile = await userHasProfile(user.id);
-  const target = resolveNextPath({ user, hasProfile });
+
+  if (!hasRole(user, ['admin'])) {
+    notFound();
+  }
+
+  const profileId = await getUserProfileIdCached(user.id);
+  const target = resolveNextPath({ user, hasProfile: Boolean(profileId) });
   if (target) redirect(target);
 
   const p = await params;

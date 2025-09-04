@@ -2,14 +2,14 @@ import { Card, CardContent, CardTitle } from '@/components/ui/card';
 import ArtistManagerConfirmEmailForm from './_components/ArtistManagerConfirmEmailForm';
 import getSession from '@/lib/data/auth/get-session';
 import { redirect } from 'next/navigation';
-import { userHasProfile } from '@/lib/data/profiles/userHasProfile';
 import { resolveNextPath } from '@/lib/utils';
+import { getUserProfileIdCached } from '@/lib/cache/users';
 
 export default async function ArtistManagerConfirmEmailPage() {
-  const { session, user } = await getSession();
+  const { session, user } = await getSession(true);
   if (!session || !user) redirect('/accedi');
-  const hasProfile = await userHasProfile(user.id);
-  const target = resolveNextPath({ user, hasProfile });
+  const profileId = await getUserProfileIdCached(user.id);
+  const target = resolveNextPath({ user, hasProfile: Boolean(profileId) });
   if (target && target !== '/attesa-approvazione') redirect(target);
 
   return (

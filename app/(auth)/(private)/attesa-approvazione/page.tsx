@@ -1,16 +1,16 @@
 import SignOutButton from '@/app/_components/SignOutButton';
 import { Card, CardContent, CardDescription, CardTitle } from '@/components/ui/card';
 import getSession from '@/lib/data/auth/get-session';
-import { userHasProfile } from '@/lib/data/profiles/userHasProfile';
 import { resolveNextPath } from '@/lib/utils';
 import { redirect } from 'next/navigation';
 import CheckButton from './_components/CheckButton';
+import { getUserProfileIdCached } from '@/lib/cache/users';
 
 export default async function WaitingForApprovalPage() {
-  const { session, user } = await getSession();
+  const { session, user } = await getSession(true);
   if (!session || !user) redirect('/accedi');
-  const hasProfile = await userHasProfile(user.id);
-  const target = resolveNextPath({ user, hasProfile });
+  const profileId = await getUserProfileIdCached(user.id);
+  const target = resolveNextPath({ user, hasProfile: Boolean(profileId) });
   if (target && target !== '/attesa-approvazione') redirect(target);
 
   return (

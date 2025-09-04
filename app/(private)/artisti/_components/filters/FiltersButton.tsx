@@ -11,17 +11,29 @@ import ArtistManagerSelect from '@/app/(private)/_components/filters/ArtistManag
 import ZoneSelect from '@/app/(private)/_components/filters/ZoneSelect';
 
 type FiltersButtonProps = {
+  isAdmin: boolean;
   filters: ArtistsTableFilters;
   artistManagers: ArtistManagerSelectData[];
   zones: Zone[];
 };
 
-export default function FiltersButton({ filters, artistManagers, zones }: FiltersButtonProps) {
+export default function FiltersButton({
+  isAdmin,
+  filters,
+  artistManagers,
+  zones,
+}: FiltersButtonProps) {
   const router = useRouter();
   const [open, setOpen] = useState<boolean>(false);
   const [isPending, startTransition] = useTransition();
 
-  const active = Boolean(filters.fullName || filters.email || filters.phone || filters.managerIds.length || filters.zoneIds.length);
+  const active = Boolean(
+    filters.fullName ||
+      filters.email ||
+      filters.phone ||
+      (isAdmin ? filters.managerIds.length : false) ||
+      filters.zoneIds.length,
+  );
 
   const [fullName, setFullName] = useState<string>(filters.fullName || '');
   const [email, setEmail] = useState<string>(filters.email || '');
@@ -58,7 +70,7 @@ export default function FiltersButton({ filters, artistManagers, zones }: Filter
       params.delete('phone');
     }
 
-    if (managerIds.length > 0) {
+    if (isAdmin && managerIds.length > 0) {
       params.set('manager', managerIds.join(','));
     } else {
       params.delete('manager');
@@ -126,14 +138,16 @@ export default function FiltersButton({ filters, artistManagers, zones }: Filter
           />
         </div>
 
-        <div className='flex flex-col'>
-          <div className='text-sm font-semibold mb-2'>Manager</div>
-          <ArtistManagerSelect
-            initialValue={managerIds}
-            artistManagers={artistManagers}
-            onConfirm={setManagerIds}
-          />
-        </div>
+        {isAdmin && (
+          <div className='flex flex-col'>
+            <div className='text-sm font-semibold mb-2'>Manager</div>
+            <ArtistManagerSelect
+              initialValue={managerIds}
+              artistManagers={artistManagers}
+              onConfirm={setManagerIds}
+            />
+          </div>
+        )}
 
         <div className='flex flex-col'>
           <div className='text-sm font-semibold mb-2'>Area di interesse</div>

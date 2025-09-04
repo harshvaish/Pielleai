@@ -124,7 +124,10 @@ export const createVenueManagerProfile = async (
         throw new AppError('Recupero profilo utente non riuscito.');
       }
 
-      if (uid) revalidateTag(`venue-manager:${uid}`);
+      if (uid) {
+        revalidateTag(`profile:${uid}`);
+        revalidateTag(`venue-manager:${uid}`);
+      }
       revalidateTag('venue-managers');
       revalidateTag('paginated-venue-managers');
 

@@ -1,8 +1,13 @@
 import Image from 'next/image';
 import NavbarButton from './NavbarButton';
 import SearchBar from './SearchBar';
+import { User } from '@/lib/auth';
 
-export default async function Header() {
+type HeaderProps = {
+  user: User;
+};
+
+export default async function Header({ user }: HeaderProps) {
   return (
     <header className='max-h-max flex justify-between items-center px-4 md:px-8 py-4 gap-4 border-b-1'>
       <Image
@@ -24,9 +29,9 @@ export default async function Header() {
       />
 
       <div className='w-full flex justify-end items-center gap-2'>
-        <SearchBar />
+        {user.role === 'admin' && <SearchBar />}
 
-        <NavbarButton />
+        <NavbarButton user={user} />
       </div>
     </header>
   );

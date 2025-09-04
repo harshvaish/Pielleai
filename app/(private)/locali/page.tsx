@@ -15,14 +15,14 @@ import { VenuesTableFilters, VenueType } from '@/lib/types';
 import FiltersButton from './_components/filters/FiltersButton';
 import CreateButton from './_components/create/CreateButton';
 import StatusBadge from '../_components/badges/StatusBadge';
-import { resolveNextPath, splitCsv } from '@/lib/utils';
+import { hasRole, resolveNextPath, splitCsv } from '@/lib/utils';
 import { getCountriesCached } from '@/lib/cache/countries';
 import { getVenueManagersCached } from '@/lib/cache/venue-managers';
 import { getPaginatedVenuesCached } from '@/lib/cache/venues';
 import { notFound, redirect } from 'next/navigation';
 import { venuesTableFiltersSchema } from '@/lib/validation/filters/venues-table-filters-schema';
 import getSession from '@/lib/data/auth/get-session';
-import { userHasProfile } from '@/lib/data/profiles/userHasProfile';
+import { getUserProfileIdCached } from '@/lib/cache/users';
 
 type VenuesPageProps = {
   searchParams?: Promise<{
@@ -43,8 +43,13 @@ export const dynamic = 'force-dynamic';
 export default async function VenuesPage({ searchParams }: VenuesPageProps) {
   const { session, user } = await getSession();
   if (!session || !user) redirect('/accedi');
-  const hasProfile = await userHasProfile(user.id);
-  const target = resolveNextPath({ user, hasProfile });
+
+  if (!hasRole(user, ['admin', 'venue-manager'])) {
+    notFound();
+  }
+
+  const profileId = await getUserProfileIdCached(user.id);
+  const target = resolveNextPath({ user, hasProfile: Boolean(profileId) });
   if (target) redirect(target);
 
   const sp = await searchParams;

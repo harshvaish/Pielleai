@@ -50,6 +50,8 @@ export async function updateUserStatus(
     const role = updateResult[0]?.role;
 
     if (uid) {
+      revalidateTag(`profile:${uid}`);
+
       if (role === 'artist-manager') {
         revalidateTag(`artist-manager:${uid}`);
         revalidateTag('artist-managers');

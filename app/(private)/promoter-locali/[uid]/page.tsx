@@ -4,7 +4,7 @@ import { format } from 'date-fns';
 import Image from 'next/image';
 import { notFound, redirect } from 'next/navigation';
 import { getProfileNotes } from '@/lib/data/notes/get-profile-notes';
-import { cn, resolveNextPath } from '@/lib/utils';
+import { cn, hasRole, resolveNextPath } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import StatusBadge from '../../_components/badges/StatusBadge';
@@ -19,7 +19,7 @@ import { getVenueManagerCached } from '@/lib/cache/venue-managers';
 import ManagedVenuesTab from './_components/Tabs/ManagedVenuesTab';
 import PersonalDataTab from './_components/Tabs/PersonalDataTab';
 import getSession from '@/lib/data/auth/get-session';
-import { userHasProfile } from '@/lib/data/profiles/userHasProfile';
+import { getUserProfileIdCached } from '@/lib/cache/users';
 
 type VenueManagerDetailPageProps = { params: Promise<{ uid: string }> };
 
@@ -28,8 +28,13 @@ export const dynamic = 'force-dynamic';
 export default async function VenueManagerDetailPage({ params }: VenueManagerDetailPageProps) {
   const { session, user } = await getSession();
   if (!session || !user) redirect('/accedi');
-  const hasProfile = await userHasProfile(user.id);
-  const target = resolveNextPath({ user, hasProfile });
+
+  if (!hasRole(user, ['admin'])) {
+    notFound();
+  }
+
+  const profileId = await getUserProfileIdCached(user.id);
+  const target = resolveNextPath({ user, hasProfile: Boolean(profileId) });
   if (target) redirect(target);
 
   const p = await params;

@@ -3,7 +3,7 @@ import { Separator } from '@/components/ui/separator';
 import { format } from 'date-fns';
 import Image from 'next/image';
 import { notFound, redirect } from 'next/navigation';
-import { cn, resolveNextPath } from '@/lib/utils';
+import { cn, hasRole, resolveNextPath } from '@/lib/utils';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import BillingDataTab from '../../_components/tabs/BillingDataTab';
 import VenueTypeBadge from '../../_components/badges/VenueTypeBadge';
@@ -16,8 +16,8 @@ import UpdateButton from './_components/update/UpdateButton';
 import { getVenueCached } from '@/lib/cache/venues';
 import { getCountriesCached } from '@/lib/cache/countries';
 import { getVenueManagersCached } from '@/lib/cache/venue-managers';
-import { userHasProfile } from '@/lib/data/profiles/userHasProfile';
 import getSession from '@/lib/data/auth/get-session';
+import { getUserProfileIdCached } from '@/lib/cache/users';
 
 type VenueDetailPageProps = { params: Promise<{ slug: string }> };
 
@@ -26,8 +26,13 @@ export const dynamic = 'force-dynamic';
 export default async function VenueDetailPage({ params }: VenueDetailPageProps) {
   const { session, user } = await getSession();
   if (!session || !user) redirect('/accedi');
-  const hasProfile = await userHasProfile(user.id);
-  const target = resolveNextPath({ user, hasProfile });
+
+  if (!hasRole(user, ['admin', 'venue-manager'])) {
+    notFound();
+  }
+
+  const profileId = await getUserProfileIdCached(user.id);
+  const target = resolveNextPath({ user, hasProfile: Boolean(profileId) });
   if (target) redirect(target);
 
   const p = await params;
@@ -108,7 +113,7 @@ export default async function VenueDetailPage({ params }: VenueDetailPageProps) 
                   <div className='flex items-center gap-1'>
                     <Image
                       className='w-4 h-4'
-                      src='/images/navbar-icons/manager-artists.svg'
+                      src='/images/navbar-icons/artist-managers.svg'
                       alt='icona di una valigetta stilizzata'
                       width={16}
                       height={16}
@@ -131,7 +136,7 @@ export default async function VenueDetailPage({ params }: VenueDetailPageProps) 
               <div className='flex items-center gap-1'>
                 <Image
                   className='w-4 h-4'
-                  src='/images/navbar-icons/manager-artists.svg'
+                  src='/images/navbar-icons/artist-managers.svg'
                   alt='icona di una valigetta stilizzata'
                   width={16}
                   height={16}

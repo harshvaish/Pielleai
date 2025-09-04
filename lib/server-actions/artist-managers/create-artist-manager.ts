@@ -178,7 +178,10 @@ export const createArtistManager = async (
       }
 
       const uid = profileResult[0]?.userId;
-      if (uid) revalidateTag(`artist-manager:${uid}`);
+      if (uid) {
+        revalidateTag(`profile:${uid}`);
+        revalidateTag(`artist-manager:${uid}`);
+      }
       revalidateTag('artist-managers');
       revalidateTag('paginated-artist-managers');
 

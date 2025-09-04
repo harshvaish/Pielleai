@@ -1,24 +1,35 @@
 'server only';
 
 import { database } from '@/lib/database/connection';
-import { artists } from '@/lib/database/schema';
+import { artists, managerArtists } from '@/lib/database/schema';
 import { ArtistSelectData } from '@/lib/types';
-import { asc } from 'drizzle-orm';
+import { asc, eq, inArray } from 'drizzle-orm';
 
-export async function getArtists(): Promise<ArtistSelectData[]> {
+export async function getArtists(managerProfileId?: number): Promise<ArtistSelectData[]> {
   try {
+    let managedArtistIds: number[] | undefined = undefined;
+
+    if (managerProfileId) {
+      const managedArtists = await database
+        .select({ artistId: managerArtists.artistId })
+        .from(managerArtists)
+        .where(eq(managerArtists.managerProfileId, managerProfileId));
+
+      managedArtistIds = [...new Set(managedArtists.map((r) => r.artistId))];
+    }
+
     const results = await database
       .select({
         id: artists.id,
         slug: artists.slug,
         status: artists.status,
-        profileId: artists.id,
         avatarUrl: artists.avatarUrl,
         name: artists.name,
         surname: artists.surname,
         stageName: artists.stageName,
       })
       .from(artists)
+      .where(managedArtistIds ? inArray(artists.id, managedArtistIds) : undefined)
       .orderBy(asc(artists.name), asc(artists.surname));
 
     return results;

@@ -1,5 +1,5 @@
 import { View } from 'react-big-calendar';
-import { EventStatus, Gender, VenueType } from './types';
+import { EventStatus, Gender, UserRole, VenueType } from './types';
 
 export const TIME_ZONE = 'Europe/Rome';
 
@@ -13,48 +13,61 @@ export const CE_BLOCK_STORAGE_NAME = 'ce_send_at';
 export const CE_BLOCK_DURATION = 5 * 60 * 1000; // 10min
 
 // navbar
-export const NAVBAR_LINKS = [
+export const NAVBAR_LINKS: {
+  label: string;
+  href: string;
+  iconSrc: string;
+  iconAlt: string;
+  canAccess: UserRole[];
+}[] = [
+  {
+    label: 'Calendario',
+    href: '/calendario',
+    iconSrc: '/images/navbar-icons/calendar.svg',
+    iconAlt: 'icona Calendario',
+    canAccess: ['artist-manager'],
+  },
   {
     label: 'Dashboard',
     href: '/dashboard',
     iconSrc: '/images/navbar-icons/dashboard.svg',
     iconAlt: 'icona Dashboard',
-    separator: false,
+    canAccess: ['admin', 'venue-manager'],
   },
   {
     label: 'Eventi',
     href: '/eventi',
     iconSrc: '/images/navbar-icons/events.svg',
     iconAlt: 'icona Eventi',
-    separator: true,
+    canAccess: ['admin', 'artist-manager', 'venue-manager'],
   },
   {
     label: 'Manager artisti',
     href: '/manager-artisti',
-    iconSrc: '/images/navbar-icons/manager-artists.svg',
+    iconSrc: '/images/navbar-icons/artist-managers.svg',
     iconAlt: 'icona Manager artisti',
-    separator: false,
+    canAccess: ['admin'],
   },
   {
     label: 'Artisti',
     href: '/artisti',
     iconSrc: '/images/navbar-icons/artists.svg',
     iconAlt: 'icona Artisti',
-    separator: true,
+    canAccess: ['admin', 'artist-manager'],
   },
   {
     label: 'Promoter locali',
     href: '/promoter-locali',
-    iconSrc: '/images/navbar-icons/manager-venues.svg',
+    iconSrc: '/images/navbar-icons/venue-managers.svg',
     iconAlt: 'icona Promoter locali',
-    separator: false,
+    canAccess: ['admin'],
   },
   {
     label: 'Locali',
     href: '/locali',
     iconSrc: '/images/navbar-icons/venues.svg',
     iconAlt: 'icona Locali',
-    separator: false,
+    canAccess: ['admin', 'venue-manager'],
   },
 ];
 

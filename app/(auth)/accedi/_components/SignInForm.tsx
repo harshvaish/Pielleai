@@ -33,7 +33,6 @@ export default function SignInForm() {
     await signIn.email({
       email,
       password,
-      rememberMe: false,
       callbackURL: '/dashboard',
       fetchOptions: {
         onError: (ctx) => {

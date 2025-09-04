@@ -14,7 +14,7 @@ import ManagersBadge from '../_components/badges/ManagersBadge';
 import { ArtistsTableFilters } from '@/lib/types';
 import FiltersButton from './_components/filters/FiltersButton';
 import CreateButton from './_components/create/CreateButton';
-import { resolveNextPath, splitCsv } from '@/lib/utils';
+import { hasRole, resolveNextPath, splitCsv } from '@/lib/utils';
 import ArtistsBadge from '../_components/badges/ArtistsBadge';
 import { getPaginatedArtistsCached } from '@/lib/cache/artists';
 import { getLanguagesCached } from '@/lib/cache/languages';
@@ -24,7 +24,9 @@ import { getZonesCached } from '@/lib/cache/zones';
 import { artistsTableFiltersSchema } from '@/lib/validation/filters/artists-table-filters-schema';
 import { notFound, redirect } from 'next/navigation';
 import getSession from '@/lib/data/auth/get-session';
-import { userHasProfile } from '@/lib/data/profiles/userHasProfile';
+import { getUserProfileIdCached } from '@/lib/cache/users';
+
+export const dynamic = 'force-dynamic';
 
 type ArtistsPageProps = {
   searchParams?: Promise<{
@@ -38,13 +40,17 @@ type ArtistsPageProps = {
   }>;
 };
 
-export const dynamic = 'force-dynamic';
-
 export default async function ArtistsPage({ searchParams }: ArtistsPageProps) {
   const { session, user } = await getSession();
   if (!session || !user) redirect('/accedi');
-  const hasProfile = await userHasProfile(user.id);
-  const target = resolveNextPath({ user, hasProfile });
+
+  if (!hasRole(user, ['admin', 'artist-manager', 'venue-manager'])) {
+    notFound();
+  }
+
+  const profileId = await getUserProfileIdCached(user.id);
+  const isAdmin = user.role === 'admin';
+  const target = resolveNextPath({ user, hasProfile: Boolean(profileId) });
   if (target) redirect(target);
 
   const sp = await searchParams;
@@ -55,7 +61,7 @@ export default async function ArtistsPage({ searchParams }: ArtistsPageProps) {
     fullName: sp?.fullName || null,
     email: sp?.email || null,
     phone: sp?.phone || null,
-    managerIds: splitCsv(sp?.manager),
+    managerIds: isAdmin ? splitCsv(sp?.manager) : [profileId!.toString()],
     zoneIds: splitCsv(sp?.zone),
   };
 
@@ -70,7 +76,7 @@ export default async function ArtistsPage({ searchParams }: ArtistsPageProps) {
       getPaginatedArtistsCached(filters),
       getLanguagesCached(),
       getCountriesCached(),
-      getArtistManagersCached(),
+      isAdmin ? getArtistManagersCached() : Promise.resolve([]),
       getZonesCached(),
     ]);
 
@@ -80,6 +86,7 @@ export default async function ArtistsPage({ searchParams }: ArtistsPageProps) {
         <h1 className='text-2xl font-bold'>Artisti</h1>
         <div className='flex items-center gap-2 mt-2 md:mt-0'>
           <FiltersButton
+            isAdmin={isAdmin}
             filters={filters}
             artistManagers={artistManagers}
             zones={zones}

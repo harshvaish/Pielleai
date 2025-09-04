@@ -5,7 +5,7 @@ import { Session } from 'better-auth';
 import { User } from '@/lib/auth';
 import { headers } from 'next/headers';
 
-export default async function getSession(): Promise<{
+export default async function getSession(force: boolean = false): Promise<{
   session: Session | null;
   user: User | null;
 }> {
@@ -14,6 +14,9 @@ export default async function getSession(): Promise<{
 
     const response = await auth.api.getSession({
       headers: requestHeaders,
+      query: {
+        disableCookieCache: force,
+      },
     });
 
     if (!response || !response.session || !response.user) {

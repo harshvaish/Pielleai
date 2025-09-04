@@ -3,7 +3,7 @@ import { Separator } from '@/components/ui/separator';
 import { format } from 'date-fns';
 import Image from 'next/image';
 import { notFound, redirect } from 'next/navigation';
-import { cn, resolveNextPath } from '@/lib/utils';
+import { cn, hasRole, resolveNextPath } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import StatusBadge from '../../_components/badges/StatusBadge';
@@ -23,7 +23,7 @@ import BillingDataTab from '../../_components/tabs/BillingDataTab';
 import AvailabilitiesTab from './_components/tabs/AvailabilitiesTab';
 import SocialDataTab from '../../_components/tabs/SocialDataTab';
 import getSession from '@/lib/data/auth/get-session';
-import { userHasProfile } from '@/lib/data/profiles/userHasProfile';
+import { getUserProfileIdCached } from '@/lib/cache/users';
 
 type ArtistDetailPageProps = {
   params: Promise<{ slug: string }>;
@@ -34,8 +34,13 @@ export const dynamic = 'force-dynamic';
 export default async function ArtistDetailPage({ params }: ArtistDetailPageProps) {
   const { session, user } = await getSession();
   if (!session || !user) redirect('/accedi');
-  const hasProfile = await userHasProfile(user.id);
-  const target = resolveNextPath({ user, hasProfile });
+
+  if (!hasRole(user, ['admin', 'artist-manager', 'venue-manager'])) {
+    notFound();
+  }
+
+  const profileId = await getUserProfileIdCached(user.id);
+  const target = resolveNextPath({ user, hasProfile: Boolean(profileId) });
   if (target) redirect(target);
 
   const p = await params;

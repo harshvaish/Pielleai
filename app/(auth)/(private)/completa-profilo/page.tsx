@@ -6,14 +6,14 @@ import { redirect } from 'next/navigation';
 import ArtistManagerProfileForm from './_components/ArtistManagerProfileForm';
 import getSession from '@/lib/data/auth/get-session';
 import VenueManagerProfileForm from './_components/VenueManagerProfileForm';
-import { userHasProfile } from '@/lib/data/profiles/userHasProfile';
 import { resolveNextPath } from '@/lib/utils';
+import { getUserProfileIdCached } from '@/lib/cache/users';
 
 export default async function CompleteProfilePage() {
-  const { session, user } = await getSession();
+  const { session, user } = await getSession(true);
   if (!session || !user) redirect('/accedi');
-  const hasProfile = await userHasProfile(user.id);
-  const target = resolveNextPath({ user, hasProfile });
+  const profileId = await getUserProfileIdCached(user.id);
+  const target = resolveNextPath({ user, hasProfile: Boolean(profileId) });
   if (target && target !== '/completa-profilo') redirect(target);
 
   const [languages, countries] = await Promise.all([getLanguagesCached(), getCountriesCached()]);

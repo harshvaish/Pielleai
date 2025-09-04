@@ -17,11 +17,16 @@ export function getArtistCached(slug: string) {
   return fn(slug);
 }
 
-export const getArtistsCached = unstable_cache(
-  async () => getArtists(),
-  ['artists'],
-  { revalidate: 60 * 60, tags: ['artists'] }, // 1h
-);
+export function getArtistsCached(managerProfileId?: number) {
+  const key = ['artists'];
+
+  const fn = unstable_cache(
+    (id: number | undefined) => getArtists(id),
+    key,
+    { revalidate: 60 * 60, tags: key }, // 1 hour
+  );
+  return fn(managerProfileId);
+}
 
 // NOTE: we derive key from filters so pages/filters cache separately
 export async function getPaginatedArtistsCached(filters: ArtistsTableFilters) {

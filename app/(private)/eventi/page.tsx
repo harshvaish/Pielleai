@@ -5,7 +5,7 @@ import StatusFilterButton from './_components/filters/StatusFilterButton';
 import FiltersButton from './_components/filters/FiltersButton';
 import { EventsTableFilters, EventStatus } from '@/lib/types';
 import DatesFilterButton from './_components/filters/DatesFilterButton';
-import { resolveNextPath, splitCsv } from '@/lib/utils';
+import { hasRole, resolveNextPath, splitCsv } from '@/lib/utils';
 import { getEventsCached } from '@/lib/cache/events';
 import { getArtistsCached } from '@/lib/cache/artists';
 import { getArtistManagersCached } from '@/lib/cache/artist-managers';
@@ -14,8 +14,8 @@ import { getMoCoordinatorsCached } from '@/lib/cache/mo-coordinators';
 import { eventsFiltersSchema } from '@/lib/validation/filters/events-filters-schema';
 import { notFound, redirect } from 'next/navigation';
 import ExportButton from './_components/ExportButton';
-import { userHasProfile } from '@/lib/data/profiles/userHasProfile';
 import getSession from '@/lib/data/auth/get-session';
+import { getUserProfileIdCached } from '@/lib/cache/users';
 
 type EventsPageProps = {
   searchParams?: Promise<{
@@ -34,10 +34,16 @@ export const dynamic = 'force-dynamic';
 export default async function EventsPage({ searchParams }: EventsPageProps) {
   const { session, user } = await getSession();
   if (!session || !user) redirect('/accedi');
-  const hasProfile = await userHasProfile(user.id);
-  const target = resolveNextPath({ user, hasProfile });
+
+  if (!hasRole(user, ['admin', 'artist-manager', 'venue-manager'])) {
+    notFound();
+  }
+
+  const profileId = await getUserProfileIdCached(user.id);
+  const target = resolveNextPath({ user, hasProfile: Boolean(profileId) });
   if (target) redirect(target);
 
+  const isAdmin = user.role === 'admin';
   const sp = await searchParams;
   const currentPage = Number(sp?.page ?? '1');
 
@@ -45,7 +51,7 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
     currentPage: currentPage,
     status: splitCsv(sp?.status) as EventStatus[],
     artistIds: splitCsv(sp?.artist),
-    artistManagerIds: splitCsv(sp?.manager),
+    artistManagerIds: isAdmin ? splitCsv(sp?.manager) : [profileId!.toString()],
     venueIds: splitCsv(sp?.venue),
     startDate: sp?.start ? new Date(sp.start) : null,
     endDate: sp?.end ? new Date(sp.end) : null,
@@ -60,8 +66,8 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
   const [{ data: events, totalPages }, artists, artistManagers, venues, moCoordinators] =
     await Promise.all([
       getEventsCached(filters),
-      getArtistsCached(),
-      getArtistManagersCached(),
+      getArtistsCached(isAdmin ? undefined : profileId),
+      isAdmin ? getArtistManagersCached() : Promise.resolve([]),
       getVenuesCached(),
       getMoCoordinatorsCached(),
     ]);
@@ -71,12 +77,14 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
       <div className='flex justify-between items-center'>
         <h1 className='text-xl md:text-2xl font-bold'>Eventi</h1>
         <div className='flex items-center gap-2'>
-          <ExportButton filters={filters} />
-          <CreateButton
-            artists={artists}
-            venues={venues}
-            moCoordinators={moCoordinators}
-          />
+          {isAdmin && <ExportButton filters={filters} />}
+          {isAdmin && (
+            <CreateButton
+              artists={artists}
+              venues={venues}
+              moCoordinators={moCoordinators}
+            />
+          )}
         </div>
       </div>
 
@@ -105,6 +113,7 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
         </div>
         <div className='flex items-center gap-2'>
           <FiltersButton
+            isAdmin={isAdmin}
             filters={filters}
             artists={artists}
             artistManagers={artistManagers}

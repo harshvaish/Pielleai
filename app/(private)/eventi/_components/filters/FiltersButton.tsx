@@ -16,6 +16,7 @@ import ArtistManagerSelect from '@/app/(private)/_components/filters/ArtistManag
 import VenueSelect from '@/app/(private)/_components/filters/VenueSelect';
 
 type FiltersButtonProps = {
+  isAdmin: boolean;
   filters: EventsTableFilters;
   artists: ArtistSelectData[];
   artistManagers: ArtistManagerSelectData[];
@@ -23,6 +24,7 @@ type FiltersButtonProps = {
 };
 
 export default function FiltersButton({
+  isAdmin,
   filters,
   artists,
   artistManagers,
@@ -40,7 +42,9 @@ export default function FiltersButton({
   const [venueIds, setVenueIds] = useState<string[]>(filters.venueIds || []);
 
   const active = Boolean(
-    filters.artistIds.length || filters.artistManagerIds.length || filters.venueIds.length,
+    filters.artistIds.length ||
+      (isAdmin ? filters.artistManagerIds.length : false) ||
+      filters.venueIds.length,
   );
 
   const resetHandler = () => {
@@ -58,7 +62,7 @@ export default function FiltersButton({
       params.delete('artist');
     }
 
-    if (artistManagerIds.length > 0) {
+    if (isAdmin && artistManagerIds.length > 0) {
       params.set('manager', artistManagerIds.join(','));
     } else {
       params.delete('manager');
@@ -106,14 +110,16 @@ export default function FiltersButton({
           />
         </div>
 
-        <div className='flex flex-col'>
-          <div className='text-sm font-semibold mb-2'>Manager artisti</div>
-          <ArtistManagerSelect
-            initialValue={artistManagerIds}
-            artistManagers={artistManagers}
-            onConfirm={setArtistManagerIds}
-          />
-        </div>
+        {isAdmin && (
+          <div className='flex flex-col'>
+            <div className='text-sm font-semibold mb-2'>Manager artisti</div>
+            <ArtistManagerSelect
+              initialValue={artistManagerIds}
+              artistManagers={artistManagers}
+              onConfirm={setArtistManagerIds}
+            />
+          </div>
+        )}
 
         <div className='flex flex-col'>
           <div className='text-sm font-semibold mb-2'>Locali</div>

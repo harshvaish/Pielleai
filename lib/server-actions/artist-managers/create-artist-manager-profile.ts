@@ -173,7 +173,10 @@ export const createArtistManagerProfile = async (
         throw new AppError('Recupero profilo utente non riuscito.');
       }
 
-      if (uid) revalidateTag(`artist-manager:${uid}`);
+      if (uid) {
+        revalidateTag(`profile:${uid}`);
+        revalidateTag(`artist-manager:${uid}`);
+      }
       revalidateTag('artist-managers');
       revalidateTag('paginated-artist-managers');
 

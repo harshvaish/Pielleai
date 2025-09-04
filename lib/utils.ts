@@ -15,7 +15,7 @@ import {
 } from 'date-fns';
 import { it } from 'date-fns/locale';
 import imageCompression from 'browser-image-compression';
-import { Availability } from './types';
+import { Availability, UserRole } from './types';
 import { User } from './auth';
 
 // general
@@ -299,10 +299,14 @@ export function hashKey(obj: object) {
 }
 
 // auth redirect
+export function hasRole(user: { role: UserRole }, roles: UserRole[]) {
+  return roles.includes(user.role);
+}
+
 export function resolveNextPath(opts: { user: User; hasProfile: boolean }): string | null {
   const { user, hasProfile } = opts;
 
-  if (user.role === 'admin') return '/dashboard';
+  if (user.role === 'admin') return null;
   if (!user.emailVerified) return '/conferma-email';
   if (!hasProfile) return '/completa-profilo';
   if (user.status === 'waiting-for-approval') return '/attesa-approvazione';

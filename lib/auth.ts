@@ -38,7 +38,7 @@ export const auth = betterAuth({
     autoSignIn: false,
     disableSignUp: false,
     requireEmailVerification: true,
-    resetPasswordTokenExpiresIn: 60 * 60, // 1 ora
+    resetPasswordTokenExpiresIn: 60 * 60, // 1 hour
     sendResetPassword: async ({ user, url }) => {
       await sendResetPasswordEmail(user.email, user.name, url);
     },
@@ -46,11 +46,11 @@ export const auth = betterAuth({
     maxPasswordLength: 16,
   },
   session: {
-    expiresIn: 60 * 60 * 24 * 30, // 1mo
-    disableSessionRefresh: true,
+    expiresIn: 60 * 60 * 24 * 30, // 1 month
+    disableSessionRefresh: false,
     cookieCache: {
       enabled: true,
-      maxAge: 5 * 60, // 5min
+      maxAge: 5 * 60, // 5 min
     },
   },
   advanced: {
@@ -60,7 +60,7 @@ export const auth = betterAuth({
     nextCookies(),
     admin(adminConfig),
     emailOTP({
-      expiresIn: 300, // 5min
+      expiresIn: 60 * 5, // 5 min
       allowedAttempts: 3,
       async sendVerificationOTP({ email, otp, type }) {
         if (type === 'email-verification') {

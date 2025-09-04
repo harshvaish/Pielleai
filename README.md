@@ -65,4 +65,7 @@ TODO
 - crone job to make the events and availabilities expired
 - add active status on navbar tiles
 - change all the db checks with count where needed
-- login check if user is disabled
+- login check if user is disabled and redirect to correct path
+- move role check on pages after the profile check?
+
+- go on with role stuff
