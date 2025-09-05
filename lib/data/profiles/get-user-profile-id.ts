@@ -4,7 +4,7 @@ import { database } from '@/lib/database/connection';
 import { profiles } from '@/lib/database/schema';
 import { eq } from 'drizzle-orm';
 
-export async function getUserProfileId(uid: string): Promise<number | undefined> {
+export async function getUserProfileId(uid: string): Promise<number | null> {
   try {
     const results = await database
       .select({
@@ -18,9 +18,9 @@ export async function getUserProfileId(uid: string): Promise<number | undefined>
       return results[0].id;
     }
 
-    return undefined;
+    return null;
   } catch (error) {
     console.error('[getUserProfileId] - Error: ', error);
-    return undefined;
+    return null;
   }
 }

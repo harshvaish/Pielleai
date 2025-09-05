@@ -20,6 +20,7 @@ import {
 import { artistFormSchema, ArtistFormSchema } from '@/lib/validation/artist-form-schema';
 import { AppError } from '@/lib/classes/AppError';
 import { revalidateTag } from 'next/cache';
+import { hasRole } from '@/lib/utils';
 
 export const createArtist = async (data: ArtistFormSchema): Promise<ServerActionResponse<null>> => {
   try {
@@ -29,8 +30,13 @@ export const createArtist = async (data: ArtistFormSchema): Promise<ServerAction
       headers: headersList,
     });
 
-    if (!session?.user || session.user.role != 'admin') {
+    if (!session?.user) {
       console.error('[createArtist] - Error: unauthorized', session);
+      throw new AppError('Devi essere autenticato.');
+    }
+
+    if (!hasRole(session.user, ['admin', 'artist-manager'])) {
+      console.error('[createArtist] - Error: role', session);
       throw new AppError('Non sei autorizzato.');
     }
 

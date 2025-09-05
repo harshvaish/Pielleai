@@ -5,9 +5,10 @@ import * as schema from '@/lib/database/schema';
 import { nextCookies } from 'better-auth/next-js';
 import { sendResetPasswordEmail } from './server-actions/send-reset-password-email';
 import { admin } from 'better-auth/plugins/admin';
-import { emailOTP } from 'better-auth/plugins';
+import { customSession, emailOTP } from 'better-auth/plugins';
 import { adminConfig } from './permissions';
 import { sendOTPEmail } from './server-actions/send-otp-email';
+import { getUserProfileIdCached } from './cache/users';
 
 export const auth = betterAuth({
   database: drizzleAdapter(database, {
@@ -30,6 +31,13 @@ export const auth = betterAuth({
         input: true,
         returned: true,
         defaultValue: 'user',
+      },
+      profileId: {
+        type: 'number',
+        required: false,
+        input: false,
+        returned: true,
+        defaultValue: null,
       },
     },
   },
@@ -59,6 +67,16 @@ export const auth = betterAuth({
   plugins: [
     nextCookies(),
     admin(adminConfig),
+    customSession(async ({ user, session }) => {
+      const profileId = getUserProfileIdCached(user.id);
+      return {
+        user: {
+          ...user,
+          profileId: profileId,
+        },
+        session,
+      };
+    }),
     emailOTP({
       expiresIn: 60 * 5, // 5 min
       allowedAttempts: 3,

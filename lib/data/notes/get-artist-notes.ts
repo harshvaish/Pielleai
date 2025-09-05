@@ -9,7 +9,7 @@ export async function getArtistNotes({
   artistId,
 }: {
   artistId: number;
-}): Promise<ServerActionResponse<ProfileNote[] | null>> {
+}): Promise<ServerActionResponse<ProfileNote[]>> {
   try {
     const notes = await database
       .select({

@@ -5,17 +5,25 @@ import { AppError } from '@/lib/classes/AppError';
 import { database } from '@/lib/database/connection';
 import { artistAvailabilities, events } from '@/lib/database/schema';
 import { ServerActionResponse } from '@/lib/types';
+import { hasRole } from '@/lib/utils';
 import { idValidation } from '@/lib/validation/_general';
 import { eq, inArray } from 'drizzle-orm';
 import { headers } from 'next/headers';
 
-export async function deleteArtistAvailability(availabilityId: number): Promise<ServerActionResponse<null>> {
+export async function deleteArtistAvailability(
+  availabilityId: number,
+): Promise<ServerActionResponse<null>> {
   try {
     const headersList = await headers();
     const session = await auth.api.getSession({ headers: headersList });
 
-    if (!session?.user || session.user.role !== 'admin') {
-      console.error('[deleteArtistAvailability] - Error: unauthorized', session);
+    if (!session?.user) {
+      console.error('[createArtist] - Error: unauthorized', session);
+      throw new AppError('Devi essere autenticato.');
+    }
+
+    if (!hasRole(session.user, ['admin', 'artist-manager'])) {
+      console.error('[createArtist] - Error: role', session);
       throw new AppError('Non sei autorizzato.');
     }
 
@@ -56,7 +64,12 @@ export async function deleteArtistAvailability(availabilityId: number): Promise<
         .where(eq(events.availabilityId, availabilityId));
 
       // Block delete if any protected event is present
-      const hasProtected = eventsAttached.some((e) => e.status === 'pre-confirmed' || e.status === 'confirmed' || e.previousStatus === 'pre-confirmed');
+      const hasProtected = eventsAttached.some(
+        (e) =>
+          e.status === 'pre-confirmed' ||
+          e.status === 'confirmed' ||
+          e.previousStatus === 'pre-confirmed',
+      );
       if (hasProtected) {
         throw new AppError('Disponibilità collegata ad un evento approvato.');
       }
@@ -80,7 +93,8 @@ export async function deleteArtistAvailability(availabilityId: number): Promise<
 
     return {
       success: false,
-      message: error instanceof AppError ? error.message : 'Cancellazione disponibilità non riuscita.',
+      message:
+        error instanceof AppError ? error.message : 'Cancellazione disponibilità non riuscita.',
       data: null,
     };
   }

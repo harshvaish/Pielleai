@@ -23,7 +23,8 @@ import BillingDataTab from '../../_components/tabs/BillingDataTab';
 import AvailabilitiesTab from './_components/tabs/AvailabilitiesTab';
 import SocialDataTab from '../../_components/tabs/SocialDataTab';
 import getSession from '@/lib/data/auth/get-session';
-import { getUserProfileIdCached } from '@/lib/cache/users';
+import { toast } from 'sonner';
+import { ProfileNote } from '@/lib/types';
 
 type ArtistDetailPageProps = {
   params: Promise<{ slug: string }>;
@@ -39,8 +40,9 @@ export default async function ArtistDetailPage({ params }: ArtistDetailPageProps
     notFound();
   }
 
-  const profileId = await getUserProfileIdCached(user.id);
-  const target = resolveNextPath({ user, hasProfile: Boolean(profileId) });
+  const isAdmin = user.role === 'admin';
+
+  const target = resolveNextPath({ user, hasProfile: Boolean(user.profileId) });
   if (target) redirect(target);
 
   const p = await params;
@@ -54,11 +56,22 @@ export default async function ArtistDetailPage({ params }: ArtistDetailPageProps
     getArtistManagersCached(),
   ]);
 
-  if (!userData) notFound();
+  if (!userData || !userData.managers.find((m) => m.id === user.id)) notFound();
 
-  const initialNotesData = await getArtistNotes({
-    artistId: userData.id,
-  });
+  let initialNotesData: ProfileNote[] = [];
+
+  if (isAdmin) {
+    const noteResponse = await getArtistNotes({
+      artistId: userData.id,
+    });
+
+    if (!noteResponse.success) {
+      toast.error(noteResponse.message || 'Recupero note non riuscito.');
+      return;
+    }
+
+    initialNotesData = noteResponse.data;
+  }
 
   const isDisabled = userData.status === 'disabled';
 
@@ -101,7 +114,7 @@ export default async function ArtistDetailPage({ params }: ArtistDetailPageProps
         </div>
       </div>
 
-      <div className='grid lg:grid-cols-[60%_auto] gap-6 mb-6'>
+      <div className={cn('mb-6', isAdmin && 'grid lg:grid-cols-[60%_auto] gap-6 ')}>
         {/* main details section */}
         <section className='bg-white py-8 px-6 rounded-2xl overflow-x-hidden'>
           <div className='flex flex-col lg:flex-row lg:justify-between gap-4 lg:gap-2'>
@@ -156,12 +169,14 @@ export default async function ArtistDetailPage({ params }: ArtistDetailPageProps
           </div>
         </section>
 
-        <NotesSection
-          isArtist={true}
-          initialNotes={initialNotesData.data || []}
-          writerId={user.id}
-          receiverProfileId={userData.id}
-        />
+        {isAdmin && (
+          <NotesSection
+            isArtist={true}
+            initialNotes={initialNotesData}
+            writerId={user.id}
+            receiverProfileId={userData.id}
+          />
+        )}
       </div>
 
       <Tabs defaultValue='a'>

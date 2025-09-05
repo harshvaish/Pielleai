@@ -5,6 +5,7 @@ import { AppError } from '@/lib/classes/AppError';
 import { database } from '@/lib/database/connection';
 import { artistAvailabilities, artists } from '@/lib/database/schema';
 import { ServerActionResponse, Availability } from '@/lib/types';
+import { hasRole } from '@/lib/utils';
 import { dateValidation } from '@/lib/validation/_general';
 import { addDays } from 'date-fns';
 import { eq, and, sql, count } from 'drizzle-orm';
@@ -22,8 +23,13 @@ export async function createArtistAvailability(
       headers: headersList,
     });
 
-    if (!session?.user || session.user.role != 'admin') {
-      console.error('[createArtistAvailability] - Error: unauthorized', session);
+    if (!session?.user) {
+      console.error('[createArtist] - Error: unauthorized', session);
+      throw new AppError('Devi essere autenticato.');
+    }
+
+    if (!hasRole(session.user, ['admin', 'artist-manager'])) {
+      console.error('[createArtist] - Error: role', session);
       throw new AppError('Non sei autorizzato.');
     }
 

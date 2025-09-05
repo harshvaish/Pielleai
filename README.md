@@ -67,5 +67,7 @@ TODO
 - change all the db checks with count where needed
 - login check if user is disabled and redirect to correct path
 - move role check on pages after the profile check?
+- get stuff to fill edit and create forms client side and not in the page server side -> create endpoints
 
-- go on with role stuff
+- managers badge is admin
+  go on with role stuff

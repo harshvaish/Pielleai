@@ -9,6 +9,7 @@ import { countries, subdivisions, artists } from '@/lib/database/schema';
 import { artistS2FormSchema, ArtistS2FormSchema } from '@/lib/validation/artist-form-schema';
 import { AppError } from '@/lib/classes/AppError';
 import { revalidateTag } from 'next/cache';
+import { hasRole } from '@/lib/utils';
 
 export const updateArtistBillingData = async (
   artistId: number,
@@ -21,8 +22,13 @@ export const updateArtistBillingData = async (
       headers: headersList,
     });
 
-    if (!session?.user || session.user.role != 'admin') {
-      console.error('[updateArtistBillingData] - Error: unauthorized', session);
+    if (!session?.user) {
+      console.error('[createArtist] - Error: unauthorized', session);
+      throw new AppError('Devi essere autenticato.');
+    }
+
+    if (!hasRole(session.user, ['admin', 'artist-manager'])) {
+      console.error('[createArtist] - Error: role', session);
       throw new AppError('Non sei autorizzato.');
     }
 

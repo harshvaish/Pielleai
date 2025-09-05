@@ -76,7 +76,7 @@ export default async function ArtistsPage({ searchParams }: ArtistsPageProps) {
       getPaginatedArtistsCached(filters),
       getLanguagesCached(),
       getCountriesCached(),
-      isAdmin ? getArtistManagersCached() : Promise.resolve([]),
+      getArtistManagersCached(),
       getZonesCached(),
     ]);
 

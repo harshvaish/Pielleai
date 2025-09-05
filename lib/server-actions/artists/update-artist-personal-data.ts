@@ -18,7 +18,7 @@ import {
   artistZones,
 } from '@/lib/database/schema';
 import { artistS1FormSchema, ArtistS1FormSchema } from '@/lib/validation/artist-form-schema';
-import { areSame } from '@/lib/utils';
+import { areSame, hasRole } from '@/lib/utils';
 import { AppError } from '@/lib/classes/AppError';
 import { revalidateTag } from 'next/cache';
 
@@ -33,8 +33,13 @@ export const updateArtistPersonalData = async (
       headers: headersList,
     });
 
-    if (!session?.user || session.user.role != 'admin') {
-      console.error('[updateArtistPersonalData] - Error: unauthorized', session);
+    if (!session?.user) {
+      console.error('[createArtist] - Error: unauthorized', session);
+      throw new AppError('Devi essere autenticato.');
+    }
+
+    if (!hasRole(session.user, ['admin', 'artist-manager'])) {
+      console.error('[createArtist] - Error: role', session);
       throw new AppError('Non sei autorizzato.');
     }
 

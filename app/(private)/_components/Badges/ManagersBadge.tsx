@@ -13,13 +13,17 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useState } from 'react';
 
-export default function ManagersBadge({
-  managers,
-  pathSegment,
-}: {
+type ManagersBadgeProps = {
+  isAdmin?: boolean;
   managers: ArtistManagerSelectData[] | VenueManagerSelectData[];
   pathSegment: string;
-}) {
+};
+
+export default function ManagersBadge({
+  isAdmin = false,
+  managers,
+  pathSegment,
+}: ManagersBadgeProps) {
   const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
   const count = managers.length;
 
@@ -41,6 +45,7 @@ export default function ManagersBadge({
     const manager = managers[0];
     return (
       <ManagerBadge
+        isAdmin={isAdmin}
         manager={manager}
         pathSegment={pathSegment}
       />
@@ -79,6 +84,7 @@ export default function ManagersBadge({
           return (
             <ManagerBadge
               key={manager.profileId}
+              isAdmin={isAdmin}
               manager={manager}
               pathSegment={pathSegment}
             />
@@ -90,9 +96,11 @@ export default function ManagersBadge({
 }
 
 function ManagerBadge({
+  isAdmin = false,
   manager,
   pathSegment,
 }: {
+  isAdmin?: boolean;
   manager: ArtistManagerSelectData | VenueManagerSelectData;
   pathSegment: string;
 }) {
@@ -101,7 +109,10 @@ function ManagerBadge({
   return (
     <Link
       href={`/${pathSegment}/${manager.id}`}
-      className='w-max max-w-60 flex flex-nowrap items-center gap-2 bg-zinc-50 hover:bg-zinc-100 p-2 rounded-md transition-colors'
+      className={cn(
+        'w-max max-w-60 flex flex-nowrap items-center gap-2 bg-zinc-50 hover:bg-zinc-100 p-2 rounded-md transition-colors',
+        !isAdmin && 'pointer-events-none hover:cursor-pointer',
+      )}
     >
       <Avatar className='w-5 h-5'>
         <AvatarImage

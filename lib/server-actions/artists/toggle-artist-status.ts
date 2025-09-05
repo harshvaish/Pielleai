@@ -5,6 +5,7 @@ import { AppError } from '@/lib/classes/AppError';
 import { database } from '@/lib/database/connection';
 import { artists, userStatus } from '@/lib/database/schema';
 import { ServerActionResponse, UserStatus } from '@/lib/types';
+import { hasRole } from '@/lib/utils';
 import { idValidation } from '@/lib/validation/_general';
 import { eq } from 'drizzle-orm';
 import { revalidateTag } from 'next/cache';
@@ -22,8 +23,13 @@ export async function toggleArtistStatus(
       headers: headersList,
     });
 
-    if (!session?.user || session.user.role != 'admin') {
-      console.error('[toggleArtistStatus] - Error: unauthorized', session);
+    if (!session?.user) {
+      console.error('[createArtist] - Error: unauthorized', session);
+      throw new AppError('Devi essere autenticato.');
+    }
+
+    if (!hasRole(session.user, ['admin', 'artist-manager'])) {
+      console.error('[createArtist] - Error: role', session);
       throw new AppError('Non sei autorizzato.');
     }
 
