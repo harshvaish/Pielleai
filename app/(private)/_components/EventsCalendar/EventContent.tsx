@@ -2,15 +2,16 @@ import ArtistsBadge from '@/app/(private)/_components/badges/ArtistsBadge';
 import ManagersBadge from '@/app/(private)/_components/badges/ManagersBadge';
 import VenuesBadge from '@/app/(private)/_components/badges/VenuesBadge';
 import EventStatusBadge from '@/app/(private)/_components/badges/EventStatusBadge';
-import { ArtistManagerSelectData, CalendarEvent } from '@/lib/types';
+import { ArtistManagerSelectData, CalendarEvent, UserRole } from '@/lib/types';
 import { format } from 'date-fns';
 import { CalendarDays, Clock } from 'lucide-react';
 
 type EventContentProps = {
+  userRole: UserRole;
   event: CalendarEvent;
 };
 
-export default function EventContent({ event }: EventContentProps) {
+export default function EventContent({ userRole, event }: EventContentProps) {
   const selectedDate = event ? format(event.start, 'yyyy-MM-dd') : '';
   const selectedStartTime = event ? format(event.start, 'HH:mm') : '';
   const selectedEndTime = event ? format(event.end, 'HH:mm') : '';
@@ -52,6 +53,7 @@ export default function EventContent({ event }: EventContentProps) {
             <ManagersBadge
               managers={[event.artistManager as ArtistManagerSelectData]}
               pathSegment='manager-artisti'
+              userRole={userRole}
             />
           </div>
         )}

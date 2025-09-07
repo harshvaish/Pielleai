@@ -1,6 +1,6 @@
 'use client';
 
-import { ArtistSelectData, Event, MoCoordinator, VenueSelectData } from '@/lib/types';
+import { ArtistSelectData, Event, MoCoordinator, UserRole, VenueSelectData } from '@/lib/types';
 import EventStatusBadge from '../../../_components/badges/EventStatusBadge';
 import { it } from 'date-fns/locale';
 import { format } from 'date-fns';
@@ -17,13 +17,21 @@ import { cn } from '@/lib/utils';
 import { Separator } from '@/components/ui/separator';
 
 type EventTileProps = {
+  userRole: UserRole;
   event: Event;
   artists: ArtistSelectData[];
   venues: VenueSelectData[];
   moCoordinators: MoCoordinator[];
 };
 
-export default function EventTile({ event, artists, venues, moCoordinators }: EventTileProps) {
+export default function EventTile({
+  userRole,
+  event,
+  artists,
+  venues,
+  moCoordinators,
+}: EventTileProps) {
+  const isAdmin = userRole === 'admin';
   const eventDate = format(event.availability.startDate, 'dd MMM yyyy', { locale: it });
   const eventStartTime = format(event.availability.startDate, 'HH:mm', { locale: it });
   const eventEndTime = format(event.availability.endDate, 'HH:mm', { locale: it });
@@ -48,23 +56,25 @@ export default function EventTile({ event, artists, venues, moCoordinators }: Ev
         <div className='flex justify-between items-center gap-4'>
           <EventStatusBadge status={event.status} />
 
-          <Popover>
-            <PopoverTrigger className='h-10 w-10 flex justify-center items-center'>
-              <Ellipsis className='size-4 text-zinc-700' />
-            </PopoverTrigger>
-            <PopoverContent
-              align='end'
-              className='w-48 space-y-2'
-            >
-              <UpdateButton
-                event={event}
-                artists={artists}
-                venues={venues}
-                moCoordinators={moCoordinators}
-              />
-              <DeleteEventButton event={event} />
-            </PopoverContent>
-          </Popover>
+          {isAdmin && (
+            <Popover>
+              <PopoverTrigger className='h-10 w-10 flex justify-center items-center'>
+                <Ellipsis className='size-4 text-zinc-700' />
+              </PopoverTrigger>
+              <PopoverContent
+                align='end'
+                className='w-48 space-y-2'
+              >
+                <UpdateButton
+                  event={event}
+                  artists={artists}
+                  venues={venues}
+                  moCoordinators={moCoordinators}
+                />
+                <DeleteEventButton event={event} />
+              </PopoverContent>
+            </Popover>
+          )}
         </div>
 
         <div className='flex flex-col sm:flex-row justify-between sm:items-end gap-4'>
@@ -125,6 +135,7 @@ export default function EventTile({ event, artists, venues, moCoordinators }: Ev
             </div>
 
             <ManagersBadge
+              userRole={userRole}
               managers={[event.artistManager]}
               pathSegment='manager-artisti'
             />
@@ -176,7 +187,11 @@ export default function EventTile({ event, artists, venues, moCoordinators }: Ev
                 buttonLabel='Accetta'
                 buttonVariant='success'
                 dialogTitle='Vuoi accettare questa richiesta?'
-                dialogDescription="Accettando, l'evento sarà inoltrato al manager dell'artista per la conferma finale. Confermi di voler procedere?"
+                dialogDescription={
+                  isAdmin
+                    ? "Accettando, l'evento sarà inoltrato al manager dell'artista per la conferma finale. Confermi di voler procedere?"
+                    : 'Confermi di voler procedere?'
+                }
                 icon={<Check className='size-4' />}
               />
               <UpdateEventStatusButton
@@ -249,6 +264,7 @@ export default function EventTile({ event, artists, venues, moCoordinators }: Ev
                   </div>
 
                   <ManagersBadge
+                    userRole={userRole}
                     managers={[event.artistManager]}
                     pathSegment='manager-artisti'
                   />
@@ -303,7 +319,11 @@ export default function EventTile({ event, artists, venues, moCoordinators }: Ev
                 buttonLabel='Accetta'
                 buttonVariant='success'
                 dialogTitle='Vuoi accettare questa richiesta?'
-                dialogDescription="Accettando, l'evento sarà inoltrato al manager dell'artista per la conferma finale. Confermi di voler procedere?"
+                dialogDescription={
+                  isAdmin
+                    ? "Accettando, l'evento sarà inoltrato al manager dell'artista per la conferma finale. Confermi di voler procedere?"
+                    : 'Confermi di voler procedere?'
+                }
                 icon={<Check className='size-4' />}
               />
               <UpdateEventStatusButton
@@ -318,30 +338,32 @@ export default function EventTile({ event, artists, venues, moCoordinators }: Ev
             </>
           )}
 
-          <Popover>
-            <PopoverTrigger
-              className={cn(
-                "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-2xl text-sm font-semibold transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
-                'bg-zinc-200 text-secondary-foreground hover:bg-zinc-200/80', // secondary variant
-                'h-10 min-w-20 rounded-xl gap-1.5 px-3 has-[>svg]:px-2.5', // sm size
-              )}
-            >
-              Modifica <ChevronDown />
-            </PopoverTrigger>
+          {isAdmin && (
+            <Popover>
+              <PopoverTrigger
+                className={cn(
+                  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-2xl text-sm font-semibold transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
+                  'bg-zinc-200 text-secondary-foreground hover:bg-zinc-200/80', // secondary variant
+                  'h-10 min-w-20 rounded-xl gap-1.5 px-3 has-[>svg]:px-2.5', // sm size
+                )}
+              >
+                Modifica <ChevronDown />
+              </PopoverTrigger>
 
-            <PopoverContent
-              align='end'
-              className='max-w-max flex flex-col items-start gap-2'
-            >
-              <UpdateButton
-                event={event}
-                artists={artists}
-                venues={venues}
-                moCoordinators={moCoordinators}
-              />
-              <DeleteEventButton event={event} />
-            </PopoverContent>
-          </Popover>
+              <PopoverContent
+                align='end'
+                className='max-w-max flex flex-col items-start gap-2'
+              >
+                <UpdateButton
+                  event={event}
+                  artists={artists}
+                  venues={venues}
+                  moCoordinators={moCoordinators}
+                />
+                <DeleteEventButton event={event} />
+              </PopoverContent>
+            </Popover>
+          )}
         </div>
       </div>
     </>

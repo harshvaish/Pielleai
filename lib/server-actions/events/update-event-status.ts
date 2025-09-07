@@ -5,6 +5,7 @@ import { AppError } from '@/lib/classes/AppError';
 import { database } from '@/lib/database/connection';
 import { artistAvailabilities, events, eventStatus } from '@/lib/database/schema';
 import { EventStatus, ServerActionResponse } from '@/lib/types';
+import { hasRole } from '@/lib/utils';
 import { idValidation } from '@/lib/validation/_general';
 import { and, eq, ne, count } from 'drizzle-orm';
 import { revalidateTag } from 'next/cache';
@@ -22,7 +23,7 @@ export async function updateEventStatus(
       headers: headersList,
     });
 
-    if (!session?.user || session.user.role != 'admin') {
+    if (!session?.user || !hasRole(session.user, ['admin', 'artist-manager'])) {
       console.error('[updateEventStatus] - Error: unauthorized', session);
       throw new AppError('Non sei autorizzato.');
     }

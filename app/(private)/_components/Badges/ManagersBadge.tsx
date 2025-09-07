@@ -6,7 +6,7 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { ArtistManagerSelectData, VenueManagerSelectData } from '@/lib/types';
+import { ArtistManagerSelectData, UserRole, VenueManagerSelectData } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { ChevronDown } from 'lucide-react';
 import Image from 'next/image';
@@ -14,16 +14,12 @@ import Link from 'next/link';
 import { useState } from 'react';
 
 type ManagersBadgeProps = {
-  isAdmin?: boolean;
+  userRole: UserRole;
   managers: ArtistManagerSelectData[] | VenueManagerSelectData[];
   pathSegment: string;
 };
 
-export default function ManagersBadge({
-  isAdmin = false,
-  managers,
-  pathSegment,
-}: ManagersBadgeProps) {
+export default function ManagersBadge({ userRole, managers, pathSegment }: ManagersBadgeProps) {
   const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
   const count = managers.length;
 
@@ -45,7 +41,7 @@ export default function ManagersBadge({
     const manager = managers[0];
     return (
       <ManagerBadge
-        isAdmin={isAdmin}
+        userRole={userRole}
         manager={manager}
         pathSegment={pathSegment}
       />
@@ -84,7 +80,7 @@ export default function ManagersBadge({
           return (
             <ManagerBadge
               key={manager.profileId}
-              isAdmin={isAdmin}
+              userRole={userRole}
               manager={manager}
               pathSegment={pathSegment}
             />
@@ -96,14 +92,15 @@ export default function ManagersBadge({
 }
 
 function ManagerBadge({
-  isAdmin = false,
+  userRole,
   manager,
   pathSegment,
 }: {
-  isAdmin?: boolean;
+  userRole: UserRole;
   manager: ArtistManagerSelectData | VenueManagerSelectData;
   pathSegment: string;
 }) {
+  const isAdmin = userRole === 'admin';
   const isDisabled = manager.status === 'disabled';
 
   return (

@@ -1,6 +1,4 @@
-'use client';
-
-export default function ErrorPage() {
+export default function NotFoundPage() {
   return (
     <div className='w-full text-center bg-white p-8 rounded-2xl'>
       <h1 className='text-lg md:text-xl font-semibold mb-2'>404 | Pagina non trovata</h1>

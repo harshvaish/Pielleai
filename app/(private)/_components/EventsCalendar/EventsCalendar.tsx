@@ -17,6 +17,7 @@ import {
   CalendarEvent,
   EventsCalendarFilters,
   EventStatus,
+  UserRole,
   VenueSelectData,
 } from '@/lib/types';
 import useSWR from 'swr';
@@ -39,11 +40,12 @@ const locales = { it };
 export const localizer = dateFnsLocalizer({ format, parse, startOfWeek, getDay, locales });
 
 type EventsCalendarProps = {
+  userRole: UserRole;
   artists: ArtistSelectData[];
   venues: VenueSelectData[];
 };
 
-export default function EventsCalendar({ artists, venues }: EventsCalendarProps) {
+export default function EventsCalendar({ userRole, artists, venues }: EventsCalendarProps) {
   const searchParams = useSearchParams();
 
   const [calendarDate, setCalendarDate] = useState<Date>(new Date());
@@ -154,7 +156,12 @@ export default function EventsCalendar({ artists, venues }: EventsCalendarProps)
         title={`Evento #${selectedEvent?.id ?? ''}`}
         description="Consulta i dati principali dell'evento, per vederne tutti i dettagli o per fare modifiche vai alla sezione eventi."
       >
-        {selectedEvent && <EventContent event={selectedEvent} />}
+        {selectedEvent && (
+          <EventContent
+            userRole={userRole}
+            event={selectedEvent}
+          />
+        )}
       </ConfirmDialog>
     </div>
   );

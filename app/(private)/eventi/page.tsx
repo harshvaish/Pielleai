@@ -15,7 +15,6 @@ import { eventsFiltersSchema } from '@/lib/validation/filters/events-filters-sch
 import { notFound, redirect } from 'next/navigation';
 import ExportButton from './_components/ExportButton';
 import getSession from '@/lib/data/auth/get-session';
-import { getUserProfileIdCached } from '@/lib/cache/users';
 
 type EventsPageProps = {
   searchParams?: Promise<{
@@ -39,19 +38,20 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
     notFound();
   }
 
-  const profileId = await getUserProfileIdCached(user.id);
-  const target = resolveNextPath({ user, hasProfile: Boolean(profileId) });
+  const target = resolveNextPath({ user, hasProfile: Boolean(user.profileId) });
   if (target) redirect(target);
 
   const isAdmin = user.role === 'admin';
   const sp = await searchParams;
   const currentPage = Number(sp?.page ?? '1');
 
+  console.log(user.profileId);
+
   const filters: EventsTableFilters = {
     currentPage: currentPage,
     status: splitCsv(sp?.status) as EventStatus[],
     artistIds: splitCsv(sp?.artist),
-    artistManagerIds: isAdmin ? splitCsv(sp?.manager) : [profileId!.toString()],
+    artistManagerIds: isAdmin ? splitCsv(sp?.manager) : [user.profileId!.toString()],
     venueIds: splitCsv(sp?.venue),
     startDate: sp?.start ? new Date(sp.start) : null,
     endDate: sp?.end ? new Date(sp.end) : null,
@@ -66,7 +66,7 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
   const [{ data: events, totalPages }, artists, artistManagers, venues, moCoordinators] =
     await Promise.all([
       getEventsCached(filters),
-      getArtistsCached(isAdmin ? undefined : profileId),
+      getArtistsCached(isAdmin ? undefined : user.profileId!),
       isAdmin ? getArtistManagersCached() : Promise.resolve([]),
       getVenuesCached(),
       getMoCoordinatorsCached(),
@@ -129,6 +129,7 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
           {events.map((event) => (
             <EventTile
               key={event.id}
+              userRole={user.role}
               event={event}
               artists={artists}
               venues={venues}

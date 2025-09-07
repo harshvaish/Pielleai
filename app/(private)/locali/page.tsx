@@ -144,6 +144,7 @@ export default async function VenuesPage({ searchParams }: VenuesPageProps) {
                   </TableCell>
                   <TableCell>
                     <ManagersBadge
+                      userRole={user.role}
                       managers={[venue.manager]}
                       pathSegment='promoter-locali'
                     />

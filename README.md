@@ -68,6 +68,6 @@ TODO
 - login check if user is disabled and redirect to correct path
 - move role check on pages after the profile check?
 - get stuff to fill edit and create forms client side and not in the page server side -> create endpoints
-
-- managers badge is admin
-  go on with role stuff
+- search input (first 5 suggestions based on venues or artits numbers then on seach)
+- create and edit dialog close only with buttons
+- refactor server action with getSession (and role check)

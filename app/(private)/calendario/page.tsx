@@ -1,10 +1,9 @@
-import EventsCalendar from './_components/EventsCalendar/EventsCalendar';
 import { getArtistsCached } from '@/lib/cache/artists';
 import { getVenuesCached } from '@/lib/cache/venues';
 import getSession from '@/lib/data/auth/get-session';
 import { notFound, redirect } from 'next/navigation';
 import { hasRole, resolveNextPath } from '@/lib/utils';
-import { getUserProfileIdCached } from '@/lib/cache/users';
+import EventsCalendar from '../_components/EventsCalendar/EventsCalendar';
 
 export const dynamic = 'force-dynamic';
 
@@ -16,13 +15,11 @@ export default async function CalendarPage() {
     notFound();
   }
 
-  const profileId = await getUserProfileIdCached(user.id);
-  const isAdmin = user.role === 'admin';
-  const target = resolveNextPath({ user, hasProfile: Boolean(profileId) });
+  const target = resolveNextPath({ user, hasProfile: Boolean(user.profileId) });
   if (target) redirect(target);
 
   const [artists, venues] = await Promise.all([
-    getArtistsCached(isAdmin ? undefined : profileId),
+    getArtistsCached(user.profileId!),
     getVenuesCached(),
   ]);
 
@@ -33,6 +30,7 @@ export default async function CalendarPage() {
       {/* calendar section */}
       <section className='bg-white p-4 rounded-2xl'>
         <EventsCalendar
+          userRole={user.role}
           artists={artists}
           venues={venues}
         />

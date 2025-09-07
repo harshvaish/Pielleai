@@ -3,8 +3,8 @@ import UserToApproveTile from './_components/UserToApproveTile';
 import EventTile from '../eventi/_components/EventTile/EventTile';
 import Link from 'next/link';
 import { ChevronRight } from 'lucide-react';
-import EventsCalendar from './_components/EventsCalendar/EventsCalendar';
-import { getUsersToApproveCached, getUserProfileIdCached } from '@/lib/cache/users';
+import EventsCalendar from '../_components/EventsCalendar/EventsCalendar';
+import { getUsersToApproveCached } from '@/lib/cache/users';
 import { getEventsCached } from '@/lib/cache/events';
 import { getArtistsCached } from '@/lib/cache/artists';
 import { getMoCoordinatorsCached } from '@/lib/cache/mo-coordinators';
@@ -17,14 +17,16 @@ export const dynamic = 'force-dynamic';
 
 export default async function DashboardPage() {
   const { session, user } = await getSession();
-  if (!session || !user) redirect('/accedi');
+
+  if (!session || !user) {
+    redirect('accedi');
+  }
 
   if (!hasRole(user, ['admin', 'venue-manager'])) {
     notFound();
   }
 
-  const profileId = await getUserProfileIdCached(user.id);
-  const target = resolveNextPath({ user, hasProfile: Boolean(profileId) });
+  const target = resolveNextPath({ user, hasProfile: Boolean(user.profileId) });
   if (target) redirect(target);
 
   const [usersToApprove, eventsToApprove, artists, moCoordinators, venues] = await Promise.all([
@@ -81,6 +83,7 @@ export default async function DashboardPage() {
             {eventsToApprove.data.map((event) => (
               <EventTile
                 key={event.id}
+                userRole={user.role}
                 event={event}
                 artists={artists}
                 moCoordinators={moCoordinators}
@@ -93,6 +96,7 @@ export default async function DashboardPage() {
       {/* calendar section */}
       <section className='bg-white p-4 rounded-2xl'>
         <EventsCalendar
+          userRole={user.role}
           artists={artists}
           venues={venues}
         />

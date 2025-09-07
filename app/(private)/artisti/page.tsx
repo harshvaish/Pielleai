@@ -24,7 +24,6 @@ import { getZonesCached } from '@/lib/cache/zones';
 import { artistsTableFiltersSchema } from '@/lib/validation/filters/artists-table-filters-schema';
 import { notFound, redirect } from 'next/navigation';
 import getSession from '@/lib/data/auth/get-session';
-import { getUserProfileIdCached } from '@/lib/cache/users';
 
 export const dynamic = 'force-dynamic';
 
@@ -48,9 +47,8 @@ export default async function ArtistsPage({ searchParams }: ArtistsPageProps) {
     notFound();
   }
 
-  const profileId = await getUserProfileIdCached(user.id);
   const isAdmin = user.role === 'admin';
-  const target = resolveNextPath({ user, hasProfile: Boolean(profileId) });
+  const target = resolveNextPath({ user, hasProfile: Boolean(user.profileId) });
   if (target) redirect(target);
 
   const sp = await searchParams;
@@ -61,7 +59,7 @@ export default async function ArtistsPage({ searchParams }: ArtistsPageProps) {
     fullName: sp?.fullName || null,
     email: sp?.email || null,
     phone: sp?.phone || null,
-    managerIds: isAdmin ? splitCsv(sp?.manager) : [profileId!.toString()],
+    managerIds: isAdmin ? splitCsv(sp?.manager) : [user.profileId!.toString()],
     zoneIds: splitCsv(sp?.zone),
   };
 
@@ -136,6 +134,7 @@ export default async function ArtistsPage({ searchParams }: ArtistsPageProps) {
                   <TableCell>{artist.phone}</TableCell>
                   <TableCell>
                     <ManagersBadge
+                      userRole={user.role}
                       managers={artist.managers}
                       pathSegment='manager-artisti'
                     />

@@ -1,5 +1,5 @@
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
-import { betterAuth } from 'better-auth';
+import { betterAuth, type BetterAuthOptions } from 'better-auth';
 import { database } from '@/lib/database/connection';
 import * as schema from '@/lib/database/schema';
 import { nextCookies } from 'better-auth/next-js';
@@ -10,7 +10,7 @@ import { adminConfig } from './permissions';
 import { sendOTPEmail } from './server-actions/send-otp-email';
 import { getUserProfileIdCached } from './cache/users';
 
-export const auth = betterAuth({
+const options = {
   database: drizzleAdapter(database, {
     provider: 'pg',
     schema: schema,
@@ -67,16 +67,6 @@ export const auth = betterAuth({
   plugins: [
     nextCookies(),
     admin(adminConfig),
-    customSession(async ({ user, session }) => {
-      const profileId = getUserProfileIdCached(user.id);
-      return {
-        user: {
-          ...user,
-          profileId: profileId,
-        },
-        session,
-      };
-    }),
     emailOTP({
       expiresIn: 60 * 5, // 5 min
       allowedAttempts: 3,
@@ -87,7 +77,24 @@ export const auth = betterAuth({
       },
     }),
   ],
+} satisfies BetterAuthOptions;
+
+export const auth = betterAuth({
+  ...options,
+  plugins: [
+    ...(options.plugins ?? []),
+    customSession(async ({ user, session }) => {
+      const profileId = await getUserProfileIdCached(user.id);
+      return {
+        user: {
+          ...user,
+          profileId: profileId ?? null,
+        },
+        session,
+      };
+    }, options),
+  ],
 });
 
-export type Session = typeof auth.$Infer.Session;
+export type Session = (typeof auth.$Infer.Session)['session'];
 export type User = (typeof auth.$Infer.Session)['user'];

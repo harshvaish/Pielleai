@@ -192,7 +192,8 @@ export default async function ArtistDetailPage({ params }: ArtistDetailPageProps
 
         <PersonalDataTab
           tabValue='a'
-          userData={userData}
+          data={userData}
+          userRole={user.role}
         />
         <BillingDataTab
           tabValue='b'
