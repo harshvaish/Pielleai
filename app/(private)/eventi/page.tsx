@@ -1,6 +1,6 @@
 import CreateButton from './_components/create/CreateButton';
 import { TablePagination } from '../_components/form/TablePagination';
-import EventTile from './_components/EventTile/EventTile';
+import EventTile from '../_components/EventTile/EventTile';
 import StatusFilterButton from './_components/filters/StatusFilterButton';
 import FiltersButton from './_components/filters/FiltersButton';
 import { EventsTableFilters, EventStatus } from '@/lib/types';
@@ -15,6 +15,7 @@ import { eventsFiltersSchema } from '@/lib/validation/filters/events-filters-sch
 import { notFound, redirect } from 'next/navigation';
 import ExportButton from './_components/ExportButton';
 import getSession from '@/lib/data/auth/get-session';
+import { getManagedVenueIds } from '@/lib/data/venues/get-managed-venue-ids';
 
 type EventsPageProps = {
   searchParams?: Promise<{
@@ -42,17 +43,34 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
   if (target) redirect(target);
 
   const isAdmin = user.role === 'admin';
+  const isVenueManager = user.role === 'venue-manager';
+
   const sp = await searchParams;
   const currentPage = Number(sp?.page ?? '1');
 
-  console.log(user.profileId);
+  const managersFilter = isAdmin
+    ? splitCsv(sp?.manager)
+    : isVenueManager
+      ? []
+      : [user.profileId!.toString()];
+
+  let managedVenueIds: number[] = [];
+
+  if (isVenueManager) {
+    managedVenueIds = await getManagedVenueIds(user.profileId!);
+  }
+
+  const managedVenueIdsStr = managedVenueIds.map(String);
+  const venueIdsFilter: string[] = Array.from(
+    new Set([...splitCsv(sp?.venue), ...managedVenueIdsStr]),
+  );
 
   const filters: EventsTableFilters = {
     currentPage: currentPage,
     status: splitCsv(sp?.status) as EventStatus[],
     artistIds: splitCsv(sp?.artist),
-    artistManagerIds: isAdmin ? splitCsv(sp?.manager) : [user.profileId!.toString()],
-    venueIds: splitCsv(sp?.venue),
+    artistManagerIds: managersFilter,
+    venueIds: venueIdsFilter,
     startDate: sp?.start ? new Date(sp.start) : null,
     endDate: sp?.end ? new Date(sp.end) : null,
   };

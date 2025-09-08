@@ -56,7 +56,7 @@ export default async function ArtistDetailPage({ params }: ArtistDetailPageProps
     getArtistManagersCached(),
   ]);
 
-  if (!userData || !userData.managers.find((m) => m.id === user.id)) notFound();
+  if (!userData) notFound();
 
   let initialNotesData: ProfileNote[] = [];
 
@@ -80,38 +80,42 @@ export default async function ArtistDetailPage({ params }: ArtistDetailPageProps
       <div className='flex justify-between items-center'>
         <BackButton />
 
-        <Popover>
-          <PopoverTrigger className='lg:hidden'>
-            <Ellipsis />
-          </PopoverTrigger>
-          <PopoverContent className='w-48 flex flex-col justify-start lg:hidden'>
-            <EditArtistButton
-              userData={userData}
-              languages={languages}
-              countries={countries}
-              zones={zones}
-              artistManagers={artistManagers}
-            />
-            <ToggleArtistBlockButton
-              artistId={userData.id}
-              initialStatus={userData.status}
-            />
-          </PopoverContent>
-        </Popover>
+        {hasRole(user, ['admin', 'artist-manager']) && (
+          <>
+            <Popover>
+              <PopoverTrigger className='lg:hidden'>
+                <Ellipsis />
+              </PopoverTrigger>
+              <PopoverContent className='w-48 flex flex-col justify-start lg:hidden'>
+                <EditArtistButton
+                  userData={userData}
+                  languages={languages}
+                  countries={countries}
+                  zones={zones}
+                  artistManagers={artistManagers}
+                />
+                <ToggleArtistBlockButton
+                  artistId={userData.id}
+                  initialStatus={userData.status}
+                />
+              </PopoverContent>
+            </Popover>
 
-        <div className='hidden lg:flex items-center gap-4'>
-          <ToggleArtistBlockButton
-            artistId={userData.id}
-            initialStatus={userData.status}
-          />
-          <EditArtistButton
-            userData={userData}
-            languages={languages}
-            countries={countries}
-            zones={zones}
-            artistManagers={artistManagers}
-          />
-        </div>
+            <div className='hidden lg:flex items-center gap-4'>
+              <ToggleArtistBlockButton
+                artistId={userData.id}
+                initialStatus={userData.status}
+              />
+              <EditArtistButton
+                userData={userData}
+                languages={languages}
+                countries={countries}
+                zones={zones}
+                artistManagers={artistManagers}
+              />
+            </div>
+          </>
+        )}
       </div>
 
       <div className={cn('mb-6', isAdmin && 'grid lg:grid-cols-[60%_auto] gap-6 ')}>
@@ -199,7 +203,10 @@ export default async function ArtistDetailPage({ params }: ArtistDetailPageProps
           tabValue='b'
           data={userData}
         />
-        <AvailabilitiesTab tabValue='c' />
+        <AvailabilitiesTab
+          tabValue='c'
+          userRole={user.role}
+        />
         <SocialDataTab
           tabValue='d'
           data={userData}

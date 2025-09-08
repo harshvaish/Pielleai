@@ -22,7 +22,6 @@ import { getPaginatedVenuesCached } from '@/lib/cache/venues';
 import { notFound, redirect } from 'next/navigation';
 import { venuesTableFiltersSchema } from '@/lib/validation/filters/venues-table-filters-schema';
 import getSession from '@/lib/data/auth/get-session';
-import { getUserProfileIdCached } from '@/lib/cache/users';
 
 type VenuesPageProps = {
   searchParams?: Promise<{
@@ -48,10 +47,10 @@ export default async function VenuesPage({ searchParams }: VenuesPageProps) {
     notFound();
   }
 
-  const profileId = await getUserProfileIdCached(user.id);
-  const target = resolveNextPath({ user, hasProfile: Boolean(profileId) });
+  const target = resolveNextPath({ user, hasProfile: Boolean(user.profileId) });
   if (target) redirect(target);
 
+  const isAdmin = user.role === 'admin';
   const sp = await searchParams;
 
   const currentPage = Number(sp?.page ?? '1');
@@ -63,7 +62,7 @@ export default async function VenuesPage({ searchParams }: VenuesPageProps) {
     taxCode: sp?.taxCode || null,
     address: sp?.address || null,
     types: splitCsv(sp?.type) as VenueType[],
-    managerIds: splitCsv(sp?.manager),
+    managerIds: isAdmin ? splitCsv(sp?.manager) : [user.profileId!.toString()],
     capacity: sp?.capacity || null,
   };
 
@@ -76,7 +75,7 @@ export default async function VenuesPage({ searchParams }: VenuesPageProps) {
   const [{ data: venues, totalPages }, countries, venueManagers] = await Promise.all([
     getPaginatedVenuesCached(filters),
     getCountriesCached(),
-    getVenueManagersCached(),
+    isAdmin ? getVenueManagersCached() : Promise.resolve([]),
   ]);
 
   return (
@@ -85,6 +84,7 @@ export default async function VenuesPage({ searchParams }: VenuesPageProps) {
         <h1 className='text-2xl font-bold'>Locali</h1>
         <div className='flex items-center gap-2 md:gap-4 mt-2 md:mt-0'>
           <FiltersButton
+            userRole={user.role}
             filters={filters}
             venueManagers={venueManagers}
           />

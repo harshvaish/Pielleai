@@ -53,7 +53,7 @@ export const NAVBAR_LINKS: {
     href: '/artisti',
     iconSrc: '/images/navbar-icons/artists.svg',
     iconAlt: 'icona Artisti',
-    canAccess: ['admin', 'artist-manager'],
+    canAccess: ['admin', 'artist-manager', 'venue-manager'],
   },
   {
     label: 'Promoter locali',

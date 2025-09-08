@@ -47,19 +47,25 @@ export default async function ArtistsPage({ searchParams }: ArtistsPageProps) {
     notFound();
   }
 
-  const isAdmin = user.role === 'admin';
   const target = resolveNextPath({ user, hasProfile: Boolean(user.profileId) });
   if (target) redirect(target);
 
+  const isAdmin = user.role === 'admin';
   const sp = await searchParams;
   const currentPage = Number(sp?.page ?? '1');
+
+  const managersFilter = isAdmin
+    ? splitCsv(sp?.manager)
+    : user.role === 'venue-manager'
+      ? []
+      : [user.profileId!.toString()];
 
   const filters: ArtistsTableFilters = {
     currentPage: currentPage,
     fullName: sp?.fullName || null,
     email: sp?.email || null,
     phone: sp?.phone || null,
-    managerIds: isAdmin ? splitCsv(sp?.manager) : [user.profileId!.toString()],
+    managerIds: managersFilter,
     zoneIds: splitCsv(sp?.zone),
   };
 
@@ -90,12 +96,14 @@ export default async function ArtistsPage({ searchParams }: ArtistsPageProps) {
             zones={zones}
           />
 
-          <CreateButton
-            languages={languages}
-            countries={countries}
-            zones={zones}
-            artistManagers={artistManagers}
-          />
+          {hasRole(user, ['admin', 'artist-manager']) && (
+            <CreateButton
+              languages={languages}
+              countries={countries}
+              zones={zones}
+              artistManagers={artistManagers}
+            />
+          )}
         </div>
       </div>
       {/* artists table section */}

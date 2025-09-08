@@ -1,6 +1,6 @@
 import { Separator } from '@/components/ui/separator';
 import UserToApproveTile from './_components/UserToApproveTile';
-import EventTile from '../eventi/_components/EventTile/EventTile';
+import EventTile from '../_components/EventTile/EventTile';
 import Link from 'next/link';
 import { ChevronRight } from 'lucide-react';
 import EventsCalendar from '../_components/EventsCalendar/EventsCalendar';
@@ -12,15 +12,13 @@ import { getVenuesCached } from '@/lib/cache/venues';
 import getSession from '@/lib/data/auth/get-session';
 import { notFound, redirect } from 'next/navigation';
 import { hasRole, resolveNextPath } from '@/lib/utils';
+import { getVenueManagerEvents } from '@/lib/data/events/get-venue-manager-events';
 
 export const dynamic = 'force-dynamic';
 
 export default async function DashboardPage() {
   const { session, user } = await getSession();
-
-  if (!session || !user) {
-    redirect('accedi');
-  }
+  if (!session || !user) redirect('accedi');
 
   if (!hasRole(user, ['admin', 'venue-manager'])) {
     notFound();
@@ -29,17 +27,21 @@ export default async function DashboardPage() {
   const target = resolveNextPath({ user, hasProfile: Boolean(user.profileId) });
   if (target) redirect(target);
 
+  const isAdmin = user.role === 'admin';
+
   const [usersToApprove, eventsToApprove, artists, moCoordinators, venues] = await Promise.all([
-    getUsersToApproveCached(),
-    getEventsCached({
-      currentPage: null,
-      status: ['proposed'],
-      artistIds: [],
-      artistManagerIds: [],
-      venueIds: [],
-      startDate: null,
-      endDate: null,
-    }),
+    isAdmin ? getUsersToApproveCached() : Promise.resolve([]),
+    isAdmin
+      ? getEventsCached({
+          currentPage: null,
+          status: ['proposed'],
+          artistIds: [],
+          artistManagerIds: [],
+          venueIds: [],
+          startDate: null,
+          endDate: null,
+        })
+      : getVenueManagerEvents(user.profileId!),
     getArtistsCached(),
     getMoCoordinatorsCached(),
     getVenuesCached(),

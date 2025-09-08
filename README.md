@@ -65,9 +65,13 @@ TODO
 - crone job to make the events and availabilities expired
 - add active status on navbar tiles
 - change all the db checks with count where needed
-- login check if user is disabled and redirect to correct path
+- login check if user is disabled and redirect to correct path (resend email verify?)
 - move role check on pages after the profile check?
 - get stuff to fill edit and create forms client side and not in the page server side -> create endpoints
 - search input (first 5 suggestions based on venues or artits numbers then on seach)
 - create and edit dialog close only with buttons
 - refactor server action with getSession (and role check)
+
+- fix venue filter in event page for venue manager
+- fix ale problems on slack and linear
+- refactor all above and code

@@ -4,11 +4,15 @@ import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { CALENDAR_VIEWS } from '@/lib/constants';
 import { buildCalendarLabel } from '@/lib/utils';
-import { ToolbarProps } from 'react-big-calendar';
-import { CalendarAvailability } from '@/lib/types';
+import { ToolbarProps as RbcToolbarProps } from 'react-big-calendar';
+import { CalendarAvailability, UserRole } from '@/lib/types';
 import { UpdateAvailabilitiesButton } from './UpdateAvailabilitiesButton';
 
-export function Toolbar({ date, view, onNavigate, onView }: ToolbarProps<CalendarAvailability, object>) {
+type ToolbarProps = RbcToolbarProps<CalendarAvailability, object> & {
+  userRole: UserRole;
+};
+
+export function Toolbar({ date, view, onNavigate, onView, userRole }: ToolbarProps) {
   const label = buildCalendarLabel(date, view);
 
   return (
@@ -54,7 +58,7 @@ export function Toolbar({ date, view, onNavigate, onView }: ToolbarProps<Calenda
         </div>
 
         {/* update button */}
-        <UpdateAvailabilitiesButton />
+        {['admin', 'artist-manager'].includes(userRole) && <UpdateAvailabilitiesButton />}
       </div>
     </div>
   );

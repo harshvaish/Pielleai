@@ -36,9 +36,8 @@ export default function DeleteEventButton({ event }: DeleteEventButtonProps) {
   return (
     <>
       <Button
-        variant='ghost'
-        size='xs'
-        className='text-destructive'
+        variant='destructive'
+        size='sm'
         onClick={() => setOpen(true)}
         disabled={loading}
       >

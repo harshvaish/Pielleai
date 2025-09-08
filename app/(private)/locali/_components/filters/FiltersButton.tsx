@@ -4,23 +4,34 @@ import { Button } from '@/components/ui/button';
 import { Eraser, ListFilter } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
-import { VenueManagerSelectData, VenuesTableFilters } from '@/lib/types';
+import { UserRole, VenueManagerSelectData, VenuesTableFilters } from '@/lib/types';
 import ResponsivePopover from '@/app/_components/ResponsivePopover';
 import { Input } from '@/components/ui/input';
 import VenueManagerSelect from '@/app/(private)/_components/filters/VenueManagerSelect';
 import VenueTypeSelect from '@/app/(private)/_components/filters/VenueTypeSelect';
 
 type FiltersButtonProps = {
+  userRole: UserRole;
   filters: VenuesTableFilters;
   venueManagers: VenueManagerSelectData[];
 };
 
-export default function FiltersButton({ filters, venueManagers }: FiltersButtonProps) {
+export default function FiltersButton({ userRole, filters, venueManagers }: FiltersButtonProps) {
   const router = useRouter();
   const [open, setOpen] = useState<boolean>(false);
   const [isPending, startTransition] = useTransition();
 
-  const active = Boolean(filters.name || filters.company || filters.taxCode || filters.address || filters.types.length || filters.managerIds.length || filters.capacity);
+  const isAdmin = userRole === 'admin';
+
+  const active = Boolean(
+    filters.name ||
+      filters.company ||
+      filters.taxCode ||
+      filters.address ||
+      filters.types.length ||
+      (isAdmin ? filters.managerIds.length : false) ||
+      filters.capacity,
+  );
 
   const [name, setName] = useState<string>(filters.name || '');
   const [company, setcompany] = useState<string>(filters.company || '');
@@ -67,7 +78,7 @@ export default function FiltersButton({ filters, venueManagers }: FiltersButtonP
       params.delete('type');
     }
 
-    if (managerIds.length > 0) {
+    if (isAdmin && managerIds.length > 0) {
       params.set('manager', managerIds.join(','));
     } else {
       params.delete('manager');
@@ -168,14 +179,16 @@ export default function FiltersButton({ filters, venueManagers }: FiltersButtonP
           </div>
         </div>
 
-        <div className='flex flex-col'>
-          <div className='text-sm font-semibold mb-2'>Manager</div>
-          <VenueManagerSelect
-            initialValue={managerIds}
-            venueManagers={venueManagers}
-            onConfirm={setManagerIds}
-          />
-        </div>
+        {isAdmin && (
+          <div className='flex flex-col'>
+            <div className='text-sm font-semibold mb-2'>Manager</div>
+            <VenueManagerSelect
+              initialValue={managerIds}
+              venueManagers={venueManagers}
+              onConfirm={setManagerIds}
+            />
+          </div>
+        )}
 
         <div className='grid grid-cols-2 gap-4'>
           <Button

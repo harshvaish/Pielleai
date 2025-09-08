@@ -4,9 +4,8 @@ import { type NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod/v4';
 import { stringDateValidation, stringIdValidation } from '@/lib/validation/_general';
 import { ApiResponse, CalendarEvent, EventStatus } from '@/lib/types';
-import { eventStatus, managerArtists } from '@/lib/database/schema';
+import { eventStatus, managerArtists, venues } from '@/lib/database/schema';
 import getSession from '@/lib/data/auth/get-session';
-import { getUserProfileId } from '@/lib/data/profiles/get-user-profile-id';
 import { database } from '@/lib/database/connection';
 import { eq } from 'drizzle-orm';
 
@@ -15,6 +14,7 @@ export async function GET(
 ): Promise<NextResponse<ApiResponse<CalendarEvent[]>>> {
   try {
     const { session, user } = await getSession();
+
     if (!session || !user) {
       return NextResponse.json(
         { success: false, message: 'Non sei autorizzato.', data: null },
@@ -60,11 +60,10 @@ export async function GET(
     }
 
     let managedArtistIds: number[] = [];
+    let managedVenueIds: number[] = [];
 
-    if (user.role != 'admin') {
-      const profileId = await getUserProfileId(user.id);
-
-      if (!profileId) {
+    if (user.role === 'artist-manager') {
+      if (!user.profileId) {
         return NextResponse.json(
           { success: false, message: 'Utenza non valida.', data: null },
           { status: 400 },
@@ -74,17 +73,36 @@ export async function GET(
       const managedArtists = await database
         .select({ artistId: managerArtists.artistId })
         .from(managerArtists)
-        .where(eq(managerArtists.managerProfileId, profileId));
+        .where(eq(managerArtists.managerProfileId, user.profileId));
 
       managedArtistIds = [...new Set(managedArtists.map((r) => r.artistId))];
+    }
+
+    if (user.role === 'venue-manager') {
+      if (!user.profileId) {
+        return NextResponse.json(
+          { success: false, message: 'Utenza non valida.', data: null },
+          { status: 400 },
+        );
+      }
+
+      const managedVenues = await database
+        .select({ venueId: venues.id })
+        .from(venues)
+        .where(eq(venues.managerProfileId, user.profileId));
+
+      managedVenueIds = [...new Set(managedVenues.map((r) => r.venueId))];
     }
 
     const managedArtistIdsStr = managedArtistIds.map(String);
     const artistIdsFilter: string[] = Array.from(new Set([...artistIds, ...managedArtistIdsStr]));
 
+    const managedVenueIdsStr = managedVenueIds.map(String);
+    const venueIdsFilter: string[] = Array.from(new Set([...venueIds, ...managedVenueIdsStr]));
+
     const events = await getCalendarEvents({
       artistIds: artistIdsFilter,
-      venueIds,
+      venueIds: venueIdsFilter,
       status,
       startDate: new Date(startDate),
       endDate: new Date(endDate),

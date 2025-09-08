@@ -1,15 +1,16 @@
 import { TabsContent } from '@/components/ui/tabs';
 import AvailabilitiesCalendar from '../AvailabilitiesCalendar/AvailabilitiesCalendar';
+import { UserRole } from '@/lib/types';
 
-type AvailabilitiesTabProps = { tabValue: string };
+type AvailabilitiesTabProps = { userRole: UserRole; tabValue: string };
 
-export default function AvailabilitiesTab({ tabValue }: AvailabilitiesTabProps) {
+export default function AvailabilitiesTab({ userRole, tabValue }: AvailabilitiesTabProps) {
   return (
     <TabsContent
       value={tabValue}
       className='w-full bg-white py-4 px-6 rounded-2xl overflow-hidden'
     >
-      <AvailabilitiesCalendar />
+      <AvailabilitiesCalendar userRole={userRole} />
     </TabsContent>
   );
 }

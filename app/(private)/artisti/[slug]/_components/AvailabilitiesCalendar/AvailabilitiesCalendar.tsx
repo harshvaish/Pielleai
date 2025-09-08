@@ -1,6 +1,11 @@
 'use client';
 
-import { Calendar as BigCalendar, dateFnsLocalizer, View } from 'react-big-calendar';
+import {
+  Calendar as BigCalendar,
+  dateFnsLocalizer,
+  View,
+  ToolbarProps as RBCToolbarProps,
+} from 'react-big-calendar';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import './calendar-overrides.css';
 
@@ -11,7 +16,7 @@ import WeekHeader from './WeekHeader';
 import MonthHeader from './MonthHeader';
 import ShowMore from './ShowMore';
 import { useEffect, useState } from 'react';
-import { ArtistAvailability, CalendarAvailability } from '@/lib/types';
+import { ArtistAvailability, CalendarAvailability, UserRole } from '@/lib/types';
 import useSWR from 'swr';
 import { notFound, useParams } from 'next/navigation';
 import { calculateRange, fetcher } from '@/lib/utils';
@@ -31,7 +36,11 @@ export const localizer = dateFnsLocalizer({
   locales,
 });
 
-export default function AvailabilitiesCalendar() {
+type AvailabilitiesCalendarProps = {
+  userRole: UserRole;
+};
+
+export default function AvailabilitiesCalendar({ userRole }: AvailabilitiesCalendarProps) {
   const { slug } = useParams();
   if (!slug || typeof slug !== 'string') notFound();
 
@@ -105,7 +114,12 @@ export default function AvailabilitiesCalendar() {
         toolbar={true}
         showAllEvents={false} // if true showMore is not visible
         components={{
-          toolbar: Toolbar,
+          toolbar: (props) => (
+            <Toolbar
+              {...(props as RBCToolbarProps<CalendarAvailability, object>)}
+              userRole={userRole}
+            />
+          ),
           day: {
             event: Event,
           },

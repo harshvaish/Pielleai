@@ -1,19 +1,19 @@
 'use client';
 
 import { ArtistSelectData, Event, MoCoordinator, UserRole, VenueSelectData } from '@/lib/types';
-import EventStatusBadge from '../../../_components/badges/EventStatusBadge';
+import EventStatusBadge from '../badges/EventStatusBadge';
 import { it } from 'date-fns/locale';
 import { format } from 'date-fns';
-import ArtistsBadge from '../../../_components/badges/ArtistsBadge';
+import ArtistsBadge from '../badges/ArtistsBadge';
 import Image from 'next/image';
-import VenuesBadge from '../../../_components/badges/VenuesBadge';
-import ManagersBadge from '../../../_components/badges/ManagersBadge';
+import VenuesBadge from '../badges/VenuesBadge';
+import ManagersBadge from '../badges/ManagersBadge';
 import UpdateEventStatusButton from './UpdateEventStatusButton';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import DeleteEventButton from './DeleteEventButton';
-import UpdateButton from '../update/UpdateButton';
+import UpdateButton from '../../eventi/_components/update/UpdateButton';
 import { CalendarDays, Check, ChevronDown, Clock, Ellipsis, X } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn, hasRole } from '@/lib/utils';
 import { Separator } from '@/components/ui/separator';
 
 type EventTileProps = {
@@ -178,22 +178,33 @@ export default function EventTile({
 
         <Separator className='my-4' />
 
-        <div className='grid grid-cols-2 gap-2'>
-          {event.status === 'proposed' && (
-            <>
-              <UpdateEventStatusButton
-                event={event}
-                newStatus='pre-confirmed'
-                buttonLabel='Accetta'
-                buttonVariant='success'
-                dialogTitle='Vuoi accettare questa richiesta?'
-                dialogDescription={
-                  isAdmin
-                    ? "Accettando, l'evento sarà inoltrato al manager dell'artista per la conferma finale. Confermi di voler procedere?"
-                    : 'Confermi di voler procedere?'
-                }
-                icon={<Check className='size-4' />}
-              />
+        <div className={cn('grid gap-2', userRole === 'venue-manager' ? '' : 'grid-cols-2')}>
+          {isAdmin && event.status === 'proposed' && (
+            <UpdateEventStatusButton
+              event={event}
+              newStatus='pre-confirmed'
+              buttonLabel='Accetta'
+              buttonVariant='success'
+              dialogTitle='Vuoi accettare questa richiesta?'
+              dialogDescription="Accettando, l'evento sarà inoltrato al manager dell'artista per la conferma finale. Confermi di voler procedere?"
+              icon={<Check className='size-4' />}
+            />
+          )}
+
+          {userRole === 'artist-manager' && event.status === 'pre-confirmed' && (
+            <UpdateEventStatusButton
+              event={event}
+              newStatus='confirmed'
+              buttonLabel='Accetta'
+              buttonVariant='success'
+              dialogTitle='Vuoi accettare questa richiesta?'
+              dialogDescription='Confermi di voler procedere?'
+              icon={<Check className='size-4' />}
+            />
+          )}
+
+          {hasRole({ role: userRole }, ['admin', 'artist-manager']) &&
+            (event.status === 'proposed' || event.status === 'pre-confirmed') && (
               <UpdateEventStatusButton
                 event={event}
                 newStatus='rejected'
@@ -203,8 +214,12 @@ export default function EventTile({
                 dialogDescription="Sei sicuro di voler rifiutare questa richiesta? L'organizzatore dell'evento riceverà una notifica."
                 icon={<X className='size-4' />}
               />
-            </>
-          )}
+            )}
+
+          {userRole === 'venue-manager' &&
+            ['proposed', 'pre-confirmed', 'confirmed'].includes(event.status) && (
+              <DeleteEventButton event={event} />
+            )}
         </div>
       </div>
 
@@ -311,21 +326,32 @@ export default function EventTile({
         </div>
 
         <div className='flex items-center gap-2'>
-          {event.status === 'proposed' && (
-            <>
-              <UpdateEventStatusButton
-                event={event}
-                newStatus='pre-confirmed'
-                buttonLabel='Accetta'
-                buttonVariant='success'
-                dialogTitle='Vuoi accettare questa richiesta?'
-                dialogDescription={
-                  isAdmin
-                    ? "Accettando, l'evento sarà inoltrato al manager dell'artista per la conferma finale. Confermi di voler procedere?"
-                    : 'Confermi di voler procedere?'
-                }
-                icon={<Check className='size-4' />}
-              />
+          {isAdmin && event.status === 'proposed' && (
+            <UpdateEventStatusButton
+              event={event}
+              newStatus='pre-confirmed'
+              buttonLabel='Accetta'
+              buttonVariant='success'
+              dialogTitle='Vuoi accettare questa richiesta?'
+              dialogDescription="Accettando, l'evento sarà inoltrato al manager dell'artista per la conferma finale. Confermi di voler procedere?"
+              icon={<Check className='size-4' />}
+            />
+          )}
+
+          {userRole === 'artist-manager' && event.status === 'pre-confirmed' && (
+            <UpdateEventStatusButton
+              event={event}
+              newStatus='confirmed'
+              buttonLabel='Accetta'
+              buttonVariant='success'
+              dialogTitle='Vuoi accettare questa richiesta?'
+              dialogDescription='Confermi di voler procedere?'
+              icon={<Check className='size-4' />}
+            />
+          )}
+
+          {hasRole({ role: userRole }, ['admin', 'artist-manager']) &&
+            (event.status === 'proposed' || event.status === 'pre-confirmed') && (
               <UpdateEventStatusButton
                 event={event}
                 newStatus='rejected'
@@ -335,8 +361,12 @@ export default function EventTile({
                 dialogDescription="Sei sicuro di voler rifiutare questa richiesta? L'organizzatore dell'evento riceverà una notifica."
                 icon={<X className='size-4' />}
               />
-            </>
-          )}
+            )}
+
+          {userRole === 'venue-manager' &&
+            ['proposed', 'pre-confirmed', 'confirmed'].includes(event.status) && (
+              <DeleteEventButton event={event} />
+            )}
 
           {isAdmin && (
             <Popover>

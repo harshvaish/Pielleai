@@ -1,6 +1,12 @@
 'use client';
 
-import { Dialog, DialogContent, DialogDescription, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Pencil } from 'lucide-react';
 import { ArtistSelectData, Event, MoCoordinator, VenueSelectData } from '@/lib/types';
@@ -14,7 +20,12 @@ type UpdateButtonProps = {
   moCoordinators: MoCoordinator[];
 };
 
-export default function UpdateButton({ event, artists, venues, moCoordinators }: UpdateButtonProps) {
+export default function UpdateButton({
+  event,
+  artists,
+  venues,
+  moCoordinators,
+}: UpdateButtonProps) {
   const [open, setOpen] = useState<boolean>(false);
   return (
     <Dialog
@@ -24,8 +35,8 @@ export default function UpdateButton({ event, artists, venues, moCoordinators }:
     >
       <DialogTrigger asChild>
         <Button
-          variant='ghost'
-          size='xs'
+          variant='secondary'
+          size='sm'
         >
           <Pencil /> Modifica
         </Button>
