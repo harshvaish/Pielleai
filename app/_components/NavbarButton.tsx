@@ -22,6 +22,8 @@ type NavbarButtonProps = {
 export default function NavbarButton({ user }: NavbarButtonProps) {
   const [isOpen, setIsOpen] = useState<boolean>(false);
 
+  const isAdmin = user.role === 'admin';
+
   return (
     <>
       {/* MOBILE */}
@@ -66,16 +68,16 @@ export default function NavbarButton({ user }: NavbarButtonProps) {
 
               <Separator />
 
-              <Link
-                href='/profilo'
-                prefetch={false}
-                className='flex items-center gap-2 text-sm font-medium rounded-xl p-2 hover:bg-zinc-50'
-              >
-                <UserRound className='size-3' />
-                Profilo
-              </Link>
-
-              <Separator />
+              {!isAdmin && (
+                <Link
+                  href='/profilo'
+                  prefetch={false}
+                  className='flex items-center gap-2 text-sm font-medium rounded-xl p-2 hover:bg-zinc-50'
+                >
+                  <UserRound className='size-3' />
+                  Profilo
+                </Link>
+              )}
 
               <ChangePasswordButton
                 userId={user.id}
@@ -135,16 +137,16 @@ export default function NavbarButton({ user }: NavbarButtonProps) {
             className='p-1 rounded-2xl'
             align='end'
           >
-            <Link
-              href='/profilo'
-              prefetch={false}
-              className='flex items-center gap-2 text-sm font-medium p-2 transition-colors rounded-md hover:bg-zinc-50 hover:cursor-pointer'
-            >
-              <UserRound className='size-3' />
-              Profilo
-            </Link>
-
-            <Separator />
+            {!isAdmin && (
+              <Link
+                href='/profilo'
+                prefetch={false}
+                className='flex items-center gap-2 text-sm font-medium p-2 transition-colors rounded-md hover:bg-zinc-50 hover:cursor-pointer'
+              >
+                <UserRound className='size-3' />
+                Profilo
+              </Link>
+            )}
 
             <ChangePasswordButton
               userId={user.id}

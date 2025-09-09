@@ -16,7 +16,6 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Check, ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useFormContext } from 'react-hook-form';
-import { EventFormSchema } from '@/lib/validation/event-form-schema';
 import ResponsivePopover from '@/app/_components/ResponsivePopover';
 
 type ArtistSelectProps = {
@@ -30,12 +29,13 @@ export default function ArtistSelect({ artists, value, setValue, hasError }: Art
   const [open, setOpen] = React.useState(false);
   const selectedArtist = artists.find((artist) => artist.id === value) ?? undefined;
 
-  const { resetField } = useFormContext<EventFormSchema>();
+  const { setValue: setFormValue } = useFormContext();
 
   const onSelectHandler = (value: string): void => {
     setValue(parseInt(value));
-    resetField('artistManagerProfileId');
-    resetField('availability');
+    setFormValue('artistManagerProfileId', undefined);
+    setFormValue('availability', { startDate: undefined, endDate: undefined });
+
     setOpen(false);
   };
 

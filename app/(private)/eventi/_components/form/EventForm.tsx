@@ -96,7 +96,7 @@ export default function EventForm({ artists, venues, moCoordinators }: EventForm
         <div className='text-sm font-semibold mb-2'>Data</div>
         <ArtistAvailabilitySelect />
         {errors.availability && (
-          <p className='text-xs text-destructive mt-2'>{errors.availability.message as string}</p>
+          <p className='text-xs text-destructive mt-2'>Seleziona una disponibilità valida.</p>
         )}
       </div>
 

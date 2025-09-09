@@ -1,7 +1,6 @@
 'use client';
 
 import { SpinnerLoading } from '@/app/_components/SpinnerLoading';
-import { AU_LOCAL_STORAGE_TTL } from '@/lib/constants';
 import { ApiResponse } from '@/lib/types';
 import {
   cn,
@@ -17,18 +16,12 @@ import React, { useEffect, useRef, useState, useTransition } from 'react';
 import { toast } from 'sonner';
 
 type AvatarUploadInputProps = {
-  localStorageKey: string;
   value?: string;
   onChange: (newValue: string) => void;
   hasError: boolean;
 };
 
-export default function AvatarUploadInput({
-  localStorageKey,
-  value,
-  onChange,
-  hasError,
-}: AvatarUploadInputProps) {
+export default function AvatarUploadInput({ value, onChange, hasError }: AvatarUploadInputProps) {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [preview, setPreview] = useState<string | null>(value ?? null);
   const [isPending, startTransition] = useTransition();
@@ -99,10 +92,6 @@ export default function AvatarUploadInput({
 
     // Save to react-hook-form state via onChange
     onChange(url);
-
-    // Also store locally for preview on next render
-    localStorage.setItem(localStorageKey, JSON.stringify({ url, timestamp: Date.now() }));
-
     setPreview(url);
   };
 
@@ -111,17 +100,7 @@ export default function AvatarUploadInput({
       setPreview(value);
       return;
     }
-    const stored = localStorage.getItem(localStorageKey);
-    if (stored) {
-      const { url, timestamp } = JSON.parse(stored);
-      if (Date.now() - timestamp < AU_LOCAL_STORAGE_TTL) {
-        setPreview(url);
-        onChange(url);
-      } else {
-        localStorage.removeItem(localStorageKey);
-      }
-    }
-  }, [value, onChange, localStorageKey]);
+  }, [value]);
 
   return (
     <>

@@ -11,7 +11,6 @@ import useSWR from 'swr';
 import { Country, Subdivision, VenueManagerSelectData, VenueType } from '@/lib/types';
 import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
-import { Checkbox } from '@/components/ui/checkbox';
 import Image from 'next/image';
 import { venueTypes } from '@/lib/database/schema';
 import { VENUE_TYPE_LABELS } from '@/lib/constants';
@@ -80,7 +79,6 @@ export default function StepOne({
             name='avatarUrl'
             render={({ field }) => (
               <AvatarUploadInput
-                localStorageKey={'cva_temporary_url'} // create venue avatar
                 value={field.value}
                 onChange={field.onChange}
                 hasError={!!errors.avatarUrl}
@@ -387,41 +385,6 @@ export default function StepOne({
         />
         {errors.venueManagerId && (
           <p className='text-xs text-destructive mt-2'>{errors.venueManagerId.message as string}</p>
-        )}
-      </div>
-
-      <Separator className='my-4' />
-
-      <div className='flex flex-col'>
-        <div className='flex items-center space-x-2'>
-          <Controller
-            control={control}
-            name='acceptTerms'
-            render={({ field }) => (
-              <Checkbox
-                id='acceptTerms'
-                checked={field.value}
-                onCheckedChange={(checked) => field.onChange(checked === true)}
-              />
-            )}
-          />
-          <label
-            htmlFor='acceptTerms'
-            className={cn('text-xs font-normal', errors.acceptTerms && 'text-destructive')}
-          >
-            Accetto i{' '}
-            <span className='underline underline-offset-2 hover:cursor-pointer'>
-              Termini e le Condizioni
-            </span>{' '}
-            e l&apos;{' '}
-            <span className='underline underline-offset-2 hover:cursor-pointer'>
-              Informativa sulla Privacy
-            </span>{' '}
-            della piattaforma.
-          </label>
-        </div>
-        {errors.acceptTerms && (
-          <p className='text-xs text-destructive mt-2'>{errors.acceptTerms.message as string}</p>
         )}
       </div>
     </>

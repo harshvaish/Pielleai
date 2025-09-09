@@ -75,7 +75,6 @@ export default function StepOne({ languages, countries }: StepOneProps) {
             name='avatarUrl'
             render={({ field }) => (
               <AvatarUploadInput
-                localStorageKey={'cvma_temporary_url'} // create venue manager avatar
                 value={field.value}
                 onChange={field.onChange}
                 hasError={!!errors.avatarUrl}

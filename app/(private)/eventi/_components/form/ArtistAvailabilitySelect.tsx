@@ -48,36 +48,6 @@ export default function ArtistAvailabilitySelect() {
   const selectedArtistId = watch('artistId');
   const selectedAvailability = watch('availability');
 
-  const startDateUTC = useMemo(() => {
-    if (!selectedDate) return null;
-    const startLocal = startOfDay(selectedDate);
-    return fromZonedTime(startLocal, TIME_ZONE).toISOString();
-  }, [selectedDate]);
-
-  const fetchUrl = useMemo(() => {
-    if (!selectedArtistId || !startDateUTC) return null;
-    return `/api/artist-availabilities/date?i=${selectedArtistId}&sd=${startDateUTC}`;
-  }, [selectedArtistId, startDateUTC]);
-
-  const { data: response, isLoading } = useSWR(fetchUrl, fetcher);
-
-  useEffect(() => {
-    if (!response) return;
-
-    if (!response.success) {
-      toast.error(response.message || 'Recupero disponibilità artista non riuscito.');
-      return;
-    }
-
-    setAvailabilities(
-      response.data.map((a: ArtistAvailability) => ({
-        ...a,
-        start: toZonedTime(a.startDate, TIME_ZONE),
-        end: toZonedTime(a.endDate, TIME_ZONE),
-      })),
-    );
-  }, [response]);
-
   const onNewAvailabilityClickHandler = () => {
     if (!selectedDate) {
       toast.error('Seleziona una data.');
@@ -170,6 +140,36 @@ export default function ArtistAvailabilitySelect() {
       return 'Seleziona data';
     }
   }, [selectedAvailability]);
+
+  const startDateUTC = useMemo(() => {
+    if (!selectedDate) return null;
+    const startLocal = startOfDay(selectedDate);
+    return fromZonedTime(startLocal, TIME_ZONE).toISOString();
+  }, [selectedDate]);
+
+  const fetchUrl = useMemo(() => {
+    if (!selectedArtistId || !startDateUTC) return null;
+    return `/api/artist-availabilities/date?i=${selectedArtistId}&sd=${startDateUTC}`;
+  }, [selectedArtistId, startDateUTC]);
+
+  const { data: response, isLoading } = useSWR(fetchUrl, fetcher);
+
+  useEffect(() => {
+    if (!response) return;
+
+    if (!response.success) {
+      toast.error(response.message || 'Recupero disponibilità artista non riuscito.');
+      return;
+    }
+
+    setAvailabilities(
+      response.data.map((a: ArtistAvailability) => ({
+        ...a,
+        start: toZonedTime(a.startDate, TIME_ZONE),
+        end: toZonedTime(a.endDate, TIME_ZONE),
+      })),
+    );
+  }, [response]);
 
   return (
     <>

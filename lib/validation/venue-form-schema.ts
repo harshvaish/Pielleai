@@ -49,17 +49,9 @@ export const venueS1FormSchema = z.object({
     .trim(),
 
   venueManagerId: idValidation,
-
-  acceptTerms: z.literal(true, 'Campo obbligatorio.'),
 });
 
 export type VenueS1FormSchema = z.infer<typeof venueS1FormSchema>;
-
-export const editVenueS1FormSchema = venueS1FormSchema.omit({
-  acceptTerms: true,
-});
-
-export type EditVenueS1FormSchema = z.infer<typeof editVenueS1FormSchema>;
 
 export const venueS2FormSchema = z
   .object({

@@ -135,12 +135,10 @@ export default async function ArtistDetailPage({ params }: ArtistDetailPageProps
               />
 
               <div className='flex flex-col'>
-                <div className='text-2xl font-bold line-clamp-1'>
+                <div className='text-2xl font-bold'>
                   {userData.name} {userData.surname}
                 </div>
-                <div className='font-medium text-zinc-500 line-clamp-1 mb-2'>
-                  @{userData.stageName}
-                </div>
+                <div className='font-medium text-zinc-500 mb-2'>@{userData.stageName}</div>
                 <div className='flex items-center gap-2'>
                   <Badge variant={isDisabled ? 'disabled' : 'orange'}>Artista</Badge>
                   {isDisabled && <StatusBadge status='disabled' />}

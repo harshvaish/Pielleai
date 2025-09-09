@@ -33,7 +33,7 @@ export default function SignInForm() {
     await signIn.email({
       email,
       password,
-      callbackURL: '/dashboard',
+      callbackURL: '/eventi',
       fetchOptions: {
         onError: (ctx) => {
           const code = ctx?.error?.code ?? 'UNKNOWN_ERROR';

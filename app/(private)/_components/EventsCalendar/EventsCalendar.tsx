@@ -5,6 +5,7 @@ import {
   dateFnsLocalizer,
   View,
   ToolbarProps as RBCToolbarProps,
+  ShowMoreProps as RBCShowMoreProps,
 } from 'react-big-calendar';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import './calendar-overrides.css';
@@ -136,7 +137,12 @@ export default function EventsCalendar({ userRole, artists, venues }: EventsCale
           day: { event: WeekEvent },
           week: { header: WeekHeader, event: WeekEvent },
           month: { header: MonthHeader, event: MonthEvent },
-          showMore: ShowMore,
+          showMore: (props) => (
+            <ShowMore
+              {...(props as RBCShowMoreProps<CalendarEvent>)}
+              userRole={userRole}
+            />
+          ),
         }}
         events={events}
         style={{ minHeight: '600px' }}

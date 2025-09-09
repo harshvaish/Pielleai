@@ -6,13 +6,13 @@ import { ServerActionResponse } from '@/lib/types';
 import { database } from '@/lib/database/connection';
 import { and, eq } from 'drizzle-orm';
 import { profiles, countries, subdivisions, users, venues } from '@/lib/database/schema';
-import { editVenueS1FormSchema, EditVenueS1FormSchema } from '@/lib/validation/venue-form-schema';
+import { venueS1FormSchema, VenueS1FormSchema } from '@/lib/validation/venue-form-schema';
 import { AppError } from '@/lib/classes/AppError';
 import { revalidateTag } from 'next/cache';
 
 export const updateVenueGeneralData = async (
   venueId: number,
-  data: EditVenueS1FormSchema,
+  data: VenueS1FormSchema,
 ): Promise<ServerActionResponse<null>> => {
   try {
     const headersList = await headers();
@@ -26,7 +26,7 @@ export const updateVenueGeneralData = async (
       throw new AppError('Non sei autorizzato.');
     }
 
-    const validation = editVenueS1FormSchema.safeParse(data);
+    const validation = venueS1FormSchema.safeParse(data);
 
     if (!validation.success) {
       console.error(

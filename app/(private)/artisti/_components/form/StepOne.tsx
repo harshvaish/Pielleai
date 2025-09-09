@@ -84,7 +84,6 @@ export default function StepOne({
             name='avatarUrl'
             render={({ field }) => (
               <AvatarUploadInput
-                localStorageKey={'caa_temporary_url'} // create artist avatar
                 value={field.value}
                 onChange={field.onChange}
                 hasError={!!errors.avatarUrl}

@@ -98,9 +98,7 @@ export default async function VenueDetailPage({ params }: VenueDetailPageProps) 
               />
               <div>
                 <div className='lg:flex items-center gap-2 lg:gap-4 space-y-2 mb-2'>
-                  <div className='text-2xl font-bold line-clamp-1 text-ellipsis break-all overflow-hidden'>
-                    {venue.name}
-                  </div>
+                  <div className='text-2xl font-bold'>{venue.name}</div>
                   <VenueTypeBadge
                     type={venue.type}
                     isDisabled={isDisabled}

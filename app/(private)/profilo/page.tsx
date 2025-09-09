@@ -105,7 +105,7 @@ export default async function ProfilePage() {
               />
 
               <div className='flex flex-col gap-1.5'>
-                <div className='text-2xl font-bold line-clamp-1'>
+                <div className='text-2xl font-bold'>
                   {userData.name} {userData.surname}
                 </div>
                 <div className='md:hidden flex items-center gap-2'>

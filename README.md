@@ -71,7 +71,8 @@ TODO
 - search input (first 5 suggestions based on venues or artits numbers then on seach)
 - create and edit dialog close only with buttons
 - refactor server action with getSession (and role check)
+- refactor avatar upload input
+- refactor email in params on reset pwd, use local storage instead
 
-- fix venue filter in event page for venue manager
 - fix ale problems on slack and linear
 - refactor all above and code

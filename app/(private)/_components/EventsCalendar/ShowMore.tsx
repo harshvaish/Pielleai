@@ -2,15 +2,19 @@
 
 import { Button } from '@/components/ui/button';
 import { ChevronDown } from 'lucide-react';
-import { ShowMoreProps } from 'react-big-calendar';
+import { ShowMoreProps as RBCShowMoreProps } from 'react-big-calendar';
 import { format } from 'date-fns';
-import { CalendarEvent } from '@/lib/types';
+import { CalendarEvent, UserRole } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import EventContent from './EventContent';
 import ConfirmDialog from '@/app/_components/ConfirmDialog';
 import { useState } from 'react';
 
-export default function ShowMore({ slotDate, events }: ShowMoreProps<CalendarEvent>) {
+type ShowMoreProps = RBCShowMoreProps<CalendarEvent> & {
+  userRole: UserRole;
+};
+
+export default function ShowMore({ slotDate, events, userRole }: ShowMoreProps) {
   const [open, setOpen] = useState<boolean>(false);
   const date = format(slotDate, 'dd/MM/yyyy');
 
@@ -40,7 +44,10 @@ export default function ShowMore({ slotDate, events }: ShowMoreProps<CalendarEve
               key={index}
               className={cn('mb-4 rounded-xl', event.status)}
             >
-              <EventContent event={event} />
+              <EventContent
+                userRole={userRole}
+                event={event}
+              />
             </div>
           );
         })}

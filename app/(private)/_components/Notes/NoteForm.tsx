@@ -46,7 +46,6 @@ export function NoteForm({
     });
 
     if (!validation.success) {
-      console.error(validation.error.issues[0]);
       setError(validation.error.issues[0].message);
       return;
     }

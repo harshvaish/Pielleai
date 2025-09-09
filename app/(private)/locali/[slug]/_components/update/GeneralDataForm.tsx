@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { X } from 'lucide-react';
-import { EditVenueS1FormSchema, editVenueS1FormSchema } from '@/lib/validation/venue-form-schema';
+import { venueS1FormSchema, VenueS1FormSchema } from '@/lib/validation/venue-form-schema';
 import { updateVenueGeneralData } from '@/lib/server-actions/venues/update-venue-general-data';
 import StepOne from '../../../_components/form/StepOne';
 
@@ -43,7 +43,7 @@ export default function GeneralDataForm({
   );
 
   const methods = useForm({
-    resolver: zodResolver(editVenueS1FormSchema),
+    resolver: zodResolver(venueS1FormSchema),
     defaultValues: defaultValues,
   });
 
@@ -53,7 +53,7 @@ export default function GeneralDataForm({
     formState: { isDirty, isSubmitting },
   } = methods;
 
-  const onSubmit = async (data: EditVenueS1FormSchema) => {
+  const onSubmit = async (data: VenueS1FormSchema) => {
     if (!isDirty) {
       toast.info('Nessun dato modificato.');
       return;
