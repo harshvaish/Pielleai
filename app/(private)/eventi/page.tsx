@@ -15,7 +15,6 @@ import { eventsFiltersSchema } from '@/lib/validation/filters/events-filters-sch
 import { notFound, redirect } from 'next/navigation';
 import ExportButton from './_components/ExportButton';
 import getSession from '@/lib/data/auth/get-session';
-import { getManagedVenueIds } from '@/lib/data/venues/get-managed-venue-ids';
 
 type EventsPageProps = {
   searchParams?: Promise<{
@@ -43,34 +42,18 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
   if (target) redirect(target);
 
   const isAdmin = user.role === 'admin';
+  const isArtistManager = user.role === 'artist-manager';
   const isVenueManager = user.role === 'venue-manager';
 
   const sp = await searchParams;
   const currentPage = Number(sp?.page ?? '1');
 
-  const managersFilter = isAdmin
-    ? splitCsv(sp?.manager)
-    : isVenueManager
-      ? []
-      : [user.profileId!.toString()];
-
-  let managedVenueIds: number[] = [];
-
-  if (isVenueManager) {
-    managedVenueIds = await getManagedVenueIds(user.profileId!);
-  }
-
-  const managedVenueIdsStr = managedVenueIds.map(String);
-  const venueIdsFilter: string[] = Array.from(
-    new Set([...splitCsv(sp?.venue), ...managedVenueIdsStr]),
-  );
-
   const filters: EventsTableFilters = {
     currentPage: currentPage,
     status: splitCsv(sp?.status) as EventStatus[],
     artistIds: splitCsv(sp?.artist),
-    artistManagerIds: managersFilter,
-    venueIds: venueIdsFilter,
+    artistManagerIds: splitCsv(sp?.manager),
+    venueIds: splitCsv(sp?.venue),
     startDate: sp?.start ? new Date(sp.start) : null,
     endDate: sp?.end ? new Date(sp.end) : null,
   };
@@ -83,10 +66,10 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
 
   const [{ data: events, totalPages }, artists, artistManagers, venues, moCoordinators] =
     await Promise.all([
-      getEventsCached(filters),
-      getArtistsCached(isAdmin ? undefined : user.profileId!),
+      getEventsCached(user, filters),
+      getArtistsCached(isArtistManager ? user.profileId! : undefined),
       isAdmin ? getArtistManagersCached() : Promise.resolve([]),
-      getVenuesCached(),
+      getVenuesCached(isVenueManager ? user.profileId! : undefined),
       getMoCoordinatorsCached(),
     ]);
 
@@ -131,7 +114,7 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
         </div>
         <div className='flex items-center gap-2'>
           <FiltersButton
-            isAdmin={isAdmin}
+            userRole={user.role}
             filters={filters}
             artists={artists}
             artistManagers={artistManagers}

@@ -1,5 +1,6 @@
 'server only';
 
+import { User } from '@/lib/auth';
 import { PAGINATED_TABLE_ROWS_X_PAGE } from '@/lib/constants';
 import { database } from '@/lib/database/connection';
 import {
@@ -15,15 +16,18 @@ import {
 import { Event, EventNote, EventsTableFilters } from '@/lib/types';
 import { and, count, desc, eq, inArray, sql } from 'drizzle-orm';
 
-export async function getEvents({
-  currentPage,
-  status,
-  artistIds,
-  artistManagerIds,
-  venueIds,
-  startDate,
-  endDate,
-}: EventsTableFilters): Promise<{
+export async function getEvents(
+  user: User,
+  {
+    currentPage,
+    status,
+    artistIds,
+    artistManagerIds,
+    venueIds,
+    startDate,
+    endDate,
+  }: EventsTableFilters,
+): Promise<{
   data: Event[];
   totalPages: number;
   currentPage: number;
@@ -32,6 +36,9 @@ export async function getEvents({
   const isPaginated = Number.isInteger(currentPage) && (currentPage as number) > 0;
   const safePage = isPaginated ? (currentPage as number) : 1;
   const offset = (safePage - 1) * limit;
+
+  const isArtistManager = user.role === 'artist-manager';
+  const isVenueManager = user.role === 'venue-manager';
 
   try {
     const rangeWindow =
@@ -42,6 +49,28 @@ export async function getEvents({
               '[)')`
         : undefined;
 
+    if (isArtistManager) {
+      artistManagerIds = [user.profileId!.toString()];
+    }
+
+    let managedVenueIds: number[] = [];
+
+    if (isVenueManager) {
+      artistManagerIds = [];
+
+      const results = await database
+        .select({
+          id: venues.id,
+        })
+        .from(venues)
+        .where(and(eq(venues.managerProfileId, user.profileId!), eq(venues.status, 'active')));
+
+      managedVenueIds = [...results.map((r) => r.id)];
+    }
+
+    const venueIdsInt = venueIds.map(Number);
+    const venueIdsFilter: number[] = Array.from(new Set([...venueIdsInt, ...managedVenueIds]));
+
     // Build reusable filters
     const filters = and(
       status.length > 0 ? inArray(events.status, status) : undefined,
@@ -49,7 +78,7 @@ export async function getEvents({
       artistManagerIds.length > 0
         ? inArray(events.artistManagerProfileId, artistManagerIds.map(Number))
         : undefined,
-      venueIds.length > 0 ? inArray(events.venueId, venueIds.map(Number)) : undefined,
+      venueIdsFilter.length > 0 ? inArray(events.venueId, venueIdsFilter) : undefined,
       rangeWindow ? sql`${artistAvailabilities.timeRange} && ${rangeWindow}` : undefined,
     );
 

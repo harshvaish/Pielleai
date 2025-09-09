@@ -79,6 +79,7 @@ export default function ResetPasswordForm({ token }: { token: string }) {
             <form
               onSubmit={handleSubmit(onSubmit)}
               noValidate
+              className='p-2'
             >
               <div className='mb-4'>
                 <div className='text-sm font-semibold mb-2'>Nuova password</div>

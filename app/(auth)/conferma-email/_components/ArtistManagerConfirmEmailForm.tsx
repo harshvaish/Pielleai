@@ -80,7 +80,6 @@ export default function ArtistManagerConfirmEmailForm() {
         <div className='text-sm text-center font-semibold mb-2'>Codice OTP</div>
         <InputOTP
           name='otp'
-          autoFocus={true}
           maxLength={6}
           value={code}
           onChange={(value) => setCode(value)}

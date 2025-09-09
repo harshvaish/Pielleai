@@ -113,7 +113,7 @@ export default function UpdateEventForm({
     <section className='max-h-full overflow-y-auto'>
       <FormProvider {...methods}>
         <form
-          className='flex flex-col gap-4'
+          className='flex flex-col gap-4 p-2'
           onSubmit={handleSubmit(onSubmit)}
           noValidate={true}
         >

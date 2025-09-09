@@ -3,10 +3,21 @@
 import { database } from '@/lib/database/connection';
 import { profiles, users, venues } from '@/lib/database/schema';
 import { VenueSelectData } from '@/lib/types';
-import { asc, eq } from 'drizzle-orm';
+import { and, asc, eq, inArray } from 'drizzle-orm';
 
-export async function getVenues(): Promise<VenueSelectData[]> {
+export async function getVenues(managerProfileId?: number): Promise<VenueSelectData[]> {
   try {
+    let managedVenueIds: number[] | undefined = undefined;
+
+    if (managerProfileId) {
+      const managedVenues = await database
+        .select({ venueId: venues.id })
+        .from(venues)
+        .where(eq(venues.managerProfileId, managerProfileId));
+
+      managedVenueIds = [...new Set(managedVenues.map((r) => r.venueId))];
+    }
+
     const results = await database
       .select({
         id: venues.id,
@@ -29,7 +40,12 @@ export async function getVenues(): Promise<VenueSelectData[]> {
       .from(venues)
       .innerJoin(profiles, eq(venues.managerProfileId, profiles.id))
       .innerJoin(users, eq(profiles.userId, users.id))
-      .where(eq(venues.status, 'active'))
+      .where(
+        and(
+          eq(venues.status, 'active'),
+          managedVenueIds ? inArray(venues.id, managedVenueIds) : undefined,
+        ),
+      )
       .orderBy(asc(venues.name));
 
     return results;

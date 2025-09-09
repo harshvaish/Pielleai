@@ -61,7 +61,7 @@ export default function VenueManagerProfileForm({
     <div className='bg-zinc-50 p-4 border rounded-2xl'>
       <FormProvider {...methods}>
         <form
-          className='flex flex-col gap-4'
+          className='flex flex-col gap-4 p-2'
           onSubmit={methods.handleSubmit(onSubmit)}
         >
           <StepOne

@@ -73,7 +73,7 @@ export function NoteForm({
   return (
     <form
       onSubmit={onSubmit}
-      className='flex flex-col justify-between'
+      className='flex flex-col justify-between p-2'
     >
       <Textarea
         id='note'

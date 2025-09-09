@@ -7,7 +7,7 @@ import {
   ArtistManagerProfileFormSchema,
   artistManagerProfileFormSchema,
 } from '@/lib/validation/artist-manager-form-schema';
-import { MouseEvent, useState } from 'react';
+import { MouseEvent, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { ArrowLeft } from 'lucide-react';
 import { Country, Language } from '@/lib/types';
@@ -30,6 +30,7 @@ export default function ArtistManagerProfileForm({
   countries,
 }: ArtistManagerProfileFormProps) {
   const [step, setStep] = useState<number>(1);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const methods = useForm({
     resolver: zodResolver(artistManagerProfileFormSchema),
@@ -101,11 +102,20 @@ export default function ArtistManagerProfileForm({
     }
   };
 
+  useEffect(() => {
+    if (containerRef.current) {
+      containerRef.current.scrollTo?.({ top: 0, behavior: 'smooth' });
+    }
+  }, [step]);
+
   return (
-    <div className='bg-zinc-50 p-4 border rounded-2xl'>
+    <div
+      ref={containerRef}
+      className='bg-zinc-50 p-4 border rounded-2xl'
+    >
       <FormProvider {...methods}>
         <form
-          className='flex flex-col gap-4'
+          className='flex flex-col gap-4 p-2'
           onSubmit={methods.handleSubmit(onSubmit)}
         >
           {step === 1 && (

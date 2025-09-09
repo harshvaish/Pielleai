@@ -84,7 +84,7 @@ export default function SocialDataForm({ venueData, closeDialog }: SocialDataFor
   return (
     <FormProvider {...methods}>
       <form
-        className='flex flex-col gap-4'
+        className='flex flex-col gap-4 p-2'
         onSubmit={methods.handleSubmit(onSubmit)}
       >
         <StepThree />

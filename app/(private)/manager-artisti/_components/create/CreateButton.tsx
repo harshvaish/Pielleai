@@ -35,10 +35,13 @@ export default function CreateButton({
           Aggiungi
         </Button>
       </DialogTrigger>
-      <DialogContent className='h-dvh md:max-h-[94dvh] w-dvw grid grid-rows-[auto_1fr] p-4 pt-12 rounded-none md:rounded-2xl'>
-        <DialogTitle className='hidden'>
-          Form per creazione nuovo manager artista
-        </DialogTitle>
+      <DialogContent
+        onInteractOutside={(e) => {
+          e.preventDefault();
+        }}
+        className='h-dvh md:max-h-[94dvh] w-dvw grid grid-rows-[auto_1fr] p-4 pt-12 rounded-none md:rounded-2xl'
+      >
+        <DialogTitle className='hidden'>Form per creazione nuovo manager artista</DialogTitle>
         <DialogDescription className='hidden'>
           Inserisci tutti i dati necessari alla creazione del profilo.
         </DialogDescription>

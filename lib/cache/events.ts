@@ -2,11 +2,13 @@ import { EventsTableFilters } from '@/lib/types';
 import { hashKey } from '@/lib/utils';
 import { unstable_cache } from 'next/cache';
 import { getEvents } from '@/lib/data/events/get-events';
+import { User } from '../auth';
 
-export async function getEventsCached(filters: EventsTableFilters) {
+export async function getEventsCached(user: User, filters: EventsTableFilters) {
   const key = [
     'paginated-events',
     hashKey({
+      uid: user.id,
       currentPage: filters.currentPage,
       status: filters.status,
       artistIds: filters.artistIds,
@@ -16,9 +18,9 @@ export async function getEventsCached(filters: EventsTableFilters) {
       endDate: filters.endDate,
     }),
   ];
-  const fn = unstable_cache(async (f: EventsTableFilters) => getEvents(f), key, {
+  const fn = unstable_cache(async (u: User, f: EventsTableFilters) => getEvents(u, f), key, {
     revalidate: 30,
     tags: ['paginated-events'],
   });
-  return fn(filters);
+  return fn(user, filters);
 }

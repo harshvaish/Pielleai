@@ -67,6 +67,7 @@ export default function RecoverPasswordForm() {
           <form
             onSubmit={handleSubmit(onSubmitHandler)}
             noValidate
+            className='p-2'
           >
             <div className='mb-8'>
               <div className='text-sm font-semibold mb-2'>Email</div>
@@ -76,7 +77,6 @@ export default function RecoverPasswordForm() {
                 placeholder='esempio@milanoovest.it'
                 {...register('email')}
                 className={errors.email ? 'border-destructive text-destructive' : ''}
-                autoFocus={true}
                 autoComplete='email'
               />
               {errors.email && (

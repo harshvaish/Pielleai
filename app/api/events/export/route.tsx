@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/lib/auth';
 import { getEvents } from '@/lib/data/events/get-events';
 import { formatInTimeZone } from 'date-fns-tz';
 import { EVENT_STATUS_LABELS, TIME_ZONE } from '@/lib/constants';
 import { unparse } from 'papaparse';
 import { Event } from '@/lib/types';
 import { eventsExportFiltersSchema } from '@/lib/validation/event-export-filters-schema';
+import getSession from '@/lib/data/auth/get-session';
 
 type CSVRow = {
   id: string | number;
@@ -19,11 +19,9 @@ type CSVRow = {
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
-    const session = await auth.api.getSession({
-      headers: request.headers,
-    });
+    const { session, user } = await getSession();
 
-    if (!session || session.user.role !== 'admin') {
+    if (!session || !user || user.role !== 'admin') {
       return NextResponse.json(
         { success: false, message: 'Non sei autorizzato.', data: null },
         { status: 401 },
@@ -42,7 +40,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     const { s, a, m, v, sd, ed } = validation.data;
 
-    const result = await getEvents({
+    const result = await getEvents(user, {
       currentPage: null,
       status: s,
       artistIds: a,

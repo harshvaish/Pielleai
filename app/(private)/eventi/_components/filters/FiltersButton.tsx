@@ -6,6 +6,7 @@ import {
   ArtistManagerSelectData,
   ArtistSelectData,
   EventsTableFilters,
+  UserRole,
   VenueSelectData,
 } from '@/lib/types';
 import { useRouter } from 'next/navigation';
@@ -16,7 +17,7 @@ import ArtistManagerSelect from '@/app/(private)/_components/filters/ArtistManag
 import VenueSelect from '@/app/(private)/_components/filters/VenueSelect';
 
 type FiltersButtonProps = {
-  isAdmin: boolean;
+  userRole: UserRole;
   filters: EventsTableFilters;
   artists: ArtistSelectData[];
   artistManagers: ArtistManagerSelectData[];
@@ -24,7 +25,7 @@ type FiltersButtonProps = {
 };
 
 export default function FiltersButton({
-  isAdmin,
+  userRole,
   filters,
   artists,
   artistManagers,
@@ -41,6 +42,7 @@ export default function FiltersButton({
   );
   const [venueIds, setVenueIds] = useState<string[]>(filters.venueIds || []);
 
+  const isAdmin = userRole === 'admin';
   const active = Boolean(
     filters.artistIds.length ||
       (isAdmin ? filters.artistManagerIds.length : false) ||

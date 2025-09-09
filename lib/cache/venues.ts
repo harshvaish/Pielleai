@@ -16,11 +16,17 @@ export function getVenueCached(slug: string) {
   return fn(slug);
 }
 
-export const getVenuesCached = unstable_cache(
-  async () => getVenues(),
-  ['venues'],
-  { revalidate: 60 * 60, tags: ['venues'] }, // 1d
-);
+export function getVenuesCached(profileId?: number) {
+  const key = ['venues'];
+
+  const fn = unstable_cache(
+    async (p) => getVenues(p),
+    key,
+    { revalidate: 60 * 60, tags: key }, // 1d
+  );
+
+  return fn(profileId);
+}
 
 // NOTE: we derive key from filters so pages/filters cache separately
 export async function getPaginatedVenuesCached(filters: VenuesTableFilters) {

@@ -32,7 +32,7 @@ export default async function DashboardPage() {
   const [usersToApprove, eventsToApprove, artists, moCoordinators, venues] = await Promise.all([
     isAdmin ? getUsersToApproveCached() : Promise.resolve([]),
     isAdmin
-      ? getEventsCached({
+      ? getEventsCached(user, {
           currentPage: null,
           status: ['proposed'],
           artistIds: [],

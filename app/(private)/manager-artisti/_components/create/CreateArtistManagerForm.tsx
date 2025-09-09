@@ -9,7 +9,7 @@ import {
   artistManagerS3FormSchema,
   artistManagerFormSchema,
 } from '@/lib/validation/artist-manager-form-schema';
-import { MouseEvent, useState } from 'react';
+import { MouseEvent, useEffect, useRef, useState } from 'react';
 import StepOne from '../form/StepOne';
 import StepTwo from '../form/StepTwo';
 import { toast } from 'sonner';
@@ -44,6 +44,7 @@ export default function CreateArtistManagerForm({
   closeDialog: () => void;
 }) {
   const [step, setStep] = useState<number>(1);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const methods = useForm({
     resolver: zodResolver(artistManagerFormSchema),
@@ -116,6 +117,12 @@ export default function CreateArtistManagerForm({
     }
   };
 
+  useEffect(() => {
+    if (containerRef.current) {
+      containerRef.current.scrollTo?.({ top: 0, behavior: 'smooth' });
+    }
+  }, [step]);
+
   return (
     <>
       {/* step section */}
@@ -152,11 +159,15 @@ export default function CreateArtistManagerForm({
           <div className='text-xs font-semibold text-center'>Credenziali</div>
         </div>
       </section>
+
       {/* tab section */}
-      <section className='max-h-full overflow-y-auto'>
+      <section
+        ref={containerRef}
+        className='max-h-full overflow-y-auto'
+      >
         <FormProvider {...methods}>
           <form
-            className='flex flex-col gap-4'
+            className='flex flex-col gap-4 p-2'
             onSubmit={methods.handleSubmit(onSubmit)}
           >
             {step === 1 && (

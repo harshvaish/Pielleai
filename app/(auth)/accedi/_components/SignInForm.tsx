@@ -54,7 +54,7 @@ export default function SignInForm() {
           <form
             onSubmit={handleSubmit(onSubmitHandler)}
             noValidate
-            className='space-y-4'
+            className='space-y-4 p-2'
           >
             <div>
               <div className='text-sm font-semibold mb-2'>Email</div>
@@ -62,7 +62,6 @@ export default function SignInForm() {
                 type='email'
                 placeholder='esempio@milanoovest.it'
                 autoComplete='email'
-                autoFocus={true}
                 {...register('email')}
                 className={errors.email ? 'border-destructive text-destructive' : ''}
               />

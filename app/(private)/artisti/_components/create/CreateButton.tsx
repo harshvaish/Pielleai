@@ -1,6 +1,12 @@
 'use client';
 
-import { Dialog, DialogContent, DialogDescription, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
 import { ArtistManagerSelectData, Country, Language, Zone } from '@/lib/types';
@@ -14,7 +20,12 @@ type CreateButtonProps = {
   artistManagers: ArtistManagerSelectData[];
 };
 
-export default function CreateButton({ languages, countries, zones, artistManagers }: CreateButtonProps) {
+export default function CreateButton({
+  languages,
+  countries,
+  zones,
+  artistManagers,
+}: CreateButtonProps) {
   const [open, setOpen] = useState<boolean>(false);
 
   return (
@@ -29,9 +40,16 @@ export default function CreateButton({ languages, countries, zones, artistManage
           Aggiungi
         </Button>
       </DialogTrigger>
-      <DialogContent className='h-dvh md:max-h-[94dvh] w-dvw grid grid-rows-[auto_1fr] p-4 pt-12 rounded-none md:rounded-2xl'>
+      <DialogContent
+        onInteractOutside={(e) => {
+          e.preventDefault();
+        }}
+        className='h-dvh md:max-h-[94dvh] w-dvw grid grid-rows-[auto_1fr] p-4 pt-12 rounded-none md:rounded-2xl'
+      >
         <DialogTitle className='hidden'>Form per creazione nuovo artista</DialogTitle>
-        <DialogDescription className='hidden'>Inserisci tutti i dati necessari alla creazione del profilo.</DialogDescription>
+        <DialogDescription className='hidden'>
+          Inserisci tutti i dati necessari alla creazione del profilo.
+        </DialogDescription>
 
         <CreateArtistForm
           languages={languages}
