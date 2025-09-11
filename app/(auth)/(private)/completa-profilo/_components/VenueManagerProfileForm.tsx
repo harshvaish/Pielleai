@@ -58,7 +58,7 @@ export default function VenueManagerProfileForm({
   };
 
   return (
-    <div className='bg-zinc-50 p-4 border rounded-2xl'>
+    <div className='bg-zinc-50 p-1 lg:p-4 border rounded-2xl'>
       <FormProvider {...methods}>
         <form
           className='flex flex-col gap-4 p-2'
@@ -75,7 +75,6 @@ export default function VenueManagerProfileForm({
             <Button
               type='submit'
               disabled={methods.formState.isSubmitting}
-              className='w-full md:w-auto'
             >
               {methods.formState.isSubmitting ? 'Creazione profilo...' : 'Conferma'}
             </Button>

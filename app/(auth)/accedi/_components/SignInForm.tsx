@@ -9,14 +9,12 @@ import Link from 'next/link';
 import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { signInSchema, SignInSchema } from '@/lib/validation/auth/signInSchema';
-import { authClient, signIn } from '@/lib/auth-client';
-import { getBetterAuthErrorMessage, resolveNextPath } from '@/lib/utils';
-import { useRouter } from 'next/navigation';
+import { signIn } from '@/lib/auth-client';
+import { getBetterAuthErrorMessage } from '@/lib/utils';
 import { useTransition } from 'react';
 
 export default function SignInForm() {
   const [isPending, startTransition] = useTransition();
-  const router = useRouter();
   const methods = useForm<SignInSchema>({
     resolver: zodResolver(signInSchema),
     defaultValues: {
@@ -46,30 +44,8 @@ export default function SignInForm() {
             return;
           },
         },
+        callbackURL: '/eventi',
       });
-
-      const { data: session, error } = await authClient.getSession({
-        query: {
-          disableCookieCache: true,
-        },
-      });
-
-      if (!session || error) {
-        toast.error('Impossibile effettuare il login, riprova più tardi.');
-        return;
-      }
-
-      const redirect = resolveNextPath({
-        user: session.user,
-        hasProfile: Boolean(session.user.profileId),
-      });
-
-      if (redirect) {
-        startTransition(() => router.replace(redirect));
-        return;
-      }
-
-      startTransition(() => router.replace('/eventi'));
     });
   };
 

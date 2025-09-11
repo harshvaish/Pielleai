@@ -111,7 +111,7 @@ export default function ArtistManagerProfileForm({
   return (
     <div
       ref={containerRef}
-      className='bg-zinc-50 p-4 border rounded-2xl'
+      className='bg-zinc-50 p-1 lg:p-4 border rounded-2xl'
     >
       <FormProvider {...methods}>
         <form

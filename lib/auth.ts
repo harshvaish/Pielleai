@@ -55,11 +55,11 @@ const options = {
   },
   session: {
     expiresIn: 60 * 60 * 24 * 30, // 1 month
-    disableSessionRefresh: false,
-    cookieCache: {
-      enabled: true,
-      maxAge: 5 * 60, // 5 min
-    },
+    // disableSessionRefresh: false,
+    // cookieCache: {
+    //   enabled: true,
+    //   maxAge: 5 * 60, // 5 min
+    // },
   },
   advanced: {
     cookiePrefix: process.env.BETTER_AUTH_COOKIE_PREFIX,

@@ -1,4 +1,3 @@
-import { auth } from '@/lib/auth';
 import { getCountrySubdivisions } from '@/lib/data/get-country-subdivisions';
 import { ApiResponse, Subdivision } from '@/lib/types';
 import { idValidation } from '@/lib/validation/_general';
@@ -6,17 +5,6 @@ import { type NextRequest, NextResponse } from 'next/server';
 
 export async function GET(request: NextRequest): Promise<NextResponse<ApiResponse<Subdivision[]>>> {
   try {
-    const session = await auth.api.getSession({
-      headers: request.headers,
-    });
-
-    if (!session || !session.user) {
-      return NextResponse.json(
-        { success: false, message: 'Non sei autorizzato.', data: null },
-        { status: 401 },
-      );
-    }
-
     const url = new URL(request.url);
 
     const countryIdParam = url.searchParams.get('c');

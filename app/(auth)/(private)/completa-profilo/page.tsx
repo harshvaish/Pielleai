@@ -21,11 +21,11 @@ export default async function CompleteProfilePage() {
   const [languages, countries] = await Promise.all([getLanguagesCached(), getCountriesCached()]);
 
   return (
-    <Card className='w-full max-w-3xl items-center p-6 rounded-2xl'>
+    <Card className='w-full max-w-3xl items-center p-4 md:p-6 rounded-2xl'>
       <CardHeader className='w-full gap-0 text-center p-0'>
         <CardTitle className='text-2xl font-semibold'>Completa profilo</CardTitle>
       </CardHeader>
-      <CardContent className='w-full'>
+      <CardContent className='w-full p-0'>
         <Tabs defaultValue='a'>
           <div className='text-sm font-semibold'>Tipologia account</div>
           <TabsList className='justify-start gap-4 bg-white p-1 rounded-xl mb-2 overflow-x-auto'>
