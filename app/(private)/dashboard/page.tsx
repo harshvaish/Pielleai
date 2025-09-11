@@ -4,7 +4,7 @@ import EventTile from '../_components/EventTile/EventTile';
 import Link from 'next/link';
 import { ChevronRight } from 'lucide-react';
 import EventsCalendar from '../_components/EventsCalendar/EventsCalendar';
-import { getUsersToApproveCached } from '@/lib/cache/users';
+import { getUserProfileIdCached, getUsersToApproveCached } from '@/lib/cache/users';
 
 import { getArtistsCached } from '@/lib/cache/artists';
 import { getMoCoordinatorsCached } from '@/lib/cache/mo-coordinators';
@@ -24,7 +24,8 @@ export default async function DashboardPage() {
     redirect('/logout');
   }
 
-  const target = resolveNextPath({ user, hasProfile: Boolean(user.profileId) });
+  const profileId = await getUserProfileIdCached(user.id);
+  const target = resolveNextPath({ user, hasProfile: Boolean(profileId) });
   if (target) redirect(target);
 
   if (!hasRole(user, ['admin', 'venue-manager'])) {
@@ -35,7 +36,7 @@ export default async function DashboardPage() {
 
   const [usersToApprove, eventsToApprove, artists, moCoordinators, venues] = await Promise.all([
     isAdmin ? getUsersToApproveCached() : Promise.resolve([]),
-    isAdmin ? getEventsToApproveCached() : getVenueManagerEvents(user.profileId!),
+    isAdmin ? getEventsToApproveCached() : getVenueManagerEvents(profileId!),
     getArtistsCached(),
     getMoCoordinatorsCached(),
     getVenuesCached(),

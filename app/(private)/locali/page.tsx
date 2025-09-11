@@ -22,6 +22,7 @@ import { getPaginatedVenuesCached } from '@/lib/cache/venues';
 import { notFound, redirect } from 'next/navigation';
 import { venuesTableFiltersSchema } from '@/lib/validation/filters/venues-table-filters-schema';
 import getSession from '@/lib/data/auth/get-session';
+import { getUserProfileIdCached } from '@/lib/cache/users';
 
 type VenuesPageProps = {
   searchParams?: Promise<{
@@ -46,7 +47,8 @@ export default async function VenuesPage({ searchParams }: VenuesPageProps) {
     redirect('/logout');
   }
 
-  const target = resolveNextPath({ user, hasProfile: Boolean(user.profileId) });
+  const profileId = await getUserProfileIdCached(user.id);
+  const target = resolveNextPath({ user, hasProfile: Boolean(profileId) });
   if (target) redirect(target);
 
   if (!hasRole(user, ['admin', 'venue-manager'])) {
@@ -65,7 +67,7 @@ export default async function VenuesPage({ searchParams }: VenuesPageProps) {
     taxCode: sp?.taxCode || null,
     address: sp?.address || null,
     types: splitCsv(sp?.type) as VenueType[],
-    managerIds: isAdmin ? splitCsv(sp?.manager) : [user.profileId!.toString()],
+    managerIds: isAdmin ? splitCsv(sp?.manager) : [profileId!.toString()],
     capacity: sp?.capacity || null,
   };
 

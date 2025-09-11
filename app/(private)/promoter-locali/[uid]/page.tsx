@@ -19,6 +19,7 @@ import { getVenueManagerCached } from '@/lib/cache/venue-managers';
 import ManagedVenuesTab from './_components/Tabs/ManagedVenuesTab';
 import PersonalDataTab from './_components/Tabs/PersonalDataTab';
 import getSession from '@/lib/data/auth/get-session';
+import { getUserProfileIdCached } from '@/lib/cache/users';
 
 type VenueManagerDetailPageProps = { params: Promise<{ uid: string }> };
 
@@ -31,7 +32,8 @@ export default async function VenueManagerDetailPage({ params }: VenueManagerDet
     redirect('/logout');
   }
 
-  const target = resolveNextPath({ user, hasProfile: Boolean(user.profileId) });
+  const profileId = await getUserProfileIdCached(user.id);
+  const target = resolveNextPath({ user, hasProfile: Boolean(profileId) });
   if (target) redirect(target);
 
   if (!hasRole(user, ['admin'])) {

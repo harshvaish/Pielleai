@@ -7,6 +7,9 @@ import ArtistManagerProfileForm from './_components/ArtistManagerProfileForm';
 import getSession from '@/lib/data/auth/get-session';
 import VenueManagerProfileForm from './_components/VenueManagerProfileForm';
 import { resolveNextPath } from '@/lib/utils';
+import { getUserProfileIdCached } from '@/lib/cache/users';
+
+export const dynamic = 'force-dynamic';
 
 export default async function CompleteProfilePage() {
   const { session, user } = await getSession(true);
@@ -15,7 +18,8 @@ export default async function CompleteProfilePage() {
     redirect('/logout');
   }
 
-  const target = resolveNextPath({ user, hasProfile: Boolean(user.profileId) });
+  const profileId = await getUserProfileIdCached(user.id);
+  const target = resolveNextPath({ user, hasProfile: Boolean(profileId) });
   if (target && target !== '/completa-profilo') redirect(target);
 
   const [languages, countries] = await Promise.all([getLanguagesCached(), getCountriesCached()]);

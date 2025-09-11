@@ -4,6 +4,9 @@ import getSession from '@/lib/data/auth/get-session';
 import { resolveNextPath } from '@/lib/utils';
 import { redirect } from 'next/navigation';
 import CheckButton from './_components/CheckButton';
+import { getUserProfileIdCached } from '@/lib/cache/users';
+
+export const dynamic = 'force-dynamic';
 
 export default async function WaitingForApprovalPage() {
   const { session, user } = await getSession(true);
@@ -12,7 +15,8 @@ export default async function WaitingForApprovalPage() {
     redirect('/logout');
   }
 
-  const target = resolveNextPath({ user, hasProfile: Boolean(user.profileId) });
+  const profileId = await getUserProfileIdCached(user.id);
+  const target = resolveNextPath({ user, hasProfile: Boolean(profileId) });
   if (target && target !== '/attesa-approvazione') redirect(target);
 
   return (

@@ -4,6 +4,7 @@ import getSession from '@/lib/data/auth/get-session';
 import { notFound, redirect } from 'next/navigation';
 import { hasRole, resolveNextPath } from '@/lib/utils';
 import EventsCalendar from '../_components/EventsCalendar/EventsCalendar';
+import { getUserProfileIdCached } from '@/lib/cache/users';
 
 export const dynamic = 'force-dynamic';
 
@@ -14,17 +15,15 @@ export default async function CalendarPage() {
     redirect('/logout');
   }
 
-  const target = resolveNextPath({ user, hasProfile: Boolean(user.profileId) });
+  const profileId = await getUserProfileIdCached(user.id);
+  const target = resolveNextPath({ user, hasProfile: Boolean(profileId) });
   if (target) redirect(target);
 
   if (!hasRole(user, ['artist-manager'])) {
     notFound();
   }
 
-  const [artists, venues] = await Promise.all([
-    getArtistsCached(user.profileId!),
-    getVenuesCached(),
-  ]);
+  const [artists, venues] = await Promise.all([getArtistsCached(profileId!), getVenuesCached()]);
 
   return (
     <>

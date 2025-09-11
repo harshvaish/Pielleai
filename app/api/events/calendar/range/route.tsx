@@ -8,6 +8,7 @@ import { eventStatus, managerArtists, venues } from '@/lib/database/schema';
 import getSession from '@/lib/data/auth/get-session';
 import { database } from '@/lib/database/connection';
 import { eq } from 'drizzle-orm';
+import { getUserProfileIdCached } from '@/lib/cache/users';
 
 export async function GET(
   request: NextRequest,
@@ -62,8 +63,10 @@ export async function GET(
     let managedArtistIds: number[] = [];
     let managedVenueIds: number[] = [];
 
+    const profileId = await getUserProfileIdCached(user.id);
+
     if (user.role === 'artist-manager') {
-      if (!user.profileId) {
+      if (!profileId) {
         return NextResponse.json(
           { success: false, message: 'Utenza non valida.', data: null },
           { status: 400 },
@@ -73,13 +76,13 @@ export async function GET(
       const managedArtists = await database
         .select({ artistId: managerArtists.artistId })
         .from(managerArtists)
-        .where(eq(managerArtists.managerProfileId, user.profileId));
+        .where(eq(managerArtists.managerProfileId, profileId));
 
       managedArtistIds = [...new Set(managedArtists.map((r) => r.artistId))];
     }
 
     if (user.role === 'venue-manager') {
-      if (!user.profileId) {
+      if (!profileId) {
         return NextResponse.json(
           { success: false, message: 'Utenza non valida.', data: null },
           { status: 400 },
@@ -89,7 +92,7 @@ export async function GET(
       const managedVenues = await database
         .select({ venueId: venues.id })
         .from(venues)
-        .where(eq(venues.managerProfileId, user.profileId));
+        .where(eq(venues.managerProfileId, profileId));
 
       managedVenueIds = [...new Set(managedVenues.map((r) => r.venueId))];
     }

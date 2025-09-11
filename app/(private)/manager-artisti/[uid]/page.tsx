@@ -22,6 +22,7 @@ import { getArtistManagerCached } from '@/lib/cache/artist-managers';
 import ManagedArtistsTab from './_components/Tabs/ManagedArtistsTab';
 import PersonalDataTab from './_components/Tabs/PersonalDataTab';
 import getSession from '@/lib/data/auth/get-session';
+import { getUserProfileIdCached } from '@/lib/cache/users';
 
 type ArtistManagerDetailPageProps = { params: Promise<{ uid: string }> };
 
@@ -32,7 +33,8 @@ export default async function ArtistManagerDetailPage({ params }: ArtistManagerD
     redirect('/logout');
   }
 
-  const target = resolveNextPath({ user, hasProfile: Boolean(user.profileId) });
+  const profileId = await getUserProfileIdCached(user.id);
+  const target = resolveNextPath({ user, hasProfile: Boolean(profileId) });
   if (target) redirect(target);
 
   if (!hasRole(user, ['admin'])) {

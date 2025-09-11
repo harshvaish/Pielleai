@@ -25,6 +25,7 @@ import SocialDataTab from '../../_components/tabs/SocialDataTab';
 import getSession from '@/lib/data/auth/get-session';
 import { toast } from 'sonner';
 import { ProfileNote } from '@/lib/types';
+import { getUserProfileIdCached } from '@/lib/cache/users';
 
 type ArtistDetailPageProps = {
   params: Promise<{ slug: string }>;
@@ -39,7 +40,8 @@ export default async function ArtistDetailPage({ params }: ArtistDetailPageProps
     redirect('/logout');
   }
 
-  const target = resolveNextPath({ user, hasProfile: Boolean(user.profileId) });
+  const profileId = await getUserProfileIdCached(user.id);
+  const target = resolveNextPath({ user, hasProfile: Boolean(profileId) });
   if (target) redirect(target);
 
   if (!hasRole(user, ['admin', 'artist-manager', 'venue-manager'])) {

@@ -22,6 +22,9 @@ import VenueManagerPersonalDataTab from '../promoter-locali/[uid]/_components/Ta
 import ManagedVenuesTab from '../promoter-locali/[uid]/_components/Tabs/ManagedVenuesTab';
 import SignOutTile from './_components/action-tiles/SignOutTile';
 import ChangePasswordTile from './_components/action-tiles/ChangePaswordTile';
+import { getUserProfileIdCached } from '@/lib/cache/users';
+
+export const dynamic = 'force-dynamic';
 
 export default async function ProfilePage() {
   const { session, user } = await getSession();
@@ -30,7 +33,8 @@ export default async function ProfilePage() {
     redirect('/logout');
   }
 
-  const target = resolveNextPath({ user, hasProfile: Boolean(user.profileId) });
+  const profileId = await getUserProfileIdCached(user.id);
+  const target = resolveNextPath({ user, hasProfile: Boolean(profileId) });
   if (target) redirect(target);
 
   if (!hasRole(user, ['artist-manager', 'venue-manager'])) {

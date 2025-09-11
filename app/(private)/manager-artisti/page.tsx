@@ -22,6 +22,7 @@ import { getPaginatedArtistManagersCached } from '@/lib/cache/artist-managers';
 import { notFound, redirect } from 'next/navigation';
 import { artistManagersTableFiltersSchema } from '@/lib/validation/filters/artist-managers-table-filters-schema';
 import getSession from '@/lib/data/auth/get-session';
+import { getUserProfileIdCached } from '@/lib/cache/users';
 
 type ArtistManagersPageProps = {
   searchParams?: Promise<{
@@ -43,7 +44,8 @@ export default async function ArtistManagersPage({ searchParams }: ArtistManager
     redirect('/logout');
   }
 
-  const target = resolveNextPath({ user, hasProfile: Boolean(user.profileId) });
+  const profileId = await getUserProfileIdCached(user.id);
+  const target = resolveNextPath({ user, hasProfile: Boolean(profileId) });
   if (target) redirect(target);
 
   if (!hasRole(user, ['admin'])) {

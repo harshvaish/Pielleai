@@ -24,6 +24,7 @@ import { getZonesCached } from '@/lib/cache/zones';
 import { artistsTableFiltersSchema } from '@/lib/validation/filters/artists-table-filters-schema';
 import { notFound, redirect } from 'next/navigation';
 import getSession from '@/lib/data/auth/get-session';
+import { getUserProfileIdCached } from '@/lib/cache/users';
 
 export const dynamic = 'force-dynamic';
 
@@ -46,7 +47,8 @@ export default async function ArtistsPage({ searchParams }: ArtistsPageProps) {
     redirect('/logout');
   }
 
-  const target = resolveNextPath({ user, hasProfile: Boolean(user.profileId) });
+  const profileId = await getUserProfileIdCached(user.id);
+  const target = resolveNextPath({ user, hasProfile: Boolean(profileId) });
   if (target) redirect(target);
 
   if (!hasRole(user, ['admin', 'artist-manager', 'venue-manager'])) {
@@ -63,7 +65,7 @@ export default async function ArtistsPage({ searchParams }: ArtistsPageProps) {
     ? splitCsv(sp?.manager)
     : isVenueManager
       ? []
-      : [user.profileId!.toString()];
+      : [profileId!.toString()];
 
   const filters: ArtistsTableFilters = {
     currentPage: currentPage,

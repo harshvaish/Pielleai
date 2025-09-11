@@ -15,6 +15,7 @@ import { eventsFiltersSchema } from '@/lib/validation/filters/events-filters-sch
 import { notFound, redirect } from 'next/navigation';
 import ExportButton from './_components/ExportButton';
 import getSession from '@/lib/data/auth/get-session';
+import { getUserProfileIdCached } from '@/lib/cache/users';
 
 type EventsPageProps = {
   searchParams?: Promise<{
@@ -37,7 +38,8 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
     redirect('/logout');
   }
 
-  const target = resolveNextPath({ user, hasProfile: Boolean(user.profileId) });
+  const profileId = await getUserProfileIdCached(user.id);
+  const target = resolveNextPath({ user, hasProfile: Boolean(profileId) });
   if (target) redirect(target);
 
   if (!hasRole(user, ['admin', 'artist-manager', 'venue-manager'])) {
@@ -70,9 +72,9 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
   const [{ data: events, totalPages }, artists, artistManagers, venues, moCoordinators] =
     await Promise.all([
       getEventsCached(user, filters),
-      getArtistsCached(isArtistManager ? user.profileId! : undefined),
+      getArtistsCached(isArtistManager ? profileId! : undefined),
       isAdmin ? getArtistManagersCached() : Promise.resolve([]),
-      getVenuesCached(isVenueManager ? user.profileId! : undefined),
+      getVenuesCached(isVenueManager ? profileId! : undefined),
       getMoCoordinatorsCached(),
     ]);
 

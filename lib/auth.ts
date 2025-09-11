@@ -1,16 +1,15 @@
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
-import { betterAuth, type BetterAuthOptions } from 'better-auth';
+import { betterAuth } from 'better-auth';
 import { database } from '@/lib/database/connection';
 import * as schema from '@/lib/database/schema';
 import { nextCookies } from 'better-auth/next-js';
 import { sendResetPasswordEmail } from './server-actions/send-reset-password-email';
 import { admin } from 'better-auth/plugins/admin';
-import { customSession, emailOTP } from 'better-auth/plugins';
+import { emailOTP } from 'better-auth/plugins';
 import { adminConfig } from './permissions';
 import { sendOTPEmail } from './server-actions/send-otp-email';
-import { getUserProfileIdCached } from './cache/users';
 
-const options = {
+export const auth = betterAuth({
   database: drizzleAdapter(database, {
     provider: 'pg',
     schema: schema,
@@ -32,13 +31,6 @@ const options = {
         returned: true,
         defaultValue: 'user',
       },
-      profileId: {
-        type: 'number',
-        required: false,
-        input: false,
-        returned: true,
-        defaultValue: null,
-      },
     },
   },
   emailAndPassword: {
@@ -55,11 +47,11 @@ const options = {
   },
   session: {
     expiresIn: 60 * 60 * 24 * 30, // 1 month
-    // disableSessionRefresh: false,
-    // cookieCache: {
-    //   enabled: true,
-    //   maxAge: 5 * 60, // 5 min
-    // },
+    disableSessionRefresh: false,
+    cookieCache: {
+      enabled: true,
+      maxAge: 5 * 60, // 5 min
+    },
   },
   advanced: {
     cookiePrefix: process.env.BETTER_AUTH_COOKIE_PREFIX,
@@ -76,23 +68,6 @@ const options = {
         }
       },
     }),
-  ],
-} satisfies BetterAuthOptions;
-
-export const auth = betterAuth({
-  ...options,
-  plugins: [
-    ...(options.plugins ?? []),
-    customSession(async ({ user, session }) => {
-      const profileId = await getUserProfileIdCached(user.id);
-      return {
-        user: {
-          ...user,
-          profileId: profileId ?? null,
-        },
-        session,
-      };
-    }, options),
   ],
 });
 

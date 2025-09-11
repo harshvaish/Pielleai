@@ -1,6 +1,7 @@
 'server only';
 
 import { User } from '@/lib/auth';
+import { getUserProfileIdCached } from '@/lib/cache/users';
 import { PAGINATED_TABLE_ROWS_X_PAGE } from '@/lib/constants';
 import { database } from '@/lib/database/connection';
 import {
@@ -49,8 +50,10 @@ export async function getEvents(
               '[)')`
         : undefined;
 
+    const profileId = await getUserProfileIdCached(user.id);
+
     if (isArtistManager) {
-      artistManagerIds = [user.profileId!.toString()];
+      artistManagerIds = [profileId!.toString()];
     }
 
     let managedVenueIds: number[] = [];
@@ -63,7 +66,7 @@ export async function getEvents(
           id: venues.id,
         })
         .from(venues)
-        .where(and(eq(venues.managerProfileId, user.profileId!), eq(venues.status, 'active')));
+        .where(and(eq(venues.managerProfileId, profileId!), eq(venues.status, 'active')));
 
       managedVenueIds = [...results.map((r) => r.id)];
     }
