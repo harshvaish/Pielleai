@@ -24,12 +24,12 @@ export default async function DashboardPage() {
     redirect('/logout');
   }
 
+  const target = resolveNextPath({ user, hasProfile: Boolean(user.profileId) });
+  if (target) redirect(target);
+
   if (!hasRole(user, ['admin', 'venue-manager'])) {
     notFound();
   }
-
-  const target = resolveNextPath({ user, hasProfile: Boolean(user.profileId) });
-  if (target) redirect(target);
 
   const isAdmin = user.role === 'admin';
 

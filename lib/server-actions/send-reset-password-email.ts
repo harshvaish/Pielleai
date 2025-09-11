@@ -3,8 +3,6 @@
 import sgMail from '@sendgrid/mail';
 import { ServerActionResponse } from '../types';
 import { z } from 'zod/v4';
-import { auth } from '../auth';
-import { headers } from 'next/headers';
 import { AppError } from '../classes/AppError';
 import { emailValidation, nameValidation } from '../validation/_general';
 
@@ -14,17 +12,6 @@ export const sendResetPasswordEmail = async (
   url: string,
 ): Promise<ServerActionResponse<null>> => {
   try {
-    const headersList = await headers();
-
-    const session = await auth.api.getSession({
-      headers: headersList,
-    });
-
-    if (!session?.user || session.user.role != 'admin') {
-      console.error('[sendResetPasswordEmail] - Error: unauthorized', session);
-      throw new AppError('Non sei autorizzato.');
-    }
-
     const schema = z.object({
       userEmail: emailValidation,
       userName: nameValidation,

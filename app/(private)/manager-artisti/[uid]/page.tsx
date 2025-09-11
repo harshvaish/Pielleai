@@ -32,12 +32,12 @@ export default async function ArtistManagerDetailPage({ params }: ArtistManagerD
     redirect('/logout');
   }
 
+  const target = resolveNextPath({ user, hasProfile: Boolean(user.profileId) });
+  if (target) redirect(target);
+
   if (!hasRole(user, ['admin'])) {
     notFound();
   }
-
-  const target = resolveNextPath({ user, hasProfile: Boolean(user.profileId) });
-  if (target) redirect(target);
 
   const p = await params;
   const { uid } = p;

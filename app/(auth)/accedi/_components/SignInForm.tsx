@@ -12,8 +12,10 @@ import { signInSchema, SignInSchema } from '@/lib/validation/auth/signInSchema';
 import { authClient, signIn } from '@/lib/auth-client';
 import { getBetterAuthErrorMessage, resolveNextPath } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
+import { useTransition } from 'react';
 
 export default function SignInForm() {
+  const [isPending, startTransition] = useTransition();
   const router = useRouter();
   const methods = useForm<SignInSchema>({
     resolver: zodResolver(signInSchema),
@@ -26,39 +28,48 @@ export default function SignInForm() {
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = methods;
 
   const onSubmitHandler = async (data: SignInSchema) => {
     const { email, password } = data;
 
-    await signIn.email({
-      email,
-      password,
-      fetchOptions: {
-        onSuccess: async () => {
-          const { data: session, error } = await authClient.getSession();
-
-          if (!session || error) {
-            toast.error('Impossibile effettuare il login, riprova più tardi.');
+    startTransition(async () => {
+      await signIn.email({
+        email,
+        password,
+        fetchOptions: {
+          onError: (ctx) => {
+            const code = ctx?.error?.code ?? 'UNKNOWN_ERROR';
+            const message = getBetterAuthErrorMessage(code);
+            toast.error(message);
             return;
-          }
-
-          const redirect = resolveNextPath({
-            user: session.user,
-            hasProfile: Boolean(session.user.profileId),
-          });
-
-          if (redirect) router.replace(redirect);
-
-          router.replace('/eventi');
+          },
         },
-        onError: (ctx) => {
-          const code = ctx?.error?.code ?? 'UNKNOWN_ERROR';
-          const message = getBetterAuthErrorMessage(code);
-          toast.error(message);
+      });
+
+      const { data: session, error } = await authClient.getSession({
+        query: {
+          disableCookieCache: true,
         },
-      },
+      });
+
+      if (!session || error) {
+        toast.error('Impossibile effettuare il login, riprova più tardi.');
+        return;
+      }
+
+      const redirect = resolveNextPath({
+        user: session.user,
+        hasProfile: Boolean(session.user.profileId),
+      });
+
+      if (redirect) {
+        startTransition(() => router.replace(redirect));
+        return;
+      }
+
+      startTransition(() => router.replace('/eventi'));
     });
   };
 
@@ -110,9 +121,9 @@ export default function SignInForm() {
             <Button
               className='w-full'
               type='submit'
-              disabled={isSubmitting}
+              disabled={isPending}
             >
-              {isSubmitting ? 'Accesso...' : 'Accedi'}
+              {isPending ? 'Accesso...' : 'Accedi'}
             </Button>
 
             <Link

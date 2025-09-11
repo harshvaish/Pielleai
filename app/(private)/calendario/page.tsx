@@ -14,12 +14,12 @@ export default async function CalendarPage() {
     redirect('/logout');
   }
 
+  const target = resolveNextPath({ user, hasProfile: Boolean(user.profileId) });
+  if (target) redirect(target);
+
   if (!hasRole(user, ['artist-manager'])) {
     notFound();
   }
-
-  const target = resolveNextPath({ user, hasProfile: Boolean(user.profileId) });
-  if (target) redirect(target);
 
   const [artists, venues] = await Promise.all([
     getArtistsCached(user.profileId!),

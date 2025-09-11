@@ -30,12 +30,12 @@ export default async function ProfilePage() {
     redirect('/logout');
   }
 
+  const target = resolveNextPath({ user, hasProfile: Boolean(user.profileId) });
+  if (target) redirect(target);
+
   if (!hasRole(user, ['artist-manager', 'venue-manager'])) {
     notFound();
   }
-
-  const target = resolveNextPath({ user, hasProfile: Boolean(user.profileId) });
-  if (target) redirect(target);
 
   const isArtistManager = user.role === 'artist-manager';
 

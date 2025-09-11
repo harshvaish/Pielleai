@@ -43,12 +43,12 @@ export default async function VenueManagersPage({ searchParams }: VenueManagersP
     redirect('/logout');
   }
 
+  const target = resolveNextPath({ user, hasProfile: Boolean(user.profileId) });
+  if (target) redirect(target);
+
   if (!hasRole(user, ['admin'])) {
     notFound();
   }
-
-  const target = resolveNextPath({ user, hasProfile: Boolean(user.profileId) });
-  if (target) redirect(target);
 
   const sp = await searchParams;
   const currentPage = Number(sp?.page ?? '1');
