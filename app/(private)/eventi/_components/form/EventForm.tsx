@@ -10,13 +10,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import PdfUploadInput from '@/app/(private)/eventi/_components/form/PdfUploadInput';
 import { Checkbox } from '@/components/ui/checkbox';
 import VenueSelect from './VenueSelect';
-import ArtistAvailabilitySelect from './ArtistAvailabilitySelect';
 import ArtistManagerSelect from './ArtistManagerSelect';
 import EventNotesInput from './EventNotesInput';
 import { Controller, useFormContext } from 'react-hook-form';
 import ArtistSelect from './ArtistSelect';
 import { eventStatus } from '@/lib/database/schema';
 import { EventFormSchema } from '@/lib/validation/event-form-schema';
+import ArtistAvailabilitySelectWithCreate from './ArtistAvailabilitySelectWithCreate';
 
 type EventForm = {
   artists: ArtistSelectData[];
@@ -94,7 +94,7 @@ export default function EventForm({ artists, venues, moCoordinators }: EventForm
 
       <div className='flex flex-col'>
         <div className='text-sm font-semibold mb-2'>Data</div>
-        <ArtistAvailabilitySelect />
+        {<ArtistAvailabilitySelectWithCreate />}
         {errors.availability && (
           <p className='text-xs text-destructive mt-2'>Seleziona una disponibilità valida.</p>
         )}

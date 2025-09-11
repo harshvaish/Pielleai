@@ -10,20 +10,23 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { EventFormSchema } from '@/lib/validation/event-form-schema';
-import { Check } from 'lucide-react';
+import { Check, Minus, Plus } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { it } from 'date-fns/locale';
+import { Input } from '@/components/ui/input';
 import { format, startOfDay } from 'date-fns';
 import useSWR from 'swr';
-import { cn, fetcher } from '@/lib/utils';
-import { ArtistAvailability } from '@/lib/types';
+import { checkAvailabilities, cn, fetcher } from '@/lib/utils';
+import { ArtistAvailability, TimeRange } from '@/lib/types';
 import { toast } from 'sonner';
 import { Skeleton } from '@/components/ui/skeleton';
 import { formatInTimeZone, fromZonedTime, toZonedTime } from 'date-fns-tz';
 import { TIME_ZONE } from '@/lib/constants';
+import { z } from 'zod/v4';
+import { timeValidation } from '@/lib/validation/_general';
 
-export default function ArtistAvailabilitySelect() {
+export default function ArtistAvailabilitySelectWithCreate() {
   const {
     watch,
     setValue,
@@ -32,10 +35,77 @@ export default function ArtistAvailabilitySelect() {
 
   const [open, setOpen] = useState<boolean>(false);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
+
+  const [visible, setVisible] = useState<boolean>(false);
+  const [newTimeRange, setNewTimeRange] = useState<TimeRange>({
+    startTime: '',
+    endTime: '',
+  });
+
   const [availabilities, setAvailabilities] = useState<ArtistAvailability[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
 
   const selectedArtistId = watch('artistId');
   const selectedAvailability = watch('availability');
+
+  const onNewAvailabilityClickHandler = () => {
+    if (!selectedDate) {
+      toast.error('Seleziona una data.');
+      return;
+    }
+
+    setLoading(true);
+
+    const schema = z.object({
+      startTime: timeValidation,
+      endTime: timeValidation,
+    });
+
+    const validation = schema.safeParse({
+      startTime: newTimeRange.startTime,
+      endTime: newTimeRange.endTime,
+    });
+
+    if (!validation.success) {
+      toast.error('Orari nuova disponibilità non validi.');
+      setLoading(false);
+      return;
+    }
+
+    const startTimeFragments = newTimeRange.startTime.split(':');
+    const endTimeFragments = newTimeRange.endTime.split(':');
+
+    const start = new Date(selectedDate);
+    start.setHours(parseInt(startTimeFragments[0], 10), parseInt(startTimeFragments[1], 10), 0, 0);
+    const end = new Date(selectedDate);
+    end.setHours(parseInt(endTimeFragments[0], 10), parseInt(endTimeFragments[1], 10), 0, 0);
+
+    const startUTC = fromZonedTime(start, TIME_ZONE);
+    const endUTC = fromZonedTime(end, TIME_ZONE);
+
+    const newAvailability = {
+      startDate: startUTC,
+      endDate: endUTC,
+    };
+
+    const check = checkAvailabilities([...availabilities, newAvailability]);
+
+    if (!check.success) {
+      toast.error(check.message);
+      setLoading(false);
+      return;
+    }
+
+    setValue('availability', {
+      id: undefined,
+      startDate: startUTC,
+      endDate: endUTC,
+    });
+
+    setNewTimeRange({ startTime: '', endTime: '' });
+    setLoading(false);
+    setOpen(false);
+  };
 
   const onAvailabilityClickHandler = (availability: ArtistAvailability) => {
     if (!selectedDate || !availability.id) {
@@ -142,7 +212,61 @@ export default function ArtistAvailabilitySelect() {
 
             {selectedDate ? (
               <div className='w-full flex flex-col overflow-y-auto'>
-                <div className='font-semibold text-zinc-700'>Orario</div>
+                <div className='flex justify-between items-center shrink-0'>
+                  <div className='font-semibold text-zinc-700'>Orario</div>
+                  <Button
+                    variant='ghost'
+                    size='icon'
+                    onClick={() => setVisible(!visible)}
+                    disabled={isLoading}
+                  >
+                    {visible ? <Minus /> : <Plus />}
+                  </Button>
+                </div>
+
+                {visible && (
+                  <div className='flex gap-2 items-center text-zinc-700 pb-2 border-b'>
+                    <Input
+                      type='time'
+                      value={newTimeRange.startTime}
+                      onChange={(e) =>
+                        setNewTimeRange((prev) => ({
+                          ...prev,
+                          startTime: e.target.value,
+                        }))
+                      }
+                      className={cn(
+                        'w-min appearance-none [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none shadow-none',
+                      )}
+                      disabled={isLoading}
+                    />
+                    <span className='text-zinc-400'>-</span>
+                    <Input
+                      type='time'
+                      value={newTimeRange.endTime}
+                      onChange={(e) =>
+                        setNewTimeRange((prev) => ({
+                          ...prev,
+                          endTime: e.target.value,
+                        }))
+                      }
+                      className={cn(
+                        'w-min appearance-none [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none shadow-none',
+                      )}
+                      disabled={isLoading}
+                    />
+
+                    <Button
+                      variant='ghost'
+                      size='icon'
+                      className='text-emerald-600'
+                      onClick={onNewAvailabilityClickHandler}
+                      disabled={isLoading}
+                    >
+                      <Check />
+                    </Button>
+                  </div>
+                )}
 
                 <div className='flex flex-col gap-2 my-4 overflow-y-auto'>
                   {isLoading && (
@@ -153,7 +277,9 @@ export default function ArtistAvailabilitySelect() {
                     </>
                   )}
                   {!isLoading && availabilities.length === 0 && (
-                    <div className='text-sm text-zinc-500'>Nessuna disponibilità.</div>
+                    <div className='text-sm text-zinc-500'>
+                      Nessuna disponibilità. Aggiungine una per vederla nella lista.
+                    </div>
                   )}
                   {!isLoading &&
                     availabilities.length > 0 &&
@@ -176,7 +302,7 @@ export default function ArtistAvailabilitySelect() {
                               size='icon'
                               className='text-emerald-600'
                               onClick={() => onAvailabilityClickHandler(av)}
-                              disabled={isLoading}
+                              disabled={loading || isLoading}
                             >
                               <Check />
                             </Button>

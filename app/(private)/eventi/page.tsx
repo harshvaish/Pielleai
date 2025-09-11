@@ -82,8 +82,9 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
         <h1 className='text-xl md:text-2xl font-bold'>Eventi</h1>
         <div className='flex items-center gap-2'>
           {isAdmin && <ExportButton filters={filters} />}
-          {isAdmin && (
+          {(isAdmin || isVenueManager) && (
             <CreateButton
+              userRole={user.role}
               artists={artists}
               venues={venues}
               moCoordinators={moCoordinators}

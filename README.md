@@ -68,7 +68,6 @@ TODO
 - crone job to make the events and availabilities expired
 - get stuff to fill edit and create forms client side and not in the page server side -> create endpoints
 - search input (first 5 suggestions based on venues or artits numbers then on seach)
-- create and edit dialog close only with buttons
 - refactor server action with getSession (and role check)
 - refactor avatar upload input
 - refactor email in params on reset pwd, use local storage instead

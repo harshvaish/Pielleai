@@ -9,18 +9,27 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
-import { ArtistSelectData, MoCoordinator, VenueSelectData } from '@/lib/types';
+import { ArtistSelectData, MoCoordinator, UserRole, VenueSelectData } from '@/lib/types';
 import { useState } from 'react';
 import CreateEventForm from './CreateEventForm';
+import CreateEventRequestForm from './CreateEventRequestForm';
 
 type CreateButtonProps = {
+  userRole: UserRole;
   artists: ArtistSelectData[];
   venues: VenueSelectData[];
   moCoordinators: MoCoordinator[];
 };
 
-export default function CreateButton({ artists, venues, moCoordinators }: CreateButtonProps) {
+export default function CreateButton({
+  userRole,
+  artists,
+  venues,
+  moCoordinators,
+}: CreateButtonProps) {
   const [open, setOpen] = useState<boolean>(false);
+
+  const isAdmin = userRole === 'admin';
 
   return (
     <Dialog
@@ -45,12 +54,20 @@ export default function CreateButton({ artists, venues, moCoordinators }: Create
           Inserisci tutti i dati necessari alla creazione dell&apos;evento.
         </DialogDescription>
 
-        <CreateEventForm
-          artists={artists}
-          venues={venues}
-          moCoordinators={moCoordinators}
-          closeDialog={() => setOpen(false)}
-        />
+        {isAdmin ? (
+          <CreateEventForm
+            artists={artists}
+            venues={venues}
+            moCoordinators={moCoordinators}
+            closeDialog={() => setOpen(false)}
+          />
+        ) : (
+          <CreateEventRequestForm
+            artists={artists}
+            venues={venues}
+            closeDialog={() => setOpen(false)}
+          />
+        )}
       </DialogContent>
     </Dialog>
   );

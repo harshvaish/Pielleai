@@ -174,3 +174,16 @@ export const eventFormSchema = z.object({
 });
 
 export type EventFormSchema = z.infer<typeof eventFormSchema>;
+
+export const eventRequestFormSchema = eventFormSchema.pick({
+  artistId: true,
+  artistManagerProfileId: true,
+
+  availability: true,
+
+  venueId: true,
+  tourManagerEmail: true,
+  administrationEmail: true,
+});
+
+export type EventRequestFormSchema = z.infer<typeof eventRequestFormSchema>;

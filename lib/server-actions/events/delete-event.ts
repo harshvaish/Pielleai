@@ -18,7 +18,7 @@ export async function deleteEvent(eventId: number): Promise<ServerActionResponse
       headers: headersList,
     });
 
-    if (!session?.user || session.user.role != 'admin') {
+    if (!session?.user) {
       console.error('[deleteEvent] - Error: unauthorized', session);
       throw new AppError('Non sei autorizzato.');
     }

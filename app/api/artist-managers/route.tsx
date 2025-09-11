@@ -12,7 +12,7 @@ export async function GET(
       headers: request.headers,
     });
 
-    if (!session || session.user.role !== 'admin') {
+    if (!session) {
       return NextResponse.json(
         { success: false, message: 'Non sei autorizzato.', data: null },
         { status: 401 },
