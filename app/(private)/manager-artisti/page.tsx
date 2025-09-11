@@ -22,7 +22,6 @@ import { getPaginatedArtistManagersCached } from '@/lib/cache/artist-managers';
 import { notFound, redirect } from 'next/navigation';
 import { artistManagersTableFiltersSchema } from '@/lib/validation/filters/artist-managers-table-filters-schema';
 import getSession from '@/lib/data/auth/get-session';
-import { getUserProfileIdCached } from '@/lib/cache/users';
 
 type ArtistManagersPageProps = {
   searchParams?: Promise<{
@@ -39,14 +38,16 @@ export const dynamic = 'force-dynamic';
 
 export default async function ArtistManagersPage({ searchParams }: ArtistManagersPageProps) {
   const { session, user } = await getSession();
-  if (!session || !user) redirect('/accedi');
+
+  if (!session || !user || user.banned) {
+    redirect('/logout');
+  }
 
   if (!hasRole(user, ['admin'])) {
     notFound();
   }
 
-  const profileId = await getUserProfileIdCached(user.id);
-  const target = resolveNextPath({ user, hasProfile: Boolean(profileId) });
+  const target = resolveNextPath({ user, hasProfile: Boolean(user.profileId) });
   if (target) redirect(target);
 
   const sp = await searchParams;

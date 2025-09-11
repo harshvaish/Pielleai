@@ -9,7 +9,10 @@ export const dynamic = 'force-dynamic';
 
 export default async function CalendarPage() {
   const { session, user } = await getSession();
-  if (!session || !user) redirect('/accedi');
+
+  if (!session || !user || user.banned) {
+    redirect('/logout');
+  }
 
   if (!hasRole(user, ['artist-manager'])) {
     notFound();

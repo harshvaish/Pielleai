@@ -7,13 +7,15 @@ import ArtistManagerProfileForm from './_components/ArtistManagerProfileForm';
 import getSession from '@/lib/data/auth/get-session';
 import VenueManagerProfileForm from './_components/VenueManagerProfileForm';
 import { resolveNextPath } from '@/lib/utils';
-import { getUserProfileIdCached } from '@/lib/cache/users';
 
 export default async function CompleteProfilePage() {
   const { session, user } = await getSession(true);
-  if (!session || !user) redirect('/accedi');
-  const profileId = await getUserProfileIdCached(user.id);
-  const target = resolveNextPath({ user, hasProfile: Boolean(profileId) });
+
+  if (!session || !user || user.banned) {
+    redirect('/logout');
+  }
+
+  const target = resolveNextPath({ user, hasProfile: Boolean(user.profileId) });
   if (target && target !== '/completa-profilo') redirect(target);
 
   const [languages, countries] = await Promise.all([getLanguagesCached(), getCountriesCached()]);

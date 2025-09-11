@@ -34,16 +34,19 @@ export const dynamic = 'force-dynamic';
 
 export default async function ArtistDetailPage({ params }: ArtistDetailPageProps) {
   const { session, user } = await getSession();
-  if (!session || !user) redirect('/accedi');
+
+  if (!session || !user || user.banned) {
+    redirect('/logout');
+  }
 
   if (!hasRole(user, ['admin', 'artist-manager', 'venue-manager'])) {
     notFound();
   }
 
-  const isAdmin = user.role === 'admin';
-
   const target = resolveNextPath({ user, hasProfile: Boolean(user.profileId) });
   if (target) redirect(target);
+
+  const isAdmin = user.role === 'admin';
 
   const p = await params;
   const { slug } = p;

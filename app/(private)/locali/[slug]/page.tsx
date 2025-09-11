@@ -24,7 +24,10 @@ export const dynamic = 'force-dynamic';
 
 export default async function VenueDetailPage({ params }: VenueDetailPageProps) {
   const { session, user } = await getSession();
-  if (!session || !user) redirect('/accedi');
+
+  if (!session || !user || user.banned) {
+    redirect('/logout');
+  }
 
   if (!hasRole(user, ['admin', 'venue-manager'])) {
     notFound();

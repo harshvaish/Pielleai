@@ -179,6 +179,8 @@ export function getBetterAuthErrorMessage(code: string): string {
       return 'Non sei autorizzato a eseguire questa azione.';
     case 'FORBIDDEN':
       return 'Accesso negato.';
+    case 'BANNED_USER':
+      return "Accesso disabilitato. Se ritieni che si tratti di un errore, contatta l'assistenza.";
     case 'ACCOUNT_DISABLED':
       return 'Questo account è stato disabilitato.';
     case 'RATE_LIMIT_EXCEEDED':

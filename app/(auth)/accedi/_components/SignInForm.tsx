@@ -9,10 +9,12 @@ import Link from 'next/link';
 import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { signInSchema, SignInSchema } from '@/lib/validation/auth/signInSchema';
-import { signIn } from '@/lib/auth-client';
-import { getBetterAuthErrorMessage } from '@/lib/utils';
+import { authClient, signIn } from '@/lib/auth-client';
+import { getBetterAuthErrorMessage, resolveNextPath } from '@/lib/utils';
+import { useRouter } from 'next/navigation';
 
 export default function SignInForm() {
+  const router = useRouter();
   const methods = useForm<SignInSchema>({
     resolver: zodResolver(signInSchema),
     defaultValues: {
@@ -33,8 +35,24 @@ export default function SignInForm() {
     await signIn.email({
       email,
       password,
-      callbackURL: '/eventi',
       fetchOptions: {
+        onSuccess: async () => {
+          const { data: session, error } = await authClient.getSession();
+
+          if (!session || error) {
+            toast.error('Impossibile effettuare il login, riprova più tardi.');
+            return;
+          }
+
+          const redirect = resolveNextPath({
+            user: session.user,
+            hasProfile: Boolean(session.user.profileId),
+          });
+
+          if (redirect) router.replace(redirect);
+
+          router.replace('/eventi');
+        },
         onError: (ctx) => {
           const code = ctx?.error?.code ?? 'UNKNOWN_ERROR';
           const message = getBetterAuthErrorMessage(code);

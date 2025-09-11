@@ -1,10 +1,8 @@
 import Header from '../_components/Header';
-import Image from 'next/image';
-import { Fragment } from 'react';
-import Link from 'next/link';
 import { NAVBAR_LINKS } from '@/lib/constants';
 import getSession from '@/lib/data/auth/get-session';
 import { redirect } from 'next/navigation';
+import NavbarLink from '../_components/NavbarLink';
 
 export default async function PrivateLayout({
   children,
@@ -12,7 +10,10 @@ export default async function PrivateLayout({
   children: React.ReactNode;
 }>) {
   const { session, user } = await getSession();
-  if (!session || !user) redirect('/accedi');
+
+  if (!session || !user || user.banned) {
+    redirect('/logout');
+  }
 
   return (
     <>
@@ -25,23 +26,10 @@ export default async function PrivateLayout({
 
             return (
               visible && (
-                <Fragment key={link.label}>
-                  <Link
-                    href={link.href}
-                    prefetch={false}
-                    className='flex items-center gap-2 rounded-xl p-2 hover:bg-zinc-100'
-                  >
-                    <Image
-                      className='w-4 h-4'
-                      src={link.iconSrc}
-                      alt={link.iconAlt}
-                      width={16}
-                      height={16}
-                      loading='lazy'
-                    />
-                    {link.label}
-                  </Link>
-                </Fragment>
+                <NavbarLink
+                  key={link.label}
+                  link={link}
+                />
               )
             );
           })}

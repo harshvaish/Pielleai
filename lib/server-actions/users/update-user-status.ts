@@ -37,10 +37,13 @@ export async function updateUserStatus(
       throw new AppError('Dati inviati non corretti.');
     }
 
+    const banned = newStatus === 'disabled' ? true : false;
+
     const updateResult = await database
       .update(users)
       .set({
         status: newStatus,
+        banned: banned,
         updatedAt: new Date(),
       })
       .where(eq(users.id, userId))

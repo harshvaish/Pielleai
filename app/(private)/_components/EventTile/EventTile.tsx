@@ -115,7 +115,7 @@ export default function EventTile({
               height={16}
               loading='lazy'
             />
-            <span className='text-xs text-zinc-600'>Locale</span>
+            <span className='text-xs text-zinc-600'>Location</span>
           </div>
           <VenuesBadge venues={[event.venue]} />
         </div>
@@ -259,7 +259,7 @@ export default function EventTile({
                     height={16}
                     loading='lazy'
                   />
-                  <span className='text-xs text-zinc-600'>Locale</span>
+                  <span className='text-xs text-zinc-600'>Location</span>
                 </div>
                 <VenuesBadge venues={[event.venue]} />
               </div>

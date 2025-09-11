@@ -41,7 +41,10 @@ type ArtistsPageProps = {
 
 export default async function ArtistsPage({ searchParams }: ArtistsPageProps) {
   const { session, user } = await getSession();
-  if (!session || !user) redirect('/accedi');
+
+  if (!session || !user || user.banned) {
+    redirect('/logout');
+  }
 
   if (!hasRole(user, ['admin', 'artist-manager', 'venue-manager'])) {
     notFound();
@@ -51,12 +54,14 @@ export default async function ArtistsPage({ searchParams }: ArtistsPageProps) {
   if (target) redirect(target);
 
   const isAdmin = user.role === 'admin';
+  const isVenueManager = user.role === 'venue-manager';
+
   const sp = await searchParams;
   const currentPage = Number(sp?.page ?? '1');
 
   const managersFilter = isAdmin
     ? splitCsv(sp?.manager)
-    : user.role === 'venue-manager'
+    : isVenueManager
       ? []
       : [user.profileId!.toString()];
 

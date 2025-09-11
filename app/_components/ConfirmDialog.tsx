@@ -1,7 +1,19 @@
 'use client';
 
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogTitle } from '@/components/ui/dialog';
-import { Drawer, DrawerContent, DrawerDescription, DrawerFooter, DrawerTitle } from '@/components/ui/drawer';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import {
+  Drawer,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerTitle,
+} from '@/components/ui/drawer';
 import { Button } from '@/components/ui/button';
 import { useMediaQuery } from '@/lib/hooks/useMediaQuery';
 import { ReactNode } from 'react';
@@ -20,7 +32,16 @@ type ConfirmDialogProps = {
   confirmLabel?: string;
   cancelLabel?: string;
   loadingLabel?: string;
-  confirmButtonVariant?: 'link' | 'default' | 'success' | 'destructive' | 'outline' | 'secondary' | 'ghost' | null | undefined;
+  confirmButtonVariant?:
+    | 'link'
+    | 'default'
+    | 'success'
+    | 'destructive'
+    | 'outline'
+    | 'secondary'
+    | 'ghost'
+    | null
+    | undefined;
   children?: ReactNode;
 };
 
@@ -52,9 +73,16 @@ export default function ConfirmDialog({
       open={open}
       onOpenChange={onOpenChange}
     >
-      <DialogContent className='grid grid-rows-[min-content_min-content_1fr] overflow-hidden'>
+      <DialogContent
+        onInteractOutside={(e) => {
+          e.preventDefault();
+        }}
+        className='grid grid-rows-[min-content_min-content_1fr] overflow-hidden'
+      >
         <DialogTitle className={isTitleHidden ? 'hidden' : ''}>{title}</DialogTitle>
-        <DialogDescription className={isDescriptionHidden ? 'hidden' : ''}>{description}</DialogDescription>
+        <DialogDescription className={isDescriptionHidden ? 'hidden' : ''}>
+          {description}
+        </DialogDescription>
         {children ? (
           <div className='h-full overflow-y-auto'>{children}</div>
         ) : (
@@ -87,7 +115,9 @@ export default function ConfirmDialog({
       <DrawerContent>
         <div className='h-full grid grid-rows-[min-content_min-content_1fr] py-8 px-4 overflow-hidden'>
           <DrawerTitle className={cn('mb-2', isTitleHidden && 'hidden')}>{title}</DrawerTitle>
-          <DrawerDescription className={cn('mb-6', isDescriptionHidden && 'hidden')}>{description}</DrawerDescription>
+          <DrawerDescription className={cn('mb-6', isDescriptionHidden && 'hidden')}>
+            {description}
+          </DrawerDescription>
           {children ? (
             <div className='h-full overflow-y-auto'>{children}</div>
           ) : (

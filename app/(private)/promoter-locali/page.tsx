@@ -22,7 +22,6 @@ import { getVenuesCached } from '@/lib/cache/venues';
 import { notFound, redirect } from 'next/navigation';
 import { venueManagersTableFiltersSchema } from '@/lib/validation/filters/venue-managers-table-filters-schema';
 import getSession from '@/lib/data/auth/get-session';
-import { getUserProfileIdCached } from '@/lib/cache/users';
 
 type VenueManagersPageProps = {
   searchParams?: Promise<{
@@ -39,18 +38,19 @@ export const dynamic = 'force-dynamic';
 
 export default async function VenueManagersPage({ searchParams }: VenueManagersPageProps) {
   const { session, user } = await getSession();
-  if (!session || !user) redirect('/accedi');
+
+  if (!session || !user || user.banned) {
+    redirect('/logout');
+  }
 
   if (!hasRole(user, ['admin'])) {
     notFound();
   }
 
-  const profileId = await getUserProfileIdCached(user.id);
-  const target = resolveNextPath({ user, hasProfile: Boolean(profileId) });
+  const target = resolveNextPath({ user, hasProfile: Boolean(user.profileId) });
   if (target) redirect(target);
 
   const sp = await searchParams;
-
   const currentPage = Number(sp?.page ?? '1');
 
   const filters: VenueManagersTableFilters = {

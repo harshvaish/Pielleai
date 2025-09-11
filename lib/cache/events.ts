@@ -3,6 +3,7 @@ import { hashKey } from '@/lib/utils';
 import { unstable_cache } from 'next/cache';
 import { getEvents } from '@/lib/data/events/get-events';
 import { User } from '../auth';
+import { getEventsToApprove } from '../data/events/get-events-to-approve';
 
 export async function getEventsCached(user: User, filters: EventsTableFilters) {
   const key = [
@@ -24,3 +25,9 @@ export async function getEventsCached(user: User, filters: EventsTableFilters) {
   });
   return fn(user, filters);
 }
+
+export const getEventsToApproveCached = unstable_cache(
+  async () => getEventsToApprove(),
+  ['events-to-approve'],
+  { revalidate: 30, tags: ['events-to-approve'] }, // 30s
+);

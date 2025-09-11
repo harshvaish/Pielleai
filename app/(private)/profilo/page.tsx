@@ -13,7 +13,6 @@ import { getLanguagesCached } from '@/lib/cache/languages';
 import { getCountriesCached } from '@/lib/cache/countries';
 import { getArtistManagerCached } from '@/lib/cache/artist-managers';
 import getSession from '@/lib/data/auth/get-session';
-import { getUserProfileIdCached } from '@/lib/cache/users';
 import { getVenueManagerCached } from '@/lib/cache/venue-managers';
 import { ArtistListData, ArtistManagerData, VenueListData, VenueManagerData } from '@/lib/types';
 import ManagedArtistsTab from '../manager-artisti/[uid]/_components/Tabs/ManagedArtistsTab';
@@ -26,17 +25,19 @@ import ChangePasswordTile from './_components/action-tiles/ChangePaswordTile';
 
 export default async function ProfilePage() {
   const { session, user } = await getSession();
-  if (!session || !user) redirect('/accedi');
+
+  if (!session || !user || user.banned) {
+    redirect('/logout');
+  }
 
   if (!hasRole(user, ['artist-manager', 'venue-manager'])) {
     notFound();
   }
 
-  const isArtistManager = user.role === 'artist-manager';
-
-  const profileId = await getUserProfileIdCached(user.id);
-  const target = resolveNextPath({ user, hasProfile: Boolean(profileId) });
+  const target = resolveNextPath({ user, hasProfile: Boolean(user.profileId) });
   if (target) redirect(target);
+
+  const isArtistManager = user.role === 'artist-manager';
 
   const [userData, languages, countries] = await Promise.all([
     isArtistManager ? getArtistManagerCached(user.id) : getVenueManagerCached(user.id),

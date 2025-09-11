@@ -22,20 +22,21 @@ import { getArtistManagerCached } from '@/lib/cache/artist-managers';
 import ManagedArtistsTab from './_components/Tabs/ManagedArtistsTab';
 import PersonalDataTab from './_components/Tabs/PersonalDataTab';
 import getSession from '@/lib/data/auth/get-session';
-import { getUserProfileIdCached } from '@/lib/cache/users';
 
 type ArtistManagerDetailPageProps = { params: Promise<{ uid: string }> };
 
 export default async function ArtistManagerDetailPage({ params }: ArtistManagerDetailPageProps) {
   const { session, user } = await getSession();
-  if (!session || !user) redirect('/accedi');
+
+  if (!session || !user || user.banned) {
+    redirect('/logout');
+  }
 
   if (!hasRole(user, ['admin'])) {
     notFound();
   }
 
-  const profileId = await getUserProfileIdCached(user.id);
-  const target = resolveNextPath({ user, hasProfile: Boolean(profileId) });
+  const target = resolveNextPath({ user, hasProfile: Boolean(user.profileId) });
   if (target) redirect(target);
 
   const p = await params;

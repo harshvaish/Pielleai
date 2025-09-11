@@ -41,7 +41,10 @@ export const dynamic = 'force-dynamic';
 
 export default async function VenuesPage({ searchParams }: VenuesPageProps) {
   const { session, user } = await getSession();
-  if (!session || !user) redirect('/accedi');
+
+  if (!session || !user || user.banned) {
+    redirect('/logout');
+  }
 
   if (!hasRole(user, ['admin', 'venue-manager'])) {
     notFound();
@@ -51,8 +54,8 @@ export default async function VenuesPage({ searchParams }: VenuesPageProps) {
   if (target) redirect(target);
 
   const isAdmin = user.role === 'admin';
-  const sp = await searchParams;
 
+  const sp = await searchParams;
   const currentPage = Number(sp?.page ?? '1');
 
   const filters: VenuesTableFilters = {

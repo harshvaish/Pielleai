@@ -10,6 +10,7 @@ import {
 } from '@/components/ui/accordion';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
+import Image from 'next/image';
 
 export default function StepThree() {
   const [openItem, setOpenItem] = useState<string>('tiktok');
@@ -33,11 +34,20 @@ export default function StepThree() {
           value='tiktok'
           className={cn(
             'rounded-2xl overflow-hidden',
-            openItem === 'tiktok' ? 'border' : 'border-none'
+            openItem === 'tiktok' ? 'border' : 'border-none',
           )}
         >
           <AccordionTrigger className='text-lg font-medium bg-zinc-50 p-6'>
-            TikTok
+            <div className='flex items-center gap-4'>
+              <Image
+                className='w-6 h-6'
+                src='/images/socials/tiktok.svg'
+                alt='logo tiktok'
+                width={28}
+                height={28}
+              />
+              TikTok
+            </div>
           </AccordionTrigger>
           <AccordionContent className='flex flex-col gap-4 p-6'>
             <div className='flex flex-col'>
@@ -51,9 +61,7 @@ export default function StepThree() {
                 id='tiktokUrl'
                 {...register('tiktokUrl')}
                 placeholder='https://www.tiktok.com/...'
-                className={
-                  errors.tiktokUrl ? 'border-destructive text-destructive' : ''
-                }
+                className={errors.tiktokUrl ? 'border-destructive text-destructive' : ''}
               />
               {errors.tiktokUrl && (
                 <p className='text-xs text-destructive mt-2'>
@@ -72,11 +80,7 @@ export default function StepThree() {
                 id='tiktokUsername'
                 {...register('tiktokUsername')}
                 placeholder='Shiva'
-                className={
-                  errors.tiktokUsername
-                    ? 'border-destructive text-destructive'
-                    : ''
-                }
+                className={errors.tiktokUsername ? 'border-destructive text-destructive' : ''}
               />
               {errors.tiktokUsername && (
                 <p className='text-xs text-destructive mt-2'>
@@ -100,11 +104,7 @@ export default function StepThree() {
                 type='number'
                 min={0}
                 step={1}
-                className={
-                  errors.tiktokFollowers
-                    ? 'border-destructive text-destructive'
-                    : ''
-                }
+                className={errors.tiktokFollowers ? 'border-destructive text-destructive' : ''}
               />
               {errors.tiktokFollowers && (
                 <p className='text-xs text-destructive mt-2'>
@@ -127,8 +127,7 @@ export default function StepThree() {
                     id='tiktokCreatedAt'
                     className={cn(
                       'block w-full',
-                      errors.tiktokCreatedAt &&
-                        'border-destructive text-destructive'
+                      errors.tiktokCreatedAt && 'border-destructive text-destructive',
                     )}
                     type='date'
                     {...field}
@@ -148,11 +147,20 @@ export default function StepThree() {
           value='facebook'
           className={cn(
             'rounded-2xl overflow-hidden',
-            openItem === 'facebook' ? 'border' : 'border-none'
+            openItem === 'facebook' ? 'border' : 'border-none',
           )}
         >
           <AccordionTrigger className='text-lg font-medium bg-zinc-50 p-6'>
-            Facebook
+            <div className='flex items-center gap-4'>
+              <Image
+                className='w-6 h-6'
+                src='/images/socials/facebook.svg'
+                alt='logo facebook'
+                width={28}
+                height={28}
+              />
+              Facebook
+            </div>
           </AccordionTrigger>
           <AccordionContent className='flex flex-col gap-4 p-6'>
             <div className='flex flex-col'>
@@ -166,11 +174,7 @@ export default function StepThree() {
                 id='facebookUrl'
                 {...register('facebookUrl')}
                 placeholder='https://www.facebook.com/...'
-                className={
-                  errors.facebookUrl
-                    ? 'border-destructive text-destructive'
-                    : ''
-                }
+                className={errors.facebookUrl ? 'border-destructive text-destructive' : ''}
               />
               {errors.facebookUrl && (
                 <p className='text-xs text-destructive mt-2'>
@@ -189,11 +193,7 @@ export default function StepThree() {
                 id='facebookUsername'
                 {...register('facebookUsername')}
                 placeholder='Shiva'
-                className={
-                  errors.facebookUsername
-                    ? 'border-destructive text-destructive'
-                    : ''
-                }
+                className={errors.facebookUsername ? 'border-destructive text-destructive' : ''}
               />
               {errors.facebookUsername && (
                 <p className='text-xs text-destructive mt-2'>
@@ -215,11 +215,7 @@ export default function StepThree() {
                 type='number'
                 min={0}
                 step={1}
-                className={
-                  errors.facebookFollowers
-                    ? 'border-destructive text-destructive'
-                    : ''
-                }
+                className={errors.facebookFollowers ? 'border-destructive text-destructive' : ''}
               />
               {errors.facebookFollowers && (
                 <p className='text-xs text-destructive mt-2'>
@@ -242,8 +238,7 @@ export default function StepThree() {
                     id='facebookCreatedAt'
                     className={cn(
                       'block w-full',
-                      errors.facebookCreatedAt &&
-                        'border-destructive text-destructive'
+                      errors.facebookCreatedAt && 'border-destructive text-destructive',
                     )}
                     type='date'
                     {...field}
@@ -263,11 +258,20 @@ export default function StepThree() {
           value='instagram'
           className={cn(
             'rounded-2xl overflow-hidden',
-            openItem === 'instagram' ? 'border' : 'border-none'
+            openItem === 'instagram' ? 'border' : 'border-none',
           )}
         >
           <AccordionTrigger className='text-lg font-medium bg-zinc-50 p-6'>
-            Instagram
+            <div className='flex items-center gap-4'>
+              <Image
+                className='w-6 h-6'
+                src='/images/socials/instagram.svg'
+                alt='logo instagram'
+                width={28}
+                height={28}
+              />
+              Instagram
+            </div>
           </AccordionTrigger>
           <AccordionContent className='flex flex-col gap-4 p-6'>
             <div className='flex flex-col'>
@@ -281,11 +285,7 @@ export default function StepThree() {
                 id='instagramUrl'
                 {...register('instagramUrl')}
                 placeholder='https://www.instagram.com/...'
-                className={
-                  errors.instagramUrl
-                    ? 'border-destructive text-destructive'
-                    : ''
-                }
+                className={errors.instagramUrl ? 'border-destructive text-destructive' : ''}
               />
               {errors.instagramUrl && (
                 <p className='text-xs text-destructive mt-2'>
@@ -304,11 +304,7 @@ export default function StepThree() {
                 id='instagramUsername'
                 {...register('instagramUsername')}
                 placeholder='Shiva'
-                className={
-                  errors.instagramUsername
-                    ? 'border-destructive text-destructive'
-                    : ''
-                }
+                className={errors.instagramUsername ? 'border-destructive text-destructive' : ''}
               />
               {errors.instagramUsername && (
                 <p className='text-xs text-destructive mt-2'>
@@ -330,11 +326,7 @@ export default function StepThree() {
                 type='number'
                 min={0}
                 step={1}
-                className={
-                  errors.instagramFollowers
-                    ? 'border-destructive text-destructive'
-                    : ''
-                }
+                className={errors.instagramFollowers ? 'border-destructive text-destructive' : ''}
               />
               {errors.instagramFollowers && (
                 <p className='text-xs text-destructive mt-2'>
@@ -357,8 +349,7 @@ export default function StepThree() {
                     id='instagramCreatedAt'
                     className={cn(
                       'block w-full',
-                      errors.instagramCreatedAt &&
-                        'border-destructive text-destructive'
+                      errors.instagramCreatedAt && 'border-destructive text-destructive',
                     )}
                     type='date'
                     {...field}
@@ -376,13 +367,19 @@ export default function StepThree() {
 
         <AccordionItem
           value='x'
-          className={cn(
-            'rounded-2xl overflow-hidden',
-            openItem === 'x' ? 'border' : 'border-none'
-          )}
+          className={cn('rounded-2xl overflow-hidden', openItem === 'x' ? 'border' : 'border-none')}
         >
           <AccordionTrigger className='text-lg font-medium bg-zinc-50 p-6'>
-            X
+            <div className='flex items-center gap-4'>
+              <Image
+                className='w-6 h-6'
+                src='/images/socials/x.svg'
+                alt='logo x'
+                width={28}
+                height={28}
+              />
+              X / Twitter
+            </div>
           </AccordionTrigger>
           <AccordionContent className='flex flex-col gap-4 p-6'>
             <div className='flex flex-col'>
@@ -396,14 +393,10 @@ export default function StepThree() {
                 id='xUrl'
                 {...register('xUrl')}
                 placeholder='https://www.x.com/...'
-                className={
-                  errors.xUrl ? 'border-destructive text-destructive' : ''
-                }
+                className={errors.xUrl ? 'border-destructive text-destructive' : ''}
               />
               {errors.xUrl && (
-                <p className='text-xs text-destructive mt-2'>
-                  {errors.xUrl.message as string}
-                </p>
+                <p className='text-xs text-destructive mt-2'>{errors.xUrl.message as string}</p>
               )}
             </div>
             <div className='flex flex-col'>
@@ -417,9 +410,7 @@ export default function StepThree() {
                 id='xUsername'
                 {...register('xUsername')}
                 placeholder='Shiva'
-                className={
-                  errors.xUsername ? 'border-destructive text-destructive' : ''
-                }
+                className={errors.xUsername ? 'border-destructive text-destructive' : ''}
               />
               {errors.xUsername && (
                 <p className='text-xs text-destructive mt-2'>
@@ -441,9 +432,7 @@ export default function StepThree() {
                 type='number'
                 min={0}
                 step={1}
-                className={
-                  errors.xFollowers ? 'border-destructive text-destructive' : ''
-                }
+                className={errors.xFollowers ? 'border-destructive text-destructive' : ''}
               />
               {errors.xFollowers && (
                 <p className='text-xs text-destructive mt-2'>
@@ -466,7 +455,7 @@ export default function StepThree() {
                     id='xCreatedAt'
                     className={cn(
                       'block w-full',
-                      errors.xCreatedAt && 'border-destructive text-destructive'
+                      errors.xCreatedAt && 'border-destructive text-destructive',
                     )}
                     type='date'
                     {...field}

@@ -102,7 +102,7 @@ export default function EventForm({ artists, venues, moCoordinators }: EventForm
 
       <div className='grid sm:grid-cols-2 gap-4'>
         <div className='flex flex-col'>
-          <div className='text-sm font-semibold mb-2'>Locale</div>
+          <div className='text-sm font-semibold mb-2'>Location</div>
           <VenueSelect venues={venues} />
           {errors.venueId && (
             <p className='text-xs text-destructive mt-2'>{errors.venueId.message as string}</p>
@@ -163,11 +163,11 @@ export default function EventForm({ artists, venues, moCoordinators }: EventForm
           </div>
 
           <div className='flex flex-col'>
-            <div className='text-sm font-semibold mb-2'>Amministrazione</div>
+            <div className='text-sm font-semibold mb-2'>Assistenza</div>
             <Input
               type='email'
               {...register('administrationEmail')}
-              placeholder='amministrazione@eaglebooking.it'
+              placeholder='info@eaglebooking.it'
               className={errors.administrationEmail ? 'border-destructive text-destructive' : ''}
             />
             {errors.administrationEmail && (
@@ -178,7 +178,7 @@ export default function EventForm({ artists, venues, moCoordinators }: EventForm
           </div>
 
           <div className='flex flex-col'>
-            <div className='text-sm font-semibold mb-2'>Consulente paghe e contributi</div>
+            <div className='text-sm font-semibold mb-2'>Ingaggi</div>
             <Input
               type='email'
               {...register('payrollConsultantEmail')}

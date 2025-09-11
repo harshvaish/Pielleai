@@ -4,16 +4,16 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
 import { ChevronDown, Menu, SquareArrowOutUpRight, UserRound } from 'lucide-react';
-import { Fragment, useState } from 'react';
+import { useState } from 'react';
 import ChangePasswordButton from './ChangePassword/ChangePaswordButton';
 import { Separator } from '@/components/ui/separator';
 import SignOutButton from './SignOutButton';
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { NAVBAR_LINKS } from '@/lib/constants';
-import Image from 'next/image';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { User } from '@/lib/auth';
+import NavbarLink from './NavbarLink';
 
 type NavbarButtonProps = {
   user: User;
@@ -21,7 +21,6 @@ type NavbarButtonProps = {
 
 export default function NavbarButton({ user }: NavbarButtonProps) {
   const [isOpen, setIsOpen] = useState<boolean>(false);
-
   const isAdmin = user.role === 'admin';
 
   return (
@@ -45,23 +44,10 @@ export default function NavbarButton({ user }: NavbarButtonProps) {
 
                 return (
                   visible && (
-                    <Fragment key={link.label}>
-                      <Link
-                        href={link.href}
-                        prefetch={false}
-                        className='flex items-center gap-2 text-sm font-medium rounded-xl p-2 hover:bg-zinc-50'
-                      >
-                        <Image
-                          className='w-4 h-4'
-                          src={link.iconSrc}
-                          alt={link.iconAlt}
-                          width={16}
-                          height={16}
-                          loading='lazy'
-                        />
-                        {link.label}
-                      </Link>
-                    </Fragment>
+                    <NavbarLink
+                      key={link.label}
+                      link={link}
+                    />
                   )
                 );
               })}

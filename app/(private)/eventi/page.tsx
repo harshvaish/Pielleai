@@ -32,7 +32,10 @@ export const dynamic = 'force-dynamic';
 
 export default async function EventsPage({ searchParams }: EventsPageProps) {
   const { session, user } = await getSession();
-  if (!session || !user) redirect('/accedi');
+
+  if (!session || !user || user.banned) {
+    redirect('/logout');
+  }
 
   if (!hasRole(user, ['admin', 'artist-manager', 'venue-manager'])) {
     notFound();

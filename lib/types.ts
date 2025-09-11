@@ -587,3 +587,12 @@ export interface CalendarEvent extends RbcEvent {
   start: Date;
   end: Date;
 }
+
+//navbar
+export type NavbarLink = {
+  label: string;
+  href: string;
+  iconSrc: string;
+  iconAlt: string;
+  canAccess: UserRole[];
+};

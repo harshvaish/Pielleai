@@ -2,9 +2,15 @@
 
 import { Controller, useFormContext } from 'react-hook-form';
 import { Input } from '@/components/ui/input';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
+import Image from 'next/image';
 
 export default function StepThree() {
   const [openItem, setOpenItem] = useState<string>('tiktok');
@@ -25,9 +31,23 @@ export default function StepThree() {
       >
         <AccordionItem
           value='tiktok'
-          className={cn('rounded-2xl overflow-hidden', openItem === 'tiktok' ? 'border' : 'border-none')}
+          className={cn(
+            'rounded-2xl overflow-hidden',
+            openItem === 'tiktok' ? 'border' : 'border-none',
+          )}
         >
-          <AccordionTrigger className='text-lg font-medium bg-zinc-50 p-6'>TikTok</AccordionTrigger>
+          <AccordionTrigger className='text-lg font-medium bg-zinc-50 p-6'>
+            <div className='flex items-center gap-4'>
+              <Image
+                className='w-6 h-6'
+                src='/images/socials/tiktok.svg'
+                alt='logo tiktok'
+                width={28}
+                height={28}
+              />
+              TikTok
+            </div>
+          </AccordionTrigger>
           <AccordionContent className='flex flex-col gap-4 p-6'>
             <div className='flex flex-col'>
               <label
@@ -42,7 +62,11 @@ export default function StepThree() {
                 placeholder='https://www.tiktok.com/...'
                 className={errors.tiktokUrl ? 'border-destructive text-destructive' : ''}
               />
-              {errors.tiktokUrl && <p className='text-xs text-destructive mt-2'>{errors.tiktokUrl.message as string}</p>}
+              {errors.tiktokUrl && (
+                <p className='text-xs text-destructive mt-2'>
+                  {errors.tiktokUrl.message as string}
+                </p>
+              )}
             </div>
             <div className='flex flex-col'>
               <label
@@ -57,7 +81,11 @@ export default function StepThree() {
                 placeholder='Shiva'
                 className={errors.tiktokUsername ? 'border-destructive text-destructive' : ''}
               />
-              {errors.tiktokUsername && <p className='text-xs text-destructive mt-2'>{errors.tiktokUsername.message as string}</p>}
+              {errors.tiktokUsername && (
+                <p className='text-xs text-destructive mt-2'>
+                  {errors.tiktokUsername.message as string}
+                </p>
+              )}
             </div>
             <div className='flex flex-col'>
               <label
@@ -77,7 +105,11 @@ export default function StepThree() {
                 step={1}
                 className={errors.tiktokFollowers ? 'border-destructive text-destructive' : ''}
               />
-              {errors.tiktokFollowers && <p className='text-xs text-destructive mt-2'>{errors.tiktokFollowers.message as string}</p>}
+              {errors.tiktokFollowers && (
+                <p className='text-xs text-destructive mt-2'>
+                  {errors.tiktokFollowers.message as string}
+                </p>
+              )}
             </div>
             <div className='flex flex-col'>
               <label
@@ -92,22 +124,43 @@ export default function StepThree() {
                 render={({ field }) => (
                   <Input
                     id='tiktokCreatedAt'
-                    className={cn('block w-full', errors.tiktokCreatedAt && 'border-destructive text-destructive')}
+                    className={cn(
+                      'block w-full',
+                      errors.tiktokCreatedAt && 'border-destructive text-destructive',
+                    )}
                     type='date'
                     {...field}
                   />
                 )}
               />
-              {errors.tiktokCreatedAt && <p className='text-xs text-destructive mt-2'>{errors.tiktokCreatedAt.message as string}</p>}
+              {errors.tiktokCreatedAt && (
+                <p className='text-xs text-destructive mt-2'>
+                  {errors.tiktokCreatedAt.message as string}
+                </p>
+              )}
             </div>
           </AccordionContent>
         </AccordionItem>
 
         <AccordionItem
           value='facebook'
-          className={cn('rounded-2xl overflow-hidden', openItem === 'facebook' ? 'border' : 'border-none')}
+          className={cn(
+            'rounded-2xl overflow-hidden',
+            openItem === 'facebook' ? 'border' : 'border-none',
+          )}
         >
-          <AccordionTrigger className='text-lg font-medium bg-zinc-50 p-6'>Facebook</AccordionTrigger>
+          <AccordionTrigger className='text-lg font-medium bg-zinc-50 p-6'>
+            <div className='flex items-center gap-4'>
+              <Image
+                className='w-6 h-6'
+                src='/images/socials/facebook.svg'
+                alt='logo facebook'
+                width={28}
+                height={28}
+              />
+              Facebook
+            </div>
+          </AccordionTrigger>
           <AccordionContent className='flex flex-col gap-4 p-6'>
             <div className='flex flex-col'>
               <label
@@ -122,7 +175,11 @@ export default function StepThree() {
                 placeholder='https://www.facebook.com/...'
                 className={errors.facebookUrl ? 'border-destructive text-destructive' : ''}
               />
-              {errors.facebookUrl && <p className='text-xs text-destructive mt-2'>{errors.facebookUrl.message as string}</p>}
+              {errors.facebookUrl && (
+                <p className='text-xs text-destructive mt-2'>
+                  {errors.facebookUrl.message as string}
+                </p>
+              )}
             </div>
             <div className='flex flex-col'>
               <label
@@ -137,7 +194,11 @@ export default function StepThree() {
                 placeholder='Shiva'
                 className={errors.facebookUsername ? 'border-destructive text-destructive' : ''}
               />
-              {errors.facebookUsername && <p className='text-xs text-destructive mt-2'>{errors.facebookUsername.message as string}</p>}
+              {errors.facebookUsername && (
+                <p className='text-xs text-destructive mt-2'>
+                  {errors.facebookUsername.message as string}
+                </p>
+              )}
             </div>
             <div className='flex flex-col'>
               <label
@@ -155,7 +216,11 @@ export default function StepThree() {
                 step={1}
                 className={errors.facebookFollowers ? 'border-destructive text-destructive' : ''}
               />
-              {errors.facebookFollowers && <p className='text-xs text-destructive mt-2'>{errors.facebookFollowers.message as string}</p>}
+              {errors.facebookFollowers && (
+                <p className='text-xs text-destructive mt-2'>
+                  {errors.facebookFollowers.message as string}
+                </p>
+              )}
             </div>
             <div className='flex flex-col'>
               <label
@@ -170,22 +235,43 @@ export default function StepThree() {
                 render={({ field }) => (
                   <Input
                     id='facebookCreatedAt'
-                    className={cn('block w-full', errors.facebookCreatedAt && 'border-destructive text-destructive')}
+                    className={cn(
+                      'block w-full',
+                      errors.facebookCreatedAt && 'border-destructive text-destructive',
+                    )}
                     type='date'
                     {...field}
                   />
                 )}
               />
-              {errors.facebookCreatedAt && <p className='text-xs text-destructive mt-2'>{errors.facebookCreatedAt.message as string}</p>}
+              {errors.facebookCreatedAt && (
+                <p className='text-xs text-destructive mt-2'>
+                  {errors.facebookCreatedAt.message as string}
+                </p>
+              )}
             </div>
           </AccordionContent>
         </AccordionItem>
 
         <AccordionItem
           value='instagram'
-          className={cn('rounded-2xl overflow-hidden', openItem === 'instagram' ? 'border' : 'border-none')}
+          className={cn(
+            'rounded-2xl overflow-hidden',
+            openItem === 'instagram' ? 'border' : 'border-none',
+          )}
         >
-          <AccordionTrigger className='text-lg font-medium bg-zinc-50 p-6'>Instagram</AccordionTrigger>
+          <AccordionTrigger className='text-lg font-medium bg-zinc-50 p-6'>
+            <div className='flex items-center gap-4'>
+              <Image
+                className='w-6 h-6'
+                src='/images/socials/instagram.svg'
+                alt='logo instagram'
+                width={28}
+                height={28}
+              />
+              Instagram
+            </div>
+          </AccordionTrigger>
           <AccordionContent className='flex flex-col gap-4 p-6'>
             <div className='flex flex-col'>
               <label
@@ -200,7 +286,11 @@ export default function StepThree() {
                 placeholder='https://www.instagram.com/...'
                 className={errors.instagramUrl ? 'border-destructive text-destructive' : ''}
               />
-              {errors.instagramUrl && <p className='text-xs text-destructive mt-2'>{errors.instagramUrl.message as string}</p>}
+              {errors.instagramUrl && (
+                <p className='text-xs text-destructive mt-2'>
+                  {errors.instagramUrl.message as string}
+                </p>
+              )}
             </div>
             <div className='flex flex-col'>
               <label
@@ -215,7 +305,11 @@ export default function StepThree() {
                 placeholder='Shiva'
                 className={errors.instagramUsername ? 'border-destructive text-destructive' : ''}
               />
-              {errors.instagramUsername && <p className='text-xs text-destructive mt-2'>{errors.instagramUsername.message as string}</p>}
+              {errors.instagramUsername && (
+                <p className='text-xs text-destructive mt-2'>
+                  {errors.instagramUsername.message as string}
+                </p>
+              )}
             </div>
             <div className='flex flex-col'>
               <label
@@ -233,7 +327,11 @@ export default function StepThree() {
                 step={1}
                 className={errors.instagramFollowers ? 'border-destructive text-destructive' : ''}
               />
-              {errors.instagramFollowers && <p className='text-xs text-destructive mt-2'>{errors.instagramFollowers.message as string}</p>}
+              {errors.instagramFollowers && (
+                <p className='text-xs text-destructive mt-2'>
+                  {errors.instagramFollowers.message as string}
+                </p>
+              )}
             </div>
             <div className='flex flex-col'>
               <label
@@ -248,13 +346,20 @@ export default function StepThree() {
                 render={({ field }) => (
                   <Input
                     id='instagramCreatedAt'
-                    className={cn('block w-full', errors.instagramCreatedAt && 'border-destructive text-destructive')}
+                    className={cn(
+                      'block w-full',
+                      errors.instagramCreatedAt && 'border-destructive text-destructive',
+                    )}
                     type='date'
                     {...field}
                   />
                 )}
               />
-              {errors.instagramCreatedAt && <p className='text-xs text-destructive mt-2'>{errors.instagramCreatedAt.message as string}</p>}
+              {errors.instagramCreatedAt && (
+                <p className='text-xs text-destructive mt-2'>
+                  {errors.instagramCreatedAt.message as string}
+                </p>
+              )}
             </div>
           </AccordionContent>
         </AccordionItem>
@@ -263,7 +368,18 @@ export default function StepThree() {
           value='x'
           className={cn('rounded-2xl overflow-hidden', openItem === 'x' ? 'border' : 'border-none')}
         >
-          <AccordionTrigger className='text-lg font-medium bg-zinc-50 p-6'>X</AccordionTrigger>
+          <AccordionTrigger className='text-lg font-medium bg-zinc-50 p-6'>
+            <div className='flex items-center gap-4'>
+              <Image
+                className='w-6 h-6'
+                src='/images/socials/x.svg'
+                alt='logo x'
+                width={28}
+                height={28}
+              />
+              X / Twitter
+            </div>
+          </AccordionTrigger>
           <AccordionContent className='flex flex-col gap-4 p-6'>
             <div className='flex flex-col'>
               <label
@@ -278,7 +394,9 @@ export default function StepThree() {
                 placeholder='https://www.x.com/...'
                 className={errors.xUrl ? 'border-destructive text-destructive' : ''}
               />
-              {errors.xUrl && <p className='text-xs text-destructive mt-2'>{errors.xUrl.message as string}</p>}
+              {errors.xUrl && (
+                <p className='text-xs text-destructive mt-2'>{errors.xUrl.message as string}</p>
+              )}
             </div>
             <div className='flex flex-col'>
               <label
@@ -293,7 +411,11 @@ export default function StepThree() {
                 placeholder='Shiva'
                 className={errors.xUsername ? 'border-destructive text-destructive' : ''}
               />
-              {errors.xUsername && <p className='text-xs text-destructive mt-2'>{errors.xUsername.message as string}</p>}
+              {errors.xUsername && (
+                <p className='text-xs text-destructive mt-2'>
+                  {errors.xUsername.message as string}
+                </p>
+              )}
             </div>
             <div className='flex flex-col'>
               <label
@@ -311,7 +433,11 @@ export default function StepThree() {
                 step={1}
                 className={errors.xFollowers ? 'border-destructive text-destructive' : ''}
               />
-              {errors.xFollowers && <p className='text-xs text-destructive mt-2'>{errors.xFollowers.message as string}</p>}
+              {errors.xFollowers && (
+                <p className='text-xs text-destructive mt-2'>
+                  {errors.xFollowers.message as string}
+                </p>
+              )}
             </div>
             <div className='flex flex-col'>
               <label
@@ -326,13 +452,20 @@ export default function StepThree() {
                 render={({ field }) => (
                   <Input
                     id='xCreatedAt'
-                    className={cn('block w-full', errors.xCreatedAt && 'border-destructive text-destructive')}
+                    className={cn(
+                      'block w-full',
+                      errors.xCreatedAt && 'border-destructive text-destructive',
+                    )}
                     type='date'
                     {...field}
                   />
                 )}
               />
-              {errors.xCreatedAt && <p className='text-xs text-destructive mt-2'>{errors.xCreatedAt.message as string}</p>}
+              {errors.xCreatedAt && (
+                <p className='text-xs text-destructive mt-2'>
+                  {errors.xCreatedAt.message as string}
+                </p>
+              )}
             </div>
           </AccordionContent>
         </AccordionItem>

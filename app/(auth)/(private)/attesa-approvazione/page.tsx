@@ -4,13 +4,15 @@ import getSession from '@/lib/data/auth/get-session';
 import { resolveNextPath } from '@/lib/utils';
 import { redirect } from 'next/navigation';
 import CheckButton from './_components/CheckButton';
-import { getUserProfileIdCached } from '@/lib/cache/users';
 
 export default async function WaitingForApprovalPage() {
   const { session, user } = await getSession(true);
-  if (!session || !user) redirect('/accedi');
-  const profileId = await getUserProfileIdCached(user.id);
-  const target = resolveNextPath({ user, hasProfile: Boolean(profileId) });
+
+  if (!session || !user || user.banned) {
+    redirect('/logout');
+  }
+
+  const target = resolveNextPath({ user, hasProfile: Boolean(user.profileId) });
   if (target && target !== '/attesa-approvazione') redirect(target);
 
   return (

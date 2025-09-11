@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { ChevronRight } from 'lucide-react';
 import EventsCalendar from '../_components/EventsCalendar/EventsCalendar';
 import { getUsersToApproveCached } from '@/lib/cache/users';
-import { getEventsCached } from '@/lib/cache/events';
+
 import { getArtistsCached } from '@/lib/cache/artists';
 import { getMoCoordinatorsCached } from '@/lib/cache/mo-coordinators';
 import { getVenuesCached } from '@/lib/cache/venues';
@@ -13,12 +13,16 @@ import getSession from '@/lib/data/auth/get-session';
 import { notFound, redirect } from 'next/navigation';
 import { hasRole, resolveNextPath } from '@/lib/utils';
 import { getVenueManagerEvents } from '@/lib/data/events/get-venue-manager-events';
+import { getEventsToApproveCached } from '@/lib/cache/events';
 
 export const dynamic = 'force-dynamic';
 
 export default async function DashboardPage() {
   const { session, user } = await getSession();
-  if (!session || !user) redirect('accedi');
+
+  if (!session || !user || user.banned) {
+    redirect('/logout');
+  }
 
   if (!hasRole(user, ['admin', 'venue-manager'])) {
     notFound();
@@ -31,17 +35,7 @@ export default async function DashboardPage() {
 
   const [usersToApprove, eventsToApprove, artists, moCoordinators, venues] = await Promise.all([
     isAdmin ? getUsersToApproveCached() : Promise.resolve([]),
-    isAdmin
-      ? getEventsCached(user, {
-          currentPage: null,
-          status: ['proposed'],
-          artistIds: [],
-          artistManagerIds: [],
-          venueIds: [],
-          startDate: null,
-          endDate: null,
-        })
-      : getVenueManagerEvents(user.profileId!),
+    isAdmin ? getEventsToApproveCached() : getVenueManagerEvents(user.profileId!),
     getArtistsCached(),
     getMoCoordinatorsCached(),
     getVenuesCached(),

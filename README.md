@@ -18,6 +18,9 @@ TRIGGERS
 - These triggers are essential for maintaining consistency between event scheduling and artist availability.
 - Do not remove or alter them without verifying downstream logic.
 
+GOLDEN RULE FOR EVENTS
+Handle update of info data in business logic. The availability and status updates are handled in the database triggers.
+
 INDEXES & EXTENSIONS
 This project requires the following PostgreSQL extensions to be enabled in the extensions schema:
 
@@ -63,16 +66,9 @@ TODO
 - static params on dynamic param routes?
 - send email when pre-confirm or confirm
 - crone job to make the events and availabilities expired
-- add active status on navbar tiles
-- change all the db checks with count where needed
-- login check if user is disabled and redirect to correct path (resend email verify?)
-- move role check on pages after the profile check?
 - get stuff to fill edit and create forms client side and not in the page server side -> create endpoints
 - search input (first 5 suggestions based on venues or artits numbers then on seach)
 - create and edit dialog close only with buttons
 - refactor server action with getSession (and role check)
 - refactor avatar upload input
 - refactor email in params on reset pwd, use local storage instead
-
-- fix ale problems on slack and linear
-- refactor all above and code

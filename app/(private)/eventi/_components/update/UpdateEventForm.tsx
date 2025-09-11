@@ -117,7 +117,7 @@ export default function UpdateEventForm({
           onSubmit={handleSubmit(onSubmit)}
           noValidate={true}
         >
-          <div className='text-2xl font-bold mb-4'>Crea evento</div>
+          <div className='text-2xl font-bold mb-4'>Modifica evento</div>
 
           <EventForm
             artists={artists}
