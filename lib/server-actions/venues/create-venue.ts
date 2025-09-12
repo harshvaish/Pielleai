@@ -18,7 +18,7 @@ export const createVenue = async (data: VenueFormSchema): Promise<ServerActionRe
       headers: headersList,
     });
 
-    if (!session?.user || session.user.role != 'admin') {
+    if (!session?.user) {
       console.error('[createVenue] - Error: unauthorized', session);
       throw new AppError('Non sei autorizzato.');
     }
