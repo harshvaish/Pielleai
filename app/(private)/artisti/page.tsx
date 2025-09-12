@@ -16,7 +16,6 @@ import FiltersButton from './_components/filters/FiltersButton';
 import CreateButton from './_components/create/CreateButton';
 import { hasRole, resolveNextPath, splitCsv } from '@/lib/utils';
 import ArtistsBadge from '../_components/badges/ArtistsBadge';
-import { getPaginatedArtistsCached } from '@/lib/cache/artists';
 import { getLanguagesCached } from '@/lib/cache/languages';
 import { getCountriesCached } from '@/lib/cache/countries';
 import { getArtistManagersCached } from '@/lib/cache/artist-managers';
@@ -25,6 +24,7 @@ import { artistsTableFiltersSchema } from '@/lib/validation/filters/artists-tabl
 import { notFound, redirect } from 'next/navigation';
 import getSession from '@/lib/data/auth/get-session';
 import { getUserProfileIdCached } from '@/lib/cache/users';
+import { getPaginatedArtists } from '@/lib/data/artists/get-paginated-artists';
 
 export const dynamic = 'force-dynamic';
 
@@ -84,7 +84,7 @@ export default async function ArtistsPage({ searchParams }: ArtistsPageProps) {
 
   const [{ data: artists, totalPages }, languages, countries, artistManagers, zones] =
     await Promise.all([
-      getPaginatedArtistsCached(filters),
+      getPaginatedArtists(filters),
       getLanguagesCached(),
       getCountriesCached(),
       getArtistManagersCached(),

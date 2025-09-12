@@ -18,11 +18,11 @@ import { hasRole, resolveNextPath, splitCsv } from '@/lib/utils';
 import { getLanguagesCached } from '@/lib/cache/languages';
 import { getCountriesCached } from '@/lib/cache/countries';
 import { getArtistsCached } from '@/lib/cache/artists';
-import { getPaginatedArtistManagersCached } from '@/lib/cache/artist-managers';
 import { notFound, redirect } from 'next/navigation';
 import { artistManagersTableFiltersSchema } from '@/lib/validation/filters/artist-managers-table-filters-schema';
 import getSession from '@/lib/data/auth/get-session';
 import { getUserProfileIdCached } from '@/lib/cache/users';
+import { getPaginatedArtistManagers } from '@/lib/data/artist-managers/get-paginated-artist-managers';
 
 type ArtistManagersPageProps = {
   searchParams?: Promise<{
@@ -71,7 +71,7 @@ export default async function ArtistManagersPage({ searchParams }: ArtistManager
   }
 
   const [{ data: managers, totalPages }, languages, countries, artists] = await Promise.all([
-    getPaginatedArtistManagersCached(filters),
+    getPaginatedArtistManagers(filters),
     getLanguagesCached(),
     getCountriesCached(),
     getArtistsCached(),

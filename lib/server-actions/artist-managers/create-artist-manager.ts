@@ -183,7 +183,6 @@ export const createArtistManager = async (
         revalidateTag(`artist-manager:${uid}`);
       }
       revalidateTag('artist-managers');
-      revalidateTag('paginated-artist-managers');
 
       const languageInserts = (data.languages || []).map((languageId: number) => ({
         profileId,

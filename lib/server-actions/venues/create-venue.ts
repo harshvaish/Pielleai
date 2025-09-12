@@ -152,7 +152,6 @@ export const createVenue = async (data: VenueFormSchema): Promise<ServerActionRe
     const slug = venueResult[0]?.slug;
     if (slug) revalidateTag(`venue:${slug}`);
     revalidateTag('venues');
-    revalidateTag('paginated-venues');
 
     return {
       success: true,

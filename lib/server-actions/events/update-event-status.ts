@@ -8,7 +8,6 @@ import { EventStatus, ServerActionResponse } from '@/lib/types';
 import { hasRole } from '@/lib/utils';
 import { idValidation } from '@/lib/validation/_general';
 import { and, eq, ne, count } from 'drizzle-orm';
-import { revalidateTag } from 'next/cache';
 import { headers } from 'next/headers';
 import { z } from 'zod/v4';
 
@@ -99,8 +98,6 @@ export async function updateEventStatus(
       .update(events)
       .set({ status: newStatus, previousStatus: events.status, updatedAt: now })
       .where(eq(events.id, eventId));
-
-    revalidateTag('paginated-events');
 
     return { success: true, message: null, data: null };
   } catch (error) {

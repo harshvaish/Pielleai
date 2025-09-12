@@ -4,8 +4,7 @@ import EventTile from '../_components/EventTile/EventTile';
 import Link from 'next/link';
 import { ChevronRight } from 'lucide-react';
 import EventsCalendar from '../_components/EventsCalendar/EventsCalendar';
-import { getUserProfileIdCached, getUsersToApproveCached } from '@/lib/cache/users';
-
+import { getUserProfileIdCached } from '@/lib/cache/users';
 import { getArtistsCached } from '@/lib/cache/artists';
 import { getMoCoordinatorsCached } from '@/lib/cache/mo-coordinators';
 import { getVenuesCached } from '@/lib/cache/venues';
@@ -13,7 +12,8 @@ import getSession from '@/lib/data/auth/get-session';
 import { notFound, redirect } from 'next/navigation';
 import { hasRole, resolveNextPath } from '@/lib/utils';
 import { getVenueManagerEvents } from '@/lib/data/events/get-venue-manager-events';
-import { getEventsToApproveCached } from '@/lib/cache/events';
+import { getUsersToApprove } from '@/lib/data/users/get-users-to-approve';
+import { getEventsToApprove } from '@/lib/data/events/get-events-to-approve';
 
 export const dynamic = 'force-dynamic';
 
@@ -35,8 +35,8 @@ export default async function DashboardPage() {
   const isAdmin = user.role === 'admin';
 
   const [usersToApprove, eventsToApprove, artists, moCoordinators, venues] = await Promise.all([
-    isAdmin ? getUsersToApproveCached() : Promise.resolve([]),
-    isAdmin ? getEventsToApproveCached() : getVenueManagerEvents(profileId!),
+    isAdmin ? getUsersToApprove() : Promise.resolve([]),
+    isAdmin ? getEventsToApprove() : getVenueManagerEvents(profileId!),
     getArtistsCached(),
     getMoCoordinatorsCached(),
     getVenuesCached(),

@@ -152,7 +152,6 @@ export const updateArtistPersonalData = async (
       const slug = updateResult[0]?.slug;
       if (slug) revalidateTag(`artist:${slug}`);
       revalidateTag('artists');
-      revalidateTag('paginated-artists');
 
       if (!areSame(existingLanguageIds, validation.data.languages)) {
         await tx.delete(artistLanguages).where(eq(artistLanguages.artistId, artistId));

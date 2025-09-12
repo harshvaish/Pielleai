@@ -208,7 +208,6 @@ export const createArtist = async (data: ArtistFormSchema): Promise<ServerAction
       const slug = artistResult[0]?.slug;
       if (slug) revalidateTag(`artist:${slug}`);
       revalidateTag('artists');
-      revalidateTag('paginated-artists');
 
       const languageInserts = (data.languages || []).map((languageId: number) => ({
         artistId: newArtistId,

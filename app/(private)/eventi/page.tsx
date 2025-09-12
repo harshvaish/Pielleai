@@ -6,7 +6,6 @@ import FiltersButton from './_components/filters/FiltersButton';
 import { EventsTableFilters, EventStatus } from '@/lib/types';
 import DatesFilterButton from './_components/filters/DatesFilterButton';
 import { hasRole, resolveNextPath, splitCsv } from '@/lib/utils';
-import { getEventsCached } from '@/lib/cache/events';
 import { getArtistsCached } from '@/lib/cache/artists';
 import { getArtistManagersCached } from '@/lib/cache/artist-managers';
 import { getVenuesCached } from '@/lib/cache/venues';
@@ -16,6 +15,7 @@ import { notFound, redirect } from 'next/navigation';
 import ExportButton from './_components/ExportButton';
 import getSession from '@/lib/data/auth/get-session';
 import { getUserProfileIdCached } from '@/lib/cache/users';
+import { getEvents } from '@/lib/data/events/get-events';
 
 type EventsPageProps = {
   searchParams?: Promise<{
@@ -71,7 +71,7 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
 
   const [{ data: events, totalPages }, artists, artistManagers, venues, moCoordinators] =
     await Promise.all([
-      getEventsCached(user, filters),
+      getEvents(user, filters),
       getArtistsCached(isArtistManager ? profileId! : undefined),
       isAdmin ? getArtistManagersCached() : Promise.resolve([]),
       getVenuesCached(isVenueManager ? profileId! : undefined),

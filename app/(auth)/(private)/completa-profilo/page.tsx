@@ -12,7 +12,7 @@ import { getUserProfileIdCached } from '@/lib/cache/users';
 export const dynamic = 'force-dynamic';
 
 export default async function CompleteProfilePage() {
-  const { session, user } = await getSession(true);
+  const { session, user } = await getSession();
 
   if (!session || !user || user.banned) {
     redirect('/logout');

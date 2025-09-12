@@ -1,8 +1,5 @@
 // lib/data/cache.ts
 import { unstable_cache } from 'next/cache';
-import { getPaginatedArtists } from '@/lib/data/artists/get-paginated-artists';
-import type { ArtistsTableFilters } from '@/lib/types';
-import { hashKey } from '../utils';
 import { getArtists } from '../data/artists/get-artists';
 import { getArtist } from '../data/artists/get-artist';
 
@@ -26,25 +23,4 @@ export function getArtistsCached(managerProfileId?: number) {
     { revalidate: 60 * 60, tags: key }, // 1 hour
   );
   return fn(managerProfileId);
-}
-
-// NOTE: we derive key from filters so pages/filters cache separately
-export async function getPaginatedArtistsCached(filters: ArtistsTableFilters) {
-  const key = [
-    'paginated-artists',
-    hashKey({
-      page: filters.currentPage,
-      fullName: filters.fullName,
-      email: filters.email,
-      phone: filters.phone,
-      managerIds: filters.managerIds,
-      zoneIds: filters.zoneIds,
-    }),
-  ];
-
-  const fn = unstable_cache(async (f: ArtistsTableFilters) => getPaginatedArtists(f), key, {
-    revalidate: 60, // 1 min
-    tags: ['paginated-artists'],
-  });
-  return fn(filters);
 }

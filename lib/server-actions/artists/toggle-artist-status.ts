@@ -59,7 +59,6 @@ export async function toggleArtistStatus(
     const slug = updateResult[0]?.slug;
     if (slug) revalidateTag(`artist:${slug}`);
     revalidateTag('artists');
-    revalidateTag('paginated-artists');
 
     return {
       success: true,

@@ -58,13 +58,11 @@ export async function updateUserStatus(
       if (role === 'artist-manager') {
         revalidateTag(`artist-manager:${uid}`);
         revalidateTag('artist-managers');
-        revalidateTag('paginated-artist-managers');
       }
 
       if (role === 'venue-manager') {
         revalidateTag(`venue-manager:${uid}`);
         revalidateTag('venue-managers');
-        revalidateTag('paginated-venue-managers');
       }
     }
 

@@ -17,7 +17,6 @@ import {
 import { eventFormSchema, EventFormSchema } from '@/lib/validation/event-form-schema';
 import { isBefore } from 'date-fns';
 import { AppError } from '@/lib/classes/AppError';
-import { revalidateTag } from 'next/cache';
 
 export const createEvent = async (data: EventFormSchema): Promise<ServerActionResponse<null>> => {
   try {
@@ -200,8 +199,6 @@ export const createEvent = async (data: EventFormSchema): Promise<ServerActionRe
         await tx.insert(eventNotes).values(noteInserts);
       }
     });
-
-    revalidateTag('paginated-events');
 
     return {
       success: true,

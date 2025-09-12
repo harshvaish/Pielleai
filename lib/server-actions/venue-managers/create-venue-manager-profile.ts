@@ -129,7 +129,6 @@ export const createVenueManagerProfile = async (
         revalidateTag(`venue-manager:${uid}`);
       }
       revalidateTag('venue-managers');
-      revalidateTag('paginated-venue-managers');
 
       const languageInserts = (data.languages || []).map((languageId: number) => ({
         profileId,

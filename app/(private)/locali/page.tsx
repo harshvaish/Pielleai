@@ -18,11 +18,11 @@ import StatusBadge from '../_components/badges/StatusBadge';
 import { hasRole, resolveNextPath, splitCsv } from '@/lib/utils';
 import { getCountriesCached } from '@/lib/cache/countries';
 import { getVenueManagersCached } from '@/lib/cache/venue-managers';
-import { getPaginatedVenuesCached } from '@/lib/cache/venues';
 import { notFound, redirect } from 'next/navigation';
 import { venuesTableFiltersSchema } from '@/lib/validation/filters/venues-table-filters-schema';
 import getSession from '@/lib/data/auth/get-session';
 import { getUserProfileIdCached } from '@/lib/cache/users';
+import { getPaginatedVenues } from '@/lib/data/venues/get-paginated-venues';
 
 type VenuesPageProps = {
   searchParams?: Promise<{
@@ -78,9 +78,9 @@ export default async function VenuesPage({ searchParams }: VenuesPageProps) {
   }
 
   const [{ data: venues, totalPages }, countries, venueManagers] = await Promise.all([
-    getPaginatedVenuesCached(filters),
+    getPaginatedVenues(filters),
     getCountriesCached(),
-    isAdmin ? getVenueManagersCached() : Promise.resolve([]),
+    getVenueManagersCached(),
   ]);
 
   return (

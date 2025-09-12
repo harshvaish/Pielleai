@@ -71,3 +71,10 @@ TODO
 - refactor server action with getSession (and role check)
 - refactor avatar upload input
 - refactor email in params on reset pwd, use local storage instead
+
+TO REQUEST:
+
+- dominio per prod
+- autenticazione per invio email con info@eaglebooking.it
+- stime per sync dei due database
+- creazione artisti e locali (da capire come gestire manager, se auto inserirli o lasciarli liberi)

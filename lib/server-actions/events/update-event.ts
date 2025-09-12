@@ -16,7 +16,6 @@ import {
 } from '@/lib/database/schema';
 import { eventFormSchema, EventFormSchema } from '@/lib/validation/event-form-schema';
 import { AppError } from '@/lib/classes/AppError';
-import { revalidateTag } from 'next/cache';
 
 export const updateEvent = async (
   eventId: number,
@@ -232,8 +231,6 @@ export const updateEvent = async (
         await tx.insert(eventNotes).values(notes);
       }
     });
-
-    revalidateTag('paginated-events');
 
     return { success: true, message: null, data: null };
   } catch (error) {

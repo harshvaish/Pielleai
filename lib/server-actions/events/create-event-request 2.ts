@@ -16,7 +16,6 @@ import {
 import { eventRequestFormSchema, EventRequestFormSchema } from '@/lib/validation/event-form-schema';
 import { isBefore } from 'date-fns';
 import { AppError } from '@/lib/classes/AppError';
-import { revalidateTag } from 'next/cache';
 
 export const createEventRequest = async (
   data: EventRequestFormSchema,
@@ -135,8 +134,6 @@ export const createEventRequest = async (
         throw new AppError('Inserimento evento non riuscito.');
       }
     });
-
-    revalidateTag('paginated-events');
 
     return {
       success: true,

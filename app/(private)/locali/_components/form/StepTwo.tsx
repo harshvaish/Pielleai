@@ -367,7 +367,7 @@ export default function StepTwo({ countries }: { countries: Country[] }) {
         <Input
           id='billingPec'
           {...register('billingPec')}
-          placeholder='Milano Ovest'
+          placeholder='pec@eaglebooking.it'
           className={errors.billingPec ? 'border-destructive text-destructive' : ''}
         />
         {errors.billingPec && (

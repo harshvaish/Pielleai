@@ -15,14 +15,14 @@ import VenuesBadge from '../_components/badges/VenuesBadge';
 import FiltersButton from './_components/filters/FiltersButton';
 import { VenueManagersTableFilters } from '@/lib/types';
 import { hasRole, resolveNextPath, splitCsv } from '@/lib/utils';
-import { getPaginatedVenueManagersCached } from '@/lib/cache/venue-managers';
 import { getLanguagesCached } from '@/lib/cache/languages';
 import { getCountriesCached } from '@/lib/cache/countries';
-import { getVenuesCached } from '@/lib/cache/venues';
 import { notFound, redirect } from 'next/navigation';
 import { venueManagersTableFiltersSchema } from '@/lib/validation/filters/venue-managers-table-filters-schema';
 import getSession from '@/lib/data/auth/get-session';
 import { getUserProfileIdCached } from '@/lib/cache/users';
+import { getPaginatedVenueManagers } from '@/lib/data/venue-managers/get-paginated-venue-managers';
+import { getVenuesCached } from '@/lib/cache/venues';
 
 type VenueManagersPageProps = {
   searchParams?: Promise<{
@@ -70,7 +70,7 @@ export default async function VenueManagersPage({ searchParams }: VenueManagersP
   }
 
   const [{ data: managers, totalPages }, languages, countries, venues] = await Promise.all([
-    getPaginatedVenueManagersCached(filters),
+    getPaginatedVenueManagers(filters),
     getLanguagesCached(),
     getCountriesCached(),
     getVenuesCached(),
