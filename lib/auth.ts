@@ -40,7 +40,7 @@ export const auth = betterAuth({
     requireEmailVerification: true,
     resetPasswordTokenExpiresIn: 60 * 60, // 1 hour
     sendResetPassword: async ({ user, url }) => {
-      await sendResetPasswordEmail(user.email, user.name, url);
+      await sendResetPasswordEmail(user.email, url);
     },
     minPasswordLength: 8,
     maxPasswordLength: 16,
@@ -57,7 +57,6 @@ export const auth = betterAuth({
     cookiePrefix: process.env.BETTER_AUTH_COOKIE_PREFIX,
   },
   plugins: [
-    nextCookies(),
     admin(adminConfig),
     emailOTP({
       expiresIn: 60 * 5, // 5 min
@@ -68,6 +67,7 @@ export const auth = betterAuth({
         }
       },
     }),
+    nextCookies(), // keep this as last in the array of plugins!
   ],
 });
 

@@ -18,6 +18,7 @@ import {
 } from '@/lib/validation/venue-manager-form-schema';
 import { AppError } from '@/lib/classes/AppError';
 import { revalidateTag } from 'next/cache';
+import { getUserProfileIdCached } from '@/lib/cache/users';
 
 export const updateVenueManagerPersonalData = async (
   profileId: number,
@@ -30,9 +31,17 @@ export const updateVenueManagerPersonalData = async (
       headers: headersList,
     });
 
-    if (!session?.user || session.user.role != 'admin') {
-      console.error('[updateVenueManagerPersonalData] - Error: unauthorized', session);
-      throw new AppError('Non sei autorizzato.');
+    if (!session?.user) {
+      console.error('[updateVenueManagerPersonalData] - Error: unauthenticated', session);
+      throw new AppError('Non sei autenticato.');
+    }
+
+    if (session.user.role != 'admin') {
+      const userProfileIdCheck = await getUserProfileIdCached(session.user.id);
+      if (!userProfileIdCheck || userProfileIdCheck != profileId) {
+        console.error('[updateVenueManagerPersonalData] - Error: unauthorized', session);
+        throw new AppError('Non sei autorizzato.');
+      }
     }
 
     const validation = venueManagerS1FormSchema.safeParse(data);

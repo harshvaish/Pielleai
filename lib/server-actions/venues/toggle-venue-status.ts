@@ -22,7 +22,7 @@ export async function toggleVenueStatus(
       headers: headersList,
     });
 
-    if (!session?.user || session.user.role != 'admin') {
+    if (!session?.user) {
       console.error('[toggleVenueStatus] - Error: unauthorized', session);
       throw new AppError('Non sei autorizzato.');
     }

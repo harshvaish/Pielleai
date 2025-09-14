@@ -6,7 +6,7 @@ import { adminConfig } from './permissions';
 
 export const authClient = createAuthClient({
   baseURL: process.env.NEXT_PUBLIC_APP_URL,
-  plugins: [adminClient(adminConfig), inferAdditionalFields<typeof auth>(), emailOTPClient()],
+  plugins: [adminClient(adminConfig), emailOTPClient(), inferAdditionalFields<typeof auth>()],
 });
 
 export const { signIn, signUp, signOut, useSession, forgetPassword, resetPassword, emailOtp } =

@@ -21,7 +21,7 @@ export const updateVenueSocialData = async (
       headers: headersList,
     });
 
-    if (!session?.user || session.user.role != 'admin') {
+    if (!session?.user) {
       console.error('[updateVenueSocialData] - Error: unauthorized', session);
       throw new AppError('Non sei autorizzato.');
     }

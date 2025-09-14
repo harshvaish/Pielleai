@@ -18,6 +18,7 @@ import {
 } from '@/lib/database/schema';
 import { AppError } from '@/lib/classes/AppError';
 import { revalidateTag } from 'next/cache';
+import { getUserProfileIdCached } from '@/lib/cache/users';
 
 export const updateArtistManagerPersonalData = async (
   profileId: number,
@@ -30,9 +31,17 @@ export const updateArtistManagerPersonalData = async (
       headers: headersList,
     });
 
-    if (!session?.user || session.user.role != 'admin') {
-      console.error('[updateArtistManagerPersonalData] - Error: unauthorized', session);
-      throw new AppError('Non sei autorizzato.');
+    if (!session?.user) {
+      console.error('[updateArtistManagerBillingData] - Error: unauthenticated', session);
+      throw new AppError('Non sei autenticato.');
+    }
+
+    if (session.user.role != 'admin') {
+      const userProfileIdCheck = await getUserProfileIdCached(session.user.id);
+      if (!userProfileIdCheck || userProfileIdCheck != profileId) {
+        console.error('[updateArtistManagerBillingData] - Error: unauthorized', session);
+        throw new AppError('Non sei autorizzato.');
+      }
     }
 
     const validation = artistManagerS1FormSchema.safeParse(data);

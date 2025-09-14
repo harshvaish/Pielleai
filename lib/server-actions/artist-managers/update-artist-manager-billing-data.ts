@@ -12,6 +12,7 @@ import { eq } from 'drizzle-orm';
 import { profiles, countries, subdivisions } from '@/lib/database/schema';
 import { AppError } from '@/lib/classes/AppError';
 import { revalidateTag } from 'next/cache';
+import { getUserProfileIdCached } from '@/lib/cache/users';
 
 export const updateArtistManagerBillingData = async (
   profileId: number,
@@ -24,9 +25,17 @@ export const updateArtistManagerBillingData = async (
       headers: headersList,
     });
 
-    if (!session?.user || session.user.role != 'admin') {
-      console.error('[updateArtistManagerBillingData] - Error: unauthorized', session);
-      throw new AppError('Non sei autorizzato.');
+    if (!session?.user) {
+      console.error('[updateArtistManagerBillingData] - Error: unauthenticated', session);
+      throw new AppError('Non sei autenticato.');
+    }
+
+    if (session.user.role != 'admin') {
+      const userProfileIdCheck = await getUserProfileIdCached(session.user.id);
+      if (!userProfileIdCheck || userProfileIdCheck != profileId) {
+        console.error('[updateArtistManagerBillingData] - Error: unauthorized', session);
+        throw new AppError('Non sei autorizzato.');
+      }
     }
 
     const validation = artistManagerS2FormSchema.safeParse(data);

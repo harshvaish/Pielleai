@@ -21,7 +21,7 @@ export default function SignOutPage() {
     };
 
     void doSignout();
-  }, [router]);
+  }, []);
 
   return (
     <div className='w-full text-center bg-white p-8 rounded-2xl'>

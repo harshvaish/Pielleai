@@ -364,7 +364,7 @@ export default function EventTile({
             )}
 
           {userRole === 'venue-manager' &&
-            ['proposed', 'pre-confirmed', 'confirmed'].includes(event.status) && (
+            ['proposed', 'pre-confirmed', 'conflict', 'confirmed'].includes(event.status) && (
               <DeleteEventButton event={event} />
             )}
 

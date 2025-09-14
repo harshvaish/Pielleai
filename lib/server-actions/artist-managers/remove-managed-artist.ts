@@ -9,6 +9,8 @@ import { managerArtists } from '@/lib/database/schema';
 import { z } from 'zod/v4';
 import { AppError } from '@/lib/classes/AppError';
 import { idValidation } from '@/lib/validation/_general';
+import { getUserProfileIdCached } from '@/lib/cache/users';
+import { revalidateTag } from 'next/cache';
 
 export const removeManagedArtist = async (
   managerProfileId: number,
@@ -21,9 +23,17 @@ export const removeManagedArtist = async (
       headers: headersList,
     });
 
-    if (!session?.user || session.user.role != 'admin') {
-      console.error('[removeManagedArtist] - Error: unauthorized', session);
-      throw new AppError('Non sei autorizzato.');
+    if (!session?.user) {
+      console.error('[updateArtistManagerBillingData] - Error: unauthenticated', session);
+      throw new AppError('Non sei autenticato.');
+    }
+
+    if (session.user.role != 'admin') {
+      const userProfileIdCheck = await getUserProfileIdCached(session.user.id);
+      if (!userProfileIdCheck || userProfileIdCheck != managerProfileId) {
+        console.error('[updateArtistManagerBillingData] - Error: unauthorized', session);
+        throw new AppError('Non sei autorizzato.');
+      }
     }
 
     const schema = z.object({
@@ -55,6 +65,9 @@ export const removeManagedArtist = async (
     if (!deletedRows) {
       throw new AppError('Artista non trovato.');
     }
+
+    revalidateTag(`profile:${session.user.id}`);
+    revalidateTag(`artist-manager:${session.user.id}`);
 
     return {
       success: true,

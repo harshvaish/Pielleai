@@ -20,7 +20,12 @@ export const updateUserPassword = async (
       headers: headersList,
     });
 
-    if (!session?.user || session.user.role != 'admin') {
+    if (!session?.user) {
+      console.error('[updateUserPassword] - Error: unauthenticated', session);
+      throw new AppError('Non sei autenticato.');
+    }
+
+    if (userId != session.user.id) {
       console.error('[updateUserPassword] - Error: unauthorized', session);
       throw new AppError('Non sei autorizzato.');
     }

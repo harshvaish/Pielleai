@@ -21,7 +21,7 @@ export const updateVenueBillingData = async (
       headers: headersList,
     });
 
-    if (!session?.user || session.user.role != 'admin') {
+    if (!session?.user) {
       console.error('[updateVenueBillingData] - Error: unauthorized', session);
       throw new AppError('Non sei autorizzato.');
     }

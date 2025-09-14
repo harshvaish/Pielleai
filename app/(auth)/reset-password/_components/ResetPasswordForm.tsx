@@ -42,7 +42,7 @@ export default function ResetPasswordForm({ token }: { token: string }) {
       token,
       fetchOptions: {
         onSuccess: () => {
-          toast.success('Password Resetta!');
+          toast.success('Password resettata!');
           setTimeout(() => router.replace('/accedi'), 3000);
         },
         onError: (ctx) => {

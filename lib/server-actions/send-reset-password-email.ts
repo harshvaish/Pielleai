@@ -4,22 +4,21 @@ import sgMail from '@sendgrid/mail';
 import { ServerActionResponse } from '../types';
 import { z } from 'zod/v4';
 import { AppError } from '../classes/AppError';
-import { emailValidation, nameValidation } from '../validation/_general';
+import { emailValidation } from '../validation/_general';
 
 export const sendResetPasswordEmail = async (
   userEmail: string,
-  userName: string,
   url: string,
 ): Promise<ServerActionResponse<null>> => {
   try {
     const schema = z.object({
       userEmail: emailValidation,
-      userName: nameValidation,
       url: z.url('Inserisci un link valido.').trim(),
     });
 
-    const validation = schema.safeParse({ userEmail, userName, url });
+    const validation = schema.safeParse({ userEmail, url });
     if (!validation.success) {
+      console.log(validation.error.issues[0]);
       throw new AppError('Dati inviati non corretti.');
     }
 
@@ -37,7 +36,6 @@ export const sendResetPasswordEmail = async (
       from: 'tech@uilconvenzioni.it',
       templateId: 'd-874a04c239354062bb98ac9c87c3819c',
       dynamic_template_data: {
-        name: userName,
         reset_link: url,
       },
     };
