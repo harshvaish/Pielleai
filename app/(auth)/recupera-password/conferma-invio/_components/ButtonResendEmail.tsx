@@ -2,16 +2,35 @@
 
 import { Button } from '@/components/ui/button';
 import { forgetPassword } from '@/lib/auth-client';
-import { RPE_BLOCK_DURATION, RPE_BLOCK_STORAGE_NAME } from '@/lib/constants';
+import {
+  RPE_BLOCK_DURATION,
+  RPE_BLOCK_STORAGE_NAME,
+  RPE_EMAIL_STORAGE_NAME,
+} from '@/lib/constants';
 import { getBetterAuthErrorMessage } from '@/lib/utils';
+import { emailValidation } from '@/lib/validation/_general';
+import { useRouter } from 'next/navigation';
 import { useEffect, useState, useTransition } from 'react';
 import { toast } from 'sonner';
-import * as z from 'zod/v4';
 
-export default function ButtonResendEmail({ email }: { email: string }) {
+export default function ButtonResendEmail() {
+  const router = useRouter();
+  const [email, setEmail] = useState<string | null>(null);
   const [blockedUntil, setBlockedUntil] = useState<number | null>(null);
   const [timeLeft, setTimeLeft] = useState<number>(0);
   const [isPending, startTransition] = useTransition();
+
+  useEffect(() => {
+    const email = localStorage.getItem(RPE_EMAIL_STORAGE_NAME);
+    const validation = emailValidation.safeParse(email);
+
+    if (!validation.success) {
+      localStorage.removeItem(RPE_EMAIL_STORAGE_NAME);
+      router.replace('/recupera-password');
+    }
+
+    setEmail(email);
+  }, [router]);
 
   // On mount, check if we are still in cooldown
   useEffect(() => {
@@ -48,16 +67,9 @@ export default function ButtonResendEmail({ email }: { email: string }) {
   }, [blockedUntil]);
 
   const onClickHandler = async () => {
-    const validation = z.email('Formato non valido').safeParse(email);
-
-    if (!validation.success) {
-      toast.error('Email non trovata o malformata, riprova più tardi');
-      return;
-    }
-
     startTransition(async () => {
       await forgetPassword({
-        email,
+        email: email!,
         redirectTo: '/reset-password',
         fetchOptions: {
           onSuccess: () => {

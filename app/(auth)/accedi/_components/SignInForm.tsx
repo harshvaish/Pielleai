@@ -9,11 +9,12 @@ import Link from 'next/link';
 import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { signInSchema, SignInSchema } from '@/lib/validation/auth/signInSchema';
-import { signIn } from '@/lib/auth-client';
-import { getBetterAuthErrorMessage } from '@/lib/utils';
 import { useTransition } from 'react';
+import { signIn } from '@/lib/server-actions/auth/sign-in';
+import { useRouter } from 'next/navigation';
 
 export default function SignInForm() {
+  const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const methods = useForm<SignInSchema>({
     resolver: zodResolver(signInSchema),
@@ -30,22 +31,15 @@ export default function SignInForm() {
   } = methods;
 
   const onSubmitHandler = async (data: SignInSchema) => {
-    const { email, password } = data;
-
     startTransition(async () => {
-      await signIn.email({
-        email,
-        password,
-        fetchOptions: {
-          onError: (ctx) => {
-            const code = ctx?.error?.code ?? 'UNKNOWN_ERROR';
-            const message = getBetterAuthErrorMessage(code);
-            toast.error(message);
-            return;
-          },
-        },
-        callbackURL: '/eventi',
-      });
+      const response = await signIn(data);
+
+      if (!response.success) {
+        toast.error(response.message ?? 'Accesso non riuscito.');
+        return;
+      }
+
+      startTransition(() => router.replace('/eventi'));
     });
   };
 

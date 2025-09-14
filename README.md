@@ -78,3 +78,4 @@ TO REQUEST:
 - autenticazione per invio email con info@eaglebooking.it
 - stime per sync dei due database
 - creazione artisti e locali (da capire come gestire manager, se auto inserirli o lasciarli liberi)
+- managers, cancellazione profilo?

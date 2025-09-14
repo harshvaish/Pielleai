@@ -1,12 +1,12 @@
 'use client';
 
-import { signOut } from '@/lib/auth-client';
 import { LogOut } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import { toast } from 'sonner';
 import { SpinnerLoading } from './SpinnerLoading';
 import ConfirmDialog from './ConfirmDialog';
+import { signOut } from '@/lib/server-actions/auth/sign-out';
 
 export default function SignOutButton() {
   const router = useRouter();
@@ -15,13 +15,14 @@ export default function SignOutButton() {
 
   const onClickHandler = async () => {
     startTransition(async () => {
-      try {
-        await signOut();
-        router.replace('/accedi');
-      } catch (error) {
-        console.error(error);
-        toast.error('Disconnessione non riuscita, riprova più tardi.');
+      const response = await signOut();
+
+      if (!response.success) {
+        toast.error(response.message || 'Disconnessione non riuscita, riprova più tardi.');
+        return;
       }
+
+      startTransition(() => router.replace('/accedi'));
     });
   };
 

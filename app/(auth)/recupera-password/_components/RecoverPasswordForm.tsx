@@ -8,7 +8,7 @@ import { forgetPassword } from '@/lib/auth-client';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
-import { RPE_BLOCK_STORAGE_NAME } from '@/lib/constants';
+import { RPE_BLOCK_STORAGE_NAME, RPE_EMAIL_STORAGE_NAME } from '@/lib/constants';
 import {
   recoverPasswordSchema,
   RecoverPasswordSchema,
@@ -40,8 +40,9 @@ export default function RecoverPasswordForm() {
       redirectTo: '/reset-password',
       fetchOptions: {
         onSuccess: () => {
+          localStorage.setItem(RPE_EMAIL_STORAGE_NAME, email);
           localStorage.setItem(RPE_BLOCK_STORAGE_NAME, Date.now().toString());
-          router.push(`recupera-password/conferma-invio?email=${email}`);
+          router.push(`recupera-password/conferma-invio`);
         },
         onError: (ctx) => {
           const code = ctx?.error?.code ?? 'UNKNOWN_ERROR';

@@ -1,22 +1,26 @@
 'use client';
 
-import { signOut } from '@/lib/auth-client';
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
+import { signOut } from '@/lib/server-actions/auth/sign-out';
 
-export default function LogoutPage() {
+export default function SignOutPage() {
   const router = useRouter();
 
   useEffect(() => {
-    const doLogout = async () => {
-      try {
-        await signOut(); // clears cookies/session on the client
-      } finally {
-        // always go back to login page
-        router.replace('/accedi');
+    const doSignout = async () => {
+      const response = await signOut();
+
+      if (!response.success) {
+        toast.error(response.message || 'Disconnessione non riuscita, riprova più tardi.');
+        return;
       }
+
+      router.replace('/accedi');
     };
-    void doLogout();
+
+    void doSignout();
   }, [router]);
 
   return (

@@ -4,8 +4,9 @@ import { EventStatus, Gender, NavbarLink, VenueType } from './types';
 export const TIME_ZONE = 'Europe/Rome';
 
 // resend password email
-export const RPE_BLOCK_DURATION = 30 * 1000;
+export const RPE_EMAIL_STORAGE_NAME = 'rpe_email';
 export const RPE_BLOCK_STORAGE_NAME = 'rpe_send_at';
+export const RPE_BLOCK_DURATION = 30 * 1000;
 
 // confirm email
 export const CE_EMAIL_STORAGE_NAME = 'ce_email';
