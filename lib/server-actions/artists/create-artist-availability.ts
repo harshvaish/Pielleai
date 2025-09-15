@@ -1,15 +1,13 @@
 'use server';
 
-import { auth } from '@/lib/auth';
 import { AppError } from '@/lib/classes/AppError';
+import getSession from '@/lib/data/auth/get-session';
 import { database } from '@/lib/database/connection';
 import { artistAvailabilities, artists } from '@/lib/database/schema';
 import { ServerActionResponse, Availability } from '@/lib/types';
 import { hasRole } from '@/lib/utils';
 import { dateValidation } from '@/lib/validation/_general';
-import { addDays } from 'date-fns';
 import { eq, and, sql, count } from 'drizzle-orm';
-import { headers } from 'next/headers';
 import { z } from 'zod/v4';
 
 export async function createArtistAvailability(
@@ -17,19 +15,15 @@ export async function createArtistAvailability(
   newAvailability: Availability,
 ): Promise<ServerActionResponse<null>> {
   try {
-    const headersList = await headers();
+    const { session, user } = await getSession();
 
-    const session = await auth.api.getSession({
-      headers: headersList,
-    });
-
-    if (!session?.user) {
-      console.error('[createArtist] - Error: unauthorized', session);
-      throw new AppError('Devi essere autenticato.');
+    if (!session || !user || user.banned) {
+      console.error('[createArtistAvailability] - Error: unauthorized', session);
+      throw new AppError('Non sei autenticato.');
     }
 
-    if (!hasRole(session.user, ['admin', 'artist-manager'])) {
-      console.error('[createArtist] - Error: role', session);
+    if (!hasRole(user, ['admin', 'artist-manager'])) {
+      console.error('[createArtistAvailability] - Error: role', session);
       throw new AppError('Non sei autorizzato.');
     }
 
@@ -58,12 +52,14 @@ export async function createArtistAvailability(
 
     if (!artistId) throw new AppError('Artista non trovato.');
 
+    console.log(newAvailability.startDate, newAvailability.endDate);
+
     const availabilityWindow = sql`tstzrange(
                                 ${newAvailability.startDate}::timestamptz,
-                                ${addDays(newAvailability.startDate, 1).toISOString()}::timestamptz,
+                                ${newAvailability.startDate}::timestamptz,
                                 '[)')`;
 
-    // select candidates for delete
+    // check if cross another availability
     const [check] = await database
       .select({ count: count() })
       .from(artistAvailabilities)

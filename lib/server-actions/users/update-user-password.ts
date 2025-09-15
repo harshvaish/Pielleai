@@ -5,27 +5,23 @@ import { APIError } from 'better-auth/api';
 import { getBetterAuthErrorMessage } from '@/lib/utils';
 import { ServerActionResponse } from '@/lib/types';
 import { z } from 'zod/v4';
-import { headers } from 'next/headers';
 import { AppError } from '@/lib/classes/AppError';
 import { passwordValidation, userIdValidation } from '@/lib/validation/_general';
+import getSession from '@/lib/data/auth/get-session';
 
 export const updateUserPassword = async (
   userId: string,
   newPassword: string,
 ): Promise<ServerActionResponse<null>> => {
   try {
-    const headersList = await headers();
+    const { session, user } = await getSession();
 
-    const session = await auth.api.getSession({
-      headers: headersList,
-    });
-
-    if (!session?.user) {
-      console.error('[updateUserPassword] - Error: unauthenticated', session);
+    if (!session || !user || user.banned) {
+      console.error('[updateUserPassword] - Error: unauthorized', session);
       throw new AppError('Non sei autenticato.');
     }
 
-    if (userId != session.user.id) {
+    if (userId != user.id) {
       console.error('[updateUserPassword] - Error: unauthorized', session);
       throw new AppError('Non sei autorizzato.');
     }

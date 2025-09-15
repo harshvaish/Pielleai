@@ -1,29 +1,27 @@
 'use server';
 
-import { auth } from '@/lib/auth';
 import { AppError } from '@/lib/classes/AppError';
+import getSession from '@/lib/data/auth/get-session';
 import { database } from '@/lib/database/connection';
 import { artistAvailabilities, events } from '@/lib/database/schema';
 import { ServerActionResponse } from '@/lib/types';
 import { hasRole } from '@/lib/utils';
 import { idValidation } from '@/lib/validation/_general';
 import { eq, inArray } from 'drizzle-orm';
-import { headers } from 'next/headers';
 
 export async function deleteArtistAvailability(
   availabilityId: number,
 ): Promise<ServerActionResponse<null>> {
   try {
-    const headersList = await headers();
-    const session = await auth.api.getSession({ headers: headersList });
+    const { session, user } = await getSession();
 
-    if (!session?.user) {
-      console.error('[createArtist] - Error: unauthorized', session);
-      throw new AppError('Devi essere autenticato.');
+    if (!session || !user || user.banned) {
+      console.error('[deleteArtistAvailability] - Error: unauthorized', session);
+      throw new AppError('Non sei autenticato.');
     }
 
-    if (!hasRole(session.user, ['admin', 'artist-manager'])) {
-      console.error('[createArtist] - Error: role', session);
+    if (!hasRole(user, ['admin', 'artist-manager'])) {
+      console.error('[deleteArtistAvailability] - Error: role', session);
       throw new AppError('Non sei autorizzato.');
     }
 

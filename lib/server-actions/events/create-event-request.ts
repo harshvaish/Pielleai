@@ -1,7 +1,5 @@
 'use server';
 
-import { auth } from '@/lib/auth';
-import { headers } from 'next/headers';
 import { ServerActionResponse } from '@/lib/types';
 import { database } from '@/lib/database/connection';
 import { and, count, eq, gt } from 'drizzle-orm';
@@ -16,18 +14,20 @@ import {
 import { eventRequestFormSchema, EventRequestFormSchema } from '@/lib/validation/event-form-schema';
 import { isBefore } from 'date-fns';
 import { AppError } from '@/lib/classes/AppError';
+import getSession from '@/lib/data/auth/get-session';
 
 export const createEventRequest = async (
   data: EventRequestFormSchema,
 ): Promise<ServerActionResponse<null>> => {
   try {
-    const headersList = await headers();
+    const { session, user } = await getSession();
 
-    const session = await auth.api.getSession({
-      headers: headersList,
-    });
+    if (!session || !user || user.banned) {
+      console.error('[createEventRequest] - Error: unauthorized', session);
+      throw new AppError('Non sei autenticato.');
+    }
 
-    if (!session?.user || session.user.role != 'venue-manager') {
+    if (user.role != 'venue-manager') {
       console.error('[createEventRequest] - Error: unauthorized', session);
       throw new AppError('Non sei autorizzato.');
     }

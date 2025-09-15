@@ -1,7 +1,5 @@
 'use server';
 
-import { auth } from '@/lib/auth';
-import { headers } from 'next/headers';
 import { ServerActionResponse } from '@/lib/types';
 import { database } from '@/lib/database/connection';
 import { and, eq, inArray } from 'drizzle-orm';
@@ -21,25 +19,22 @@ import { artistS1FormSchema, ArtistS1FormSchema } from '@/lib/validation/artist-
 import { areSame, hasRole } from '@/lib/utils';
 import { AppError } from '@/lib/classes/AppError';
 import { revalidateTag } from 'next/cache';
+import getSession from '@/lib/data/auth/get-session';
 
 export const updateArtistPersonalData = async (
   artistId: number,
   data: ArtistS1FormSchema,
 ): Promise<ServerActionResponse<null>> => {
   try {
-    const headersList = await headers();
+    const { session, user } = await getSession();
 
-    const session = await auth.api.getSession({
-      headers: headersList,
-    });
-
-    if (!session?.user) {
-      console.error('[createArtist] - Error: unauthorized', session);
-      throw new AppError('Devi essere autenticato.');
+    if (!session || !user || user.banned) {
+      console.error('[updateArtistPersonalData] - Error: unauthorized', session);
+      throw new AppError('Non sei autenticato.');
     }
 
-    if (!hasRole(session.user, ['admin', 'artist-manager'])) {
-      console.error('[createArtist] - Error: role', session);
+    if (!hasRole(user, ['admin', 'artist-manager'])) {
+      console.error('[updateArtistPersonalData] - Error: role', session);
       throw new AppError('Non sei autorizzato.');
     }
 

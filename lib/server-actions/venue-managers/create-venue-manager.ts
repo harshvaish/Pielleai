@@ -20,6 +20,7 @@ import {
 } from '@/lib/validation/venue-manager-form-schema';
 import { AppError } from '@/lib/classes/AppError';
 import { revalidateTag } from 'next/cache';
+import getSession from '@/lib/data/auth/get-session';
 
 export const createVenueManager = async (
   data: VenueManagerFormSchema,
@@ -28,11 +29,14 @@ export const createVenueManager = async (
   let newUserId: string | undefined;
 
   try {
-    const session = await auth.api.getSession({
-      headers: headersList,
-    });
+    const { session, user } = await getSession();
 
-    if (!session?.user || session.user.role != 'admin') {
+    if (!session || !user || user.banned) {
+      console.error('[createVenueManager] - Error: unauthorized', session);
+      throw new AppError('Non sei autenticato.');
+    }
+
+    if (user.role != 'admin') {
       console.error('[createVenueManager] - Error: unauthorized', session);
       throw new AppError('Non sei autorizzato.');
     }
@@ -86,6 +90,7 @@ export const createVenueManager = async (
           name,
           role: 'venue-manager',
           data: {
+            emailVerified: true,
             status: 'active',
           },
         },

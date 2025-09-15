@@ -83,9 +83,8 @@ export default function PersonalDataForm({
     const response = await updateArtistPersonalData(userData.id, data);
 
     if (response.success) {
-      methods.reset(data); // new form status, isDirty to false
-      toast.success('Profilo artista aggiornato!');
       closeDialog();
+      toast.success('Profilo artista aggiornato!');
       router.refresh();
     } else {
       toast.error(response.message);

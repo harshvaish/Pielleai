@@ -14,7 +14,7 @@ import { toast } from 'sonner';
 import { getBetterAuthOTPErrorMessage } from '@/lib/utils';
 import ButtonResendOTP from './ButtonResendOTP';
 
-export default function ArtistManagerConfirmEmailForm() {
+export default function ConfirmEmailForm() {
   const router = useRouter();
   const [email, setEmail] = useState<string>('');
   const [code, setCode] = useState<string>('');

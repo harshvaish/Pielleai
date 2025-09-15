@@ -1,10 +1,5 @@
 import { z } from 'zod/v4';
-
-export function getZodErrors(errorObj: z.core.$ZodError<unknown>): string[] {
-  const validationErrors = z.treeifyError(errorObj).errors;
-
-  return validationErrors;
-}
+import { eventStatus, userStatus } from '../database/schema';
 
 export const timeValidation = z
   .string('Campo malformato.')
@@ -104,3 +99,21 @@ export const otpValidation = z
   .min(6, 'Deve contenere 6 cifre.')
   .max(6, 'Deve contenere 6 cifre.')
   .regex(/^[0-9]+$/, 'Può contenere solo numeri.');
+
+// utils
+export function getZodErrors(errorObj: z.core.$ZodError<unknown>): string[] {
+  const validationErrors = z.treeifyError(errorObj).errors;
+
+  return validationErrors;
+}
+
+// enums
+export const userStatusEnumValidation = z.enum(
+  userStatus.enumValues,
+  "Seleziona un'opzione valida.",
+);
+
+export const eventStatusEnumValidation = z.enum(
+  eventStatus.enumValues,
+  "Seleziona un'opzione valida.",
+);

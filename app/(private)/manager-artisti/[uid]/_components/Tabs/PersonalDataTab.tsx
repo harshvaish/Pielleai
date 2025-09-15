@@ -1,4 +1,5 @@
 import { TabsContent } from '@/components/ui/tabs';
+import { GENDERS_LABELS } from '@/lib/constants';
 import { ArtistManagerData } from '@/lib/types';
 
 export default function PersonalDataTab({
@@ -21,56 +22,32 @@ export default function PersonalDataTab({
     >
       <div className='text-xl font-semibold mb-6'>Dati personali</div>
       <div className='grid grid-cols-[minmax(200px,max-content)_max-content] gap-6 overflow-x-auto'>
-        <span className='text-sm font-semibold text-zinc-600'>
-          Luogo di nascita
-        </span>
-        <span className='text-sm font-medium text-zinc-500'>
-          {userData.birthDate}
-        </span>
+        <span className='text-sm font-semibold text-zinc-600'>Luogo di nascita</span>
+        <span className='text-sm font-medium text-zinc-500'>{userData.birthDate}</span>
 
-        <span className='text-sm font-semibold text-zinc-600'>
-          Data di nascita
-        </span>
-        <span className='text-sm font-medium text-zinc-500'>
-          {userData.birthPlace}
-        </span>
+        <span className='text-sm font-semibold text-zinc-600'>Data di nascita</span>
+        <span className='text-sm font-medium text-zinc-500'>{userData.birthPlace}</span>
 
-        <span className='text-sm font-semibold text-zinc-600'>
-          Indirizzo di residenza
-        </span>
-        <span className='text-sm font-medium text-zinc-500'>
-          {userData.address}
-        </span>
+        <span className='text-sm font-semibold text-zinc-600'>Indirizzo di residenza</span>
+        <span className='text-sm font-medium text-zinc-500'>{userData.address}</span>
 
         <span className='text-sm font-semibold text-zinc-600'>CAP</span>
-        <span className='text-sm font-medium text-zinc-500'>
-          {userData.zipCode}
-        </span>
+        <span className='text-sm font-medium text-zinc-500'>{userData.zipCode}</span>
 
         <span className='text-sm font-semibold text-zinc-600'>Comune</span>
-        <span className='text-sm font-medium text-zinc-500'>
-          {userData.city}
-        </span>
+        <span className='text-sm font-medium text-zinc-500'>{userData.city}</span>
 
         <span className='text-sm font-semibold text-zinc-600'>Provincia</span>
-        <span className='text-sm font-medium text-zinc-500'>
-          {userData.subdivision.name}
-        </span>
+        <span className='text-sm font-medium text-zinc-500'>{userData.subdivision.name}</span>
 
         <span className='text-sm font-semibold text-zinc-600'>Stato</span>
-        <span className='text-sm font-medium text-zinc-500'>
-          {userData.country.name}
-        </span>
+        <span className='text-sm font-medium text-zinc-500'>{userData.country.name}</span>
 
         <span className='text-sm font-semibold text-zinc-600'>Sesso</span>
-        <span className='text-sm font-medium text-zinc-500'>
-          {userData.gender}
-        </span>
+        <span className='text-sm font-medium text-zinc-500'>{GENDERS_LABELS[userData.gender]}</span>
 
         <span className='text-sm font-semibold text-zinc-600'>Lingue</span>
-        <span className='text-sm font-medium text-zinc-500'>
-          {languagesString}
-        </span>
+        <span className='text-sm font-medium text-zinc-500'>{languagesString}</span>
       </div>
     </TabsContent>
   );

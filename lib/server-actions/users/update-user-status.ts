@@ -1,14 +1,13 @@
 'use server';
 
-import { auth } from '@/lib/auth';
 import { AppError } from '@/lib/classes/AppError';
+import getSession from '@/lib/data/auth/get-session';
 import { database } from '@/lib/database/connection';
-import { users, userStatus } from '@/lib/database/schema';
+import { users } from '@/lib/database/schema';
 import { ServerActionResponse, UserStatus } from '@/lib/types';
-import { userIdValidation } from '@/lib/validation/_general';
+import { userIdValidation, userStatusEnumValidation } from '@/lib/validation/_general';
 import { eq } from 'drizzle-orm';
 import { revalidateTag } from 'next/cache';
-import { headers } from 'next/headers';
 import { z } from 'zod/v4';
 
 export async function updateUserStatus(
@@ -16,20 +15,21 @@ export async function updateUserStatus(
   newStatus: UserStatus,
 ): Promise<ServerActionResponse<null>> {
   try {
-    const headersList = await headers();
+    const { session, user } = await getSession();
 
-    const session = await auth.api.getSession({
-      headers: headersList,
-    });
+    if (!session || !user || user.banned) {
+      console.error('[updateUserStatus] - Error: unauthorized', session);
+      throw new AppError('Non sei autenticato.');
+    }
 
-    if (!session?.user || session.user.role != 'admin') {
+    if (user.role != 'admin') {
       console.error('[updateUserStatus] - Error: unauthorized', session);
       throw new AppError('Non sei autorizzato.');
     }
 
     const schema = z.object({
       userId: userIdValidation,
-      newStatus: z.enum(userStatus.enumValues, "Scegli un'opzione valida."),
+      newStatus: userStatusEnumValidation,
     });
 
     const validation = schema.safeParse({ userId, newStatus });

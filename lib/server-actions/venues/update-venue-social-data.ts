@@ -1,7 +1,5 @@
 'use server';
 
-import { auth } from '@/lib/auth';
-import { headers } from 'next/headers';
 import { ServerActionResponse } from '@/lib/types';
 import { database } from '@/lib/database/connection';
 import { eq } from 'drizzle-orm';
@@ -9,20 +7,23 @@ import { venues } from '@/lib/database/schema';
 import { venueS3FormSchema, VenueS3FormSchema } from '@/lib/validation/venue-form-schema';
 import { AppError } from '@/lib/classes/AppError';
 import { revalidateTag } from 'next/cache';
+import { hasRole } from '@/lib/utils';
+import getSession from '@/lib/data/auth/get-session';
 
 export const updateVenueSocialData = async (
   venueId: number,
   data: VenueS3FormSchema,
 ): Promise<ServerActionResponse<null>> => {
   try {
-    const headersList = await headers();
+    const { session, user } = await getSession();
 
-    const session = await auth.api.getSession({
-      headers: headersList,
-    });
-
-    if (!session?.user) {
+    if (!session || !user || user.banned) {
       console.error('[updateVenueSocialData] - Error: unauthorized', session);
+      throw new AppError('Non sei autenticato.');
+    }
+
+    if (!hasRole(user, ['admin', 'venue-manager'])) {
+      console.error('[updateVenueSocialData] - Error: role', session);
       throw new AppError('Non sei autorizzato.');
     }
 

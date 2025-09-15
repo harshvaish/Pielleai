@@ -1,7 +1,5 @@
 'use server';
 
-import { auth } from '@/lib/auth';
-import { headers } from 'next/headers';
 import { ServerActionResponse } from '@/lib/types';
 import {
   artistManagerProfileFormSchema,
@@ -22,21 +20,25 @@ import { getBetterAuthErrorMessage } from '@/lib/utils';
 import { AppError } from '@/lib/classes/AppError';
 import { revalidateTag } from 'next/cache';
 import { userIdValidation } from '@/lib/validation/_general';
+import getSession from '@/lib/data/auth/get-session';
 
 export const createArtistManagerProfile = async (
   uid: string,
   data: ArtistManagerProfileFormSchema,
 ): Promise<ServerActionResponse<null>> => {
-  const headersList = await headers();
-
   try {
-    const session = await auth.api.getSession({
-      headers: headersList,
-    });
+    const { session, user } = await getSession();
 
-    if (!session?.user) {
+    if (!session || !user || user.banned) {
       console.error('[createArtistManagerProfile] - Error: unauthorized', session);
-      throw new AppError('Non sei autorizzato.');
+      throw new AppError('Non sei autenticato.');
+    }
+
+    if (user.role != 'admin') {
+      if (user.id != uid) {
+        console.error('[createArtistManagerProfile] - Error: unauthorized', session);
+        throw new AppError('Non sei autorizzato.');
+      }
     }
 
     const uidValidation = userIdValidation.safeParse(uid);

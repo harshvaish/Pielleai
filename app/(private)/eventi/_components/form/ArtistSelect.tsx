@@ -59,7 +59,7 @@ export default function ArtistSelect({ artists, value, setValue, hasError }: Art
           {selectedArtist ? (
             selectedArtist.stageName
           ) : (
-            <span className='flex justify-start items-center gap-2 text-zinc-400'>
+            <span className='w-full flex justify-between items-center gap-2 text-zinc-400'>
               Seleziona artista{' '}
               <ChevronDown className={cn('transition-transform', open ? 'rotate-180' : '')} />
             </span>

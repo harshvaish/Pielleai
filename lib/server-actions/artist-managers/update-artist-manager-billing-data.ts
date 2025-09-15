@@ -1,7 +1,5 @@
 'use server';
 
-import { auth } from '@/lib/auth';
-import { headers } from 'next/headers';
 import { ServerActionResponse } from '@/lib/types';
 import {
   ArtistManagerS2FormSchema,
@@ -13,25 +11,22 @@ import { profiles, countries, subdivisions } from '@/lib/database/schema';
 import { AppError } from '@/lib/classes/AppError';
 import { revalidateTag } from 'next/cache';
 import { getUserProfileIdCached } from '@/lib/cache/users';
+import getSession from '@/lib/data/auth/get-session';
 
 export const updateArtistManagerBillingData = async (
   profileId: number,
   data: ArtistManagerS2FormSchema,
 ): Promise<ServerActionResponse<null>> => {
   try {
-    const headersList = await headers();
+    const { session, user } = await getSession();
 
-    const session = await auth.api.getSession({
-      headers: headersList,
-    });
-
-    if (!session?.user) {
-      console.error('[updateArtistManagerBillingData] - Error: unauthenticated', session);
+    if (!session || !user || user.banned) {
+      console.error('[updateArtistManagerBillingData] - Error: unauthorized', session);
       throw new AppError('Non sei autenticato.');
     }
 
-    if (session.user.role != 'admin') {
-      const userProfileIdCheck = await getUserProfileIdCached(session.user.id);
+    if (user.role != 'admin') {
+      const userProfileIdCheck = await getUserProfileIdCached(user.id);
       if (!userProfileIdCheck || userProfileIdCheck != profileId) {
         console.error('[updateArtistManagerBillingData] - Error: unauthorized', session);
         throw new AppError('Non sei autorizzato.');

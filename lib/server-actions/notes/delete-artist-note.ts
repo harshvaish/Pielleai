@@ -1,23 +1,23 @@
 'use server';
 
-import { auth } from '@/lib/auth';
 import { AppError } from '@/lib/classes/AppError';
+import getSession from '@/lib/data/auth/get-session';
 import { database } from '@/lib/database/connection';
 import { artistNotes } from '@/lib/database/schema';
 import { ServerActionResponse } from '@/lib/types';
 import { idValidation } from '@/lib/validation/_general';
 import { eq } from 'drizzle-orm';
-import { headers } from 'next/headers';
 
 export async function deleteArtistNote(noteId: number): Promise<ServerActionResponse<null>> {
   try {
-    const headersList = await headers();
+    const { session, user } = await getSession();
 
-    const session = await auth.api.getSession({
-      headers: headersList,
-    });
+    if (!session || !user || user.banned) {
+      console.error('[deleteArtistNote] - Error: unauthorized', session);
+      throw new AppError('Non sei autenticato.');
+    }
 
-    if (!session?.user || session.user.role != 'admin') {
+    if (user.role != 'admin') {
       console.error('[deleteArtistNote] - Error: unauthorized', session);
       throw new AppError('Non sei autorizzato.');
     }

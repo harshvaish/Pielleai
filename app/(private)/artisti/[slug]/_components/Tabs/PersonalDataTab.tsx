@@ -4,6 +4,7 @@ import { ArtistData, UserRole } from '@/lib/types';
 import ZonesBadge from '../../../../_components/badges/ZonesBadge';
 import TourManagerBadge from '@/app/(private)/_components/badges/TourManagerBadge';
 import ManagersBadge from '@/app/(private)/_components/badges/ManagersBadge';
+import { GENDERS_LABELS } from '@/lib/constants';
 
 type PersonalDataTabProps = { tabValue: string; data: ArtistData; userRole: UserRole };
 
@@ -44,7 +45,7 @@ export default function PersonalDataTab({ tabValue, data, userRole }: PersonalDa
           <span className='text-sm font-medium text-zinc-500'>{data.country.name}</span>
 
           <span className='text-sm font-semibold text-zinc-600'>Sesso</span>
-          <span className='text-sm font-medium text-zinc-500'>{data.gender}</span>
+          <span className='text-sm font-medium text-zinc-500'>{GENDERS_LABELS[data.gender]}</span>
 
           <span className='text-sm font-semibold text-zinc-600'>Lingue</span>
           <span className='text-sm font-medium text-zinc-500'>{languagesString}</span>

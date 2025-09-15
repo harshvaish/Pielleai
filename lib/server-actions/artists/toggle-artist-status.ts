@@ -1,15 +1,14 @@
 'use server';
 
-import { auth } from '@/lib/auth';
 import { AppError } from '@/lib/classes/AppError';
+import getSession from '@/lib/data/auth/get-session';
 import { database } from '@/lib/database/connection';
-import { artists, userStatus } from '@/lib/database/schema';
+import { artists } from '@/lib/database/schema';
 import { ServerActionResponse, UserStatus } from '@/lib/types';
 import { hasRole } from '@/lib/utils';
-import { idValidation } from '@/lib/validation/_general';
+import { idValidation, userStatusEnumValidation } from '@/lib/validation/_general';
 import { eq } from 'drizzle-orm';
 import { revalidateTag } from 'next/cache';
-import { headers } from 'next/headers';
 import { z } from 'zod/v4';
 
 export async function toggleArtistStatus(
@@ -17,25 +16,21 @@ export async function toggleArtistStatus(
   initialStatus: UserStatus,
 ): Promise<ServerActionResponse<null>> {
   try {
-    const headersList = await headers();
+    const { session, user } = await getSession();
 
-    const session = await auth.api.getSession({
-      headers: headersList,
-    });
-
-    if (!session?.user) {
-      console.error('[createArtist] - Error: unauthorized', session);
-      throw new AppError('Devi essere autenticato.');
+    if (!session || !user || user.banned) {
+      console.error('[toggleArtistStatus] - Error: unauthorized', session);
+      throw new AppError('Non sei autenticato.');
     }
 
-    if (!hasRole(session.user, ['admin', 'artist-manager'])) {
-      console.error('[createArtist] - Error: role', session);
+    if (!hasRole(user, ['admin', 'artist-manager'])) {
+      console.error('[toggleArtistStatus] - Error: role', session);
       throw new AppError('Non sei autorizzato.');
     }
 
     const schema = z.object({
       artistId: idValidation,
-      initialStatus: z.enum(userStatus.enumValues, "Seleziona un'opzione valida."),
+      initialStatus: userStatusEnumValidation,
     });
 
     const validation = schema.safeParse({ artistId, initialStatus });

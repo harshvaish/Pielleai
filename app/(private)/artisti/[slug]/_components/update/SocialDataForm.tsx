@@ -69,9 +69,8 @@ export default function SocialDataForm({ userData, closeDialog }: SocialDataForm
     const response = await updateArtistSocialData(userData.id, data);
 
     if (response.success) {
-      methods.reset(data); // new form status, isDirty to false
-      toast.success('Profilo artista aggiornato!');
       closeDialog();
+      toast.success('Profilo artista aggiornato!');
       router.refresh();
     } else {
       toast.error(response.message);

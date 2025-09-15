@@ -38,50 +38,55 @@ export async function getEvents(
   const safePage = isPaginated ? (currentPage as number) : 1;
   const offset = (safePage - 1) * limit;
 
+  const isAdmin = user.role === 'admin';
   const isArtistManager = user.role === 'artist-manager';
   const isVenueManager = user.role === 'venue-manager';
 
+  // normalize incoming filters
+  let artistManagerIdsFilter = (artistManagerIds ?? []).map(Number);
+  let venueIdsFilter = (venueIds ?? []).map(Number);
+
+  const rangeWindow =
+    startDate && endDate
+      ? sql`tstzrange(
+            ${startDate}::timestamptz,
+            ${endDate}::timestamptz,
+            '[)')`
+      : undefined;
+
   try {
-    const rangeWindow =
-      startDate && endDate
-        ? sql`tstzrange(
-              ${startDate}::timestamptz,
-              ${endDate}::timestamptz,
-              '[)')`
-        : undefined;
+    if (!isAdmin) {
+      const profileId = await getUserProfileIdCached(user.id);
+      if (!profileId) throw new Error('Recupero profilo non riuscito.');
 
-    const profileId = await getUserProfileIdCached(user.id);
+      if (isArtistManager) {
+        artistManagerIdsFilter = [profileId];
+      }
 
-    if (isArtistManager) {
-      artistManagerIds = [profileId!.toString()];
+      if (isVenueManager && venueIdsFilter.length === 0) {
+        const results = await database
+          .select({
+            id: venues.id,
+          })
+          .from(venues)
+          .where(and(eq(venues.managerProfileId, profileId), eq(venues.status, 'active')));
+
+        venueIdsFilter = [...results.map((r) => r.id)];
+      }
     }
-
-    let managedVenueIds: number[] = [];
-
-    if (isVenueManager) {
-      artistManagerIds = [];
-
-      const results = await database
-        .select({
-          id: venues.id,
-        })
-        .from(venues)
-        .where(and(eq(venues.managerProfileId, profileId!), eq(venues.status, 'active')));
-
-      managedVenueIds = [...results.map((r) => r.id)];
-    }
-
-    const venueIdsInt = venueIds.map(Number);
-    const venueIdsFilter: number[] = Array.from(new Set([...venueIdsInt, ...managedVenueIds]));
 
     // Build reusable filters
     const filters = and(
       status.length > 0 ? inArray(events.status, status) : undefined,
       artistIds.length > 0 ? inArray(events.artistId, artistIds.map(Number)) : undefined,
-      artistManagerIds.length > 0
-        ? inArray(events.artistManagerProfileId, artistManagerIds.map(Number))
+      artistManagerIdsFilter.length > 0
+        ? inArray(events.artistManagerProfileId, artistManagerIdsFilter)
         : undefined,
-      venueIdsFilter.length > 0 ? inArray(events.venueId, venueIdsFilter) : undefined,
+      isVenueManager
+        ? inArray(events.venueId, venueIdsFilter)
+        : venueIdsFilter.length > 0
+          ? inArray(events.venueId, venueIdsFilter)
+          : undefined,
       rangeWindow ? sql`${artistAvailabilities.timeRange} && ${rangeWindow}` : undefined,
     );
 

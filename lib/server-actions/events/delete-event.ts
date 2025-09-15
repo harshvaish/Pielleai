@@ -1,23 +1,24 @@
 'use server';
 
-import { auth } from '@/lib/auth';
-import { headers } from 'next/headers';
 import { AppError } from '@/lib/classes/AppError';
 import { ServerActionResponse } from '@/lib/types';
 import { database } from '@/lib/database/connection';
 import { events } from '@/lib/database/schema';
 import { eq } from 'drizzle-orm';
 import { idValidation } from '@/lib/validation/_general';
+import getSession from '@/lib/data/auth/get-session';
+import { hasRole } from '@/lib/utils';
 
 export async function deleteEvent(eventId: number): Promise<ServerActionResponse<null>> {
   try {
-    const headersList = await headers();
+    const { session, user } = await getSession();
 
-    const session = await auth.api.getSession({
-      headers: headersList,
-    });
+    if (!session || !user || user.banned) {
+      console.error('[deleteEvent] - Error: unauthorized', session);
+      throw new AppError('Non sei autenticato.');
+    }
 
-    if (!session?.user) {
+    if (!hasRole(user, ['admin', 'venue-manager'])) {
       console.error('[deleteEvent] - Error: unauthorized', session);
       throw new AppError('Non sei autorizzato.');
     }

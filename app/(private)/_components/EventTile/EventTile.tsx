@@ -350,7 +350,19 @@ export default function EventTile({
             />
           )}
 
-          {hasRole({ role: userRole }, ['admin', 'artist-manager']) &&
+          {userRole === 'admin' && event.status === 'proposed' && (
+            <UpdateEventStatusButton
+              event={event}
+              newStatus='rejected'
+              buttonLabel='Rifiuta'
+              buttonVariant='destructive'
+              dialogTitle='Vuoi rifiutare questa richiesta?'
+              dialogDescription="Sei sicuro di voler rifiutare questa richiesta? L'organizzatore dell'evento riceverà una notifica."
+              icon={<X className='size-4' />}
+            />
+          )}
+
+          {userRole === 'artist-manager' &&
             (event.status === 'proposed' || event.status === 'pre-confirmed') && (
               <UpdateEventStatusButton
                 event={event}
@@ -364,7 +376,7 @@ export default function EventTile({
             )}
 
           {userRole === 'venue-manager' &&
-            ['proposed', 'pre-confirmed', 'conflict', 'confirmed'].includes(event.status) && (
+            ['proposed', 'pre-confirmed', 'conflict'].includes(event.status) && (
               <DeleteEventButton event={event} />
             )}
 

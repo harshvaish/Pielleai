@@ -70,9 +70,8 @@ export default function PersonalDataForm({
     const response = await updateVenueManagerPersonalData(userData.profileId, data);
 
     if (response.success) {
-      methods.reset(data); // new form status, isDirty to false
-      toast.success('Profilo promoter locali aggiornato!');
       closeDialog();
+      toast.success('Profilo promoter locali aggiornato!');
       router.refresh();
     } else {
       toast.error(response.message);

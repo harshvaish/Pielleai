@@ -1,12 +1,11 @@
 'use server';
 
-import { auth } from '@/lib/auth';
 import { AppError } from '@/lib/classes/AppError';
+import getSession from '@/lib/data/auth/get-session';
 import { database } from '@/lib/database/connection';
 import { profileNotes } from '@/lib/database/schema';
 import { ProfileNote, ServerActionResponse } from '@/lib/types';
 import { newNoteSchema } from '@/lib/validation/new-note-schema';
-import { headers } from 'next/headers';
 
 export async function createProfileNote(
   writerId: string,
@@ -14,13 +13,14 @@ export async function createProfileNote(
   content: string,
 ): Promise<ServerActionResponse<ProfileNote | null>> {
   try {
-    const headersList = await headers();
+    const { session, user } = await getSession();
 
-    const session = await auth.api.getSession({
-      headers: headersList,
-    });
+    if (!session || !user || user.banned) {
+      console.error('[createProfileNote] - Error: unauthorized', session);
+      throw new AppError('Non sei autenticato.');
+    }
 
-    if (!session?.user || session.user.role != 'admin') {
+    if (user.role != 'admin') {
       console.error('[createProfileNote] - Error: unauthorized', session);
       throw new AppError('Non sei autorizzato.');
     }

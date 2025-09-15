@@ -1,7 +1,5 @@
 'use server';
 
-import { auth } from '@/lib/auth';
-import { headers } from 'next/headers';
 import { ServerActionResponse } from '@/lib/types';
 import { database } from '@/lib/database/connection';
 import { and, eq } from 'drizzle-orm';
@@ -11,27 +9,24 @@ import { AppError } from '@/lib/classes/AppError';
 import { idValidation } from '@/lib/validation/_general';
 import { getUserProfileIdCached } from '@/lib/cache/users';
 import { revalidateTag } from 'next/cache';
+import getSession from '@/lib/data/auth/get-session';
 
 export const removeManagedArtist = async (
   managerProfileId: number,
   artistId: number,
 ): Promise<ServerActionResponse<null>> => {
   try {
-    const headersList = await headers();
+    const { session, user } = await getSession();
 
-    const session = await auth.api.getSession({
-      headers: headersList,
-    });
-
-    if (!session?.user) {
-      console.error('[updateArtistManagerBillingData] - Error: unauthenticated', session);
+    if (!session || !user || user.banned) {
+      console.error('[removeManagedArtist] - Error: unauthorized', session);
       throw new AppError('Non sei autenticato.');
     }
 
-    if (session.user.role != 'admin') {
-      const userProfileIdCheck = await getUserProfileIdCached(session.user.id);
+    if (user.role != 'admin') {
+      const userProfileIdCheck = await getUserProfileIdCached(user.id);
       if (!userProfileIdCheck || userProfileIdCheck != managerProfileId) {
-        console.error('[updateArtistManagerBillingData] - Error: unauthorized', session);
+        console.error('[removeManagedArtist] - Error: unauthorized', session);
         throw new AppError('Non sei autorizzato.');
       }
     }
@@ -66,8 +61,8 @@ export const removeManagedArtist = async (
       throw new AppError('Artista non trovato.');
     }
 
-    revalidateTag(`profile:${session.user.id}`);
-    revalidateTag(`artist-manager:${session.user.id}`);
+    revalidateTag(`profile:${user.id}`);
+    revalidateTag(`artist-manager:${user.id}`);
 
     return {
       success: true,

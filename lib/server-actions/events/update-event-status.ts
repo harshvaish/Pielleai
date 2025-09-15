@@ -1,14 +1,13 @@
 'use server';
 
-import { auth } from '@/lib/auth';
 import { AppError } from '@/lib/classes/AppError';
+import getSession from '@/lib/data/auth/get-session';
 import { database } from '@/lib/database/connection';
-import { artistAvailabilities, events, eventStatus } from '@/lib/database/schema';
+import { artistAvailabilities, events } from '@/lib/database/schema';
 import { EventStatus, ServerActionResponse } from '@/lib/types';
 import { hasRole } from '@/lib/utils';
-import { idValidation } from '@/lib/validation/_general';
+import { eventStatusEnumValidation, idValidation } from '@/lib/validation/_general';
 import { and, eq, ne, count } from 'drizzle-orm';
-import { headers } from 'next/headers';
 import { z } from 'zod/v4';
 
 export async function updateEventStatus(
@@ -16,20 +15,21 @@ export async function updateEventStatus(
   newStatus: EventStatus,
 ): Promise<ServerActionResponse<null>> {
   try {
-    const headersList = await headers();
+    const { session, user } = await getSession();
 
-    const session = await auth.api.getSession({
-      headers: headersList,
-    });
+    if (!session || !user || user.banned) {
+      console.error('[updateEventStatus] - Error: unauthorized', session);
+      throw new AppError('Non sei autenticato.');
+    }
 
-    if (!session?.user || !hasRole(session.user, ['admin', 'artist-manager'])) {
+    if (!hasRole(user, ['admin', 'artist-manager', 'venue-manager'])) {
       console.error('[updateEventStatus] - Error: unauthorized', session);
       throw new AppError('Non sei autorizzato.');
     }
 
     const schema = z.object({
       eventId: idValidation,
-      newStatus: z.enum(eventStatus.enumValues, "Seleziona un'opzione valida."),
+      newStatus: eventStatusEnumValidation,
     });
 
     const validation = schema.safeParse({ eventId, newStatus });

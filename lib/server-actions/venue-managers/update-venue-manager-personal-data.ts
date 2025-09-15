@@ -1,7 +1,5 @@
 'use server';
 
-import { auth } from '@/lib/auth';
-import { headers } from 'next/headers';
 import { ServerActionResponse } from '@/lib/types';
 import { database } from '@/lib/database/connection';
 import { eq, inArray } from 'drizzle-orm';
@@ -19,25 +17,22 @@ import {
 import { AppError } from '@/lib/classes/AppError';
 import { revalidateTag } from 'next/cache';
 import { getUserProfileIdCached } from '@/lib/cache/users';
+import getSession from '@/lib/data/auth/get-session';
 
 export const updateVenueManagerPersonalData = async (
   profileId: number,
   data: VenueManagerS1FormSchema,
 ): Promise<ServerActionResponse<null>> => {
   try {
-    const headersList = await headers();
+    const { session, user } = await getSession();
 
-    const session = await auth.api.getSession({
-      headers: headersList,
-    });
-
-    if (!session?.user) {
-      console.error('[updateVenueManagerPersonalData] - Error: unauthenticated', session);
+    if (!session || !user || user.banned) {
+      console.error('[updateVenueManagerPersonalData] - Error: unauthorized', session);
       throw new AppError('Non sei autenticato.');
     }
 
-    if (session.user.role != 'admin') {
-      const userProfileIdCheck = await getUserProfileIdCached(session.user.id);
+    if (user.role != 'admin') {
+      const userProfileIdCheck = await getUserProfileIdCached(user.id);
       if (!userProfileIdCheck || userProfileIdCheck != profileId) {
         console.error('[updateVenueManagerPersonalData] - Error: unauthorized', session);
         throw new AppError('Non sei autorizzato.');

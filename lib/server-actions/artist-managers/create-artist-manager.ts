@@ -1,7 +1,6 @@
 'use server';
 
 import { auth } from '@/lib/auth';
-import { headers } from 'next/headers';
 import { ServerActionResponse } from '@/lib/types';
 import {
   artistManagerFormSchema,
@@ -20,6 +19,8 @@ import { APIError } from 'better-auth/api';
 import { getBetterAuthErrorMessage } from '@/lib/utils';
 import { AppError } from '@/lib/classes/AppError';
 import { revalidateTag } from 'next/cache';
+import getSession from '@/lib/data/auth/get-session';
+import { headers } from 'next/headers';
 
 export const createArtistManager = async (
   data: ArtistManagerFormSchema,
@@ -28,11 +29,14 @@ export const createArtistManager = async (
   let newUserId: string | undefined;
 
   try {
-    const session = await auth.api.getSession({
-      headers: headersList,
-    });
+    const { session, user } = await getSession();
 
-    if (!session?.user || session.user.role != 'admin') {
+    if (!session || !user || user.banned) {
+      console.error('[createArtistManager] - Error: unauthorized', session);
+      throw new AppError('Non sei autenticato.');
+    }
+
+    if (user.role != 'admin') {
       console.error('[createArtistManager] - Error: unauthorized', session);
       throw new AppError('Non sei autorizzato.');
     }
@@ -124,6 +128,7 @@ export const createArtistManager = async (
           name,
           role: 'artist-manager',
           data: {
+            emailVerified: true,
             status: 'active',
           },
         },

@@ -1,7 +1,5 @@
 'use server';
 
-import { auth } from '@/lib/auth';
-import { headers } from 'next/headers';
 import { ServerActionResponse } from '@/lib/types';
 import { database } from '@/lib/database/connection';
 import { and, count, eq, gt } from 'drizzle-orm';
@@ -17,16 +15,18 @@ import {
 import { eventFormSchema, EventFormSchema } from '@/lib/validation/event-form-schema';
 import { isBefore } from 'date-fns';
 import { AppError } from '@/lib/classes/AppError';
+import getSession from '@/lib/data/auth/get-session';
 
 export const createEvent = async (data: EventFormSchema): Promise<ServerActionResponse<null>> => {
   try {
-    const headersList = await headers();
+    const { session, user } = await getSession();
 
-    const session = await auth.api.getSession({
-      headers: headersList,
-    });
+    if (!session || !user || user.banned) {
+      console.error('[createEvent] - Error: unauthorized', session);
+      throw new AppError('Non sei autenticato.');
+    }
 
-    if (!session?.user || session.user.role != 'admin') {
+    if (user.role != 'admin') {
       console.error('[createEvent] - Error: unauthorized', session);
       throw new AppError('Non sei autorizzato.');
     }
@@ -187,7 +187,7 @@ export const createEvent = async (data: EventFormSchema): Promise<ServerActionRe
         throw new AppError('Inserimento evento non riuscito.');
       }
 
-      const writerId = session.user.id;
+      const writerId = user.id;
 
       const noteInserts = (validation.data.notes || []).map((content: string) => ({
         writerId: writerId,

@@ -72,9 +72,8 @@ export default function SocialDataForm({ venueData, closeDialog }: SocialDataFor
     const response = await updateVenueSocialData(venueData.id, data);
 
     if (response.success) {
-      methods.reset(data); // new form status, isDirty to false
-      toast.success('Scheda locale aggiornata!');
       closeDialog();
+      toast.success('Scheda locale aggiornata!');
       router.refresh();
     } else {
       toast.error(response.message);

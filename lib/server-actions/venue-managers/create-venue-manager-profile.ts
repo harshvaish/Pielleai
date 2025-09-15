@@ -1,7 +1,5 @@
 'use server';
 
-import { auth } from '@/lib/auth';
-import { headers } from 'next/headers';
 import { ServerActionResponse } from '@/lib/types';
 import { database } from '@/lib/database/connection';
 import { eq, inArray } from 'drizzle-orm';
@@ -22,21 +20,25 @@ import {
   venueManagerS1FormSchema,
   VenueManagerS1FormSchema,
 } from '@/lib/validation/venue-manager-form-schema';
+import getSession from '@/lib/data/auth/get-session';
 
 export const createVenueManagerProfile = async (
   uid: string,
   data: VenueManagerS1FormSchema,
 ): Promise<ServerActionResponse<null>> => {
-  const headersList = await headers();
-
   try {
-    const session = await auth.api.getSession({
-      headers: headersList,
-    });
+    const { session, user } = await getSession();
 
-    if (!session?.user) {
+    if (!session || !user || user.banned) {
       console.error('[createVenueManagerProfile] - Error: unauthorized', session);
-      throw new AppError('Non sei autorizzato.');
+      throw new AppError('Non sei autenticato.');
+    }
+
+    if (user.role != 'admin') {
+      if (user.id != uid) {
+        console.error('[createVenueManagerProfile] - Error: unauthorized', session);
+        throw new AppError('Non sei autorizzato.');
+      }
     }
 
     const uidValidation = userIdValidation.safeParse(uid);
