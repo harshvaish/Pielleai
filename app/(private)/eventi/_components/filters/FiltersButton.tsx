@@ -32,9 +32,8 @@ export default function FiltersButton({
   venues,
 }: FiltersButtonProps) {
   const router = useRouter();
-
-  const [open, setOpen] = useState<boolean>(false);
   const [isPending, startTransition] = useTransition();
+  const [open, setOpen] = useState<boolean>(false);
 
   const [artistIds, setArtistIds] = useState<string[]>(filters.artistIds || []);
   const [artistManagerIds, setArtistManagerIds] = useState<string[]>(
@@ -78,9 +77,10 @@ export default function FiltersButton({
 
     params.set('page', '1');
 
+    setOpen(false);
+
     startTransition(() => {
       router.push(`${window.location.pathname}?${params.toString()}`);
-      setOpen(false);
     });
   };
 

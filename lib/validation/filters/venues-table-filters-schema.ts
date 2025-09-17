@@ -1,6 +1,9 @@
 import { z } from 'zod/v4';
-import { idValidation, stringIdValidation } from '@/lib/validation/_general';
-import { venueTypes } from '@/lib/database/schema';
+import {
+  idValidation,
+  stringIdValidation,
+  venueTypesEnumValidation,
+} from '@/lib/validation/_general';
 
 export const venuesTableFiltersSchema = z.object({
   currentPage: idValidation,
@@ -8,7 +11,7 @@ export const venuesTableFiltersSchema = z.object({
   company: z.string().nullable(),
   taxCode: z.string().nullable(),
   address: z.string().nullable(),
-  types: z.array(z.enum(venueTypes.enumValues)),
+  types: z.array(venueTypesEnumValidation),
   managerIds: z.array(stringIdValidation),
   capacity: stringIdValidation.nullable(),
 });

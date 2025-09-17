@@ -8,13 +8,71 @@ import { eventsExportFiltersSchema } from '@/lib/validation/event-export-filters
 import getSession from '@/lib/data/auth/get-session';
 
 type CSVRow = {
-  id: string | number;
-  artista: string;
-  locale: string;
-  indirizzo_locale: string;
-  data_inizio: string;
-  data_fine: string;
-  stato: string;
+  evento_id: number;
+  evento_inizio: string;
+  evento_fine: string;
+  evento_stato: string;
+
+  artista_id: number;
+  artista_nome: string;
+  artista_cognome: string;
+  artista_nome_arte: string;
+  artista_stato: string;
+
+  manager_artista_id: string;
+  manager_artista_nome: string;
+  manager_artista_cognome: string;
+  manager_artista_stato: string;
+
+  locale_id: number;
+  locale_nome: string;
+  locale_indirizzo: string;
+  locale_stato: string;
+
+  tour_manager_nome: string;
+  tour_manager_cognome: string;
+
+  consulenza: string;
+  ingaggi: string;
+
+  cachet_lordo: string;
+  acconto: string;
+  fee_promoter: string;
+  numero_fattura_acconto: string;
+  rimborso_spese: string;
+  percentuale_booking: string;
+  fornitore: string;
+  spese_anticipate: string;
+  netto_artista: string;
+  anticipo_artista: string;
+
+  hotel: string;
+  ristorante: string;
+  referente_serata: string;
+
+  coordinatore_nome: string;
+  coordinatore_cognome: string;
+
+  incasso_totale: string;
+  saldo_trasporti: string;
+  saldo_cassa: string;
+
+  sound_check_inizio: string;
+  sound_check_fine: string;
+
+  rider_tecnico_nome: string;
+  rider_tecnico_link: string;
+
+  firma_contratto: boolean;
+  emissione_fattura_acconto: boolean;
+  verifica_ricezione_acconto: boolean;
+  scheda_tecnica: boolean;
+  incarico_artista: boolean;
+  incarico_professionisti: boolean;
+  ingaggio_accompagnatori: boolean;
+  performance: boolean;
+  feedback_post_evento: boolean;
+  bordereau: boolean;
 };
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
@@ -53,13 +111,73 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const events = result?.data ?? [];
 
     const csvData: CSVRow[] = events.map((event: Event) => ({
-      id: event?.id ?? '',
-      artista: event?.artist?.stageName ?? '',
-      locale: event?.venue?.name ?? '',
-      indirizzo_locale: event?.venue?.address ?? '',
-      data_inizio: formatInTimeZone(event?.availability?.startDate, TIME_ZONE, 'dd/MM/yyyy HH:mm'),
-      data_fine: formatInTimeZone(event?.availability?.endDate, TIME_ZONE, 'dd/MM/yyyy HH:mm'),
-      stato: event?.status ? EVENT_STATUS_LABELS[event.status] : '',
+      evento_id: event.id,
+      evento_inizio: formatInTimeZone(event.availability.startDate, TIME_ZONE, 'dd/MM/yyyy HH:mm'),
+      evento_fine: formatInTimeZone(event.availability.endDate, TIME_ZONE, 'dd/MM/yyyy HH:mm'),
+      evento_stato: EVENT_STATUS_LABELS[event.status],
+
+      artista_id: event.artist.id,
+      artista_nome: event.artist.name,
+      artista_cognome: event.artist.surname,
+      artista_nome_arte: event.artist.stageName,
+      artista_stato: event.artist.status,
+
+      manager_artista_id: event?.artistManager?.id ?? '',
+      manager_artista_nome: event?.artistManager?.name ?? '',
+      manager_artista_cognome: event?.artistManager?.name ?? '',
+      manager_artista_stato: event?.artistManager?.name ?? '',
+
+      locale_id: event.venue.id,
+      locale_nome: event.venue.name,
+      locale_indirizzo: event.venue.address,
+      locale_stato: event.venue.status,
+
+      tour_manager_nome: event?.tourManagerName ?? '',
+      tour_manager_cognome: event?.tourManagerSurname ?? '',
+
+      consulenza: event?.administrationEmail ?? '',
+      ingaggi: event?.payrollConsultantEmail ?? '',
+
+      cachet_lordo: event?.moCost ?? '',
+      acconto: event?.depositCost ?? '',
+      fee_promoter: event?.venueManagerCost ?? '',
+      numero_fattura_acconto: event?.depositInvoiceNumber ?? '',
+      rimborso_spese: event?.expenseReimbursement ?? '',
+      percentuale_booking: event?.bookingPercentage ?? '',
+      fornitore: event?.supplierCost ?? '',
+      spese_anticipate: event?.moArtistAdvancedExpenses ?? '',
+      netto_artista: event?.artistNetCost ?? '',
+      anticipo_artista: event?.artistUpfrontCost ?? '',
+
+      hotel: event?.hotel ?? '',
+      ristorante: event?.restaurant ?? '',
+      referente_serata: event?.eveningContact ?? '',
+
+      coordinatore_nome: event?.moCoordinator?.name ?? '',
+      coordinatore_cognome: event?.moCoordinator?.surname ?? '',
+
+      incasso_totale: event?.totalCost ?? '',
+      saldo_trasporti: event?.transportationsCost ?? '',
+      saldo_cassa: event?.cashBalanceCost ?? '',
+
+      sound_check_inizio: event?.soundCheckStart ?? '',
+      sound_check_fine: event?.soundCheckEnd ?? '',
+
+      rider_tecnico_nome: event?.tecnicalRiderName ?? '',
+      rider_tecnico_link: event?.tecnicalRiderUrl ?? '',
+
+      firma_contratto: event.contractSigning,
+      emissione_fattura_acconto: event.depositInvoiceIssuing,
+      verifica_ricezione_acconto: event.depositReceiptVerification,
+      scheda_tecnica: event.techSheetSubmission,
+      incarico_artista: event.artistEngagement,
+      incarico_professionisti: event.professionalsEngagement,
+      ingaggio_accompagnatori: event.accompanyingPersonsEngagement,
+
+      performance: event.performance,
+
+      feedback_post_evento: event.postDateFeedback,
+      bordereau: event.bordereau,
     }));
 
     const csv = unparse(csvData, {

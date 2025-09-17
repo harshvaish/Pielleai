@@ -104,12 +104,14 @@ export async function getEvents(
           surname: artists.surname,
           stageName: artists.stageName,
         },
+
         availability: {
           id: artistAvailabilities.id,
           startDate: artistAvailabilities.startDate,
           endDate: artistAvailabilities.endDate,
           status: artistAvailabilities.status,
         },
+
         venue: {
           id: venues.id,
           status: venues.status,

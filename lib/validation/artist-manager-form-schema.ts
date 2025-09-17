@@ -8,10 +8,8 @@ import {
   nameValidation,
   phoneValidation,
   taxCodeValidation,
+  profileGendersEnumValidation,
 } from './_general';
-import { profileGenders } from '../database/schema';
-
-const genderEnum = z.enum(profileGenders.enumValues, "Seleziona un'opzione valida.");
 
 export const artistManagerS1FormSchema = z.object({
   avatarUrl: z
@@ -57,7 +55,7 @@ export const artistManagerS1FormSchema = z.object({
     .regex(/^[A-Z0-9\- ]+$/, 'Può contenere solo lettere maiuscole, numeri, trattini o spazi.')
     .trim(),
 
-  gender: genderEnum,
+  gender: profileGendersEnumValidation,
 });
 
 export type ArtistManagerS1FormSchema = z.infer<typeof artistManagerS1FormSchema>;

@@ -65,9 +65,10 @@ export function FiltersButton({ filters, artists, venues }: FiltersButtonProps) 
       params.delete('s');
     }
 
+    setOpen(false);
+
     startTransition(() => {
       router.replace(`${window.location.pathname}?${params.toString()}`);
-      setOpen(false);
     });
   };
 

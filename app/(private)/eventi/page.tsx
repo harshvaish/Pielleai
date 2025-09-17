@@ -117,6 +117,10 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
             status='rejected'
             label='Rifiutato'
           />
+          <StatusFilterButton
+            status='ended'
+            label='Finito'
+          />
         </div>
         <div className='flex items-center gap-2'>
           <FiltersButton

@@ -2,9 +2,13 @@ import { getCalendarEvents } from '@/lib/data/events/get-calendar-events';
 import { splitCsv } from '@/lib/utils';
 import { type NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod/v4';
-import { stringDateValidation, stringIdValidation } from '@/lib/validation/_general';
+import {
+  eventStatusEnumValidation,
+  stringDateValidation,
+  stringIdValidation,
+} from '@/lib/validation/_general';
 import { ApiResponse, CalendarEvent, EventStatus } from '@/lib/types';
-import { eventStatus, managerArtists, venues } from '@/lib/database/schema';
+import { managerArtists, venues } from '@/lib/database/schema';
 import getSession from '@/lib/data/auth/get-session';
 import { database } from '@/lib/database/connection';
 import { eq } from 'drizzle-orm';
@@ -48,7 +52,7 @@ export async function GET(
       endDate: stringDateValidation,
       artistIds: z.array(stringIdValidation),
       venueIds: z.array(stringIdValidation),
-      status: z.array(z.enum(eventStatus.enumValues)),
+      status: z.array(eventStatusEnumValidation),
     });
 
     const validation = schema.safeParse({ startDate, endDate, status, artistIds, venueIds });

@@ -6,8 +6,8 @@ import {
   idValidation,
   phoneValidation,
   taxCodeValidation,
+  venueTypesEnumValidation,
 } from './_general';
-import { venueTypes } from '../database/schema';
 
 export const venueS1FormSchema = z.object({
   avatarUrl: z
@@ -21,7 +21,7 @@ export const venueS1FormSchema = z.object({
     .max(100, 'Massimo 100 caratteri.')
     .trim(),
 
-  type: z.enum(venueTypes.enumValues, "Seleziona un'opzione valida."),
+  type: venueTypesEnumValidation,
 
   capacity: z
     .number('Campo malformato.')

@@ -1,7 +1,7 @@
 import { EVENT_STATUS_LABELS } from '@/lib/constants';
 import { EventStatus } from '@/lib/types';
 import { cn } from '@/lib/utils';
-import { Check, ChevronRight, X } from 'lucide-react';
+import { Clock, Check, ChevronRight, X } from 'lucide-react';
 import { JSX } from 'react';
 
 type EventStatusBadgeProps = {
@@ -56,6 +56,15 @@ const styles: Record<EventStatus, { text: string; bg: string; icon: JSX.Element 
       </div>
     ),
   },
+  'ended': {
+    text: 'text-gray-600',
+    bg: 'bg-gray-50',
+    icon: (
+      <div className='w-3 h-3 flex justify-center items-center bg-gray-600 rounded-full'>
+        <Clock className='size-2 text-white' />
+      </div>
+    ),
+  },
 };
 
 const sizes: Record<'sm' | 'md' | 'lg', string> = {
@@ -64,11 +73,22 @@ const sizes: Record<'sm' | 'md' | 'lg', string> = {
   lg: 'text-base px-3 py-1.5 gap-2.5',
 };
 
-export default function EventStatusBadge({ status, variant = 'primary', size = 'md' }: EventStatusBadgeProps) {
+export default function EventStatusBadge({
+  status,
+  variant = 'primary',
+  size = 'md',
+}: EventStatusBadgeProps) {
   const style = styles[status];
 
   return (
-    <div className={cn('max-w-min inline-flex flex-nowrap items-center font-medium rounded-md', style.text, variant === 'primary' ? style.bg : 'bg-white', sizes[size])}>
+    <div
+      className={cn(
+        'max-w-min inline-flex flex-nowrap items-center font-medium rounded-md',
+        style.text,
+        variant === 'primary' ? style.bg : 'bg-white',
+        sizes[size],
+      )}
+    >
       {style.icon}
       <span className='truncate'>{EVENT_STATUS_LABELS[status]}</span>
     </div>

@@ -4,14 +4,12 @@ import {
   birthDateValidation,
   companyValidation,
   emailValidation,
+  profileGendersEnumValidation,
   idValidation,
   nameValidation,
   phoneValidation,
   taxCodeValidation,
 } from './_general';
-import { profileGenders } from '../database/schema';
-
-const genderEnum = z.enum(profileGenders.enumValues, "Seleziona un'opzione valida.");
 
 export const artistS1FormSchema = z.object({
   avatarUrl: z
@@ -63,7 +61,7 @@ export const artistS1FormSchema = z.object({
     .regex(/^[A-Z0-9\- ]+$/, 'Può contenere solo lettere maiuscole, numeri, trattini o spazi.')
     .trim(),
 
-  gender: genderEnum,
+  gender: profileGendersEnumValidation,
 
   zones: z.array(idValidation, 'Campo malformato').min(1, 'Campo obbligatorio.'),
 

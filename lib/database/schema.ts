@@ -28,6 +28,7 @@ export const eventStatus = pgEnum('event_status', [
   'confirmed',
   'conflict',
   'rejected',
+  'ended',
 ]);
 export const profileGenders = pgEnum('profile_genders', ['male', 'female', 'non-binary']);
 export const userRoles = pgEnum('user_roles', ['user', 'artist-manager', 'venue-manager', 'admin']);

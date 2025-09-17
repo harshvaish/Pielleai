@@ -1,5 +1,5 @@
 import { z } from 'zod/v4';
-import { eventStatus, userStatus } from '../database/schema';
+import { eventStatus, profileGenders, userStatus, venueTypes } from '../database/schema';
 
 export const timeValidation = z
   .string('Campo malformato.')
@@ -115,5 +115,15 @@ export const userStatusEnumValidation = z.enum(
 
 export const eventStatusEnumValidation = z.enum(
   eventStatus.enumValues,
+  "Seleziona un'opzione valida.",
+);
+
+export const profileGendersEnumValidation = z.enum(
+  profileGenders.enumValues,
+  "Seleziona un'opzione valida.",
+);
+
+export const venueTypesEnumValidation = z.enum(
+  venueTypes.enumValues,
   "Seleziona un'opzione valida.",
 );

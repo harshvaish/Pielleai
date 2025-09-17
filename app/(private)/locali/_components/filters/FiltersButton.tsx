@@ -92,9 +92,10 @@ export default function FiltersButton({ userRole, filters, venueManagers }: Filt
 
     params.set('page', '1');
 
+    setOpen(false);
+
     startTransition(() => {
       router.replace(`${window.location.pathname}?${params.toString()}`);
-      setOpen(false);
     });
   };
 

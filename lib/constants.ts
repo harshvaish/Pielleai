@@ -95,6 +95,7 @@ export const EVENT_STATUS_LABELS: Record<EventStatus, string> = {
   'confirmed': 'Confermato',
   'conflict': 'Conflitto',
   'rejected': 'Rifiutato',
+  'ended': 'Finito',
 };
 
 //venues

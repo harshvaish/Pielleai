@@ -49,9 +49,9 @@ export default function DatesFilterButton({ filters }: DatesFilterButtonProps) {
 
     params.set('page', '1');
 
+    setOpen(false);
     startTransition(() => {
       router.push(`?${params.toString()}`);
-      setOpen(false);
     });
   }, [dateRange, router, sp]);
 

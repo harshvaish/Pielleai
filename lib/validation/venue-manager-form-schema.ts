@@ -6,10 +6,8 @@ import {
   nameValidation,
   passwordValidation,
   phoneValidation,
+  profileGendersEnumValidation,
 } from './_general';
-import { profileGenders } from '../database/schema';
-
-const genderEnum = z.enum(profileGenders.enumValues, "Seleziona un'opzione valida.");
 
 export const venueManagerS1FormSchema = z.object({
   avatarUrl: z
@@ -59,7 +57,7 @@ export const venueManagerS1FormSchema = z.object({
     .regex(/^[A-Z0-9\- ]+$/, 'Può contenere solo lettere maiuscole, numeri, trattini o spazi.')
     .trim(),
 
-  gender: genderEnum,
+  gender: profileGendersEnumValidation,
 });
 
 export type VenueManagerS1FormSchema = z.infer<typeof venueManagerS1FormSchema>;

@@ -19,7 +19,13 @@ export default function FiltersButton({ filters, artists }: FiltersButtonProps) 
   const [open, setOpen] = useState<boolean>(false);
   const [isPending, startTransition] = useTransition();
 
-  const active = Boolean(filters.fullName || filters.email || filters.phone || filters.artistIds.length || filters.company);
+  const active = Boolean(
+    filters.fullName ||
+      filters.email ||
+      filters.phone ||
+      filters.artistIds.length ||
+      filters.company,
+  );
 
   const [fullName, setFullName] = useState<string>(filters.fullName || '');
   const [email, setEmail] = useState<string>(filters.email || '');
@@ -70,9 +76,10 @@ export default function FiltersButton({ filters, artists }: FiltersButtonProps) 
 
     params.set('page', '1');
 
+    setOpen(false);
+
     startTransition(() => {
       router.replace(`${window.location.pathname}?${params.toString()}`);
-      setOpen(false);
     });
   };
 
