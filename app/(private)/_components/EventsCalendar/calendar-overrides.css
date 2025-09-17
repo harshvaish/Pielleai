@@ -126,6 +126,12 @@
   color: var(--color-red-600);
 }
 
+.ended {
+  border-left: 3px solid var(--color-gray-600);
+  background-color: var(--color-gray-50);
+  color: var(--color-gray-600);
+}
+
 /* Helper background badges for legends */
 .bg-proposed {
   background-color: var(--color-blue-600);
@@ -141,6 +147,9 @@
 }
 .bg-rejected {
   background-color: var(--color-red-600);
+}
+.bg-rejected {
+  background-color: var(--color-gray-600);
 }
 
 /* === Availability styling === */
