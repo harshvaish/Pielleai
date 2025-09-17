@@ -5,7 +5,7 @@ import { ArtistManagerSelectData, ArtistData, Country, Language, Zone } from '@/
 import { toast } from 'sonner';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
-import { useMemo } from 'react';
+import { useMemo, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { X } from 'lucide-react';
 import { ArtistS1FormSchema, artistS1FormSchema } from '@/lib/validation/artist-form-schema';
@@ -29,6 +29,7 @@ export default function PersonalDataForm({
   artistManagers,
   closeDialog,
 }: PersonalDataFormProps) {
+  const [isPending, startTransition] = useTransition();
   const languageIds = userData.languages.map((lang) => lang.id);
   const zonesIds = userData.zones.map((zone) => zone.id);
   const managersIds = userData.managers.map((manager) => manager.profileId);
@@ -71,7 +72,7 @@ export default function PersonalDataForm({
   const router = useRouter();
 
   const {
-    formState: { isDirty, isSubmitting },
+    formState: { isDirty },
   } = methods;
 
   const onSubmit = async (data: ArtistS1FormSchema) => {
@@ -80,15 +81,17 @@ export default function PersonalDataForm({
       return;
     }
 
-    const response = await updateArtistPersonalData(userData.id, data);
+    startTransition(async () => {
+      const response = await updateArtistPersonalData(userData.id, data);
 
-    if (response.success) {
-      closeDialog();
-      toast.success('Profilo artista aggiornato!');
-      router.refresh();
-    } else {
-      toast.error(response.message);
-    }
+      if (response.success) {
+        closeDialog();
+        toast.success('Profilo artista aggiornato!');
+        startTransition(async () => router.refresh());
+      } else {
+        toast.error(response.message);
+      }
+    });
   };
 
   return (
@@ -110,16 +113,16 @@ export default function PersonalDataForm({
             onClick={closeDialog}
             variant='ghost'
             className='text-destructive'
-            disabled={isSubmitting}
+            disabled={isPending}
           >
             <X className='size-4' /> Annulla
           </Button>
 
           <Button
             type='submit'
-            disabled={isSubmitting}
+            disabled={isPending}
           >
-            {isSubmitting ? 'Salvataggio...' : 'Salva'}
+            {isPending ? 'Salvataggio...' : 'Salva'}
           </Button>
         </div>
       </form>

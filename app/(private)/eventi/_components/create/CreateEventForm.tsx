@@ -10,6 +10,7 @@ import { useRouter } from 'next/navigation';
 import { EventFormSchema, eventFormSchema } from '@/lib/validation/event-form-schema';
 import { createEvent } from '@/lib/server-actions/events/create-event';
 import EventForm from '../form/EventForm';
+import { useTransition } from 'react';
 
 type CreateEventFormProps = {
   artists: ArtistSelectData[];
@@ -25,6 +26,7 @@ export default function CreateEventForm({
   closeDialog,
 }: CreateEventFormProps) {
   const router = useRouter();
+  const [isPending, startTransition] = useTransition();
 
   const methods = useForm({
     resolver: zodResolver(eventFormSchema),
@@ -78,21 +80,20 @@ export default function CreateEventForm({
     },
   });
 
-  const {
-    handleSubmit,
-    formState: { isSubmitting },
-  } = methods;
+  const { handleSubmit } = methods;
 
   const onSubmit = async (data: EventFormSchema) => {
-    const response = await createEvent(data);
+    startTransition(async () => {
+      const response = await createEvent(data);
 
-    if (response.success) {
-      toast.success('Evento creato!');
-      router.refresh();
-      closeDialog();
-    } else {
-      toast.error(response.message);
-    }
+      if (response.success) {
+        closeDialog();
+        toast.success('Evento creato!');
+        startTransition(async () => router.refresh());
+      } else {
+        toast.error(response.message);
+      }
+    });
   };
 
   return (
@@ -117,15 +118,15 @@ export default function CreateEventForm({
               onClick={closeDialog}
               variant='ghost'
               className='text-destructive'
-              disabled={isSubmitting}
+              disabled={isPending}
             >
               <X /> Annulla
             </Button>
             <Button
               type='submit'
-              disabled={isSubmitting}
+              disabled={isPending}
             >
-              {isSubmitting ? 'Creazione evento...' : 'Crea evento'}
+              {isPending ? 'Creazione evento...' : 'Crea evento'}
             </Button>
           </div>
         </form>

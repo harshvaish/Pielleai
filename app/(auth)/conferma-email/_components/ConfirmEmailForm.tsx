@@ -48,8 +48,7 @@ export default function ConfirmEmailForm() {
       }
 
       if (data.user.emailVerified) {
-        router.push('/accedi');
-        return;
+        startTransition(async () => router.push('/accedi'));
       }
 
       toast.error('Verifica email non riuscita, riprova.');

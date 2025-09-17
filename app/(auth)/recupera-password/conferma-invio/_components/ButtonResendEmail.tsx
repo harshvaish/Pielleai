@@ -15,10 +15,10 @@ import { toast } from 'sonner';
 
 export default function ButtonResendEmail() {
   const router = useRouter();
+  const [isPending, startTransition] = useTransition();
   const [email, setEmail] = useState<string | null>(null);
   const [blockedUntil, setBlockedUntil] = useState<number | null>(null);
   const [timeLeft, setTimeLeft] = useState<number>(0);
-  const [isPending, startTransition] = useTransition();
 
   useEffect(() => {
     const email = localStorage.getItem(RPE_EMAIL_STORAGE_NAME);

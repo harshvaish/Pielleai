@@ -14,9 +14,11 @@ import InputPassword from '@/app/_components/InputPassword';
 import { Checkbox } from '@/components/ui/checkbox';
 import { CE_BLOCK_STORAGE_NAME, CE_EMAIL_STORAGE_NAME } from '@/lib/constants';
 import { signUp } from '@/lib/server-actions/auth/sign-up';
+import { useTransition } from 'react';
 
 export default function SignUpForm() {
   const router = useRouter();
+  const [isPending, startTransition] = useTransition();
   const methods = useForm<SignUpSchema>({
     resolver: zodResolver(signUpSchema),
     defaultValues: {
@@ -29,22 +31,25 @@ export default function SignUpForm() {
     register,
     handleSubmit,
     control,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = methods;
 
   const onSubmitHandler = async (data: SignUpSchema) => {
-    const response = await signUp(data);
+    startTransition(async () => {
+      const response = await signUp(data);
 
-    if (!response.success) {
-      toast.error(response.message ?? 'Creazione account non riuscita.');
-      return;
-    }
+      if (!response.success) {
+        toast.error(response.message ?? 'Creazione account non riuscita.');
+        return;
+      }
 
-    const { email } = data;
+      const { email } = data;
 
-    localStorage.setItem(CE_EMAIL_STORAGE_NAME, email);
-    localStorage.setItem(CE_BLOCK_STORAGE_NAME, Date.now().toString());
-    router.replace('/conferma-email');
+      localStorage.setItem(CE_EMAIL_STORAGE_NAME, email);
+      localStorage.setItem(CE_BLOCK_STORAGE_NAME, Date.now().toString());
+
+      startTransition(async () => router.replace('/conferma-email'));
+    });
   };
 
   return (
@@ -149,9 +154,9 @@ export default function SignUpForm() {
             <Button
               className='w-full'
               type='submit'
-              disabled={isSubmitting}
+              disabled={isPending}
             >
-              {isSubmitting ? 'Registrazione...' : 'Continua'}
+              {isPending ? 'Registrazione...' : 'Continua'}
             </Button>
 
             <Link

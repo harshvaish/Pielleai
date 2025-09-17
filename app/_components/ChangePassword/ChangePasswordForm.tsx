@@ -11,6 +11,7 @@ import {
 } from '@/lib/validation/change-password-schema';
 import { signIn } from '@/lib/auth-client';
 import { updateUserPassword } from '@/lib/server-actions/users/update-user-password';
+import { useTransition } from 'react';
 
 type ChangePasswordFormProps = {
   userId: string;
@@ -23,6 +24,8 @@ export default function ChangePasswordForm({
   email,
   closeDialog,
 }: ChangePasswordFormProps) {
+  const [isPending, startTransition] = useTransition();
+
   const methods = useForm({
     resolver: zodResolver(changePasswordSchema),
     defaultValues: {},
@@ -30,7 +33,7 @@ export default function ChangePasswordForm({
 
   const {
     register,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = methods;
 
   const onSubmit = async (data: ChangePasswordSchema) => {
@@ -39,26 +42,28 @@ export default function ChangePasswordForm({
       return;
     }
 
-    // Step 1: Validate old password
-    const signInResponse = await signIn.email({
-      email: email,
-      password: data.oldPassword,
+    startTransition(async () => {
+      // Step 1: Validate old password
+      const signInResponse = await signIn.email({
+        email: email,
+        password: data.oldPassword,
+      });
+
+      if (signInResponse.error) {
+        toast.error('La vecchia password non è corretta.');
+        return;
+      }
+
+      // Step 2: Change password
+      const updateResponse = await updateUserPassword(userId, data.newPassword);
+
+      if (updateResponse.success) {
+        toast.success('Password aggiornata con successo!');
+        closeDialog();
+      } else {
+        toast.error(updateResponse.message || "Errore durante l'aggiornamento.");
+      }
     });
-
-    if (signInResponse.error) {
-      toast.error('La vecchia password non è corretta.');
-      return;
-    }
-
-    // Step 2: Change password
-    const updateResponse = await updateUserPassword(userId, data.newPassword);
-
-    if (updateResponse.success) {
-      toast.success('Password aggiornata con successo!');
-      closeDialog();
-    } else {
-      toast.error(updateResponse.message || "Errore durante l'aggiornamento.");
-    }
   };
 
   return (
@@ -107,16 +112,16 @@ export default function ChangePasswordForm({
             type='button'
             onClick={closeDialog}
             variant='outline'
-            disabled={isSubmitting}
+            disabled={isPending}
           >
             Annulla
           </Button>
 
           <Button
             type='submit'
-            disabled={isSubmitting}
+            disabled={isPending}
           >
-            {isSubmitting ? 'Salvataggio...' : 'Conferma'}
+            {isPending ? 'Salvataggio...' : 'Conferma'}
           </Button>
         </div>
       </form>

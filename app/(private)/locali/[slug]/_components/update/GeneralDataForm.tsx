@@ -5,7 +5,7 @@ import { Country, VenueData, VenueManagerSelectData } from '@/lib/types';
 import { toast } from 'sonner';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
-import { useMemo } from 'react';
+import { useMemo, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { X } from 'lucide-react';
 import { venueS1FormSchema, VenueS1FormSchema } from '@/lib/validation/venue-form-schema';
@@ -25,6 +25,9 @@ export default function GeneralDataForm({
   venueManagers,
   closeDialog,
 }: GeneralDataFormProps) {
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
+
   const defaultValues = useMemo(
     () => ({
       avatarUrl: venueData.avatarUrl || '',
@@ -47,10 +50,8 @@ export default function GeneralDataForm({
     defaultValues: defaultValues,
   });
 
-  const router = useRouter();
-
   const {
-    formState: { isDirty, isSubmitting },
+    formState: { isDirty },
   } = methods;
 
   const onSubmit = async (data: VenueS1FormSchema) => {
@@ -59,15 +60,17 @@ export default function GeneralDataForm({
       return;
     }
 
-    const response = await updateVenueGeneralData(venueData.id, data);
+    startTransition(async () => {
+      const response = await updateVenueGeneralData(venueData.id, data);
 
-    if (response.success) {
-      closeDialog();
-      toast.success('Scheda locale aggiornata!');
-      router.refresh();
-    } else {
-      toast.error(response.message);
-    }
+      if (response.success) {
+        closeDialog();
+        toast.success('Scheda locale aggiornata!');
+        startTransition(async () => router.refresh());
+      } else {
+        toast.error(response.message);
+      }
+    });
   };
 
   return (
@@ -87,16 +90,16 @@ export default function GeneralDataForm({
             onClick={closeDialog}
             variant='ghost'
             className='text-destructive'
-            disabled={isSubmitting}
+            disabled={isPending}
           >
             <X className='size-4' /> Annulla
           </Button>
 
           <Button
             type='submit'
-            disabled={isSubmitting}
+            disabled={isPending}
           >
-            {isSubmitting ? 'Salvataggio...' : 'Salva'}
+            {isPending ? 'Salvataggio...' : 'Salva'}
           </Button>
         </div>
       </form>

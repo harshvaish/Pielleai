@@ -16,9 +16,11 @@ import {
 import { FormProvider, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { getBetterAuthErrorMessage } from '@/lib/utils';
+import { useTransition } from 'react';
 
 export default function RecoverPasswordForm() {
   const router = useRouter();
+  const [isPending, startTransition] = useTransition();
   const methods = useForm<RecoverPasswordSchema>({
     resolver: zodResolver(recoverPasswordSchema),
     defaultValues: {
@@ -29,27 +31,29 @@ export default function RecoverPasswordForm() {
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = methods;
 
   const onSubmitHandler = async (data: RecoverPasswordSchema) => {
     const { email } = data;
 
-    await forgetPassword({
-      email,
-      redirectTo: '/reset-password',
-      fetchOptions: {
-        onSuccess: () => {
-          localStorage.setItem(RPE_EMAIL_STORAGE_NAME, email);
-          localStorage.setItem(RPE_BLOCK_STORAGE_NAME, Date.now().toString());
-          router.push(`recupera-password/conferma-invio`);
+    startTransition(async () => {
+      await forgetPassword({
+        email,
+        redirectTo: '/reset-password',
+        fetchOptions: {
+          onSuccess: () => {
+            localStorage.setItem(RPE_EMAIL_STORAGE_NAME, email);
+            localStorage.setItem(RPE_BLOCK_STORAGE_NAME, Date.now().toString());
+            startTransition(async () => router.push(`recupera-password/conferma-invio`));
+          },
+          onError: (ctx) => {
+            const code = ctx?.error?.code ?? 'UNKNOWN_ERROR';
+            const message = getBetterAuthErrorMessage(code);
+            toast.error(message);
+          },
         },
-        onError: (ctx) => {
-          const code = ctx?.error?.code ?? 'UNKNOWN_ERROR';
-          const message = getBetterAuthErrorMessage(code);
-          toast.error(message);
-        },
-      },
+      });
     });
   };
 
@@ -88,9 +92,9 @@ export default function RecoverPasswordForm() {
               className='w-full mb-12'
               type='submit'
               variant='default'
-              disabled={isSubmitting}
+              disabled={isPending}
             >
-              {isSubmitting ? 'Invio email...' : 'Conferma'}
+              {isPending ? 'Invio email...' : 'Conferma'}
             </Button>
           </form>
         </FormProvider>

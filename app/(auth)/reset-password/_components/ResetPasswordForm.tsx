@@ -13,12 +13,13 @@ import { useRouter } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
 import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useState } from 'react';
+import { useState, useTransition } from 'react';
 import ConfirmDialog from '@/app/_components/ConfirmDialog';
 import { getBetterAuthErrorMessage } from '@/lib/utils';
 
 export default function ResetPasswordForm({ token }: { token: string }) {
   const router = useRouter();
+  const [isPending, startTransition] = useTransition();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const methods = useForm<ResetPasswordSchema>({
@@ -32,25 +33,27 @@ export default function ResetPasswordForm({ token }: { token: string }) {
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    formState: { errors },
     watch,
   } = methods;
 
   const onSubmit = async (data: ResetPasswordSchema) => {
-    await resetPassword({
-      newPassword: data.password,
-      token,
-      fetchOptions: {
-        onSuccess: () => {
-          toast.success('Password resettata!');
-          setTimeout(() => router.replace('/accedi'), 3000);
+    startTransition(async () => {
+      await resetPassword({
+        newPassword: data.password,
+        token,
+        fetchOptions: {
+          onSuccess: () => {
+            toast.success('Password resettata!');
+            setTimeout(() => startTransition(async () => router.replace('/accedi')), 3000);
+          },
+          onError: (ctx) => {
+            const code = ctx?.error?.code ?? 'UNKNOWN_ERROR';
+            const message = getBetterAuthErrorMessage(code);
+            toast.error(message);
+          },
         },
-        onError: (ctx) => {
-          const code = ctx?.error?.code ?? 'UNKNOWN_ERROR';
-          const message = getBetterAuthErrorMessage(code);
-          toast.error(message);
-        },
-      },
+      });
     });
   };
 
@@ -109,9 +112,9 @@ export default function ResetPasswordForm({ token }: { token: string }) {
                 className='w-full mb-4'
                 type='submit'
                 variant='default'
-                disabled={isSubmitting}
+                disabled={isPending}
               >
-                {isSubmitting ? 'Reset password...' : 'Reset password'}
+                {isPending ? 'Reset password...' : 'Reset password'}
               </Button>
             </form>
           </FormProvider>

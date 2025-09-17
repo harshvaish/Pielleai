@@ -13,6 +13,7 @@ import {
   venueManagerS1FormSchema,
 } from '@/lib/validation/venue-manager-form-schema';
 import { createVenueManagerProfile } from '@/lib/server-actions/venue-managers/create-venue-manager-profile';
+import { useTransition } from 'react';
 
 type VenueManagerProfileFormProps = {
   uid: string;
@@ -25,6 +26,7 @@ export default function VenueManagerProfileForm({
   languages,
   countries,
 }: VenueManagerProfileFormProps) {
+  const [isPending, startTransition] = useTransition();
   const methods = useForm({
     resolver: zodResolver(venueManagerS1FormSchema),
     defaultValues: {
@@ -48,13 +50,15 @@ export default function VenueManagerProfileForm({
   const router = useRouter();
 
   const onSubmit = async (data: VenueManagerS1FormSchema) => {
-    const response = await createVenueManagerProfile(uid, data);
+    startTransition(async () => {
+      const response = await createVenueManagerProfile(uid, data);
 
-    if (response.success) {
-      router.replace('/attesa-approvazione');
-    } else {
-      toast.error(response.message);
-    }
+      if (response.success) {
+        startTransition(async () => router.replace('/attesa-approvazione'));
+      } else {
+        toast.error(response.message);
+      }
+    });
   };
 
   return (
@@ -74,9 +78,9 @@ export default function VenueManagerProfileForm({
 
             <Button
               type='submit'
-              disabled={methods.formState.isSubmitting}
+              disabled={isPending}
             >
-              {methods.formState.isSubmitting ? 'Creazione profilo...' : 'Conferma'}
+              {isPending ? 'Creazione profilo...' : 'Conferma'}
             </Button>
           </div>
         </form>

@@ -8,7 +8,7 @@ import {
   venueManagerS1FormSchema,
   venueManagerS2FormSchema,
 } from '@/lib/validation/venue-manager-form-schema';
-import { MouseEvent, useEffect, useRef, useState } from 'react';
+import { MouseEvent, useEffect, useRef, useState, useTransition } from 'react';
 import StepOne from '../form/StepOne';
 import { toast } from 'sonner';
 import StepTwo from '../form/StepTwo';
@@ -40,6 +40,8 @@ export default function CreateVenueManagerForm({
   countries,
   closeDialog,
 }: CreateVenueManagerFormProps) {
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
   const [step, setStep] = useState<number>(1);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -65,7 +67,6 @@ export default function CreateVenueManagerForm({
       signUpPassword: '',
     },
   });
-  const router = useRouter();
 
   const onNext = async (event: MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
@@ -85,15 +86,17 @@ export default function CreateVenueManagerForm({
   };
 
   const onSubmit = async (data: VenueManagerFormSchema) => {
-    const response = await createVenueManager(data);
+    startTransition(async () => {
+      const response = await createVenueManager(data);
 
-    if (response.success) {
-      toast.success('Utenza promoter locali creata!');
-      router.refresh();
-      closeDialog();
-    } else {
-      toast.error(response.message);
-    }
+      if (response.success) {
+        closeDialog();
+        toast.success('Utenza promoter locali creata!');
+        startTransition(async () => router.refresh());
+      } else {
+        toast.error(response.message);
+      }
+    });
   };
 
   useEffect(() => {
@@ -169,10 +172,10 @@ export default function CreateVenueManagerForm({
               ) : (
                 <Button
                   type='submit'
-                  disabled={methods.formState.isSubmitting}
+                  disabled={isPending}
                   className='w-full md:w-auto'
                 >
-                  {methods.formState.isSubmitting ? 'Creazione utente...' : 'Crea utente'}
+                  {isPending ? 'Creazione utente...' : 'Crea utente'}
                 </Button>
               )}
             </div>

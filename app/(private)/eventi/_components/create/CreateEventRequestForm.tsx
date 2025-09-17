@@ -10,6 +10,7 @@ import { useRouter } from 'next/navigation';
 import { eventRequestFormSchema, EventRequestFormSchema } from '@/lib/validation/event-form-schema';
 import EventRequestForm from '../form/EventRequestForm';
 import { createEventRequest } from '@/lib/server-actions/events/create-event-request';
+import { useTransition } from 'react';
 
 type CreateEventFormProps = {
   artists: ArtistSelectData[];
@@ -23,6 +24,7 @@ export default function CreateEventRequestForm({
   closeDialog,
 }: CreateEventFormProps) {
   const router = useRouter();
+  const [isPending, startTransition] = useTransition();
 
   const methods = useForm({
     resolver: zodResolver(eventRequestFormSchema),
@@ -38,21 +40,20 @@ export default function CreateEventRequestForm({
     },
   });
 
-  const {
-    handleSubmit,
-    formState: { isSubmitting },
-  } = methods;
+  const { handleSubmit } = methods;
 
   const onSubmit = async (data: EventRequestFormSchema) => {
-    const response = await createEventRequest(data);
+    startTransition(async () => {
+      const response = await createEventRequest(data);
 
-    if (response.success) {
-      toast.success('Evento creato!');
-      router.refresh();
-      closeDialog();
-    } else {
-      toast.error(response.message);
-    }
+      if (response.success) {
+        closeDialog();
+        toast.success('Evento creato!');
+        startTransition(async () => router.refresh());
+      } else {
+        toast.error(response.message);
+      }
+    });
   };
 
   return (
@@ -76,15 +77,15 @@ export default function CreateEventRequestForm({
               onClick={closeDialog}
               variant='ghost'
               className='text-destructive'
-              disabled={isSubmitting}
+              disabled={isPending}
             >
               <X /> Annulla
             </Button>
             <Button
               type='submit'
-              disabled={isSubmitting}
+              disabled={isPending}
             >
-              {isSubmitting ? 'Creazione evento...' : 'Crea evento'}
+              {isPending ? 'Creazione evento...' : 'Crea evento'}
             </Button>
           </div>
         </form>

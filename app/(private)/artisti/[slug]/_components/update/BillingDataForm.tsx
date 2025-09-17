@@ -2,7 +2,7 @@ import { FormProvider, useForm } from 'react-hook-form';
 import { ArtistData, Country } from '@/lib/types';
 import { toast } from 'sonner';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useMemo } from 'react';
+import { useMemo, useTransition } from 'react';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
 import { X } from 'lucide-react';
@@ -17,6 +17,7 @@ export default function BillingDataForm({
   countries,
   closeDialog,
 }: BillingDataFormProps) {
+  const [isPending, startTransition] = useTransition();
   const defaultValues = useMemo(
     () => ({
       company: userData.company || '',
@@ -47,7 +48,7 @@ export default function BillingDataForm({
   const router = useRouter();
 
   const {
-    formState: { isDirty, isSubmitting },
+    formState: { isDirty },
   } = methods;
 
   const onSubmit = async (data: ArtistS2FormSchema) => {
@@ -56,15 +57,17 @@ export default function BillingDataForm({
       return;
     }
 
-    const response = await updateArtistBillingData(userData.id, data);
+    startTransition(async () => {
+      const response = await updateArtistBillingData(userData.id, data);
 
-    if (response.success) {
-      toast.success('Profilo artista aggiornato!');
-      router.refresh();
-      closeDialog();
-    } else {
-      toast.error(response.message);
-    }
+      if (response.success) {
+        closeDialog();
+        toast.success('Profilo artista aggiornato!');
+        startTransition(async () => router.refresh());
+      } else {
+        toast.error(response.message);
+      }
+    });
   };
 
   return (
@@ -81,16 +84,16 @@ export default function BillingDataForm({
             onClick={closeDialog}
             variant='ghost'
             className='text-destructive'
-            disabled={isSubmitting}
+            disabled={isPending}
           >
             <X /> Annulla
           </Button>
 
           <Button
             type='submit'
-            disabled={isSubmitting}
+            disabled={isPending}
           >
-            {isSubmitting ? 'Salvataggio...' : 'Salva'}
+            {isPending ? 'Salvataggio...' : 'Salva'}
           </Button>
         </div>
       </form>

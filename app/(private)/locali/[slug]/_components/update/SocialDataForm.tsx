@@ -5,7 +5,7 @@ import { VenueData } from '@/lib/types';
 import { toast } from 'sonner';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
-import { useMemo } from 'react';
+import { useMemo, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { X } from 'lucide-react';
 import { format } from 'date-fns';
@@ -19,6 +19,9 @@ type SocialDataFormProps = {
 };
 
 export default function SocialDataForm({ venueData, closeDialog }: SocialDataFormProps) {
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
+
   const defaultValues = useMemo(
     () => ({
       tiktokUrl: venueData.tiktokUrl || '',
@@ -57,10 +60,8 @@ export default function SocialDataForm({ venueData, closeDialog }: SocialDataFor
     defaultValues: defaultValues,
   });
 
-  const router = useRouter();
-
   const {
-    formState: { isDirty, isSubmitting },
+    formState: { isDirty },
   } = methods;
 
   const onSubmit = async (data: VenueS3FormSchema) => {
@@ -69,15 +70,17 @@ export default function SocialDataForm({ venueData, closeDialog }: SocialDataFor
       return;
     }
 
-    const response = await updateVenueSocialData(venueData.id, data);
+    startTransition(async () => {
+      const response = await updateVenueSocialData(venueData.id, data);
 
-    if (response.success) {
-      closeDialog();
-      toast.success('Scheda locale aggiornata!');
-      router.refresh();
-    } else {
-      toast.error(response.message);
-    }
+      if (response.success) {
+        closeDialog();
+        toast.success('Scheda locale aggiornata!');
+        startTransition(async () => router.refresh());
+      } else {
+        toast.error(response.message);
+      }
+    });
   };
 
   return (
@@ -94,16 +97,16 @@ export default function SocialDataForm({ venueData, closeDialog }: SocialDataFor
             onClick={closeDialog}
             variant='ghost'
             className='text-destructive'
-            disabled={isSubmitting}
+            disabled={isPending}
           >
             <X className='size-4' /> Annulla
           </Button>
 
           <Button
             type='submit'
-            disabled={isSubmitting}
+            disabled={isPending}
           >
-            {isSubmitting ? 'Salvataggio...' : 'Salva'}
+            {isPending ? 'Salvataggio...' : 'Salva'}
           </Button>
         </div>
       </form>

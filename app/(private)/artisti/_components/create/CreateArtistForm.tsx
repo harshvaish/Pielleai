@@ -9,7 +9,7 @@ import {
   artistS3FormSchema,
   artistFormSchema,
 } from '@/lib/validation/artist-form-schema';
-import { MouseEvent, useEffect, useRef, useState } from 'react';
+import { MouseEvent, useEffect, useRef, useState, useTransition } from 'react';
 import StepOne from '../form/StepOne';
 import StepTwo from '../form/StepTwo';
 import { toast } from 'sonner';
@@ -47,6 +47,7 @@ export default function CreateArtistForm({
   artistManagers: ArtistManagerSelectData[];
   closeDialog: () => void;
 }) {
+  const [isPending, startTransition] = useTransition();
   const [step, setStep] = useState<number>(1);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -126,15 +127,17 @@ export default function CreateArtistForm({
   };
 
   const onSubmit = async (data: ArtistFormSchema) => {
-    const response = await createArtist(data);
+    startTransition(async () => {
+      const response = await createArtist(data);
 
-    if (response.success) {
-      toast.success('Profilo artista creato!');
-      router.refresh();
-      closeDialog();
-    } else {
-      toast.error(response.message);
-    }
+      if (response.success) {
+        closeDialog();
+        toast.success('Profilo artista creato!');
+        startTransition(async () => router.refresh());
+      } else {
+        toast.error(response.message);
+      }
+    });
   };
 
   useEffect(() => {
@@ -224,10 +227,10 @@ export default function CreateArtistForm({
               ) : (
                 <Button
                   type='submit'
-                  disabled={methods.formState.isSubmitting}
+                  disabled={isPending}
                   className='w-full md:w-auto'
                 >
-                  {methods.formState.isSubmitting ? 'Creazione utente...' : 'Crea utente'}
+                  {isPending ? 'Creazione utente...' : 'Crea utente'}
                 </Button>
               )}
             </div>

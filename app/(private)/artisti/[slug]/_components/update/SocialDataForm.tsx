@@ -5,7 +5,7 @@ import { ArtistData } from '@/lib/types';
 import { toast } from 'sonner';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
-import { useMemo } from 'react';
+import { useMemo, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { X } from 'lucide-react';
 import { ArtistS3FormSchema, artistS3FormSchema } from '@/lib/validation/artist-form-schema';
@@ -16,6 +16,7 @@ import StepThree from '@/app/(private)/artisti/_components/form/StepThree';
 type SocialDataFormProps = { userData: ArtistData; closeDialog: () => void };
 
 export default function SocialDataForm({ userData, closeDialog }: SocialDataFormProps) {
+  const [isPending, startTransition] = useTransition();
   const defaultValues = useMemo(
     () => ({
       tiktokUrl: userData.tiktokUrl || '',
@@ -57,7 +58,7 @@ export default function SocialDataForm({ userData, closeDialog }: SocialDataForm
   const router = useRouter();
 
   const {
-    formState: { isDirty, isSubmitting },
+    formState: { isDirty },
   } = methods;
 
   const onSubmit = async (data: ArtistS3FormSchema) => {
@@ -66,15 +67,17 @@ export default function SocialDataForm({ userData, closeDialog }: SocialDataForm
       return;
     }
 
-    const response = await updateArtistSocialData(userData.id, data);
+    startTransition(async () => {
+      const response = await updateArtistSocialData(userData.id, data);
 
-    if (response.success) {
-      closeDialog();
-      toast.success('Profilo artista aggiornato!');
-      router.refresh();
-    } else {
-      toast.error(response.message);
-    }
+      if (response.success) {
+        closeDialog();
+        toast.success('Profilo artista aggiornato!');
+        startTransition(async () => router.refresh());
+      } else {
+        toast.error(response.message);
+      }
+    });
   };
 
   return (
@@ -91,16 +94,16 @@ export default function SocialDataForm({ userData, closeDialog }: SocialDataForm
             onClick={closeDialog}
             variant='ghost'
             className='text-destructive'
-            disabled={isSubmitting}
+            disabled={isPending}
           >
             <X className='size-4' /> Annulla
           </Button>
 
           <Button
             type='submit'
-            disabled={isSubmitting}
+            disabled={isPending}
           >
-            {isSubmitting ? 'Salvataggio...' : 'Salva'}
+            {isPending ? 'Salvataggio...' : 'Salva'}
           </Button>
         </div>
       </form>

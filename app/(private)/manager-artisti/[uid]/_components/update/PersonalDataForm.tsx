@@ -9,7 +9,7 @@ import {
 } from '@/lib/validation/artist-manager-form-schema';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
-import { useMemo, useState } from 'react';
+import { useMemo, useTransition } from 'react';
 import { updateArtistManagerPersonalData } from '@/lib/server-actions/artist-managers/update-artist-manager-personal-data';
 import { useRouter } from 'next/navigation';
 import { X } from 'lucide-react';
@@ -26,7 +26,8 @@ export default function PersonalDataForm({
   countries: Country[];
   closeDialog: () => void;
 }) {
-  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
 
   const languageIds = userData.languages.map((lang) => lang.id);
 
@@ -55,8 +56,6 @@ export default function PersonalDataForm({
     defaultValues: defaultValues,
   });
 
-  const router = useRouter();
-
   const {
     formState: { isDirty },
   } = methods;
@@ -66,18 +65,18 @@ export default function PersonalDataForm({
       toast.info('Nessun dato modificato.');
       return;
     }
-    setIsSubmitting(true);
 
-    const response = await updateArtistManagerPersonalData(userData.profileId, data);
+    startTransition(async () => {
+      const response = await updateArtistManagerPersonalData(userData.profileId, data);
 
-    if (response.success) {
-      closeDialog();
-      toast.success('Profilo manager artisti aggiornato!');
-      router.refresh();
-    } else {
-      toast.error(response.message);
-    }
-    setIsSubmitting(false);
+      if (response.success) {
+        closeDialog();
+        toast.success('Profilo manager artisti aggiornato!');
+        startTransition(async () => router.refresh());
+      } else {
+        toast.error(response.message);
+      }
+    });
   };
 
   return (
@@ -97,16 +96,16 @@ export default function PersonalDataForm({
             onClick={closeDialog}
             variant='outline'
             className='text-destructive border-destructive'
-            disabled={isSubmitting}
+            disabled={isPending}
           >
             <X className='size-4' /> Annulla
           </Button>
 
           <Button
             type='submit'
-            disabled={isSubmitting}
+            disabled={isPending}
           >
-            {isSubmitting ? 'Salvataggio...' : 'Salva'}
+            {isPending ? 'Salvataggio...' : 'Salva'}
           </Button>
         </div>
       </form>

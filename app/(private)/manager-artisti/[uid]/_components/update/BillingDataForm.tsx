@@ -6,7 +6,7 @@ import {
   artistManagerS2FormSchema,
 } from '@/lib/validation/artist-manager-form-schema';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useMemo } from 'react';
+import { useMemo, useTransition } from 'react';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
 import { updateArtistManagerBillingData } from '@/lib/server-actions/artist-managers/update-artist-manager-billing-data';
@@ -22,6 +22,9 @@ export default function BillingDataForm({
   countries: Country[];
   closeDialog: () => void;
 }) {
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
+
   const defaultValues = useMemo(
     () => ({
       company: userData.company || '',
@@ -48,10 +51,9 @@ export default function BillingDataForm({
     resolver: zodResolver(artistManagerS2FormSchema),
     defaultValues: defaultValues,
   });
-  const router = useRouter();
 
   const {
-    formState: { isDirty, isSubmitting },
+    formState: { isDirty },
   } = methods;
 
   const onSubmit = async (data: ArtistManagerS2FormSchema) => {
@@ -60,15 +62,17 @@ export default function BillingDataForm({
       return;
     }
 
-    const response = await updateArtistManagerBillingData(userData.profileId, data);
+    startTransition(async () => {
+      const response = await updateArtistManagerBillingData(userData.profileId, data);
 
-    if (response.success) {
-      toast.success('Profilo manager artisti aggiornato!');
-      router.refresh();
-      closeDialog();
-    } else {
-      toast.error(response.message);
-    }
+      if (response.success) {
+        closeDialog();
+        toast.success('Profilo manager artisti aggiornato!');
+        startTransition(async () => router.refresh());
+      } else {
+        toast.error(response.message);
+      }
+    });
   };
 
   return (
@@ -85,16 +89,16 @@ export default function BillingDataForm({
             onClick={closeDialog}
             variant='outline'
             className='text-destructive border-destructive'
-            disabled={isSubmitting}
+            disabled={isPending}
           >
             <X className='size-4' /> Annulla
           </Button>
 
           <Button
             type='submit'
-            disabled={isSubmitting}
+            disabled={isPending}
           >
-            {isSubmitting ? 'Salvataggio...' : 'Salva'}
+            {isPending ? 'Salvataggio...' : 'Salva'}
           </Button>
         </div>
       </form>

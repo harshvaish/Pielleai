@@ -5,7 +5,7 @@ import { Country, Language, VenueManagerData } from '@/lib/types';
 import { toast } from 'sonner';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
-import { useMemo } from 'react';
+import { useMemo, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { X } from 'lucide-react';
 import {
@@ -28,6 +28,8 @@ export default function PersonalDataForm({
   countries,
   closeDialog,
 }: PersonalDataForm) {
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
   const languageIds = userData.languages.map((lang) => lang.id);
 
   const defaultValues = useMemo(
@@ -55,10 +57,8 @@ export default function PersonalDataForm({
     defaultValues: defaultValues,
   });
 
-  const router = useRouter();
-
   const {
-    formState: { isDirty, isSubmitting },
+    formState: { isDirty },
   } = methods;
 
   const onSubmit = async (data: VenueManagerS1FormSchema) => {
@@ -67,15 +67,17 @@ export default function PersonalDataForm({
       return;
     }
 
-    const response = await updateVenueManagerPersonalData(userData.profileId, data);
+    startTransition(async () => {
+      const response = await updateVenueManagerPersonalData(userData.profileId, data);
 
-    if (response.success) {
-      closeDialog();
-      toast.success('Profilo promoter locali aggiornato!');
-      router.refresh();
-    } else {
-      toast.error(response.message);
-    }
+      if (response.success) {
+        closeDialog();
+        toast.success('Profilo promoter locali aggiornato!');
+        startTransition(async () => router.refresh());
+      } else {
+        toast.error(response.message);
+      }
+    });
   };
 
   return (
@@ -95,16 +97,16 @@ export default function PersonalDataForm({
             onClick={closeDialog}
             variant='ghost'
             className='text-destructive'
-            disabled={isSubmitting}
+            disabled={isPending}
           >
             <X className='size-4' /> Annulla
           </Button>
 
           <Button
             type='submit'
-            disabled={isSubmitting}
+            disabled={isPending}
           >
-            {isSubmitting ? 'Salvataggio...' : 'Salva'}
+            {isPending ? 'Salvataggio...' : 'Salva'}
           </Button>
         </div>
       </form>

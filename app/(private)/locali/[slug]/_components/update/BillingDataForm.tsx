@@ -2,7 +2,7 @@ import { FormProvider, useForm } from 'react-hook-form';
 import { Country, VenueData } from '@/lib/types';
 import { toast } from 'sonner';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useMemo } from 'react';
+import { useMemo, useTransition } from 'react';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
 import { X } from 'lucide-react';
@@ -17,6 +17,9 @@ export default function BillingDataForm({
   countries,
   closeDialog,
 }: BillingDataFormProps) {
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
+
   const defaultValues = useMemo(
     () => ({
       company: venueData.company || '',
@@ -43,10 +46,9 @@ export default function BillingDataForm({
     resolver: zodResolver(venueS2FormSchema),
     defaultValues: defaultValues,
   });
-  const router = useRouter();
 
   const {
-    formState: { isDirty, isSubmitting },
+    formState: { isDirty },
   } = methods;
 
   const onSubmit = async (data: VenueS2FormSchema) => {
@@ -55,15 +57,17 @@ export default function BillingDataForm({
       return;
     }
 
-    const response = await updateVenueBillingData(venueData.id, data);
+    startTransition(async () => {
+      const response = await updateVenueBillingData(venueData.id, data);
 
-    if (response.success) {
-      toast.success('Scheda locale aggiornata!');
-      router.refresh();
-      closeDialog();
-    } else {
-      toast.error(response.message);
-    }
+      if (response.success) {
+        closeDialog();
+        toast.success('Scheda locale aggiornata!');
+        startTransition(async () => router.refresh());
+      } else {
+        toast.error(response.message);
+      }
+    });
   };
 
   return (
@@ -80,16 +84,16 @@ export default function BillingDataForm({
             onClick={closeDialog}
             variant='ghost'
             className='text-destructive'
-            disabled={isSubmitting}
+            disabled={isPending}
           >
             <X className='size-4' /> Annulla
           </Button>
 
           <Button
             type='submit'
-            disabled={isSubmitting}
+            disabled={isPending}
           >
-            {isSubmitting ? 'Salvataggio...' : 'Salva'}
+            {isPending ? 'Salvataggio...' : 'Salva'}
           </Button>
         </div>
       </form>

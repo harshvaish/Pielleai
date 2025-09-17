@@ -7,7 +7,7 @@ import {
   ArtistManagerProfileFormSchema,
   artistManagerProfileFormSchema,
 } from '@/lib/validation/artist-manager-form-schema';
-import { MouseEvent, useEffect, useRef, useState } from 'react';
+import { MouseEvent, useEffect, useRef, useState, useTransition } from 'react';
 import { toast } from 'sonner';
 import { ArrowLeft } from 'lucide-react';
 import { Country, Language } from '@/lib/types';
@@ -29,6 +29,7 @@ export default function ArtistManagerProfileForm({
   languages,
   countries,
 }: ArtistManagerProfileFormProps) {
+  const [isPending, startTransition] = useTransition();
   const [step, setStep] = useState<number>(1);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -93,13 +94,15 @@ export default function ArtistManagerProfileForm({
   };
 
   const onSubmit = async (data: ArtistManagerProfileFormSchema) => {
-    const response = await createArtistManagerProfile(uid, data);
+    startTransition(async () => {
+      const response = await createArtistManagerProfile(uid, data);
 
-    if (response.success) {
-      router.replace('/attesa-approvazione');
-    } else {
-      toast.error(response.message);
-    }
+      if (response.success) {
+        startTransition(async () => router.replace('/attesa-approvazione'));
+      } else {
+        toast.error(response.message);
+      }
+    });
   };
 
   useEffect(() => {
@@ -147,10 +150,10 @@ export default function ArtistManagerProfileForm({
             ) : (
               <Button
                 type='submit'
-                disabled={methods.formState.isSubmitting}
+                disabled={isPending}
                 className='w-full md:w-auto'
               >
-                {methods.formState.isSubmitting ? 'Creazione profilo...' : 'Conferma'}
+                {isPending ? 'Creazione profilo...' : 'Conferma'}
               </Button>
             )}
           </div>

@@ -10,6 +10,7 @@ import { useRouter } from 'next/navigation';
 import { EventFormSchema, eventFormSchema } from '@/lib/validation/event-form-schema';
 import { updateEvent } from '@/lib/server-actions/events/update-event';
 import EventForm from '../form/EventForm';
+import { useTransition } from 'react';
 
 type UpdateEventFormProps = {
   event: Event;
@@ -27,6 +28,7 @@ export default function UpdateEventForm({
   closeDialog,
 }: UpdateEventFormProps) {
   const router = useRouter();
+  const [isPending, startTransition] = useTransition();
 
   event.availability.startDate = new Date(event.availability.startDate);
   event.availability.endDate = new Date(event.availability.endDate);
@@ -92,21 +94,20 @@ export default function UpdateEventForm({
     },
   });
 
-  const {
-    handleSubmit,
-    formState: { isSubmitting },
-  } = methods;
+  const { handleSubmit } = methods;
 
   const onSubmit = async (data: EventFormSchema) => {
-    const response = await updateEvent(event.id, data);
+    startTransition(async () => {
+      const response = await updateEvent(event.id, data);
 
-    if (response.success) {
-      toast.success('Evento aggiornato!');
-      router.refresh();
-      closeDialog();
-    } else {
-      toast.error(response.message);
-    }
+      if (response.success) {
+        closeDialog();
+        toast.success('Evento aggiornato!');
+        startTransition(async () => router.refresh());
+      } else {
+        toast.error(response.message);
+      }
+    });
   };
 
   return (
@@ -131,15 +132,15 @@ export default function UpdateEventForm({
               onClick={closeDialog}
               variant='ghost'
               className='text-destructive'
-              disabled={isSubmitting}
+              disabled={isPending}
             >
               <X /> Annulla
             </Button>
             <Button
               type='submit'
-              disabled={isSubmitting}
+              disabled={isPending}
             >
-              {isSubmitting ? 'Aggiornamento...' : 'Modifica'}
+              {isPending ? 'Aggiornamento...' : 'Modifica'}
             </Button>
           </div>
         </form>

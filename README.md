@@ -69,8 +69,6 @@ TODO
 - get stuff to fill edit and create forms client side and not in the page server side -> create endpoints
 - search input (first 5 suggestions based on venues or artits numbers then on seach)
 - refactor avatar upload input
-- is submitting of form not working correctly in some cases
-- sendgrid email template remove name param
 
 TO REQUEST:
 
