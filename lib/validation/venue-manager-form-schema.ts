@@ -21,8 +21,6 @@ export const venueManagerS1FormSchema = z.object({
 
   phone: phoneValidation,
 
-  email: emailValidation,
-
   birthDate: birthDateValidation,
 
   birthPlace: z

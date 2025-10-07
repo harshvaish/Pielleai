@@ -14,6 +14,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { profileGenders } from '@/lib/database/schema';
 import { GENDERS_LABELS } from '@/lib/constants';
+import { ArtistManagerS1FormSchema } from '@/lib/validation/artist-manager-form-schema';
 
 export default function StepOne({
   languages,
@@ -28,7 +29,7 @@ export default function StepOne({
     watch,
     resetField,
     formState: { errors },
-  } = useFormContext();
+  } = useFormContext<ArtistManagerS1FormSchema>();
 
   const [subdivisions, setSubdivisions] = useState<Subdivision[]>([]);
 
@@ -145,25 +146,6 @@ export default function StepOne({
         )}
       </div>
 
-      <div className='flex flex-col'>
-        <label
-          htmlFor='email'
-          className='block text-sm font-semibold mb-2'
-        >
-          Email
-        </label>
-        <Input
-          id='email'
-          {...register('email')}
-          placeholder='info@eaglebooking.it'
-          className={errors.email ? 'border-destructive text-destructive' : ''}
-          autoComplete='email'
-        />
-        {errors.email && (
-          <p className='text-xs text-destructive mt-2'>{errors.email.message as string}</p>
-        )}
-      </div>
-
       <Separator className='my-4' />
 
       <div className='grid grid-cols-2 gap-4'>
@@ -271,7 +253,7 @@ export default function StepOne({
             name='countryId'
             render={({ field }) => (
               <Select
-                value={field.value}
+                value={field.value.toString()}
                 onValueChange={(v) => field.onChange(parseInt(v))}
                 disabled={isLoading}
               >
@@ -315,7 +297,7 @@ export default function StepOne({
             name='subdivisionId'
             render={({ field }) => (
               <Select
-                value={field.value}
+                value={field.value.toString()}
                 disabled={!selectedCountryId || isLoading}
                 onValueChange={(v) => field.onChange(parseInt(v))}
               >

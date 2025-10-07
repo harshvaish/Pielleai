@@ -179,6 +179,7 @@ export const updateEvent = async (
           previousStatus: events.status,
 
           artistManagerProfileId: artistManagerProfileId || null,
+          tourManagerEmail: validation.data.tourManagerEmail || null,
           administrationEmail: validation.data.administrationEmail || null,
           payrollConsultantEmail: validation.data.payrollConsultantEmail || null,
 

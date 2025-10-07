@@ -10,6 +10,7 @@ import { Country, Subdivision } from '@/lib/types';
 import useSWR from 'swr';
 import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
+import { ArtistManagerS2FormSchema } from '@/lib/validation/artist-manager-form-schema';
 
 export default function StepTwo({ countries }: { countries: Country[] }) {
   const {
@@ -18,7 +19,7 @@ export default function StepTwo({ countries }: { countries: Country[] }) {
     watch,
     setValue,
     formState: { errors },
-  } = useFormContext();
+  } = useFormContext<ArtistManagerS2FormSchema>();
 
   const [subdivisions, setSubdivisions] = useState<Subdivision[]>([]);
 

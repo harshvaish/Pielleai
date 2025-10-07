@@ -1,11 +1,12 @@
 import { useFormContext } from 'react-hook-form';
 import { Input } from '@/components/ui/input';
+import { ArtistManagerS3FormSchema } from '@/lib/validation/artist-manager-form-schema';
 
 export default function StepThree() {
   const {
     register,
     formState: { errors },
-  } = useFormContext();
+  } = useFormContext<ArtistManagerS3FormSchema>();
 
   return (
     <>
@@ -21,14 +22,10 @@ export default function StepThree() {
           id='signUpEmail'
           {...register('signUpEmail')}
           placeholder='info@eaglebooking.it'
-          className={
-            errors.signUpEmail ? 'border-destructive text-destructive' : ''
-          }
+          className={errors.signUpEmail ? 'border-destructive text-destructive' : ''}
         />
         {errors.signUpEmail && (
-          <p className='text-xs text-destructive mt-2'>
-            {errors.signUpEmail.message as string}
-          </p>
+          <p className='text-xs text-destructive mt-2'>{errors.signUpEmail.message as string}</p>
         )}
       </div>
       <div className='flex flex-col'>
@@ -42,14 +39,10 @@ export default function StepThree() {
           id='signUpPassword'
           {...register('signUpPassword')}
           placeholder='********'
-          className={
-            errors.signUpPassword ? 'border-destructive text-destructive' : ''
-          }
+          className={errors.signUpPassword ? 'border-destructive text-destructive' : ''}
         />
         {errors.signUpPassword && (
-          <p className='text-xs text-destructive mt-2'>
-            {errors.signUpPassword.message as string}
-          </p>
+          <p className='text-xs text-destructive mt-2'>{errors.signUpPassword.message as string}</p>
         )}
       </div>
     </>

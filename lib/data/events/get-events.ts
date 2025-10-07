@@ -133,9 +133,7 @@ export async function getEvents(
           surname: profiles.surname,
         },
 
-        tourManagerName: artists.tourManagerName,
-        tourManagerSurname: artists.tourManagerSurname,
-
+        tourManagerEmail: events.tourManagerEmail,
         administrationEmail: events.administrationEmail,
         payrollConsultantEmail: events.payrollConsultantEmail,
 

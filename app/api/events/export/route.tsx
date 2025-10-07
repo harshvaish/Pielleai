@@ -124,8 +124,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
       manager_artista_id: event?.artistManager?.id ?? '',
       manager_artista_nome: event?.artistManager?.name ?? '',
-      manager_artista_cognome: event?.artistManager?.name ?? '',
-      manager_artista_stato: event?.artistManager?.name ?? '',
+      manager_artista_cognome: event?.artistManager?.surname ?? '',
+      manager_artista_stato: event?.artistManager?.status ?? '',
 
       locale_id: event.venue.id,
       locale_nome: event.venue.name,

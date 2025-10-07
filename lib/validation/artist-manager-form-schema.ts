@@ -23,8 +23,6 @@ export const artistManagerS1FormSchema = z.object({
 
   phone: phoneValidation,
 
-  email: emailValidation,
-
   birthDate: birthDateValidation,
 
   birthPlace: z
@@ -193,6 +191,8 @@ export const artistManagerS3FormSchema = z.object({
     .min(8, 'Almeno 8 caratteri.')
     .max(16, 'Massimo 16 caratteri.'),
 });
+
+export type ArtistManagerS3FormSchema = z.infer<typeof artistManagerS3FormSchema>;
 
 export const artistManagerFormSchema = z.object({
   ...artistManagerS1FormSchema.shape,

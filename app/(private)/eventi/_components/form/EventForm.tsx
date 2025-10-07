@@ -3,7 +3,6 @@
 import { ArtistSelectData, MoCoordinator, VenueSelectData } from '@/lib/types';
 import { Select, SelectContent, SelectItem, SelectTrigger } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
-import EventStatusBadge from '../../../_components/badges/EventStatusBadge';
 import { Separator } from '@/components/ui/separator';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -17,6 +16,7 @@ import ArtistSelect from './ArtistSelect';
 import { eventStatus } from '@/lib/database/schema';
 import { EventFormSchema } from '@/lib/validation/event-form-schema';
 import ArtistAvailabilitySelectWithCreate from './ArtistAvailabilitySelectWithCreate';
+import EventStatusBadge from '@/app/(private)/_components/Badges/EventStatusBadge';
 
 type EventForm = {
   artists: ArtistSelectData[];

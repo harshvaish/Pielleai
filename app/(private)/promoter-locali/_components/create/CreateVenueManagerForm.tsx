@@ -52,7 +52,6 @@ export default function CreateVenueManagerForm({
       name: '',
       surname: '',
       phone: '',
-      email: '',
       birthDate: '',
       birthPlace: '',
       languages: [],

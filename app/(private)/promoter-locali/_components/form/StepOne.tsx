@@ -14,6 +14,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { profileGenders } from '@/lib/database/schema';
 import { GENDERS_LABELS } from '@/lib/constants';
+import { VenueManagerS1FormSchema } from '@/lib/validation/venue-manager-form-schema';
 
 type StepOneProps = { languages: Language[]; countries: Country[] };
 
@@ -24,7 +25,7 @@ export default function StepOne({ languages, countries }: StepOneProps) {
     watch,
     resetField,
     formState: { errors },
-  } = useFormContext();
+  } = useFormContext<VenueManagerS1FormSchema>();
 
   const [subdivisions, setSubdivisions] = useState<Subdivision[]>([]);
 
@@ -67,7 +68,6 @@ export default function StepOne({ languages, countries }: StepOneProps) {
 
   return (
     <>
-      <div className='text-xl text-center font-bold'>Dati personali</div>
       <div className='grid grid-cols-[auto_1fr_1fr] items-end gap-4'>
         <div className='flex flex-col'>
           <Controller
@@ -139,25 +139,6 @@ export default function StepOne({ languages, countries }: StepOneProps) {
         />
         {errors.phone && (
           <p className='text-xs text-destructive mt-2'>{errors.phone.message as string}</p>
-        )}
-      </div>
-
-      <div className='flex flex-col'>
-        <label
-          htmlFor='email'
-          className='block text-sm font-semibold mb-2'
-        >
-          Email
-        </label>
-        <Input
-          id='email'
-          {...register('email')}
-          placeholder='info@eaglebooking.it'
-          className={errors.email ? 'border-destructive text-destructive' : ''}
-          autoComplete='email'
-        />
-        {errors.email && (
-          <p className='text-xs text-destructive mt-2'>{errors.email.message as string}</p>
         )}
       </div>
 
@@ -268,7 +249,7 @@ export default function StepOne({ languages, countries }: StepOneProps) {
             name='countryId'
             render={({ field }) => (
               <Select
-                value={field.value}
+                value={field.value.toString()}
                 onValueChange={(v) => field.onChange(parseInt(v))}
                 disabled={isLoading}
               >
@@ -312,7 +293,7 @@ export default function StepOne({ languages, countries }: StepOneProps) {
             name='subdivisionId'
             render={({ field }) => (
               <Select
-                value={field.value}
+                value={field.value.toString()}
                 disabled={!selectedCountryId || isLoading}
                 onValueChange={(v) => field.onChange(parseInt(v))}
               >

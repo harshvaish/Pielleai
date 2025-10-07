@@ -55,7 +55,6 @@ export default function CreateArtistManagerForm({
       name: '',
       surname: '',
       phone: '',
-      email: '',
       birthDate: '',
       birthPlace: '',
       languages: [],

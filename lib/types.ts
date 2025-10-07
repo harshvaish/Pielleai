@@ -492,11 +492,8 @@ export type Event = {
 
   artistManager: ArtistManagerSelectData | null;
 
-  tourManagerName: string;
-  tourManagerSurname: string;
-
+  tourManagerEmail: string | null;
   administrationEmail: string | null;
-
   payrollConsultantEmail: string | null;
 
   moCost: string | null;

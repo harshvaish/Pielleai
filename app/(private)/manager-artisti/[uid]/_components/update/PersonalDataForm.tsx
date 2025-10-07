@@ -37,7 +37,6 @@ export default function PersonalDataForm({
       name: userData.name || '',
       surname: userData.surname || '',
       phone: userData.phone || '',
-      email: userData.email || '',
       birthDate: userData.birthDate || '',
       birthPlace: userData.birthPlace || '',
       languages: languageIds || [],

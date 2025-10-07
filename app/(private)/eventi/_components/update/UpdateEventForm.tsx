@@ -46,6 +46,7 @@ export default function UpdateEventForm({
       },
       venueId: event.venue.id,
 
+      tourManagerEmail: event.tourManagerEmail || '',
       administrationEmail: event.administrationEmail || '',
       payrollConsultantEmail: event.payrollConsultantEmail || '',
       notes: event.notes.flatMap((note) => note.content) || [],
