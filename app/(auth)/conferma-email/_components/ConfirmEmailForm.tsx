@@ -22,7 +22,7 @@ export default function ConfirmEmailForm() {
 
   const [isPending, startTransition] = useTransition();
 
-  const onClickHandler = async () => {
+  const onSubmit = async () => {
     setError(null);
     const validation = otpValidation.safeParse(code);
 
@@ -124,7 +124,7 @@ export default function ConfirmEmailForm() {
         className='w-full'
         type='submit'
         disabled={isPending}
-        onClick={onClickHandler}
+        onClick={onSubmit}
       >
         {isPending ? 'Verifico...' : 'Verifica'}
       </Button>

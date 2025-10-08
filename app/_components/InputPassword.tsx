@@ -4,8 +4,7 @@ import { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Eye, EyeOff } from 'lucide-react';
 
-interface InputPasswordProps
-  extends React.InputHTMLAttributes<HTMLInputElement> {
+interface InputPasswordProps extends React.InputHTMLAttributes<HTMLInputElement> {
   error?: boolean;
 }
 
@@ -20,7 +19,7 @@ export default function InputPassword({ error, ...props }: InputPasswordProps) {
         autoComplete='password'
         minLength={8}
         maxLength={16}
-        placeholder='********'
+        placeholder='Inserisci la tua password'
         {...props}
       />
       <div

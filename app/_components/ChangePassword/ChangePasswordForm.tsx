@@ -76,6 +76,7 @@ export default function ChangePasswordForm({
           <div className='text-sm font-semibold mb-2'>Vecchia password</div>
           <InputPassword
             {...register('oldPassword')}
+            placeholder='Inserisci la vecchia password'
             error={!!errors.oldPassword}
           />
           {errors.oldPassword && (
@@ -87,6 +88,7 @@ export default function ChangePasswordForm({
           <div className='text-sm font-semibold mb-2'>Nuova password</div>
           <InputPassword
             {...register('newPassword')}
+            placeholder='Inserisci la nuova password'
             error={!!errors.newPassword}
           />
           {errors.newPassword && (
@@ -98,6 +100,7 @@ export default function ChangePasswordForm({
           <div className='text-sm font-semibold mb-2'>Conferma nuova password</div>
           <InputPassword
             {...register('newPasswordConfirm')}
+            placeholder='Conferma la nuova password'
             error={!!errors.newPasswordConfirm}
           />
           {errors.newPasswordConfirm && (

@@ -591,5 +591,6 @@ export type NavbarLink = {
   href: string;
   iconSrc: string;
   iconAlt: string;
-  canAccess: UserRole[];
+  visibleTo: UserRole[];
+  separator: boolean;
 };

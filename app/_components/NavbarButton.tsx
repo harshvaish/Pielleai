@@ -40,7 +40,7 @@ export default function NavbarButton({ user }: NavbarButtonProps) {
             <SheetTitle className='hidden'>Menu di navigazione a scomparsa</SheetTitle>
             <nav className='max-h-max overflow-y-auto flex flex-col gap-2'>
               {NAVBAR_LINKS.map((link) => {
-                const visible = link.canAccess.includes(user.role);
+                const visible = link.visibleTo.includes(user.role);
 
                 return (
                   visible && (

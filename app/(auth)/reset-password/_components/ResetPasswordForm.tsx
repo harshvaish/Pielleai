@@ -71,9 +71,9 @@ export default function ResetPasswordForm({ token }: { token: string }) {
     <>
       <Card className='w-full max-w-xl max-h-max items-center p-6 md:p-8 rounded-2xl'>
         <CardHeader className='w-full max-w-sm gap-0 text-center p-0'>
-          <CardTitle className='text-2xl font-semibold mb-2'>Reset password</CardTitle>
+          <CardTitle className='text-2xl font-semibold mb-2'>Cambia password</CardTitle>
           <CardDescription className='text-xs md:text-sm'>
-            Crea una password sicura per proteggere il tuo account
+            Crea una password sicura per proteggere il tuo account.
           </CardDescription>
         </CardHeader>
 
@@ -88,6 +88,7 @@ export default function ResetPasswordForm({ token }: { token: string }) {
                 <div className='text-sm font-semibold mb-2'>Nuova password</div>
                 <InputPassword
                   id='password'
+                  placeholder='Inserisci la nuova password'
                   {...register('password')}
                   error={!!errors.password}
                 />
@@ -100,6 +101,7 @@ export default function ResetPasswordForm({ token }: { token: string }) {
                 <div className='text-sm font-semibold mb-2'>Conferma nuova password</div>
                 <InputPassword
                   id='confirmPassword'
+                  placeholder='Conferma la nuova password'
                   {...register('confirmPassword')}
                   error={!!errors.confirmPassword}
                 />
@@ -114,7 +116,7 @@ export default function ResetPasswordForm({ token }: { token: string }) {
                 variant='default'
                 disabled={isPending}
               >
-                {isPending ? 'Reset password...' : 'Reset password'}
+                {isPending ? 'Cambio password...' : 'Cambio password'}
               </Button>
             </form>
           </FormProvider>

@@ -39,7 +39,7 @@ export default function SignOutTile() {
         open={isOpen}
         onOpenChange={setIsOpen}
         title='Sei sicuro di voler uscire?'
-        description="Per procedere con l'app sarà necessario effettuare nuovamente il login."
+        description="Per procedere con l'utilizzo dell'app sarà necessario effettuare nuovamente il login."
         onConfirm={onClickHandler}
         isLoading={isPending}
         confirmLabel='Esci'

@@ -60,7 +60,7 @@ export default function RecoverPasswordForm() {
   return (
     <Card className='w-full max-w-xl max-h-max items-center p-6 md:p-8 lg:p-12 rounded-2xl'>
       <CardHeader className='w-full max-w-sm gap-0 text-center p-0'>
-        <CardTitle className='text-2xl font-semibold mb-2'>Recupera password</CardTitle>
+        <CardTitle className='text-2xl font-semibold mb-2'>Cambia password</CardTitle>
         <CardDescription className='text-xs md:text-sm'>
           Inserisci l&apos;indirizzo email associato al tuo account.
           <br />
@@ -79,7 +79,7 @@ export default function RecoverPasswordForm() {
               <Input
                 id='email'
                 type='email'
-                placeholder='esempio@milanoovest.it'
+                placeholder="Inserirci l'indirizzo email"
                 {...register('email')}
                 className={errors.email ? 'border-destructive text-destructive' : ''}
                 autoComplete='email'
