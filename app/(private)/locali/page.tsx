@@ -95,6 +95,8 @@ export default async function VenuesPage({ searchParams }: VenuesPageProps) {
           />
 
           <CreateButton
+            userRole={user.role}
+            userProfileId={profileId as number}
             countries={countries}
             venueManagers={venueManagers}
           />

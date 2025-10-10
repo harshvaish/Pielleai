@@ -1,7 +1,7 @@
 'use client';
 
 import { FormProvider, useForm } from 'react-hook-form';
-import { Country, VenueData, VenueManagerSelectData } from '@/lib/types';
+import { Country, UserRole, VenueData, VenueManagerSelectData } from '@/lib/types';
 import { toast } from 'sonner';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
@@ -13,6 +13,7 @@ import { updateVenueGeneralData } from '@/lib/server-actions/venues/update-venue
 import StepOne from '../../../_components/form/StepOne';
 
 type GeneralDataFormProps = {
+  userRole: UserRole;
   venueData: VenueData;
   countries: Country[];
   venueManagers: VenueManagerSelectData[];
@@ -20,6 +21,7 @@ type GeneralDataFormProps = {
 };
 
 export default function GeneralDataForm({
+  userRole,
   venueData,
   countries,
   venueManagers,
@@ -80,6 +82,7 @@ export default function GeneralDataForm({
         onSubmit={methods.handleSubmit(onSubmit)}
       >
         <StepOne
+          userRole={userRole}
           countries={countries}
           venueManagers={venueManagers}
         />

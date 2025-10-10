@@ -93,6 +93,7 @@ export default async function ArtistDetailPage({ params }: ArtistDetailPageProps
               </PopoverTrigger>
               <PopoverContent className='w-48 flex flex-col justify-start lg:hidden'>
                 <EditArtistButton
+                  userRole={user.role}
                   userData={userData}
                   languages={languages}
                   countries={countries}
@@ -112,6 +113,7 @@ export default async function ArtistDetailPage({ params }: ArtistDetailPageProps
                 initialStatus={userData.status}
               />
               <EditArtistButton
+                userRole={user.role}
                 userData={userData}
                 languages={languages}
                 countries={countries}

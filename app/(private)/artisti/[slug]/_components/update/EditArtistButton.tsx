@@ -9,7 +9,14 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Pencil } from 'lucide-react';
-import { ArtistManagerSelectData, ArtistData, Country, Language, Zone } from '@/lib/types';
+import {
+  ArtistManagerSelectData,
+  ArtistData,
+  Country,
+  Language,
+  Zone,
+  UserRole,
+} from '@/lib/types';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import PersonalDataForm from './PersonalDataForm';
@@ -17,6 +24,7 @@ import BillingDataForm from './BillingDataForm';
 import SocialDataForm from './SocialDataForm';
 
 type EditArtistButtonProps = {
+  userRole: UserRole;
   userData: ArtistData;
   languages: Language[];
   countries: Country[];
@@ -25,6 +33,7 @@ type EditArtistButtonProps = {
 };
 
 export default function EditArtistButton({
+  userRole,
   userData,
   languages,
   countries,
@@ -97,6 +106,7 @@ export default function EditArtistButton({
         <section className='max-h-full overflow-y-auto'>
           {step === 1 && (
             <PersonalDataForm
+              userRole={userRole}
               userData={userData}
               languages={languages}
               countries={countries}

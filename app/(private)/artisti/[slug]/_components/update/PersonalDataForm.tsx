@@ -1,7 +1,14 @@
 'use client';
 
 import { FormProvider, useForm } from 'react-hook-form';
-import { ArtistManagerSelectData, ArtistData, Country, Language, Zone } from '@/lib/types';
+import {
+  ArtistManagerSelectData,
+  ArtistData,
+  Country,
+  Language,
+  Zone,
+  UserRole,
+} from '@/lib/types';
 import { toast } from 'sonner';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
@@ -13,6 +20,7 @@ import { updateArtistPersonalData } from '@/lib/server-actions/artists/update-ar
 import StepOne from '@/app/(private)/artisti/_components/form/StepOne';
 
 type PersonalDataFormProps = {
+  userRole: UserRole;
   userData: ArtistData;
   languages: Language[];
   countries: Country[];
@@ -22,6 +30,7 @@ type PersonalDataFormProps = {
 };
 
 export default function PersonalDataForm({
+  userRole,
   userData,
   languages,
   countries,
@@ -101,6 +110,7 @@ export default function PersonalDataForm({
         onSubmit={methods.handleSubmit(onSubmit)}
       >
         <StepOne
+          userRole={userRole}
           artistManagers={artistManagers}
           countries={countries}
           languages={languages}

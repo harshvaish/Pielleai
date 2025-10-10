@@ -8,7 +8,7 @@ import StepTwo from '../form/StepTwo';
 import { toast } from 'sonner';
 import StepThree from '../form/StepThree';
 import { ArrowLeft } from 'lucide-react';
-import { Country, VenueManagerSelectData } from '@/lib/types';
+import { Country, UserRole, VenueManagerSelectData } from '@/lib/types';
 import StepIndicator from '@/app/(private)/_components/form/StepIndicator';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
@@ -35,12 +35,16 @@ function getFormFieldsForStep(step: number): Array<keyof VenueFormSchema> {
 }
 
 type CreateVenueFormProps = {
+  userRole: UserRole;
+  userProfileId: number;
   countries: Country[];
   venueManagers: VenueManagerSelectData[];
   closeDialog: () => void;
 };
 
 export default function CreateVenueForm({
+  userRole,
+  userProfileId,
   countries,
   venueManagers,
   closeDialog,
@@ -49,6 +53,8 @@ export default function CreateVenueForm({
   const [isPending, startTransition] = useTransition();
   const [step, setStep] = useState<number>(1);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  const isAdmin = userRole === 'admin';
 
   const methods = useForm({
     resolver: zodResolver(venueFormSchema),
@@ -62,7 +68,7 @@ export default function CreateVenueForm({
       subdivisionId: 0,
       city: '',
       zipCode: '',
-      venueManagerId: undefined,
+      venueManagerId: isAdmin ? undefined : userProfileId,
 
       company: '',
       taxCode: '',
@@ -190,6 +196,7 @@ export default function CreateVenueForm({
           >
             {step === 1 && (
               <StepOne
+                userRole={userRole}
                 countries={countries}
                 venueManagers={venueManagers}
               />

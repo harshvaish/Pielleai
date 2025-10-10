@@ -78,7 +78,7 @@ export default function ArtistSelect({ artists, value, setValue, hasError }: Art
                 return (
                   <CommandItem
                     key={artist.id}
-                    value={artist.id.toString()}
+                    value={artist.id?.toString()}
                     onSelect={onSelectHandler}
                     keywords={[artist.stageName]} // to enable filtering with stageName
                     disabled={isSelected}

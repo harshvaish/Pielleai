@@ -9,7 +9,15 @@ import LanguagesSelect from '@/app/(private)/_components/form/LanguagesSelect';
 import { Select, SelectContent, SelectItem, SelectTrigger } from '@/components/ui/select';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import useSWR from 'swr';
-import { ArtistManagerSelectData, Country, Gender, Language, Subdivision, Zone } from '@/lib/types';
+import {
+  ArtistManagerSelectData,
+  Country,
+  Gender,
+  Language,
+  Subdivision,
+  UserRole,
+  Zone,
+} from '@/lib/types';
 import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import ArtistManagersSelect from '../create/ArtistManagersSelect';
@@ -17,17 +25,21 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { profileGenders } from '@/lib/database/schema';
 import { GENDERS_LABELS } from '@/lib/constants';
 
-export default function StepOne({
-  languages,
-  countries,
-  zones,
-  artistManagers,
-}: {
+type StepOneProps = {
+  userRole: UserRole;
   languages: Language[];
   countries: Country[];
   zones: Zone[];
   artistManagers: ArtistManagerSelectData[];
-}) {
+};
+
+export default function StepOne({
+  userRole,
+  languages,
+  countries,
+  zones,
+  artistManagers,
+}: StepOneProps) {
   const {
     register,
     control,
@@ -37,6 +49,8 @@ export default function StepOne({
   } = useFormContext();
 
   const [subdivisions, setSubdivisions] = useState<Subdivision[]>([]);
+
+  const isAdmin = userRole === 'admin';
 
   const selectedCountryId = watch('countryId');
   const selectedSubdivisionId = watch('subdivisionId');
@@ -313,7 +327,7 @@ export default function StepOne({
                   {countries.map((country) => (
                     <SelectItem
                       key={country.id}
-                      value={country.id.toString()}
+                      value={country.id?.toString()}
                     >
                       {country.name}
                     </SelectItem>
@@ -357,7 +371,7 @@ export default function StepOne({
                   {subdivisions.map((subdivision: Subdivision) => (
                     <SelectItem
                       key={subdivision.id}
-                      value={subdivision.id.toString()}
+                      value={subdivision.id?.toString()}
                     >
                       {subdivision.name}
                     </SelectItem>
@@ -496,31 +510,35 @@ export default function StepOne({
 
       <Separator className='my-4' />
 
-      <div className='flex flex-col'>
-        <label
-          htmlFor='artistManagers'
-          className='block text-sm font-semibold mb-2'
-        >
-          Manager
-        </label>
-        <Controller
-          control={control}
-          name='artistManagers'
-          render={({ field }) => (
-            <ArtistManagersSelect
-              artistManagers={artistManagers}
-              value={field.value}
-              onChange={field.onChange}
-              hasError={!!errors.artistManagers}
-            />
+      {isAdmin && (
+        <div className='flex flex-col'>
+          <label
+            htmlFor='artistManagers'
+            className='block text-sm font-semibold mb-2'
+          >
+            Manager
+          </label>
+          <Controller
+            control={control}
+            name='artistManagers'
+            render={({ field }) => (
+              <ArtistManagersSelect
+                artistManagers={artistManagers}
+                value={field.value}
+                onChange={field.onChange}
+                hasError={!!errors.artistManagers}
+              />
+            )}
+          />
+          {errors.artistManagers && (
+            <p className='text-xs text-destructive mt-2'>
+              {errors.artistManagers.message as string}
+            </p>
           )}
-        />
-        {errors.artistManagers && (
-          <p className='text-xs text-destructive mt-2'>{errors.artistManagers.message as string}</p>
-        )}
-      </div>
+        </div>
+      )}
 
-      <Separator className='my-4' />
+      {isAdmin && <Separator className='my-4' />}
 
       <div className='grid grid-cols-2 gap-4'>
         <div className='flex flex-col'>

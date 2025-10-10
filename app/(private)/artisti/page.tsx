@@ -105,6 +105,8 @@ export default async function ArtistsPage({ searchParams }: ArtistsPageProps) {
 
           {hasRole(user, ['admin', 'artist-manager']) && (
             <CreateButton
+              userRole={user.role}
+              userProfileId={profileId as number}
               languages={languages}
               countries={countries}
               zones={zones}

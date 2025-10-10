@@ -37,7 +37,6 @@ export async function deleteUserAccount(): Promise<ServerActionResponse<null>> {
     const updateResult = await database
       .update(users)
       .set({
-        email: 'deleted@deleted.com',
         status: 'disabled',
         banned: true,
         updatedAt: new Date(),

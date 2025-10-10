@@ -195,7 +195,7 @@ export default function StepTwo({ countries }: { countries: Country[] }) {
             name='billingCountry'
             render={({ field }) => (
               <Select
-                value={field.value?.id.toString() ?? ''}
+                value={field.value?.id?.toString()}
                 onValueChange={(selectedId) => {
                   const selectedCountry = countries.find((c) => c.id === parseInt(selectedId));
                   field.onChange(selectedCountry || null);
@@ -214,7 +214,7 @@ export default function StepTwo({ countries }: { countries: Country[] }) {
                   {countries.map((country) => (
                     <SelectItem
                       key={country.id}
-                      value={country.id.toString()}
+                      value={country.id?.toString()}
                     >
                       {country.name}
                     </SelectItem>
@@ -243,7 +243,7 @@ export default function StepTwo({ countries }: { countries: Country[] }) {
             render={({ field }) => (
               <Select
                 name='billingSubdivisionId'
-                value={field.value.toString()}
+                value={field.value?.toString()}
                 disabled={!selectedCountry || isLoading}
                 onValueChange={(v) => field.onChange(parseInt(v))}
               >
@@ -260,7 +260,7 @@ export default function StepTwo({ countries }: { countries: Country[] }) {
                   {subdivisions.map((subdivision: Subdivision) => (
                     <SelectItem
                       key={subdivision.id}
-                      value={subdivision.id.toString()}
+                      value={subdivision.id?.toString()}
                     >
                       {subdivision.name}
                     </SelectItem>

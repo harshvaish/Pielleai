@@ -8,27 +8,30 @@ import { cn, fetcher } from '@/lib/utils';
 import { Select, SelectContent, SelectItem, SelectTrigger } from '@/components/ui/select';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import useSWR from 'swr';
-import { Country, Subdivision, VenueManagerSelectData, VenueType } from '@/lib/types';
+import { Country, Subdivision, UserRole, VenueManagerSelectData, VenueType } from '@/lib/types';
 import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import Image from 'next/image';
 import { venueTypes } from '@/lib/database/schema';
 import { VENUE_TYPE_LABELS } from '@/lib/constants';
+import { VenueS1FormSchema } from '@/lib/validation/venue-form-schema';
 
-export default function StepOne({
-  countries,
-  venueManagers,
-}: {
+type StepOneProps = {
+  userRole: UserRole;
   countries: Country[];
   venueManagers: VenueManagerSelectData[];
-}) {
+};
+
+export default function StepOne({ userRole, countries, venueManagers }: StepOneProps) {
   const {
     register,
     control,
     watch,
     resetField,
     formState: { errors },
-  } = useFormContext();
+  } = useFormContext<VenueS1FormSchema>();
+
+  const isAdmin = userRole === 'admin';
 
   const [subdivisions, setSubdivisions] = useState<Subdivision[]>([]);
 
@@ -205,7 +208,7 @@ export default function StepOne({
             name='countryId'
             render={({ field }) => (
               <Select
-                value={field.value}
+                value={field.value?.toString()}
                 onValueChange={(v) => field.onChange(parseInt(v))}
                 disabled={isLoading}
               >
@@ -223,7 +226,7 @@ export default function StepOne({
                   {countries.map((country) => (
                     <SelectItem
                       key={country.id}
-                      value={country.id.toString()}
+                      value={country.id?.toString()}
                     >
                       {country.name}
                     </SelectItem>
@@ -249,7 +252,7 @@ export default function StepOne({
             name='subdivisionId'
             render={({ field }) => (
               <Select
-                value={field.value}
+                value={field.value?.toString()}
                 disabled={!selectedCountryId || isLoading}
                 onValueChange={(v) => field.onChange(parseInt(v))}
               >
@@ -267,7 +270,7 @@ export default function StepOne({
                   {subdivisions.map((subdivision: Subdivision) => (
                     <SelectItem
                       key={subdivision.id}
-                      value={subdivision.id.toString()}
+                      value={subdivision.id?.toString()}
                     >
                       {subdivision.name}
                     </SelectItem>
@@ -328,65 +331,69 @@ export default function StepOne({
 
       <Separator className='my-4' />
 
-      <div className='flex flex-col'>
-        <label
-          htmlFor='venueManagerId'
-          className='block text-sm font-semibold mb-2'
-        >
-          Promoter
-        </label>
-        <Controller
-          control={control}
-          name='venueManagerId'
-          render={({ field }) => (
-            <Select
-              value={field.value}
-              onValueChange={(v) => field.onChange(parseInt(v))}
-            >
-              <SelectTrigger
-                id='venueManagerId'
-                className={cn(
-                  'w-full',
-                  errors.venueManagerId && 'border-destructive text-destructive',
-                )}
-                size='sm'
+      {isAdmin && (
+        <div className='flex flex-col'>
+          <label
+            htmlFor='venueManagerId'
+            className='block text-sm font-semibold mb-2'
+          >
+            Promoter
+          </label>
+          <Controller
+            control={control}
+            name='venueManagerId'
+            render={({ field }) => (
+              <Select
+                value={field.value?.toString()}
+                onValueChange={(v) => field.onChange(parseInt(v))}
               >
-                {(() => {
-                  const selected = venueManagers.find(
-                    (manager) => manager.profileId === field.value,
-                  );
-                  return selected
-                    ? `${selected.name} ${selected.surname}`
-                    : 'Seleziona un promoter';
-                })()}
-              </SelectTrigger>
-              <SelectContent>
-                {venueManagers.map((manager) => (
-                  <SelectItem
-                    key={manager.id}
-                    value={manager.profileId.toString()}
-                  >
-                    <div className='flex items-center gap-2 flex-nowrap'>
-                      <Image
-                        src={manager.avatarUrl}
-                        alt='Immagine profilo utente'
-                        height={24}
-                        width={24}
-                        sizes='24px'
-                        className='w-6 h-6 rounded-full'
-                      />
-                      {manager.name} {manager.surname}
-                    </div>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+                <SelectTrigger
+                  id='venueManagerId'
+                  className={cn(
+                    'w-full',
+                    errors.venueManagerId && 'border-destructive text-destructive',
+                  )}
+                  size='sm'
+                >
+                  {(() => {
+                    const selected = venueManagers.find(
+                      (manager) => manager.profileId === field.value,
+                    );
+                    return selected
+                      ? `${selected.name} ${selected.surname}`
+                      : 'Seleziona un promoter';
+                  })()}
+                </SelectTrigger>
+                <SelectContent>
+                  {venueManagers.map((manager) => (
+                    <SelectItem
+                      key={manager.id}
+                      value={manager.profileId?.toString()}
+                    >
+                      <div className='flex items-center gap-2 flex-nowrap'>
+                        <Image
+                          src={manager.avatarUrl}
+                          alt='Immagine profilo utente'
+                          height={24}
+                          width={24}
+                          sizes='24px'
+                          className='w-6 h-6 rounded-full'
+                        />
+                        {manager.name} {manager.surname}
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+          />
+          {errors.venueManagerId && (
+            <p className='text-xs text-destructive mt-2'>
+              {errors.venueManagerId.message as string}
+            </p>
           )}
-        />
-        {errors.venueManagerId && (
-          <p className='text-xs text-destructive mt-2'>{errors.venueManagerId.message as string}</p>
-        )}
-      </div>
+        </div>
+      )}
     </>
   );
 }

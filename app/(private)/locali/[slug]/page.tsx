@@ -5,10 +5,6 @@ import Image from 'next/image';
 import { notFound, redirect } from 'next/navigation';
 import { cn, hasRole, resolveNextPath } from '@/lib/utils';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import BillingDataTab from '../../_components/tabs/BillingDataTab';
-import VenueTypeBadge from '../../_components/badges/VenueTypeBadge';
-import UserBadge from '../../_components/badges/UserBadge';
-import SocialDataTab from '../../_components/tabs/SocialDataTab';
 import ToggleVenueBlockButton from './_components/ToggleVenueBlockButton';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Ellipsis } from 'lucide-react';
@@ -18,6 +14,10 @@ import { getCountriesCached } from '@/lib/cache/countries';
 import { getVenueManagersCached } from '@/lib/cache/venue-managers';
 import getSession from '@/lib/data/auth/get-session';
 import { getUserProfileIdCached } from '@/lib/cache/users';
+import VenueTypeBadge from '../../_components/Badges/VenueTypeBadge';
+import UserBadge from '../../_components/Badges/UserBadge';
+import BillingDataTab from '../../_components/Tabs/BillingDataTab';
+import SocialDataTab from '../../_components/Tabs/SocialDataTab';
 
 type VenueDetailPageProps = { params: Promise<{ slug: string }> };
 
@@ -62,6 +62,7 @@ export default async function VenueDetailPage({ params }: VenueDetailPageProps) 
           </PopoverTrigger>
           <PopoverContent className='w-48 flex flex-col justify-start lg:hidden'>
             <UpdateButton
+              userRole={user.role}
               venueData={venue}
               countries={countries}
               venueManagers={venueManagers}
@@ -79,6 +80,7 @@ export default async function VenueDetailPage({ params }: VenueDetailPageProps) 
             initialStatus={venue.status}
           />
           <UpdateButton
+            userRole={user.role}
             venueData={venue}
             countries={countries}
             venueManagers={venueManagers}

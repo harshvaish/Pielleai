@@ -23,6 +23,7 @@ export const createVenue = async (data: VenueFormSchema): Promise<ServerActionRe
       console.error('[createVenue] - Error: role', session);
       throw new AppError('Non sei autorizzato.');
     }
+    const isAdmin = user.role === 'admin';
 
     const validation = venueFormSchema.safeParse(data);
 
@@ -59,7 +60,7 @@ export const createVenue = async (data: VenueFormSchema): Promise<ServerActionRe
         .where(eq(subdivisions.id, billingSubdivisionId)),
 
       database
-        .select({ id: profiles.id })
+        .select({ id: users.id })
         .from(profiles)
         .innerJoin(users, eq(profiles.userId, users.id))
         .where(and(eq(users.role, 'venue-manager'), eq(profiles.id, venueManagerId))),
@@ -93,6 +94,11 @@ export const createVenue = async (data: VenueFormSchema): Promise<ServerActionRe
 
     if (venueManagerCheck.length !== 1) {
       throw new AppError('Manager selezionato non valido.');
+    }
+
+    if (!isAdmin && venueManagerCheck[0].id != user.id) {
+      console.error('[createVenue] - Error: venueManagerId is not the current user', session);
+      throw new AppError('Non è possibile selezionare un promoter diverso da te.');
     }
 
     const venueResult = await database

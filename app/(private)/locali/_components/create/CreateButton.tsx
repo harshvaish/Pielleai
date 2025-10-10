@@ -9,16 +9,23 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
-import { Country, VenueManagerSelectData } from '@/lib/types';
+import { Country, UserRole, VenueManagerSelectData } from '@/lib/types';
 import { useState } from 'react';
 import CreateVenueForm from './CreateVenueForm';
 
 type CreateButtonProps = {
+  userRole: UserRole;
+  userProfileId: number;
   countries: Country[];
   venueManagers: VenueManagerSelectData[];
 };
 
-export default function CreateButton({ countries, venueManagers }: CreateButtonProps) {
+export default function CreateButton({
+  userRole,
+  userProfileId,
+  countries,
+  venueManagers,
+}: CreateButtonProps) {
   const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
   return (
     <Dialog
@@ -44,6 +51,8 @@ export default function CreateButton({ countries, venueManagers }: CreateButtonP
         </DialogDescription>
 
         <CreateVenueForm
+          userRole={userRole}
+          userProfileId={userProfileId}
           countries={countries}
           venueManagers={venueManagers}
           closeDialog={() => setIsDialogOpen(false)}

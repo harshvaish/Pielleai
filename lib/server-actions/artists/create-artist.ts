@@ -35,6 +35,8 @@ export const createArtist = async (data: ArtistFormSchema): Promise<ServerAction
       throw new AppError('Non sei autorizzato.');
     }
 
+    const isAdmin = user.role === 'admin';
+
     const validation = artistFormSchema.safeParse(data);
 
     if (!validation.success) {
@@ -121,13 +123,17 @@ export const createArtist = async (data: ArtistFormSchema): Promise<ServerAction
 
     if (artistManagers.length > 0) {
       const artistManagersCheck = await database
-        .select({ id: profiles.id })
+        .select({ id: users.id })
         .from(profiles)
         .innerJoin(users, eq(profiles.userId, users.id))
         .where(and(eq(users.role, 'artist-manager'), inArray(profiles.id, artistManagers)));
 
       if (artistManagersCheck.length !== artistManagers.length) {
         throw new AppError('Una o più manager selezionati non validi.');
+      }
+
+      if (!isAdmin && artistManagersCheck[0].id !== user.id) {
+        throw new AppError('Non è possibile selezionare un manager diverso da te.');
       }
     }
 

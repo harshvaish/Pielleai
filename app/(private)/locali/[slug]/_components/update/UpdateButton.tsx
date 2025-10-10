@@ -9,7 +9,7 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Pencil } from 'lucide-react';
-import { Country, VenueData, VenueManagerSelectData } from '@/lib/types';
+import { Country, UserRole, VenueData, VenueManagerSelectData } from '@/lib/types';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import GeneralDataForm from './GeneralDataForm';
@@ -17,12 +17,18 @@ import BillingDataForm from './BillingDataForm';
 import SocialDataForm from './SocialDataForm';
 
 type UpdateButtonProps = {
+  userRole: UserRole;
   venueData: VenueData;
   countries: Country[];
   venueManagers: VenueManagerSelectData[];
 };
 
-export default function UpdateButton({ venueData, countries, venueManagers }: UpdateButtonProps) {
+export default function UpdateButton({
+  userRole,
+  venueData,
+  countries,
+  venueManagers,
+}: UpdateButtonProps) {
   const [open, setOpen] = useState<boolean>(false);
   const [step, setStep] = useState<1 | 2 | 3>(1);
 
@@ -90,6 +96,7 @@ export default function UpdateButton({ venueData, countries, venueManagers }: Up
         <section className='max-h-full overflow-y-auto'>
           {step === 1 && (
             <GeneralDataForm
+              userRole={userRole}
               venueData={venueData}
               countries={countries}
               venueManagers={venueManagers}

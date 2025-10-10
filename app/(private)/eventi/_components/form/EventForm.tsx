@@ -486,7 +486,7 @@ export default function EventForm({ artists, venues, moCoordinators }: EventForm
                       {moCoordinators.map((mc) => (
                         <SelectItem
                           key={mc.id}
-                          value={mc.id.toString()}
+                          value={mc.id?.toString()}
                         >
                           {mc.name} {mc.surname}
                         </SelectItem>

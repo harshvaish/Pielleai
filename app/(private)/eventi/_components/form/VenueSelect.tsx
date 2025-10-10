@@ -38,7 +38,7 @@ export default function VenueSelect({ venues }: VenueSelectProps) {
             {venues.map((venue) => (
               <SelectItem
                 key={venue.id}
-                value={venue.id.toString()}
+                value={venue.id?.toString()}
               >
                 <div className='flex items-center gap-2 flex-nowrap'>
                   <Image

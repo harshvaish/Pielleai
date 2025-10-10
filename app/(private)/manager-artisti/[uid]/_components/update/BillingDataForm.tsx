@@ -42,7 +42,7 @@ export default function BillingDataForm({
       billingEmail: userData.billingEmail || '',
       billingPhone: userData.billingPhone || '',
       billingPec: userData.billingPec || '',
-      taxableInvoice: userData.taxableInvoice.toString() || 'false',
+      taxableInvoice: userData.taxableInvoice?.toString() || 'false',
     }),
     [userData],
   );

@@ -9,11 +9,13 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
-import { ArtistManagerSelectData, Country, Language, Zone } from '@/lib/types';
+import { ArtistManagerSelectData, Country, Language, UserRole, Zone } from '@/lib/types';
 import { useState } from 'react';
 import CreateArtistForm from './CreateArtistForm';
 
 type CreateButtonProps = {
+  userRole: UserRole;
+  userProfileId: number;
   languages: Language[];
   countries: Country[];
   zones: Zone[];
@@ -21,6 +23,8 @@ type CreateButtonProps = {
 };
 
 export default function CreateButton({
+  userRole,
+  userProfileId,
   languages,
   countries,
   zones,
@@ -52,6 +56,8 @@ export default function CreateButton({
         </DialogDescription>
 
         <CreateArtistForm
+          userRole={userRole}
+          userProfileId={userProfileId}
           languages={languages}
           countries={countries}
           zones={zones}

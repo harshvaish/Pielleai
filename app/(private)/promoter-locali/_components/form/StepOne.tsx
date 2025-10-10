@@ -249,7 +249,7 @@ export default function StepOne({ languages, countries }: StepOneProps) {
             name='countryId'
             render={({ field }) => (
               <Select
-                value={field.value.toString()}
+                value={field.value?.toString()}
                 onValueChange={(v) => field.onChange(parseInt(v))}
                 disabled={isLoading}
               >
@@ -267,7 +267,7 @@ export default function StepOne({ languages, countries }: StepOneProps) {
                   {countries.map((country) => (
                     <SelectItem
                       key={country.id}
-                      value={country.id.toString()}
+                      value={country.id?.toString()}
                     >
                       {country.name}
                     </SelectItem>
@@ -293,7 +293,7 @@ export default function StepOne({ languages, countries }: StepOneProps) {
             name='subdivisionId'
             render={({ field }) => (
               <Select
-                value={field.value.toString()}
+                value={field.value?.toString()}
                 disabled={!selectedCountryId || isLoading}
                 onValueChange={(v) => field.onChange(parseInt(v))}
               >
@@ -311,7 +311,7 @@ export default function StepOne({ languages, countries }: StepOneProps) {
                   {subdivisions.map((subdivision: Subdivision) => (
                     <SelectItem
                       key={subdivision.id}
-                      value={subdivision.id.toString()}
+                      value={subdivision.id?.toString()}
                     >
                       {subdivision.name}
                     </SelectItem>

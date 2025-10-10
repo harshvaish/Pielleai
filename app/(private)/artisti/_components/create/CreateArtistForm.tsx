@@ -15,7 +15,7 @@ import StepTwo from '../form/StepTwo';
 import { toast } from 'sonner';
 import StepThree from '../form/StepThree';
 import { ArrowLeft } from 'lucide-react';
-import { ArtistManagerSelectData, Country, Language, Zone } from '@/lib/types';
+import { ArtistManagerSelectData, Country, Language, UserRole, Zone } from '@/lib/types';
 import StepIndicator from '@/app/(private)/_components/form/StepIndicator';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
@@ -34,22 +34,30 @@ function getFormFieldsForStep(step: number): Array<keyof ArtistFormSchema> {
   return [];
 }
 
-export default function CreateArtistForm({
-  languages,
-  countries,
-  zones,
-  artistManagers,
-  closeDialog,
-}: {
+type CreateArtistFormProps = {
+  userRole: UserRole;
+  userProfileId: number;
   languages: Language[];
   countries: Country[];
   zones: Zone[];
   artistManagers: ArtistManagerSelectData[];
   closeDialog: () => void;
-}) {
+};
+
+export default function CreateArtistForm({
+  userRole,
+  userProfileId,
+  languages,
+  countries,
+  zones,
+  artistManagers,
+  closeDialog,
+}: CreateArtistFormProps) {
   const [isPending, startTransition] = useTransition();
   const [step, setStep] = useState<number>(1);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  const isAdmin = userRole === 'admin';
 
   const methods = useForm({
     resolver: zodResolver(artistFormSchema),
@@ -70,7 +78,7 @@ export default function CreateArtistForm({
       zipCode: '',
       gender: 'male',
       zones: [],
-      artistManagers: [],
+      artistManagers: isAdmin ? [] : [userProfileId],
 
       company: '',
       taxCode: '',
@@ -198,6 +206,7 @@ export default function CreateArtistForm({
           >
             {step === 1 && (
               <StepOne
+                userRole={userRole}
                 languages={languages}
                 countries={countries}
                 zones={zones}
