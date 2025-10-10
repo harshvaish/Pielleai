@@ -8,7 +8,7 @@ import UpdateArtistManagerButton from '../manager-artisti/[uid]/_components/upda
 import UpdateVenueManagerButton from '../promoter-locali/[uid]/_components/update/UpdateButton';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Ellipsis, SquareArrowOutUpRight, Lock } from 'lucide-react';
+import { Ellipsis, SquareArrowOutUpRight } from 'lucide-react';
 import { getLanguagesCached } from '@/lib/cache/languages';
 import { getCountriesCached } from '@/lib/cache/countries';
 import { getArtistManagerCached } from '@/lib/cache/artist-managers';
@@ -16,13 +16,14 @@ import getSession from '@/lib/data/auth/get-session';
 import { getVenueManagerCached } from '@/lib/cache/venue-managers';
 import { ArtistListData, ArtistManagerData, VenueListData, VenueManagerData } from '@/lib/types';
 import ManagedArtistsTab from '../manager-artisti/[uid]/_components/Tabs/ManagedArtistsTab';
-import BillingDataTab from '../_components/tabs/BillingDataTab';
 import ArtistManagerPersonalDataTab from '../manager-artisti/[uid]/_components/Tabs/PersonalDataTab';
 import VenueManagerPersonalDataTab from '../promoter-locali/[uid]/_components/Tabs/PersonalDataTab';
 import ManagedVenuesTab from '../promoter-locali/[uid]/_components/Tabs/ManagedVenuesTab';
 import SignOutTile from './_components/action-tiles/SignOutTile';
 import ChangePasswordTile from './_components/action-tiles/ChangePaswordTile';
 import { getUserProfileIdCached } from '@/lib/cache/users';
+import BillingDataTab from '../_components/Tabs/BillingDataTab';
+import DeleteAccountTile from './_components/action-tiles/DeleteAccountTile';
 
 export const dynamic = 'force-dynamic';
 
@@ -175,10 +176,7 @@ export default async function ProfilePage() {
 
           <Separator />
 
-          <div className='flex justify-between gap-4 px-2 py-3 rounded-md hover:bg-zinc-50 hover:cursor-pointer'>
-            <span className='text-sm font-semibold text-destructive'>Cancella account</span>
-            <Lock className='size-4 stroke-1 text-destructive' />
-          </div>
+          <DeleteAccountTile />
         </section>
       </div>
 

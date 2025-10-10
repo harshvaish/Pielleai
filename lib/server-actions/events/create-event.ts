@@ -2,7 +2,7 @@
 
 import { ServerActionResponse } from '@/lib/types';
 import { database } from '@/lib/database/connection';
-import { and, count, eq, gt } from 'drizzle-orm';
+import { and, count, eq, inArray, ne } from 'drizzle-orm';
 import {
   profiles,
   users,
@@ -46,21 +46,33 @@ export const createEvent = async (data: EventFormSchema): Promise<ServerActionRe
 
     if (availabilityId) {
       const [availability] = await database
-        .select({ count: count() })
+        .select({
+          id: artistAvailabilities.id,
+          status: artistAvailabilities.status,
+          startDate: artistAvailabilities.startDate,
+          endDate: artistAvailabilities.endDate,
+        })
         .from(artistAvailabilities)
         .where(
           and(
             eq(artistAvailabilities.id, availabilityId),
             eq(artistAvailabilities.artistId, artistId),
-            gt(artistAvailabilities.endDate, now),
           ),
         );
 
-      if (availability.count === 0) {
-        throw new AppError('Disponibilità selezionata non trovata o scaduta.');
+      if (availability.status != 'available') {
+        throw new AppError('Disponibilità selezionata già prenotata o scaduta.');
+      }
+
+      if (isBefore(availability.startDate, now)) {
+        throw new AppError('Disponibilità selezionata già iniziata.');
+      }
+
+      if (isBefore(availability.endDate, now)) {
+        throw new AppError('Disponibilità selezionata scaduta.');
       }
     } else {
-      if (endDate <= startDate) {
+      if (isBefore(endDate, startDate)) {
         throw new AppError("L'orario di fine deve essere successivo all'orario di inizio.");
       }
 
@@ -97,26 +109,32 @@ export const createEvent = async (data: EventFormSchema): Promise<ServerActionRe
     }
 
     await database.transaction(async (tx) => {
-      if (availabilityId && validation.data.status === 'confirmed') {
-        const existingConfirmed = await tx
-          .select({ count: count() })
-          .from(events)
-          .where(and(eq(events.availabilityId, availabilityId), eq(events.status, 'confirmed')))
-          .limit(1);
+      // STEP 1: HANDLE AVAILABILITY --------------------------------------------------------
+      if (availabilityId) {
+        if (validation.data.status === 'confirmed') {
+          const existingConfirmed = await tx
+            .select({ count: count() })
+            .from(events)
+            .where(and(eq(events.availabilityId, availabilityId), eq(events.status, 'confirmed')))
+            .limit(1);
 
-        if (existingConfirmed[0].count > 0) {
-          throw new AppError('Esiste già un evento confermato per questa disponibilità.');
+          if (existingConfirmed[0].count > 0) {
+            throw new AppError('Esiste già un evento confermato per questa disponibilità.');
+          }
+
+          await tx
+            .update(artistAvailabilities)
+            .set({ status: 'booked', updatedAt: now })
+            .where(eq(artistAvailabilities.id, availabilityId));
         }
-      }
-
-      if (!availabilityId) {
+      } else {
         const [newAvailability] = await tx
           .insert(artistAvailabilities)
           .values({
             artistId: artistId,
             startDate: startDate,
             endDate: endDate,
-            status: 'available', // db trigger will book it if event confirmed
+            status: validation.data.status === 'confirmed' ? 'booked' : 'available',
           })
           .returning({ id: artistAvailabilities.id });
 
@@ -126,6 +144,8 @@ export const createEvent = async (data: EventFormSchema): Promise<ServerActionRe
           throw new AppError('Inserimento nuova disponibilità non riuscito.');
         }
       }
+
+      // STEP 2: HANDLE EVENT --------------------------------------------------------
 
       // tecnical rider has both url & name check
       const tr = validation.data.tecnicalRiderDocument;
@@ -197,6 +217,45 @@ export const createEvent = async (data: EventFormSchema): Promise<ServerActionRe
 
       if (noteInserts.length > 0) {
         await tx.insert(eventNotes).values(noteInserts);
+      }
+
+      // STEP 3: HANDLE CONFLICTS --------------------------------------------------------
+      if (['proposed', 'pre-confirmed', 'confirmed', 'conflict'].includes(validation.data.status)) {
+        const conflictEvents = await tx
+          .select({
+            id: events.id,
+            status: events.status,
+          })
+          .from(events)
+          .where(
+            and(
+              ne(events.id, newEventId),
+              eq(events.availabilityId, availabilityId),
+              inArray(events.status, ['proposed', 'pre-confirmed', 'conflict']),
+            ),
+          );
+
+        if (conflictEvents.length > 0) {
+          if (validation.data.status === 'confirmed') {
+            for (const conflictEvent of conflictEvents) {
+              await tx
+                .update(events)
+                .set({ status: 'rejected', previousStatus: events.status, updatedAt: now })
+                .where(eq(events.id, conflictEvent.id));
+            }
+          } else {
+            conflictEvents.push({ id: newEventId, status: validation.data.status });
+
+            for (const conflictEvent of conflictEvents) {
+              if (conflictEvent.status != 'conflict') {
+                await tx
+                  .update(events)
+                  .set({ status: 'conflict', previousStatus: events.status, updatedAt: now })
+                  .where(eq(events.id, conflictEvent.id));
+              }
+            }
+          }
+        }
       }
     });
 

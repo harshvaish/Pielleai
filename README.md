@@ -72,11 +72,5 @@ TODO
 
 TO REQUEST:
 
-- dominio per prod
-- Termini e le Condizioni e l' Informativa sulla Privacy
-- autenticazione per invio email con info@eaglebooking.it
-- stime per sync dei due database
-- creazione artisti e locali (da capire come gestire manager, se auto inserirli o lasciarli liberi)
-- managers, cancellazione profilo?
-- email templates design
-- quando confermo un evento, gli altri in conflitto li rifiuto?
+- se evento è in conflitto come lo devono vedere i manager?
+- aggiungere conflict come nuova colonna e non come status

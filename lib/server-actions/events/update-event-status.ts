@@ -7,7 +7,8 @@ import { artistAvailabilities, events } from '@/lib/database/schema';
 import { EventStatus, ServerActionResponse } from '@/lib/types';
 import { hasRole } from '@/lib/utils';
 import { eventStatusEnumValidation, idValidation } from '@/lib/validation/_general';
-import { and, eq, ne, count } from 'drizzle-orm';
+import { isBefore } from 'date-fns';
+import { and, eq, ne, count, inArray } from 'drizzle-orm';
 import { z } from 'zod/v4';
 
 export async function updateEventStatus(
@@ -42,37 +43,36 @@ export async function updateEventStatus(
     const now = new Date();
 
     // Fetch event + availability
-    const [currentEvent] = await database
+    const [oldEvent] = await database
       .select({
         id: events.id,
         status: events.status,
-        availabilityId: events.availabilityId,
-        endDate: artistAvailabilities.endDate,
-        availabilityStatus: artistAvailabilities.status,
+
+        availability: {
+          id: artistAvailabilities.id,
+          status: artistAvailabilities.status,
+          startDate: artistAvailabilities.startDate,
+          endDate: artistAvailabilities.endDate,
+        },
       })
       .from(events)
       .innerJoin(artistAvailabilities, eq(events.availabilityId, artistAvailabilities.id))
       .where(eq(events.id, eventId))
       .limit(1);
 
-    if (!currentEvent) throw new AppError('Evento non trovato.');
-    if (new Date(currentEvent.endDate) < now) throw new AppError('Evento scaduto.');
+    if (!oldEvent) throw new AppError('Evento non trovato.');
+    if (isBefore(oldEvent.availability.endDate, now)) throw new AppError('Evento scaduto.');
 
     // Block activating on a booked availability
     if (
       ['confirmed', 'proposed', 'pre-confirmed'].includes(newStatus) &&
-      currentEvent.availabilityStatus === 'booked' &&
-      currentEvent.status !== 'confirmed'
+      oldEvent.availability.status === 'booked' &&
+      oldEvent.status !== 'confirmed'
     ) {
       throw new AppError('Questa disponibilità è già prenotata da un evento confermato.');
     }
 
-    if (currentEvent.status !== newStatus) {
-      // Users must not set 'conflict' directly; it's system-managed
-      if (newStatus === 'conflict') {
-        throw new AppError("Lo stato 'conflitto' è gestito automaticamente dal sistema.");
-      }
-
+    if (oldEvent.status !== newStatus) {
       // If confirming, friendly pre-check (DB index will enforce anyway)
       if (newStatus === 'confirmed') {
         const [alreadyConfirmed] = await database
@@ -80,9 +80,9 @@ export async function updateEventStatus(
           .from(events)
           .where(
             and(
-              eq(events.availabilityId, currentEvent.availabilityId),
-              eq(events.status, 'confirmed'),
               ne(events.id, eventId),
+              eq(events.availabilityId, oldEvent.availability.id),
+              eq(events.status, 'confirmed'),
             ),
           )
           .limit(1);
@@ -93,11 +93,60 @@ export async function updateEventStatus(
       }
     }
 
-    // Perform the status update — triggers will handle booking & conflicts
-    await database
-      .update(events)
-      .set({ status: newStatus, previousStatus: events.status, updatedAt: now })
-      .where(eq(events.id, eventId));
+    await database.transaction(async (tx) => {
+      // STEP 1: HANDLE AVAILABILITY --------------------------------------------------------
+      if (newStatus === 'confirmed' && oldEvent.availability.status !== 'booked') {
+        await tx
+          .update(artistAvailabilities)
+          .set({ status: 'booked', updatedAt: now })
+          .where(eq(artistAvailabilities.id, oldEvent.availability.id));
+      }
+
+      // STEP 2: HANDLE EVENT --------------------------------------------------------
+      await tx
+        .update(events)
+        .set({ status: newStatus, updatedAt: now })
+        .where(eq(events.id, eventId));
+
+      // STEP 3: HANDLE CONFLICTS --------------------------------------------------------
+      if (['proposed', 'pre-confirmed', 'confirmed', 'conflict'].includes(newStatus)) {
+        const conflictEvents = await tx
+          .select({
+            id: events.id,
+            status: events.status,
+          })
+          .from(events)
+          .where(
+            and(
+              ne(events.id, eventId),
+              eq(events.availabilityId, oldEvent.availability.id),
+              inArray(events.status, ['proposed', 'pre-confirmed', 'conflict']),
+            ),
+          );
+
+        if (conflictEvents.length > 0) {
+          if (newStatus === 'confirmed') {
+            for (const conflictEvent of conflictEvents) {
+              await tx
+                .update(events)
+                .set({ status: 'rejected', previousStatus: events.status, updatedAt: now })
+                .where(eq(events.id, conflictEvent.id));
+            }
+          } else {
+            conflictEvents.push({ id: eventId, status: newStatus });
+
+            for (const conflictEvent of conflictEvents) {
+              if (conflictEvent.status != 'conflict') {
+                await tx
+                  .update(events)
+                  .set({ status: 'conflict', previousStatus: events.status, updatedAt: now })
+                  .where(eq(events.id, conflictEvent.id));
+              }
+            }
+          }
+        }
+      }
+    });
 
     return { success: true, message: null, data: null };
   } catch (error) {

@@ -1,20 +1,27 @@
 'use client';
 
-import { ArtistSelectData, Event, MoCoordinator, UserRole, VenueSelectData } from '@/lib/types';
-import EventStatusBadge from '../badges/EventStatusBadge';
+import {
+  ArtistSelectData,
+  Event,
+  EventStatus,
+  MoCoordinator,
+  UserRole,
+  VenueSelectData,
+} from '@/lib/types';
 import { it } from 'date-fns/locale';
 import { format } from 'date-fns';
-import ArtistsBadge from '../badges/ArtistsBadge';
 import Image from 'next/image';
-import VenuesBadge from '../badges/VenuesBadge';
-import ManagersBadge from '../badges/ManagersBadge';
 import UpdateEventStatusButton from './UpdateEventStatusButton';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import DeleteEventButton from './DeleteEventButton';
 import UpdateButton from '../../eventi/_components/update/UpdateButton';
 import { CalendarDays, Check, ChevronDown, Clock, Ellipsis, X } from 'lucide-react';
-import { cn, hasRole } from '@/lib/utils';
+import { cn } from '@/lib/utils';
 import { Separator } from '@/components/ui/separator';
+import EventStatusBadge from '../Badges/EventStatusBadge';
+import ArtistsBadge from '../Badges/ArtistsBadge';
+import VenuesBadge from '../Badges/VenuesBadge';
+import ManagersBadge from '../Badges/ManagersBadge';
 
 type EventTileProps = {
   userRole: UserRole;
@@ -32,6 +39,9 @@ export default function EventTile({
   moCoordinators,
 }: EventTileProps) {
   const isAdmin = userRole === 'admin';
+  const isArtistManager = userRole === 'artist-manager';
+  const isVenueManager = userRole === 'venue-manager';
+
   const eventDate = format(event.availability.startDate, 'dd MMM yyyy', { locale: it });
   const eventStartTime = format(event.availability.startDate, 'HH:mm', { locale: it });
   const eventEndTime = format(event.availability.endDate, 'HH:mm', { locale: it });
@@ -49,12 +59,20 @@ export default function EventTile({
     bordereau: event.bordereau,
   }).filter(Boolean).length;
 
+  let eventPrevStatus: EventStatus | null = null;
+
+  if (!isAdmin) {
+    if (event.status === 'conflict') {
+      eventPrevStatus = event.previousStatus;
+    }
+  }
+
   return (
     <>
       {/* MOBILE */}
       <div className='xl:hidden space-y-2 rounded-2xl p-2 md:p-4'>
         <div className='flex justify-between items-center gap-4'>
-          <EventStatusBadge status={event.status} />
+          <EventStatusBadge status={eventPrevStatus || event.status} />
 
           {isAdmin && (
             <Popover>
@@ -79,13 +97,18 @@ export default function EventTile({
 
         <div className='flex flex-col sm:flex-row justify-between sm:items-end gap-4'>
           <div className='flex justify-between items-center gap-4'>
-            <ArtistsBadge artists={[event.artist]} />
-            <div className='flex items-center gap-2'>
-              <div className='w-3 h-3 flex justify-center items-center bg-zinc-400 rounded-xs'>
-                <Check className='size-2 text-white' />
+            <ArtistsBadge
+              artists={[event.artist]}
+              userRole={userRole}
+            />
+            {isAdmin && (
+              <div className='flex items-center gap-2'>
+                <div className='w-3 h-3 flex justify-center items-center bg-zinc-400 rounded-xs'>
+                  <Check className='size-2 text-white' />
+                </div>
+                <span className='text-xs text-zinc-400 font-normal'>{activityCount}/10</span>
               </div>
-              <span className='text-xs text-zinc-400 font-normal'>{activityCount}/10</span>
-            </div>
+            )}
           </div>
 
           <div className='flex items-center gap-4'>
@@ -120,7 +143,7 @@ export default function EventTile({
           <VenuesBadge venues={[event.venue]} />
         </div>
 
-        {event.artistManager && (
+        {isAdmin && event.artistManager && (
           <div className='flex justify-between items-center gap-4'>
             <div className='flex items-center gap-1'>
               <Image
@@ -142,24 +165,24 @@ export default function EventTile({
           </div>
         )}
 
-        <div className='flex justify-between items-center gap-4'>
-          <div className='flex items-center gap-1'>
-            <Image
-              className='w-4 h-4'
-              src='/images/navbar-icons/artist-managers.svg'
-              alt='icona valigetta'
-              width={16}
-              height={16}
-              loading='lazy'
-            />
-            <span className='text-xs text-zinc-600'>Tour manager</span>
+        {isAdmin && event.tourManagerEmail && (
+          <div className='flex justify-between items-center gap-4'>
+            <div className='flex items-center gap-1'>
+              <Image
+                className='w-4 h-4'
+                src='/images/navbar-icons/artist-managers.svg'
+                alt='icona valigetta'
+                width={16}
+                height={16}
+                loading='lazy'
+              />
+              <span className='text-xs text-zinc-600'>Tour manager</span>
+            </div>
+            <span className='text-xs text-zinc-500 font-semibold'>{event.tourManagerEmail}</span>
           </div>
-          <span className='text-xs text-zinc-500 font-semibold'>
-            {event.tourManagerName} {event.tourManagerSurname}
-          </span>
-        </div>
+        )}
 
-        {event.administrationEmail && (
+        {isAdmin && event.administrationEmail && (
           <div className='flex justify-between items-center gap-4'>
             <div className='flex items-center gap-1'>
               <Image
@@ -178,8 +201,8 @@ export default function EventTile({
 
         <Separator className='my-4' />
 
-        <div className={cn('grid gap-2', userRole === 'venue-manager' ? '' : 'grid-cols-2')}>
-          {isAdmin && event.status === 'proposed' && (
+        <div className={cn('grid gap-2', isVenueManager ? '' : 'grid-cols-2')}>
+          {isAdmin && (event.status === 'proposed' || event.previousStatus === 'proposed') && (
             <UpdateEventStatusButton
               event={event}
               newStatus='pre-confirmed'
@@ -191,20 +214,24 @@ export default function EventTile({
             />
           )}
 
-          {userRole === 'artist-manager' && event.status === 'pre-confirmed' && (
-            <UpdateEventStatusButton
-              event={event}
-              newStatus='confirmed'
-              buttonLabel='Accetta'
-              buttonVariant='success'
-              dialogTitle='Vuoi accettare questa richiesta?'
-              dialogDescription='Confermi di voler procedere?'
-              icon={<Check className='size-4' />}
-            />
-          )}
+          {isArtistManager &&
+            (event.status === 'pre-confirmed' || event.previousStatus === 'pre-confirmed') && (
+              <UpdateEventStatusButton
+                event={event}
+                newStatus='confirmed'
+                buttonLabel='Accetta'
+                buttonVariant='success'
+                dialogTitle='Vuoi accettare questa richiesta?'
+                dialogDescription='Confermi di voler procedere?'
+                icon={<Check className='size-4' />}
+              />
+            )}
 
-          {hasRole({ role: userRole }, ['admin', 'artist-manager']) &&
-            (event.status === 'proposed' || event.status === 'pre-confirmed') && (
+          {isArtistManager &&
+            (event.status === 'proposed' ||
+              event.status === 'pre-confirmed' ||
+              event.previousStatus === 'proposed' ||
+              event.previousStatus === 'pre-confirmed') && (
               <UpdateEventStatusButton
                 event={event}
                 newStatus='rejected'
@@ -216,10 +243,9 @@ export default function EventTile({
               />
             )}
 
-          {userRole === 'venue-manager' &&
-            ['proposed', 'pre-confirmed', 'confirmed'].includes(event.status) && (
-              <DeleteEventButton event={event} />
-            )}
+          {isVenueManager && ['proposed', 'pre-confirmed', 'conflict'].includes(event.status) && (
+            <DeleteEventButton event={event} />
+          )}
         </div>
       </div>
 
@@ -228,7 +254,7 @@ export default function EventTile({
         <div className='grid grid-cols-[max-content_1fr] gap-4'>
           {/* time info */}
           <div className='w-40 flex flex-col gap-1 justify-center pe-4 border-r'>
-            <EventStatusBadge status={event.status} />
+            <EventStatusBadge status={eventPrevStatus || event.status} />
             <div className='text-lg font-semibold capitalize'>{eventDate}</div>
             <div className='text-zinc-500 font-medium'>
               {eventStartTime} - {eventEndTime}
@@ -238,15 +264,20 @@ export default function EventTile({
           {/* general info */}
           <div className='space-y-4'>
             <div className='flex justify-start items-center gap-4'>
-              <ArtistsBadge artists={[event.artist]} />
-              <div className='flex items-center gap-2'>
-                <div className='w-3 h-3 flex justify-center items-center bg-zinc-400 rounded-xs'>
-                  <Check className='size-2 text-white' />
+              <ArtistsBadge
+                artists={[event.artist]}
+                userRole={userRole}
+              />
+              {isAdmin && (
+                <div className='flex items-center gap-2'>
+                  <div className='w-3 h-3 flex justify-center items-center bg-zinc-400 rounded-xs'>
+                    <Check className='size-2 text-white' />
+                  </div>
+                  <span className='text-xs text-zinc-400 font-normal'>
+                    Attività completate: {activityCount}/10
+                  </span>
                 </div>
-                <span className='text-xs text-zinc-400 font-normal'>
-                  Attività completate: {activityCount}/10
-                </span>
-              </div>
+              )}
             </div>
             <div className='grid grid-cols-2 gap-4'>
               <div className='flex items-center gap-4'>
@@ -264,7 +295,7 @@ export default function EventTile({
                 <VenuesBadge venues={[event.venue]} />
               </div>
 
-              {event.artistManager && (
+              {isAdmin && event.artistManager && (
                 <div className='flex items-center gap-4'>
                   <div className='flex items-center gap-1'>
                     <Image
@@ -286,24 +317,26 @@ export default function EventTile({
                 </div>
               )}
 
-              <div className='flex items-center gap-4'>
-                <div className='flex items-center gap-1'>
-                  <Image
-                    className='w-4 h-4'
-                    src='/images/navbar-icons/artist-managers.svg'
-                    alt='icona valigetta'
-                    width={16}
-                    height={16}
-                    loading='lazy'
-                  />
-                  <span className='text-xs text-zinc-600'>Tour manager</span>
+              {isAdmin && event.tourManagerEmail && (
+                <div className='flex items-center gap-4'>
+                  <div className='flex items-center gap-1'>
+                    <Image
+                      className='w-4 h-4'
+                      src='/images/navbar-icons/artist-managers.svg'
+                      alt='icona valigetta'
+                      width={16}
+                      height={16}
+                      loading='lazy'
+                    />
+                    <span className='text-xs text-zinc-600'>Tour manager</span>
+                  </div>
+                  <span className='text-xs text-zinc-500 font-semibold'>
+                    {event.tourManagerEmail}
+                  </span>
                 </div>
-                <span className='text-xs text-zinc-500 font-semibold'>
-                  {event.tourManagerName} {event.tourManagerSurname}
-                </span>
-              </div>
+              )}
 
-              {event.administrationEmail && (
+              {isAdmin && event.administrationEmail && (
                 <div className='flex items-center gap-4'>
                   <div className='flex items-center gap-1'>
                     <Image
@@ -326,7 +359,7 @@ export default function EventTile({
         </div>
 
         <div className='flex items-center gap-2'>
-          {isAdmin && event.status === 'proposed' && (
+          {isAdmin && (event.status === 'proposed' || event.previousStatus === 'proposed') && (
             <UpdateEventStatusButton
               event={event}
               newStatus='pre-confirmed'
@@ -338,19 +371,20 @@ export default function EventTile({
             />
           )}
 
-          {userRole === 'artist-manager' && event.status === 'pre-confirmed' && (
-            <UpdateEventStatusButton
-              event={event}
-              newStatus='confirmed'
-              buttonLabel='Accetta'
-              buttonVariant='success'
-              dialogTitle='Vuoi accettare questa richiesta?'
-              dialogDescription='Confermi di voler procedere?'
-              icon={<Check className='size-4' />}
-            />
-          )}
+          {isArtistManager &&
+            (event.status === 'pre-confirmed' || event.previousStatus === 'pre-confirmed') && (
+              <UpdateEventStatusButton
+                event={event}
+                newStatus='confirmed'
+                buttonLabel='Accetta'
+                buttonVariant='success'
+                dialogTitle='Vuoi accettare questa richiesta?'
+                dialogDescription='Confermi di voler procedere?'
+                icon={<Check className='size-4' />}
+              />
+            )}
 
-          {userRole === 'admin' && event.status === 'proposed' && (
+          {isAdmin && (event.status === 'proposed' || event.previousStatus === 'proposed') && (
             <UpdateEventStatusButton
               event={event}
               newStatus='rejected'
@@ -362,8 +396,11 @@ export default function EventTile({
             />
           )}
 
-          {userRole === 'artist-manager' &&
-            (event.status === 'proposed' || event.status === 'pre-confirmed') && (
+          {isArtistManager &&
+            (event.status === 'proposed' ||
+              event.status === 'pre-confirmed' ||
+              event.previousStatus === 'proposed' ||
+              event.previousStatus === 'pre-confirmed') && (
               <UpdateEventStatusButton
                 event={event}
                 newStatus='rejected'
@@ -375,10 +412,9 @@ export default function EventTile({
               />
             )}
 
-          {userRole === 'venue-manager' &&
-            ['proposed', 'pre-confirmed', 'conflict'].includes(event.status) && (
-              <DeleteEventButton event={event} />
-            )}
+          {isVenueManager && ['proposed', 'pre-confirmed', 'conflict'].includes(event.status) && (
+            <DeleteEventButton event={event} />
+          )}
 
           {isAdmin && (
             <Popover>

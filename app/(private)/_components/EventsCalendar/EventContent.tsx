@@ -1,10 +1,10 @@
-import ArtistsBadge from '@/app/(private)/_components/badges/ArtistsBadge';
-import ManagersBadge from '@/app/(private)/_components/badges/ManagersBadge';
-import VenuesBadge from '@/app/(private)/_components/badges/VenuesBadge';
-import EventStatusBadge from '@/app/(private)/_components/badges/EventStatusBadge';
 import { ArtistManagerSelectData, CalendarEvent, UserRole } from '@/lib/types';
 import { format } from 'date-fns';
 import { CalendarDays, Clock } from 'lucide-react';
+import ArtistsBadge from '../Badges/ArtistsBadge';
+import ManagersBadge from '../Badges/ManagersBadge';
+import VenuesBadge from '../Badges/VenuesBadge';
+import EventStatusBadge from '../Badges/EventStatusBadge';
 
 type EventContentProps = {
   userRole: UserRole;
@@ -12,6 +12,8 @@ type EventContentProps = {
 };
 
 export default function EventContent({ userRole, event }: EventContentProps) {
+  const isAdmin = userRole === 'admin';
+
   const selectedDate = event ? format(event.start, 'yyyy-MM-dd') : '';
   const selectedStartTime = event ? format(event.start, 'HH:mm') : '';
   const selectedEndTime = event ? format(event.end, 'HH:mm') : '';
@@ -44,10 +46,13 @@ export default function EventContent({ userRole, event }: EventContentProps) {
 
         <div className='flex items-center gap-2'>
           <span className='w-16 text-xs text-zinc-700 font-medium'>Artista</span>
-          <ArtistsBadge artists={[event.artist]} />
+          <ArtistsBadge
+            artists={[event.artist]}
+            userRole={userRole}
+          />
         </div>
 
-        {event.artistManager?.id && (
+        {isAdmin && event.artistManager?.id && (
           <div className='flex items-center gap-2'>
             <span className='w-16 text-xs text-zinc-700 font-medium'>Manager</span>
             <ManagersBadge

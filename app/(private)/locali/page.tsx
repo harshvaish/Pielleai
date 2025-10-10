@@ -7,14 +7,10 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { TablePagination } from '../_components/form/TablePagination';
-import UserBadge from '../_components/badges/UserBadge';
-import ManagersBadge from '../_components/badges/ManagersBadge';
-import VenueTypeBadge from '../_components/badges/VenueTypeBadge';
 import { NEW_USER_TIME } from '@/lib/constants';
 import { VenuesTableFilters, VenueType } from '@/lib/types';
 import FiltersButton from './_components/filters/FiltersButton';
 import CreateButton from './_components/create/CreateButton';
-import StatusBadge from '../_components/badges/StatusBadge';
 import { hasRole, resolveNextPath, splitCsv } from '@/lib/utils';
 import { getCountriesCached } from '@/lib/cache/countries';
 import { getVenueManagersCached } from '@/lib/cache/venue-managers';
@@ -23,6 +19,10 @@ import { venuesTableFiltersSchema } from '@/lib/validation/filters/venues-table-
 import getSession from '@/lib/data/auth/get-session';
 import { getUserProfileIdCached } from '@/lib/cache/users';
 import { getPaginatedVenues } from '@/lib/data/venues/get-paginated-venues';
+import UserBadge from '../_components/Badges/UserBadge';
+import StatusBadge from '../_components/Badges/StatusBadge';
+import VenueTypeBadge from '../_components/Badges/VenueTypeBadge';
+import ManagersBadge from '../_components/Badges/ManagersBadge';
 
 type VenuesPageProps = {
   searchParams?: Promise<{

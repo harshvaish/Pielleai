@@ -90,7 +90,7 @@ export default function StepTwo({ countries }: { countries: Country[] }) {
         <Input
           id='company'
           {...register('company')}
-          placeholder='Milano Ovest'
+          placeholder='Inserisci la ragione sociale'
           className={errors.company ? 'border-destructive text-destructive' : ''}
         />
         {errors.company && (
@@ -187,7 +187,7 @@ export default function StepTwo({ countries }: { countries: Country[] }) {
             htmlFor='billingCountryId'
             className='block text-sm font-semibold mb-2'
           >
-            Stato fatturazione
+            Stato di fatturazione
           </label>
           <Controller
             control={control}
@@ -234,7 +234,7 @@ export default function StepTwo({ countries }: { countries: Country[] }) {
             htmlFor='billingSubdivisionId'
             className='block text-sm font-semibold mb-2'
           >
-            Provincia fatturazione
+            Provincia di fatturazione
           </label>
           <Controller
             control={control}
@@ -281,7 +281,7 @@ export default function StepTwo({ countries }: { countries: Country[] }) {
             htmlFor='billingCity'
             className='block text-sm font-semibold mb-2'
           >
-            Comune fatturazione
+            Comune di fatturazione
           </label>
           <Input
             id='billingCity'
@@ -325,7 +325,7 @@ export default function StepTwo({ countries }: { countries: Country[] }) {
             htmlFor='billingEmail'
             className='block text-sm font-semibold mb-2'
           >
-            Email fatturazione
+            Email di fatturazione
           </label>
           <Input
             id='billingEmail'
@@ -343,7 +343,7 @@ export default function StepTwo({ countries }: { countries: Country[] }) {
             htmlFor='billingPhone'
             className='block text-sm font-semibold mb-2'
           >
-            Telefono fatturazione
+            Telefono di fatturazione
           </label>
           <Input
             id='billingPhone'

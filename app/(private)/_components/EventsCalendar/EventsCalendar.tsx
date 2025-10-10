@@ -29,12 +29,12 @@ import { Skeleton } from '@/components/ui/skeleton';
 import WeekEvent from './WeekEvent';
 import MonthEvent from './MonthEvent';
 import ConfirmDialog from '@/app/_components/ConfirmDialog';
-import MonthHeader from '@/app/(private)/_components/calendar/MonthHeader';
-import WeekHeader from '@/app/(private)/_components/calendar/WeekHeader';
 import EventContent from './EventContent';
 import { Toolbar } from './Toolbar';
 import { useSearchParams } from 'next/navigation';
 import { fromZonedTime, toZonedTime } from 'date-fns-tz';
+import WeekHeader from '../Calendar/WeekHeader';
+import MonthHeader from '../Calendar/MonthHeader';
 
 const locales = { it };
 
@@ -129,6 +129,7 @@ export default function EventsCalendar({ userRole, artists, venues }: EventsCale
           toolbar: (props) => (
             <Toolbar
               {...(props as RBCToolbarProps<CalendarEvent, object>)}
+              userRole={userRole}
               filters={filters}
               artists={artists}
               venues={venues}

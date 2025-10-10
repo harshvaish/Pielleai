@@ -35,23 +35,21 @@ export default function ConfirmEmailForm() {
     }
 
     startTransition(async () => {
-      const { data, error } = await emailOtp.verifyEmail({
+      await emailOtp.verifyEmail({
         email: email,
         otp: code,
+        fetchOptions: {
+          onSuccess: () => {
+            toast.success('Email verificata con successo!');
+            startTransition(async () => router.push('/accedi'));
+          },
+          onError: (ctx) => {
+            const code = ctx?.error?.code ?? 'UNKNOWN_ERROR';
+            const message = getBetterAuthOTPErrorMessage(code);
+            toast.error(message);
+          },
+        },
       });
-
-      if (error) {
-        const message = getBetterAuthOTPErrorMessage(error?.code || '');
-
-        toast.error(message);
-        return;
-      }
-
-      if (data.user.emailVerified) {
-        startTransition(async () => router.push('/accedi'));
-      }
-
-      toast.error('Verifica email non riuscita, riprova.');
     });
   };
 

@@ -91,7 +91,7 @@ export default function StepTwo({ countries }: { countries: Country[] }) {
         <Input
           id='company'
           {...register('company')}
-          placeholder='Milano Ovest'
+          placeholder='Inserisci la ragione sociale'
           className={errors.company ? 'border-destructive text-destructive' : ''}
         />
         {errors.company && (
@@ -113,7 +113,7 @@ export default function StepTwo({ countries }: { countries: Country[] }) {
                 e.target.value = e.target.value.toUpperCase();
               },
             })}
-            placeholder='AAAAAAAAAA1234'
+            placeholder='Inserisci il codice fiscale'
             className={errors.taxCode ? 'border-destructive text-destructive' : ''}
           />
           {errors.taxCode && (
@@ -129,7 +129,7 @@ export default function StepTwo({ countries }: { countries: Country[] }) {
           </label>
           <Input
             id='ipiCode'
-            placeholder='123456789'
+            placeholder='Inserisci il codice IPI'
             inputMode='numeric'
             {...register('ipiCode', {
               onChange: (e) => {
@@ -157,7 +157,7 @@ export default function StepTwo({ countries }: { countries: Country[] }) {
               e.target.value = e.target.value.toUpperCase();
             },
           })}
-          placeholder='IT0000000000000000'
+          placeholder="Inserisci l'IBAN"
           className={errors.iban ? 'border-destructive text-destructive' : ''}
         />
         {errors.iban && (
@@ -175,7 +175,7 @@ export default function StepTwo({ countries }: { countries: Country[] }) {
         <Input
           id='billingAddress'
           {...register('billingAddress')}
-          placeholder='Via Duomo 1'
+          placeholder="Inserisci l'indirizzo di fatturazione"
           className={errors.billingAddress ? 'border-destructive text-destructive' : ''}
         />
         {errors.billingAddress && (
@@ -188,7 +188,7 @@ export default function StepTwo({ countries }: { countries: Country[] }) {
             htmlFor='billingCountryId'
             className='block text-sm font-semibold mb-2'
           >
-            Stato fatturazione
+            Stato di fatturazione
           </label>
           <Controller
             control={control}
@@ -235,7 +235,7 @@ export default function StepTwo({ countries }: { countries: Country[] }) {
             htmlFor='billingSubdivisionId'
             className='block text-sm font-semibold mb-2'
           >
-            Provincia fatturazione
+            Provincia di fatturazione
           </label>
           <Controller
             control={control}
@@ -282,12 +282,12 @@ export default function StepTwo({ countries }: { countries: Country[] }) {
             htmlFor='billingCity'
             className='block text-sm font-semibold mb-2'
           >
-            Comune fatturazione
+            Comune di fatturazione
           </label>
           <Input
             id='billingCity'
             {...register('billingCity')}
-            placeholder='Milano'
+            placeholder='Inserisci il comune'
             className={errors.billingCity ? 'border-destructive text-destructive' : ''}
           />
           {errors.billingCity && (
@@ -309,7 +309,7 @@ export default function StepTwo({ countries }: { countries: Country[] }) {
                 e.target.value = e.target.value.toUpperCase();
               },
             })}
-            placeholder='20100'
+            placeholder='Inserisci il CAP'
             className={errors.billingZipCode ? 'border-destructive text-destructive' : ''}
           />
           {errors.billingZipCode && (
@@ -326,13 +326,13 @@ export default function StepTwo({ countries }: { countries: Country[] }) {
             htmlFor='billingEmail'
             className='block text-sm font-semibold mb-2'
           >
-            Email fatturazione
+            Email di fatturazione
           </label>
           <Input
             id='billingEmail'
             type='email'
             {...register('billingEmail')}
-            placeholder='fatturazione@eaglebooking.it'
+            placeholder="Inserisci l'email di fatturazione"
             className={errors.billingEmail ? 'border-destructive text-destructive' : ''}
           />
           {errors.billingEmail && (
@@ -344,12 +344,12 @@ export default function StepTwo({ countries }: { countries: Country[] }) {
             htmlFor='billingPhone'
             className='block text-sm font-semibold mb-2'
           >
-            Telefono fatturazione
+            Telefono di fatturazione
           </label>
           <Input
             id='billingPhone'
             {...register('billingPhone')}
-            placeholder='+39 123456789'
+            placeholder='Inserisci il numero di telefono di fatturazione es. +39 0123456789'
             className={errors.billingPhone ? 'border-destructive text-destructive' : ''}
             autoComplete='tel'
           />
@@ -368,7 +368,7 @@ export default function StepTwo({ countries }: { countries: Country[] }) {
         <Input
           id='billingPec'
           {...register('billingPec')}
-          placeholder='pec@eaglebooking.it'
+          placeholder="Inserisci l'indirizzo PEC"
           className={errors.billingPec ? 'border-destructive text-destructive' : ''}
         />
         {errors.billingPec && (
@@ -390,7 +390,7 @@ export default function StepTwo({ countries }: { countries: Country[] }) {
                 e.target.value = e.target.value.toUpperCase();
               },
             })}
-            placeholder='AAAA1234'
+            placeholder='Inserisci il codice BIC'
             className={errors.bicCode ? 'border-destructive text-destructive' : ''}
           />
           {errors.bicCode && (
@@ -414,7 +414,7 @@ export default function StepTwo({ countries }: { countries: Country[] }) {
                 e.target.value = e.target.value.replace(/\D/g, '');
               },
             })}
-            placeholder='123456789'
+            placeholder='Inserisci il numero di Routing ABA'
             className={errors.abaRoutingNumber ? 'border-destructive text-destructive' : ''}
           />
           {errors.abaRoutingNumber && (
@@ -439,7 +439,7 @@ export default function StepTwo({ countries }: { countries: Country[] }) {
                 e.target.value = e.target.value.toUpperCase();
               },
             })}
-            placeholder='ABC1234'
+            placeholder='Inserisci il codice destinatario SDI'
             className={errors.sdiRecipientCode ? 'border-destructive text-destructive' : ''}
           />
           {errors.sdiRecipientCode && (

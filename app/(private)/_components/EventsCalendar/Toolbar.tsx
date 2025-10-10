@@ -5,16 +5,32 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { CALENDAR_VIEWS } from '@/lib/constants';
 import { buildCalendarLabel } from '@/lib/utils';
 import { ToolbarProps as RbcToolbarProps } from 'react-big-calendar';
-import { ArtistSelectData, CalendarEvent, EventsCalendarFilters, VenueSelectData } from '@/lib/types';
+import {
+  ArtistSelectData,
+  CalendarEvent,
+  EventsCalendarFilters,
+  UserRole,
+  VenueSelectData,
+} from '@/lib/types';
 import { FiltersButton } from './FiltersButton';
 
 type ToolbarProps = RbcToolbarProps<CalendarEvent, object> & {
+  userRole: UserRole;
   filters: EventsCalendarFilters;
   artists: ArtistSelectData[];
   venues: VenueSelectData[];
 };
 
-export function Toolbar({ date, view, onNavigate, onView, filters, artists, venues }: ToolbarProps) {
+export function Toolbar({
+  date,
+  view,
+  onNavigate,
+  onView,
+  userRole,
+  filters,
+  artists,
+  venues,
+}: ToolbarProps) {
   const label = buildCalendarLabel(date, view);
 
   return (
@@ -61,6 +77,7 @@ export function Toolbar({ date, view, onNavigate, onView, filters, artists, venu
 
         {/* filters button */}
         <FiltersButton
+          userRole={userRole}
           filters={filters}
           artists={artists}
           venues={venues}

@@ -40,7 +40,6 @@ export default function ArtistManagerProfileForm({
       name: '',
       surname: '',
       phone: '',
-      email: '',
       birthDate: '',
       birthPlace: '',
       languages: [],

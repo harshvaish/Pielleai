@@ -29,8 +29,7 @@ type CSVRow = {
   locale_indirizzo: string;
   locale_stato: string;
 
-  tour_manager_nome: string;
-  tour_manager_cognome: string;
+  tour_manager_email: string;
 
   consulenza: string;
   ingaggi: string;
@@ -132,8 +131,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       locale_indirizzo: event.venue.address,
       locale_stato: event.venue.status,
 
-      tour_manager_nome: event?.tourManagerName ?? '',
-      tour_manager_cognome: event?.tourManagerSurname ?? '',
+      tour_manager_email: event?.tourManagerEmail ?? '',
 
       consulenza: event?.administrationEmail ?? '',
       ingaggi: event?.payrollConsultantEmail ?? '',

@@ -30,13 +30,8 @@ export default function CreateEventRequestForm({
     resolver: zodResolver(eventRequestFormSchema),
     defaultValues: {
       artistId: undefined,
-      artistManagerProfileId: undefined,
-
       availability: undefined,
-
       venueId: undefined,
-      tourManagerEmail: '',
-      administrationEmail: '',
     },
   });
 

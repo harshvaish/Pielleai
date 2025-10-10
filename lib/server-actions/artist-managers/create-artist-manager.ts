@@ -98,7 +98,7 @@ export const createArtistManager = async (
     }
 
     if (billingCountryCheck.length !== 1) {
-      throw new AppError('Stato fatturazione selezionato non valido.');
+      throw new AppError('Stato di fatturazione selezionato non valido.');
     }
 
     if (subdivisionCheck.length !== 1) {
@@ -106,7 +106,7 @@ export const createArtistManager = async (
     }
 
     if (billingSubdivisionCheck.length !== 1) {
-      throw new AppError('Provincia fatturazione selezionata non valida.');
+      throw new AppError('Provincia di fatturazione selezionata non valida.');
     }
 
     if (subdivisionCheck[0].countryId != countryId) {
@@ -115,7 +115,7 @@ export const createArtistManager = async (
 
     if (billingSubdivisionCheck[0].countryId != billingCountry.id) {
       throw new AppError(
-        'La provincia fatturazione non appartiene allo stato fatturazione selezionato.',
+        'La provincia di fatturazione non appartiene allo stato di fatturazione selezionato.',
       );
     }
 

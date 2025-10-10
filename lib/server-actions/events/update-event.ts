@@ -2,7 +2,7 @@
 
 import { ServerActionResponse } from '@/lib/types';
 import { database } from '@/lib/database/connection';
-import { and, count, eq, gt, ne } from 'drizzle-orm';
+import { and, count, eq, inArray, ne } from 'drizzle-orm';
 import {
   profiles,
   users,
@@ -15,6 +15,7 @@ import {
 import { eventFormSchema, EventFormSchema } from '@/lib/validation/event-form-schema';
 import { AppError } from '@/lib/classes/AppError';
 import getSession from '@/lib/data/auth/get-session';
+import { isBefore } from 'date-fns';
 
 export const updateEvent = async (
   eventId: number,
@@ -40,24 +41,98 @@ export const updateEvent = async (
       artistId,
       artistManagerProfileId,
       venueId,
-      availability,
-      status: desiredStatus,
+      availability: newAvailability,
+      status: newStatus,
       tecnicalRiderDocument,
     } = validation.data;
+    const now = new Date();
 
-    // 1) Load current event (to know current availability/status)
-    const [currentEvent] = await database
+    // get old event
+    const [oldEvent] = await database
       .select({
         id: events.id,
         status: events.status,
-        availabilityId: events.availabilityId,
+        availability: {
+          id: artistAvailabilities.id,
+          status: artistAvailabilities.status,
+          startDate: artistAvailabilities.startDate,
+          endDate: artistAvailabilities.endDate,
+        },
       })
       .from(events)
+      .innerJoin(artistAvailabilities, eq(events.availabilityId, artistAvailabilities.id))
       .where(eq(events.id, eventId))
       .limit(1);
-    if (!currentEvent) throw new AppError('Evento non trovato.');
 
-    // 2) Validate foreign keys exist
+    if (!oldEvent) throw new AppError('Evento non trovato.');
+
+    if (['rejected', 'ended'].includes(oldEvent.status)) {
+      throw new AppError('Evento rifiutato o terminato, non puoi modificarlo.');
+    }
+
+    if (isBefore(newAvailability.endDate, newAvailability.startDate)) {
+      throw new AppError("L'orario di fine deve essere successivo all'orario di inizio.");
+    }
+    if (isBefore(newAvailability.startDate, now)) {
+      throw new AppError('Nuova disponibilità inserita già iniziata e quindi scaduta.');
+    }
+
+    if (newAvailability.id) {
+      // if the availability is different from the old one, we need to check it exists and is available
+      if (newAvailability.id != oldEvent.availability.id) {
+        const [availabilityCheck] = await database
+          .select({
+            id: artistAvailabilities.id,
+            status: artistAvailabilities.status,
+            startDate: artistAvailabilities.startDate,
+            endDate: artistAvailabilities.endDate,
+          })
+          .from(artistAvailabilities)
+          .where(
+            and(
+              eq(artistAvailabilities.id, newAvailability.id),
+              eq(artistAvailabilities.artistId, artistId),
+            ),
+          )
+          .limit(1);
+
+        if (availabilityCheck.status != 'available') {
+          throw new AppError('Disponibilità selezionata già prenotata o scaduta.');
+        }
+
+        if (isBefore(availabilityCheck.startDate, now)) {
+          throw new AppError('Disponibilità selezionata già iniziata e quindi scaduta.');
+        }
+
+        if (isBefore(availabilityCheck.endDate, now)) {
+          throw new AppError('Disponibilità selezionata scaduta.');
+        }
+      }
+
+      if (newStatus !== oldEvent.status) {
+        if (['proposed', 'pre-confirmed', 'confirmed', 'conflict'].includes(newStatus)) {
+          const [already] = await database
+            .select({ count: count() })
+            .from(events)
+            .where(
+              and(
+                ne(events.id, eventId),
+                eq(events.availabilityId, newAvailability.id),
+                eq(events.status, 'confirmed'),
+              ),
+            )
+            .limit(1);
+
+          if (already.count > 0) {
+            throw new AppError(
+              'Un altro evento è già confermato per questa disponibilità, puoi solo rifiutare o cancellare questo evento.',
+            );
+          }
+        }
+      }
+    }
+
+    // Validate foreign keys exist
     const [[artistCheck], [managerCheck], [venueCheck]] = await Promise.all([
       database.select({ count: count() }).from(artists).where(eq(artists.id, artistId)).limit(1),
       artistManagerProfileId
@@ -75,34 +150,7 @@ export const updateEvent = async (
     if (managerCheck.count === 0) throw new AppError('Manager artista selezionato non valido.');
     if (venueCheck.count === 0) throw new AppError('Locale selezionato non valido.');
 
-    // 3) Availability resolution
-    let targetAvailabilityId = availability.id as number | undefined;
-    const { startDate, endDate } = availability;
-    const now = new Date();
-
-    if (!targetAvailabilityId) {
-      if (endDate <= startDate)
-        throw new AppError("L'orario di fine deve essere successivo all'orario di inizio.");
-      if (startDate <= now)
-        throw new AppError('Nuova disponibilità inserita già iniziata e quindi scaduta.');
-    } else {
-      // Reuse existing availability: must belong to artist and not be expired
-      const [availabilityCheck] = await database
-        .select({ count: count() })
-        .from(artistAvailabilities)
-        .where(
-          and(
-            eq(artistAvailabilities.id, targetAvailabilityId),
-            eq(artistAvailabilities.artistId, artistId),
-            gt(artistAvailabilities.endDate, now),
-          ),
-        )
-        .limit(1);
-      if (availabilityCheck.count === 0)
-        throw new AppError('Disponibilità selezionata non trovata o scaduta.');
-    }
-
-    // 4) Tech rider integrity
+    // Tech rider integrity
     const validTecnicalRider =
       !!tecnicalRiderDocument &&
       typeof tecnicalRiderDocument.url === 'string' &&
@@ -111,72 +159,36 @@ export const updateEvent = async (
       tecnicalRiderDocument.name.trim() !== '';
 
     await database.transaction(async (tx) => {
-      // 5) Create availability if needed
-      if (!targetAvailabilityId && startDate && endDate) {
+      // STEP 1: HANDLE AVAILABILITY --------------------------------------------------------
+      if (newAvailability.id) {
+        await tx
+          .update(artistAvailabilities)
+          .set({ status: newStatus === 'confirmed' ? 'booked' : 'available', updatedAt: now })
+          .where(eq(artistAvailabilities.id, newAvailability.id));
+      } else {
         const [newAvail] = await tx
           .insert(artistAvailabilities)
           .values({
             artistId,
-            startDate: availability.startDate,
-            endDate: availability.endDate,
-            status: 'available', // triggers will flip to 'booked' if we confirm
+            startDate: newAvailability.startDate,
+            endDate: newAvailability.endDate,
+            status: newStatus === 'confirmed' ? 'booked' : 'available',
           })
           .returning({ id: artistAvailabilities.id });
+
         if (!newAvail?.id) throw new AppError('Inserimento nuova disponibilità non riuscito.');
-        targetAvailabilityId = newAvail.id;
+        newAvailability.id = newAvail.id;
       }
 
-      // 6) Fetch target availability row to consult its current status
-      const [targetAvail] = await tx
-        .select({ status: artistAvailabilities.status, endDate: artistAvailabilities.endDate })
-        .from(artistAvailabilities)
-        .where(eq(artistAvailabilities.id, targetAvailabilityId!))
-        .limit(1);
-      if (!targetAvail) throw new AppError('Disponibilità selezionata non trovata.');
-
-      // 5c) Pre-checks for the final status we’re going to set
-      if (currentEvent.status !== desiredStatus) {
-        if (desiredStatus === 'conflict') {
-          throw new AppError("Lo stato 'conflitto' è gestito automaticamente dal sistema.");
-        }
-
-        if (desiredStatus === 'confirmed') {
-          // UX pre-check (unique partial index will enforce anyway)
-          const [already] = await tx
-            .select({ count: count() })
-            .from(events)
-            .where(
-              and(
-                eq(events.availabilityId, targetAvailabilityId!),
-                eq(events.status, 'confirmed'),
-                ne(events.id, eventId),
-              ),
-            )
-            .limit(1);
-          if (already.count > 0) {
-            throw new AppError('Un altro evento è già confermato per questa disponibilità.');
-          }
-        }
-
-        // prevent activating a non-confirmed event on a booked availability
-        if (
-          ['proposed', 'pre-confirmed'].includes(desiredStatus) &&
-          targetAvail.status === 'booked'
-        ) {
-          throw new AppError('Questa disponibilità è già prenotata da un evento confermato.');
-        }
-      }
-
-      // 5d) update the event
+      // STEP 2: HANDLE EVENT --------------------------------------------------------
       await tx
         .update(events)
         .set({
           artistId,
-          availabilityId: targetAvailabilityId!,
+          availabilityId: newAvailability.id,
           venueId,
 
-          status: desiredStatus, // triggers handle conflicts/booking,
-          previousStatus: events.status,
+          status: newStatus,
 
           artistManagerProfileId: artistManagerProfileId || null,
           tourManagerEmail: validation.data.tourManagerEmail || null,
@@ -224,7 +236,7 @@ export const updateEvent = async (
         })
         .where(eq(events.id, eventId));
 
-      // 5e) replace notes
+      // replace notes
       await tx.delete(eventNotes).where(eq(eventNotes.eventId, eventId));
       const notes = (validation.data.notes || [])
         .map((content: string) => content.trim())
@@ -236,6 +248,71 @@ export const updateEvent = async (
         }));
       if (notes.length) {
         await tx.insert(eventNotes).values(notes);
+      }
+
+      // STEP 3: HANDLE CONFLICTS --------------------------------------------------------
+      if (['proposed', 'pre-confirmed', 'confirmed', 'conflict'].includes(newStatus)) {
+        const conflictEvents = await tx
+          .select({
+            id: events.id,
+            status: events.status,
+          })
+          .from(events)
+          .where(
+            and(
+              ne(events.id, eventId),
+              eq(events.availabilityId, newAvailability.id),
+              inArray(events.status, ['proposed', 'pre-confirmed', 'conflict']),
+            ),
+          );
+
+        if (conflictEvents.length > 0) {
+          if (newStatus === 'confirmed') {
+            for (const conflictEvent of conflictEvents) {
+              await tx
+                .update(events)
+                .set({ status: 'rejected', previousStatus: events.status, updatedAt: now })
+                .where(eq(events.id, conflictEvent.id));
+            }
+          } else {
+            conflictEvents.push({ id: eventId, status: newStatus });
+
+            for (const conflictEvent of conflictEvents) {
+              if (conflictEvent.status != 'conflict') {
+                await tx
+                  .update(events)
+                  .set({ status: 'conflict', previousStatus: events.status, updatedAt: now })
+                  .where(eq(events.id, conflictEvent.id));
+              }
+            }
+          }
+        }
+
+        // if availability has changed recompute also the old availability conflicts
+        if (newAvailability.id != oldEvent.availability.id) {
+          const oldConflictEvents = await tx
+            .select({
+              id: events.id,
+              status: events.status,
+            })
+            .from(events)
+            .where(
+              and(
+                ne(events.id, eventId),
+                eq(events.availabilityId, oldEvent.availability.id),
+                inArray(events.status, ['proposed', 'pre-confirmed', 'conflict']),
+              ),
+            );
+
+          if (oldConflictEvents.length === 1) {
+            if (oldConflictEvents[0].status === 'conflict') {
+              await tx
+                .update(events)
+                .set({ status: events.previousStatus, previousStatus: null, updatedAt: now })
+                .where(eq(events.id, oldConflictEvents[0].id));
+            }
+          }
+        }
       }
     });
 

@@ -99,7 +99,7 @@ export default function StepOne({
           <Input
             id='name'
             {...register('name')}
-            placeholder='Mario'
+            placeholder='Inserisci il nome'
             className={errors.name ? 'border-destructive text-destructive' : ''}
             autoComplete='name'
           />
@@ -117,7 +117,7 @@ export default function StepOne({
           <Input
             id='surname'
             {...register('surname')}
-            placeholder='Rossi'
+            placeholder='Inserisci il cognome'
             className={errors.surname ? 'border-destructive text-destructive' : ''}
             autoComplete='family-name'
           />
@@ -137,7 +137,7 @@ export default function StepOne({
         <Input
           id='phone'
           {...register('phone')}
-          placeholder='+39 123456789'
+          placeholder='Inserisci il numero di telefono es. +39 0123456789'
           className={errors.phone ? 'border-destructive text-destructive' : ''}
           autoComplete='tel'
         />
@@ -186,7 +186,7 @@ export default function StepOne({
           <Input
             id='birthPlace'
             {...register('birthPlace')}
-            placeholder='Milano'
+            placeholder='Inserisci il luogo di nascita'
             className={errors.birthPlace ? 'border-destructive text-destructive' : ''}
           />
           {errors.birthPlace && (
@@ -231,7 +231,7 @@ export default function StepOne({
         <Input
           id='address'
           {...register('address')}
-          placeholder='Via Duomo 1'
+          placeholder="Inserisci l'indirizzo di residenza"
           className={errors.address ? 'border-destructive text-destructive' : ''}
           autoComplete='street-address'
         />
@@ -343,7 +343,7 @@ export default function StepOne({
           <Input
             id='city'
             {...register('city')}
-            placeholder='Milano'
+            placeholder='Inserisci il comune'
             className={errors.city ? 'border-destructive text-destructive' : ''}
           />
           {errors.city && (
@@ -365,7 +365,7 @@ export default function StepOne({
                 e.target.value = e.target.value.toUpperCase();
               },
             })}
-            placeholder='20100'
+            placeholder='Inserisci il CAP di residenza'
             className={errors.zipCode ? 'border-destructive text-destructive' : ''}
           />
           {errors.zipCode && (

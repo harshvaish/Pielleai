@@ -13,13 +13,12 @@ import { Country, VenueManagerSelectData } from '@/lib/types';
 import { useState } from 'react';
 import CreateVenueForm from './CreateVenueForm';
 
-export default function CreateButton({
-  countries,
-  venueManagers,
-}: {
+type CreateButtonProps = {
   countries: Country[];
   venueManagers: VenueManagerSelectData[];
-}) {
+};
+
+export default function CreateButton({ countries, venueManagers }: CreateButtonProps) {
   const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
   return (
     <Dialog

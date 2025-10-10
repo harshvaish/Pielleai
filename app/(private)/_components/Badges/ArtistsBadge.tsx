@@ -6,14 +6,20 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { ArtistSelectData } from '@/lib/types';
+import { ArtistSelectData, UserRole } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { ChevronDown } from 'lucide-react';
 import Link from 'next/link';
 import { useState } from 'react';
 
-export default function ArtistsBadge({ artists }: { artists: ArtistSelectData[] }) {
+type ArtistsBadgeProps = {
+  artists: ArtistSelectData[];
+  userRole: UserRole;
+};
+
+export default function ArtistsBadge({ artists, userRole }: ArtistsBadgeProps) {
   const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
+
   const count = artists.length;
 
   if (!count) return <div>Nessun artista</div>;
@@ -21,7 +27,12 @@ export default function ArtistsBadge({ artists }: { artists: ArtistSelectData[] 
   if (count === 1) {
     const artist = artists[0];
 
-    return <ArtistBadge artist={artist} />;
+    return (
+      <ArtistBadge
+        artist={artist}
+        userRole={userRole}
+      />
+    );
   }
 
   return (
@@ -55,6 +66,7 @@ export default function ArtistsBadge({ artists }: { artists: ArtistSelectData[] 
             <ArtistBadge
               key={artist.id}
               artist={artist}
+              userRole={userRole}
             />
           );
         })}
@@ -63,13 +75,17 @@ export default function ArtistsBadge({ artists }: { artists: ArtistSelectData[] 
   );
 }
 
-function ArtistBadge({ artist }: { artist: ArtistSelectData }) {
+function ArtistBadge({ artist, userRole }: { artist: ArtistSelectData; userRole: UserRole }) {
+  const isAdmin = userRole === 'admin';
   const isDisabled = artist.status === 'disabled';
 
   return (
     <Link
       href={`/artisti/${artist.slug}`}
-      className='w-max max-w-60 flex flex-nowrap items-center gap-2 bg-zinc-50 hover:bg-zinc-100 p-2 rounded-md transition-colors'
+      className={cn(
+        'w-max max-w-60 flex flex-nowrap items-center gap-2 bg-zinc-50 hover:bg-zinc-100 p-2 rounded-md transition-colors',
+        !isAdmin && 'pointer-events-none hover:cursor-pointer',
+      )}
     >
       <Avatar className='w-5 h-5'>
         <AvatarImage

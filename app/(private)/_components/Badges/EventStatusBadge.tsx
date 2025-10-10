@@ -39,10 +39,10 @@ const styles: Record<EventStatus, { text: string; bg: string; icon: JSX.Element 
     ),
   },
   'conflict': {
-    text: 'text-rose-600',
-    bg: 'bg-rose-50',
+    text: 'text-purple-600',
+    bg: 'bg-purple-50',
     icon: (
-      <div className='w-3 h-3 flex justify-center items-center bg-rose-600 rounded-full'>
+      <div className='w-3 h-3 flex justify-center items-center bg-purple-600 rounded-full'>
         <span className='text-[8px] text-white'>!</span>
       </div>
     ),

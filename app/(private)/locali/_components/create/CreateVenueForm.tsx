@@ -34,15 +34,17 @@ function getFormFieldsForStep(step: number): Array<keyof VenueFormSchema> {
   return [];
 }
 
+type CreateVenueFormProps = {
+  countries: Country[];
+  venueManagers: VenueManagerSelectData[];
+  closeDialog: () => void;
+};
+
 export default function CreateVenueForm({
   countries,
   venueManagers,
   closeDialog,
-}: {
-  countries: Country[];
-  venueManagers: VenueManagerSelectData[];
-  closeDialog: () => void;
-}) {
+}: CreateVenueFormProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [step, setStep] = useState<number>(1);

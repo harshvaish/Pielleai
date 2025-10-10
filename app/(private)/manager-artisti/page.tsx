@@ -7,10 +7,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { TablePagination } from '../_components/form/TablePagination';
-import UserBadge from '../_components/badges/UserBadge';
-import StatusBadge from '../_components/badges/StatusBadge';
 import { NEW_USER_TIME } from '@/lib/constants';
-import ArtistsBadge from '../_components/badges/ArtistsBadge';
 import FiltersButton from './_components/filters/FiltersButton';
 import { ArtistManagersTableFilters } from '@/lib/types';
 import CreateButton from './_components/create/CreateButton';
@@ -23,6 +20,9 @@ import { artistManagersTableFiltersSchema } from '@/lib/validation/filters/artis
 import getSession from '@/lib/data/auth/get-session';
 import { getUserProfileIdCached } from '@/lib/cache/users';
 import { getPaginatedArtistManagers } from '@/lib/data/artist-managers/get-paginated-artist-managers';
+import UserBadge from '../_components/Badges/UserBadge';
+import StatusBadge from '../_components/Badges/StatusBadge';
+import ArtistsBadge from '../_components/Badges/ArtistsBadge';
 
 type ArtistManagersPageProps = {
   searchParams?: Promise<{
@@ -134,7 +134,10 @@ export default async function ArtistManagersPage({ searchParams }: ArtistManager
                   <TableCell>{manager.email}</TableCell>
                   <TableCell>{manager.phone}</TableCell>
                   <TableCell>
-                    <ArtistsBadge artists={manager.artists} />
+                    <ArtistsBadge
+                      artists={manager.artists}
+                      userRole={user.role}
+                    />
                   </TableCell>
                   <TableCell>{manager.company}</TableCell>
                 </TableRow>

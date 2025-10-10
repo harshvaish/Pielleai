@@ -8,14 +8,10 @@ import {
 } from '@/components/ui/table';
 import { NEW_USER_TIME } from '@/lib/constants';
 import { TablePagination } from '../_components/form/TablePagination';
-import StatusBadge from '../_components/badges/StatusBadge';
-import ZonesBadge from '../_components/badges/ZonesBadge';
-import ManagersBadge from '../_components/badges/ManagersBadge';
 import { ArtistsTableFilters } from '@/lib/types';
 import FiltersButton from './_components/filters/FiltersButton';
 import CreateButton from './_components/create/CreateButton';
 import { hasRole, resolveNextPath, splitCsv } from '@/lib/utils';
-import ArtistsBadge from '../_components/badges/ArtistsBadge';
 import { getLanguagesCached } from '@/lib/cache/languages';
 import { getCountriesCached } from '@/lib/cache/countries';
 import { getArtistManagersCached } from '@/lib/cache/artist-managers';
@@ -25,6 +21,10 @@ import { notFound, redirect } from 'next/navigation';
 import getSession from '@/lib/data/auth/get-session';
 import { getUserProfileIdCached } from '@/lib/cache/users';
 import { getPaginatedArtists } from '@/lib/data/artists/get-paginated-artists';
+import ArtistsBadge from '../_components/Badges/ArtistsBadge';
+import StatusBadge from '../_components/Badges/StatusBadge';
+import ManagersBadge from '../_components/Badges/ManagersBadge';
+import ZonesBadge from '../_components/Badges/ZonesBadge';
 
 export const dynamic = 'force-dynamic';
 
@@ -141,7 +141,10 @@ export default async function ArtistsPage({ searchParams }: ArtistsPageProps) {
                 >
                   <TableCell>
                     <div className='flex items-center flex-nowrap gap-3'>
-                      <ArtistsBadge artists={[artist]} />
+                      <ArtistsBadge
+                        artists={[artist]}
+                        userRole={user.role}
+                      />
                       {badgeStatus && <StatusBadge status={badgeStatus} />}
                     </div>
                   </TableCell>

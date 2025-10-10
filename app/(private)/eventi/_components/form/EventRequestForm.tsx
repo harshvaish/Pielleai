@@ -1,10 +1,8 @@
 'use client';
 
 import { ArtistSelectData, VenueSelectData } from '@/lib/types';
-import { Input } from '@/components/ui/input';
 import VenueSelect from './VenueSelect';
 import ArtistAvailabilitySelect from './ArtistAvailabilitySelect';
-import ArtistManagerSelect from './ArtistManagerSelect';
 import { Controller, useFormContext } from 'react-hook-form';
 import ArtistSelect from './ArtistSelect';
 import { EventFormSchema } from '@/lib/validation/event-form-schema';
@@ -17,7 +15,6 @@ type EventRequestForm = {
 export default function EventRequestForm({ artists, venues }: EventRequestForm) {
   const {
     watch,
-    register,
     control,
     formState: { errors },
   } = useFormContext<EventFormSchema>();
@@ -43,16 +40,6 @@ export default function EventRequestForm({ artists, venues }: EventRequestForm) 
         />
         {errors.artistId && (
           <p className='text-xs text-destructive mt-2'>{errors.artistId.message as string}</p>
-        )}
-      </div>
-
-      <div className='flex flex-col'>
-        <div className='text-sm font-semibold mb-2'>Manager artista</div>
-        <ArtistManagerSelect />
-        {errors.artistManagerProfileId && (
-          <p className='text-xs text-destructive mt-2'>
-            {errors.artistManagerProfileId.message as string}
-          </p>
         )}
       </div>
 
@@ -84,36 +71,6 @@ export default function EventRequestForm({ artists, venues }: EventRequestForm) 
             )}
           </div>
         </div>
-      </div>
-
-      <div className='flex flex-col'>
-        <div className='text-sm font-semibold mb-2'>Tour manager</div>
-        <Input
-          type='email'
-          {...register('tourManagerEmail')}
-          placeholder='tour.manager@eaglebooking.it'
-          className={errors.tourManagerEmail ? 'border-destructive text-destructive' : ''}
-        />
-        {errors.tourManagerEmail && (
-          <p className='text-xs text-destructive mt-2'>
-            {errors.tourManagerEmail.message as string}
-          </p>
-        )}
-      </div>
-
-      <div className='flex flex-col'>
-        <div className='text-sm font-semibold mb-2'>Assistenza</div>
-        <Input
-          type='email'
-          {...register('administrationEmail')}
-          placeholder='info@eaglebooking.it'
-          className={errors.administrationEmail ? 'border-destructive text-destructive' : ''}
-        />
-        {errors.administrationEmail && (
-          <p className='text-xs text-destructive mt-2'>
-            {errors.administrationEmail.message as string}
-          </p>
-        )}
       </div>
     </>
   );

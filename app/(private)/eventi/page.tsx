@@ -109,10 +109,12 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
             status='confirmed'
             label='Confermato'
           />
-          <StatusFilterButton
-            status='conflict'
-            label='Conflitto'
-          />
+          {isAdmin && (
+            <StatusFilterButton
+              status='conflict'
+              label='Conflitto'
+            />
+          )}
           <StatusFilterButton
             status='rejected'
             label='Rifiutato'

@@ -21,7 +21,7 @@ export default function StepThree() {
         <Input
           id='signUpEmail'
           {...register('signUpEmail')}
-          placeholder='info@eaglebooking.it'
+          placeholder="Inserisci l'email di accesso"
           className={errors.signUpEmail ? 'border-destructive text-destructive' : ''}
         />
         {errors.signUpEmail && (
@@ -38,7 +38,7 @@ export default function StepThree() {
         <Input
           id='signUpPassword'
           {...register('signUpPassword')}
-          placeholder='********'
+          placeholder='Inserisci la password di accesso'
           className={errors.signUpPassword ? 'border-destructive text-destructive' : ''}
         />
         {errors.signUpPassword && (

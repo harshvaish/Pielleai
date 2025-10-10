@@ -34,7 +34,6 @@ export default function VenueManagerProfileForm({
       name: '',
       surname: '',
       phone: '',
-      email: '',
       birthDate: '',
       birthPlace: '',
       languages: [],

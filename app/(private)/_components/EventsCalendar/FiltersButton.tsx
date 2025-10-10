@@ -2,7 +2,13 @@
 
 import { Button } from '@/components/ui/button';
 import { Eraser, ListFilter } from 'lucide-react';
-import { ArtistSelectData, EventsCalendarFilters, EventStatus, VenueSelectData } from '@/lib/types';
+import {
+  ArtistSelectData,
+  EventsCalendarFilters,
+  EventStatus,
+  UserRole,
+  VenueSelectData,
+} from '@/lib/types';
 import { useState, useTransition } from 'react';
 import { cn } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
@@ -10,27 +16,30 @@ import VenueSelect from '@/app/(private)/_components/filters/VenueSelect';
 import ArtistSelect from '@/app/(private)/_components/filters/ArtistSelect';
 import { Checkbox } from '@/components/ui/checkbox';
 import ResponsivePopover from '@/app/_components/ResponsivePopover';
-import EventStatusBadge from '@/app/(private)/_components/badges/EventStatusBadge';
 import { eventStatus } from '@/lib/database/schema';
+import EventStatusBadge from '../Badges/EventStatusBadge';
 
 type FiltersButtonProps = {
+  userRole: UserRole;
   filters: EventsCalendarFilters;
   artists: ArtistSelectData[];
   venues: VenueSelectData[];
 };
 
-export function FiltersButton({ filters, artists, venues }: FiltersButtonProps) {
+export function FiltersButton({ userRole, filters, artists, venues }: FiltersButtonProps) {
   const router = useRouter();
   const [open, setOpen] = useState<boolean>(false);
   const [isPending, startTransition] = useTransition();
+
+  const [artistIds, setArtistIds] = useState<string[]>(filters.artistIds || []);
+  const [venueIds, setVenueIds] = useState<string[]>(filters.venueIds || []);
+  const [status, setStatus] = useState<EventStatus[]>(filters.status || []);
 
   const active = Boolean(
     filters.artistIds.length || filters.venueIds.length || filters.status.length,
   );
 
-  const [artistIds, setArtistIds] = useState<string[]>(filters.artistIds || []);
-  const [venueIds, setVenueIds] = useState<string[]>(filters.venueIds || []);
-  const [status, setStatus] = useState<EventStatus[]>(filters.status || []);
+  const isAdmin = userRole === 'admin';
 
   const resetHandler = () => {
     setArtistIds([]);
@@ -113,6 +122,8 @@ export function FiltersButton({ filters, artists, venues }: FiltersButtonProps) 
         <div className='space-y-2'>
           <div className='text-sm font-semibold'>Stato</div>
           {eventStatus.enumValues.map((s) => {
+            if (!isAdmin && s === 'conflict') return null;
+
             const checked = status.includes(s);
 
             return (
