@@ -16,6 +16,7 @@ import { eventFormSchema, EventFormSchema } from '@/lib/validation/event-form-sc
 import { AppError } from '@/lib/classes/AppError';
 import getSession from '@/lib/data/auth/get-session';
 import { isBefore } from 'date-fns';
+import { recomputeConflicts } from '@/lib/data/events/recompute-conflicts';
 
 export const updateEvent = async (
   eventId: number,
@@ -110,7 +111,7 @@ export const updateEvent = async (
       }
 
       if (newStatus !== oldEvent.status) {
-        if (['proposed', 'pre-confirmed', 'confirmed', 'conflict'].includes(newStatus)) {
+        if (['proposed', 'pre-confirmed', 'confirmed'].includes(newStatus)) {
           const [already] = await database
             .select({ count: count() })
             .from(events)
@@ -251,68 +252,26 @@ export const updateEvent = async (
       }
 
       // STEP 3: HANDLE CONFLICTS --------------------------------------------------------
-      if (['proposed', 'pre-confirmed', 'confirmed', 'conflict'].includes(newStatus)) {
-        const conflictEvents = await tx
-          .select({
-            id: events.id,
-            status: events.status,
-          })
-          .from(events)
+      // If status changed to confirmed, reject conflicts
+      if (newStatus === 'confirmed') {
+        await tx
+          .update(events)
+          .set({ status: 'rejected', updatedAt: now })
           .where(
             and(
               ne(events.id, eventId),
               eq(events.availabilityId, newAvailability.id),
-              inArray(events.status, ['proposed', 'pre-confirmed', 'conflict']),
+              inArray(events.status, ['proposed', 'pre-confirmed']),
             ),
           );
+      }
 
-        if (conflictEvents.length > 0) {
-          if (newStatus === 'confirmed') {
-            for (const conflictEvent of conflictEvents) {
-              await tx
-                .update(events)
-                .set({ status: 'rejected', previousStatus: events.status, updatedAt: now })
-                .where(eq(events.id, conflictEvent.id));
-            }
-          } else {
-            conflictEvents.push({ id: eventId, status: newStatus });
+      // Recompute conflicts for the new availability
+      await recomputeConflicts(tx, newAvailability.id);
 
-            for (const conflictEvent of conflictEvents) {
-              if (conflictEvent.status != 'conflict') {
-                await tx
-                  .update(events)
-                  .set({ status: 'conflict', previousStatus: events.status, updatedAt: now })
-                  .where(eq(events.id, conflictEvent.id));
-              }
-            }
-          }
-        }
-
-        // if availability has changed recompute also the old availability conflicts
-        if (newAvailability.id != oldEvent.availability.id) {
-          const oldConflictEvents = await tx
-            .select({
-              id: events.id,
-              status: events.status,
-            })
-            .from(events)
-            .where(
-              and(
-                ne(events.id, eventId),
-                eq(events.availabilityId, oldEvent.availability.id),
-                inArray(events.status, ['proposed', 'pre-confirmed', 'conflict']),
-              ),
-            );
-
-          if (oldConflictEvents.length === 1) {
-            if (oldConflictEvents[0].status === 'conflict') {
-              await tx
-                .update(events)
-                .set({ status: events.previousStatus, previousStatus: null, updatedAt: now })
-                .where(eq(events.id, oldConflictEvents[0].id));
-            }
-          }
-        }
+      // If availability changed, also recompute for the old availability
+      if (newAvailability.id !== oldEvent.availability.id) {
+        await recomputeConflicts(tx, oldEvent.availability.id);
       }
     });
 

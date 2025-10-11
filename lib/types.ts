@@ -487,8 +487,7 @@ export type Event = {
   availability: ArtistAvailability;
   venue: VenueSelectData;
   status: EventStatus;
-
-  previousStatus: EventStatus | null;
+  hasConflict: boolean;
 
   artistManager: ArtistManagerSelectData | null;
 

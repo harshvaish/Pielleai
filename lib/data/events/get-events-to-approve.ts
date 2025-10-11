@@ -12,7 +12,7 @@ import {
   eventNotes,
 } from '@/lib/database/schema';
 import { Event, EventNote } from '@/lib/types';
-import { and, desc, eq, inArray, or } from 'drizzle-orm';
+import { desc, eq, inArray } from 'drizzle-orm';
 
 export async function getEventsToApprove(): Promise<{ data: Event[] }> {
   try {
@@ -45,7 +45,7 @@ export async function getEventsToApprove(): Promise<{ data: Event[] }> {
         },
 
         status: events.status,
-        previousStatus: events.previousStatus,
+        hasConflict: events.hasConflict,
 
         artistManager: {
           id: users.id,
@@ -56,8 +56,7 @@ export async function getEventsToApprove(): Promise<{ data: Event[] }> {
           surname: profiles.surname,
         },
 
-        tourManagerName: artists.tourManagerName,
-        tourManagerSurname: artists.tourManagerSurname,
+        tourManagerEmail: artists.tourManagerEmail,
 
         administrationEmail: events.administrationEmail,
         payrollConsultantEmail: events.payrollConsultantEmail,
@@ -113,12 +112,7 @@ export async function getEventsToApprove(): Promise<{ data: Event[] }> {
       .leftJoin(profiles, eq(events.artistManagerProfileId, profiles.id))
       .leftJoin(users, eq(profiles.userId, users.id))
       .leftJoin(moCoordinators, eq(events.moCoordinatorId, moCoordinators.id))
-      .where(
-        or(
-          eq(events.status, 'proposed'),
-          and(eq(events.status, 'conflict'), eq(events.previousStatus, 'proposed')),
-        ),
-      )
+      .where(eq(events.status, 'proposed'))
       .orderBy(desc(events.createdAt));
 
     const eventIds = eventsResult.map((e) => e.id);

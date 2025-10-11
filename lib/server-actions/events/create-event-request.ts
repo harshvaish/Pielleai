@@ -2,12 +2,13 @@
 
 import { ServerActionResponse } from '@/lib/types';
 import { database } from '@/lib/database/connection';
-import { and, count, eq, inArray, ne } from 'drizzle-orm';
+import { and, count, eq } from 'drizzle-orm';
 import { artists, venues, events, artistAvailabilities } from '@/lib/database/schema';
 import { eventRequestFormSchema, EventRequestFormSchema } from '@/lib/validation/event-form-schema';
 import { isBefore } from 'date-fns';
 import { AppError } from '@/lib/classes/AppError';
 import getSession from '@/lib/data/auth/get-session';
+import { recomputeConflicts } from '@/lib/data/events/recompute-conflicts';
 
 export const createEventRequest = async (
   data: EventRequestFormSchema,
@@ -93,32 +94,7 @@ export const createEventRequest = async (
       }
 
       // HANDLE CONFLICTS --------------------------------------------------------
-      const conflictEvents = await tx
-        .select({
-          id: events.id,
-          status: events.status,
-        })
-        .from(events)
-        .where(
-          and(
-            ne(events.id, newEventId),
-            eq(events.availabilityId, availability.id),
-            inArray(events.status, ['proposed', 'pre-confirmed', 'conflict']),
-          ),
-        );
-
-      if (conflictEvents.length > 0) {
-        conflictEvents.push({ id: newEventId, status: 'proposed' });
-
-        for (const conflictEvent of conflictEvents) {
-          if (conflictEvent.status != 'conflict') {
-            await tx
-              .update(events)
-              .set({ status: 'conflict', previousStatus: events.status, updatedAt: now })
-              .where(eq(events.id, conflictEvent.id));
-          }
-        }
-      }
+      await recomputeConflicts(tx, availability.id);
     });
 
     return {

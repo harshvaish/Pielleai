@@ -100,7 +100,6 @@ export const EVENT_STATUS_LABELS: Record<EventStatus, string> = {
   'proposed': 'Proposto',
   'pre-confirmed': 'Pre confermato',
   'confirmed': 'Confermato',
-  'conflict': 'Conflitto',
   'rejected': 'Rifiutato',
   'ended': 'Finito',
 };

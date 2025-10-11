@@ -38,15 +38,6 @@ const styles: Record<EventStatus, { text: string; bg: string; icon: JSX.Element 
       </div>
     ),
   },
-  'conflict': {
-    text: 'text-purple-600',
-    bg: 'bg-purple-50',
-    icon: (
-      <div className='w-3 h-3 flex justify-center items-center bg-purple-600 rounded-full'>
-        <span className='text-[8px] text-white'>!</span>
-      </div>
-    ),
-  },
   'rejected': {
     text: 'text-red-600',
     bg: 'bg-red-50',

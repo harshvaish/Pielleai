@@ -4,10 +4,11 @@ import { AppError } from '@/lib/classes/AppError';
 import { ServerActionResponse } from '@/lib/types';
 import { database } from '@/lib/database/connection';
 import { artistAvailabilities, events } from '@/lib/database/schema';
-import { and, eq, inArray, ne } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 import { idValidation } from '@/lib/validation/_general';
 import getSession from '@/lib/data/auth/get-session';
 import { hasRole } from '@/lib/utils';
+import { recomputeConflicts } from '@/lib/data/events/recompute-conflicts';
 
 export async function deleteEvent(eventId: number): Promise<ServerActionResponse<null>> {
   try {
@@ -64,29 +65,9 @@ export async function deleteEvent(eventId: number): Promise<ServerActionResponse
       await database.delete(events).where(eq(events.id, eventId));
 
       // STEP 3: HANDLE CONFLICTS --------------------------------------------------------
-      if (oldEvent.status === 'conflict') {
-        const conflictEvents = await tx
-          .select({
-            id: events.id,
-            status: events.status,
-          })
-          .from(events)
-          .where(
-            and(
-              ne(events.id, eventId),
-              eq(events.availabilityId, oldEvent.availability.id),
-              inArray(events.status, ['proposed', 'pre-confirmed', 'conflict']),
-            ),
-          );
-
-        if (conflictEvents.length === 1) {
-          if (conflictEvents[0].status === 'conflict') {
-            await tx
-              .update(events)
-              .set({ status: events.previousStatus, previousStatus: null, updatedAt: now })
-              .where(eq(events.id, conflictEvents[0].id));
-          }
-        }
+      // Recompute conflicts if the deleted event was active
+      if (['proposed', 'pre-confirmed'].includes(oldEvent.status)) {
+        await recomputeConflicts(tx, oldEvent.availability.id);
       }
     });
 

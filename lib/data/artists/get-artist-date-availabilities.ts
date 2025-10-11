@@ -4,7 +4,7 @@ import { database } from '@/lib/database/connection';
 import { artistAvailabilities, artists, events } from '@/lib/database/schema';
 import { ArtistAvailability } from '@/lib/types';
 import { addDays } from 'date-fns';
-import { and, count, eq, inArray, or, sql } from 'drizzle-orm';
+import { and, count, eq, inArray, sql } from 'drizzle-orm';
 
 type getArtistDateAvailabilitiesParams = {
   artistId: number | null;
@@ -12,7 +12,11 @@ type getArtistDateAvailabilitiesParams = {
   startDate: string;
 };
 
-export async function getArtistDateAvailabilities({ artistId, artistSlug, startDate }: getArtistDateAvailabilitiesParams): Promise<ArtistAvailability[]> {
+export async function getArtistDateAvailabilities({
+  artistId,
+  artistSlug,
+  startDate,
+}: getArtistDateAvailabilitiesParams): Promise<ArtistAvailability[]> {
   if (!artistId && !artistSlug) throw new Error('Dati artista mancanti.');
 
   let id = artistId ? artistId : null;
@@ -20,7 +24,10 @@ export async function getArtistDateAvailabilities({ artistId, artistSlug, startD
   try {
     if (!id) {
       // 1) Resolve artist id
-      const artistRow = await database.select({ id: artists.id }).from(artists).where(eq(artists.slug, artistSlug!));
+      const artistRow = await database
+        .select({ id: artists.id })
+        .from(artists)
+        .where(eq(artists.slug, artistSlug!));
 
       id = artistRow[0]?.id;
 
@@ -44,7 +51,12 @@ export async function getArtistDateAvailabilities({ artistId, artistSlug, startD
         status: artistAvailabilities.status,
       })
       .from(artistAvailabilities)
-      .where(and(eq(artistAvailabilities.artistId, id), sql`${artistAvailabilities.timeRange} && ${dayWindow}`))
+      .where(
+        and(
+          eq(artistAvailabilities.artistId, id),
+          sql`${artistAvailabilities.timeRange} && ${dayWindow}`,
+        ),
+      )
       .orderBy(artistAvailabilities.startDate);
 
     if (rows.length === 0) return [];
@@ -58,7 +70,12 @@ export async function getArtistDateAvailabilities({ artistId, artistSlug, startD
         count: count(),
       })
       .from(events)
-      .where(and(inArray(events.availabilityId, availabilityIds), or(inArray(events.status, ['pre-confirmed', 'confirmed']), eq(events.previousStatus, 'pre-confirmed'))))
+      .where(
+        and(
+          inArray(events.availabilityId, availabilityIds),
+          inArray(events.status, ['pre-confirmed', 'confirmed']),
+        ),
+      )
       .groupBy(events.availabilityId);
 
     const protectedMap = new Map<number, number>();

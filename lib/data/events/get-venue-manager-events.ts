@@ -61,7 +61,7 @@ export async function getVenueManagerEvents(profileId: number): Promise<{ data: 
         },
 
         status: events.status,
-        previousStatus: events.previousStatus,
+        hasConflict: events.hasConflict,
 
         artistManager: {
           id: users.id,
@@ -72,8 +72,7 @@ export async function getVenueManagerEvents(profileId: number): Promise<{ data: 
           surname: profiles.surname,
         },
 
-        tourManagerName: artists.tourManagerName,
-        tourManagerSurname: artists.tourManagerSurname,
+        tourManagerEmail: artists.tourManagerEmail,
 
         administrationEmail: events.administrationEmail,
         payrollConsultantEmail: events.payrollConsultantEmail,

@@ -122,7 +122,7 @@ export async function getEvents(
         },
 
         status: events.status,
-        previousStatus: events.previousStatus,
+        hasConflict: events.hasConflict,
 
         artistManager: {
           id: users.id,

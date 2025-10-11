@@ -1,13 +1,6 @@
 'use client';
 
-import {
-  ArtistSelectData,
-  Event,
-  EventStatus,
-  MoCoordinator,
-  UserRole,
-  VenueSelectData,
-} from '@/lib/types';
+import { ArtistSelectData, Event, MoCoordinator, UserRole, VenueSelectData } from '@/lib/types';
 import { it } from 'date-fns/locale';
 import { format } from 'date-fns';
 import Image from 'next/image';
@@ -22,6 +15,7 @@ import EventStatusBadge from '../Badges/EventStatusBadge';
 import ArtistsBadge from '../Badges/ArtistsBadge';
 import VenuesBadge from '../Badges/VenuesBadge';
 import ManagersBadge from '../Badges/ManagersBadge';
+import EventConflictBadge from '../Badges/EventConflictBadge';
 
 type EventTileProps = {
   userRole: UserRole;
@@ -59,20 +53,15 @@ export default function EventTile({
     bordereau: event.bordereau,
   }).filter(Boolean).length;
 
-  let eventPrevStatus: EventStatus | null = null;
-
-  if (!isAdmin) {
-    if (event.status === 'conflict') {
-      eventPrevStatus = event.previousStatus;
-    }
-  }
-
   return (
     <>
       {/* MOBILE */}
       <div className='xl:hidden space-y-2 rounded-2xl p-2 md:p-4'>
         <div className='flex justify-between items-center gap-4'>
-          <EventStatusBadge status={eventPrevStatus || event.status} />
+          <div className='flex items-center gap-2'>
+            <EventStatusBadge status={event.status} />
+            {userRole === 'admin' && event.hasConflict && <EventConflictBadge />}
+          </div>
 
           {isAdmin && (
             <Popover>
@@ -202,7 +191,7 @@ export default function EventTile({
         <Separator className='my-4' />
 
         <div className={cn('grid gap-2', isVenueManager ? '' : 'grid-cols-2')}>
-          {isAdmin && (event.status === 'proposed' || event.previousStatus === 'proposed') && (
+          {isAdmin && event.status === 'proposed' && (
             <UpdateEventStatusButton
               event={event}
               newStatus='pre-confirmed'
@@ -214,36 +203,31 @@ export default function EventTile({
             />
           )}
 
-          {isArtistManager &&
-            (event.status === 'pre-confirmed' || event.previousStatus === 'pre-confirmed') && (
-              <UpdateEventStatusButton
-                event={event}
-                newStatus='confirmed'
-                buttonLabel='Accetta'
-                buttonVariant='success'
-                dialogTitle='Vuoi accettare questa richiesta?'
-                dialogDescription='Confermi di voler procedere?'
-                icon={<Check className='size-4' />}
-              />
-            )}
+          {isArtistManager && event.status === 'pre-confirmed' && (
+            <UpdateEventStatusButton
+              event={event}
+              newStatus='confirmed'
+              buttonLabel='Accetta'
+              buttonVariant='success'
+              dialogTitle='Vuoi accettare questa richiesta?'
+              dialogDescription='Confermi di voler procedere?'
+              icon={<Check className='size-4' />}
+            />
+          )}
 
-          {isArtistManager &&
-            (event.status === 'proposed' ||
-              event.status === 'pre-confirmed' ||
-              event.previousStatus === 'proposed' ||
-              event.previousStatus === 'pre-confirmed') && (
-              <UpdateEventStatusButton
-                event={event}
-                newStatus='rejected'
-                buttonLabel='Rifiuta'
-                buttonVariant='destructive'
-                dialogTitle='Vuoi rifiutare questa richiesta?'
-                dialogDescription="Sei sicuro di voler rifiutare questa richiesta? L'organizzatore dell'evento riceverà una notifica."
-                icon={<X className='size-4' />}
-              />
-            )}
+          {isArtistManager && (event.status === 'proposed' || event.status === 'pre-confirmed') && (
+            <UpdateEventStatusButton
+              event={event}
+              newStatus='rejected'
+              buttonLabel='Rifiuta'
+              buttonVariant='destructive'
+              dialogTitle='Vuoi rifiutare questa richiesta?'
+              dialogDescription="Sei sicuro di voler rifiutare questa richiesta? L'organizzatore dell'evento riceverà una notifica."
+              icon={<X className='size-4' />}
+            />
+          )}
 
-          {isVenueManager && ['proposed', 'pre-confirmed', 'conflict'].includes(event.status) && (
+          {isVenueManager && ['proposed', 'pre-confirmed'].includes(event.status) && (
             <DeleteEventButton event={event} />
           )}
         </div>
@@ -254,7 +238,9 @@ export default function EventTile({
         <div className='grid grid-cols-[max-content_1fr] gap-4'>
           {/* time info */}
           <div className='w-40 flex flex-col gap-1 justify-center pe-4 border-r'>
-            <EventStatusBadge status={eventPrevStatus || event.status} />
+            <EventStatusBadge status={event.status} />
+
+            {userRole === 'admin' && event.hasConflict && <EventConflictBadge />}
             <div className='text-lg font-semibold capitalize'>{eventDate}</div>
             <div className='text-zinc-500 font-medium'>
               {eventStartTime} - {eventEndTime}
@@ -359,7 +345,7 @@ export default function EventTile({
         </div>
 
         <div className='flex items-center gap-2'>
-          {isAdmin && (event.status === 'proposed' || event.previousStatus === 'proposed') && (
+          {isAdmin && event.status === 'proposed' && (
             <UpdateEventStatusButton
               event={event}
               newStatus='pre-confirmed'
@@ -371,20 +357,19 @@ export default function EventTile({
             />
           )}
 
-          {isArtistManager &&
-            (event.status === 'pre-confirmed' || event.previousStatus === 'pre-confirmed') && (
-              <UpdateEventStatusButton
-                event={event}
-                newStatus='confirmed'
-                buttonLabel='Accetta'
-                buttonVariant='success'
-                dialogTitle='Vuoi accettare questa richiesta?'
-                dialogDescription='Confermi di voler procedere?'
-                icon={<Check className='size-4' />}
-              />
-            )}
+          {isArtistManager && event.status === 'pre-confirmed' && (
+            <UpdateEventStatusButton
+              event={event}
+              newStatus='confirmed'
+              buttonLabel='Accetta'
+              buttonVariant='success'
+              dialogTitle='Vuoi accettare questa richiesta?'
+              dialogDescription='Confermi di voler procedere?'
+              icon={<Check className='size-4' />}
+            />
+          )}
 
-          {isAdmin && (event.status === 'proposed' || event.previousStatus === 'proposed') && (
+          {isAdmin && event.status === 'proposed' && (
             <UpdateEventStatusButton
               event={event}
               newStatus='rejected'
@@ -396,23 +381,19 @@ export default function EventTile({
             />
           )}
 
-          {isArtistManager &&
-            (event.status === 'proposed' ||
-              event.status === 'pre-confirmed' ||
-              event.previousStatus === 'proposed' ||
-              event.previousStatus === 'pre-confirmed') && (
-              <UpdateEventStatusButton
-                event={event}
-                newStatus='rejected'
-                buttonLabel='Rifiuta'
-                buttonVariant='destructive'
-                dialogTitle='Vuoi rifiutare questa richiesta?'
-                dialogDescription="Sei sicuro di voler rifiutare questa richiesta? L'organizzatore dell'evento riceverà una notifica."
-                icon={<X className='size-4' />}
-              />
-            )}
+          {isArtistManager && (event.status === 'proposed' || event.status === 'pre-confirmed') && (
+            <UpdateEventStatusButton
+              event={event}
+              newStatus='rejected'
+              buttonLabel='Rifiuta'
+              buttonVariant='destructive'
+              dialogTitle='Vuoi rifiutare questa richiesta?'
+              dialogDescription="Sei sicuro di voler rifiutare questa richiesta? L'organizzatore dell'evento riceverà una notifica."
+              icon={<X className='size-4' />}
+            />
+          )}
 
-          {isVenueManager && ['proposed', 'pre-confirmed', 'conflict'].includes(event.status) && (
+          {isVenueManager && ['proposed', 'pre-confirmed'].includes(event.status) && (
             <DeleteEventButton event={event} />
           )}
 

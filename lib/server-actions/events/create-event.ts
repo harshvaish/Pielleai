@@ -16,6 +16,7 @@ import { eventFormSchema, EventFormSchema } from '@/lib/validation/event-form-sc
 import { isBefore } from 'date-fns';
 import { AppError } from '@/lib/classes/AppError';
 import getSession from '@/lib/data/auth/get-session';
+import { recomputeConflicts } from '@/lib/data/events/recompute-conflicts';
 
 export const createEvent = async (data: EventFormSchema): Promise<ServerActionResponse<null>> => {
   try {
@@ -220,43 +221,22 @@ export const createEvent = async (data: EventFormSchema): Promise<ServerActionRe
       }
 
       // STEP 3: HANDLE CONFLICTS --------------------------------------------------------
-      if (['proposed', 'pre-confirmed', 'confirmed', 'conflict'].includes(validation.data.status)) {
-        const conflictEvents = await tx
-          .select({
-            id: events.id,
-            status: events.status,
-          })
-          .from(events)
+      // If the new event is confirmed, reject all conflicting events first
+      if (validation.data.status === 'confirmed') {
+        await tx
+          .update(events)
+          .set({ status: 'rejected', updatedAt: now })
           .where(
             and(
               ne(events.id, newEventId),
               eq(events.availabilityId, availabilityId),
-              inArray(events.status, ['proposed', 'pre-confirmed', 'conflict']),
+              inArray(events.status, ['proposed', 'pre-confirmed']),
             ),
           );
-
-        if (conflictEvents.length > 0) {
-          if (validation.data.status === 'confirmed') {
-            for (const conflictEvent of conflictEvents) {
-              await tx
-                .update(events)
-                .set({ status: 'rejected', previousStatus: events.status, updatedAt: now })
-                .where(eq(events.id, conflictEvent.id));
-            }
-          } else {
-            conflictEvents.push({ id: newEventId, status: validation.data.status });
-
-            for (const conflictEvent of conflictEvents) {
-              if (conflictEvent.status != 'conflict') {
-                await tx
-                  .update(events)
-                  .set({ status: 'conflict', previousStatus: events.status, updatedAt: now })
-                  .where(eq(events.id, conflictEvent.id));
-              }
-            }
-          }
-        }
       }
+
+      // Always recompute conflicts for this availability
+      await recomputeConflicts(tx, availabilityId);
     });
 
     return {

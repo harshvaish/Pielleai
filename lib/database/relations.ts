@@ -9,16 +9,16 @@ import {
   profiles,
   profileNotes,
   artistNotes,
-  artistAvailabilities,
   venues,
   events,
-  eventNotes,
+  artistAvailabilities,
   moCoordinators,
+  eventNotes,
+  artistLanguages,
+  languages,
   artistZones,
   zones,
   managerArtists,
-  artistLanguages,
-  languages,
   profileLanguages,
 } from './schema';
 
@@ -32,8 +32,8 @@ export const sessionsRelations = relations(sessions, ({ one }) => ({
 export const usersRelations = relations(users, ({ many }) => ({
   sessions: many(sessions),
   accounts: many(accounts),
-  profiles: many(profiles),
   profileNotes: many(profileNotes),
+  profiles: many(profiles),
   artistNotes: many(artistNotes),
   eventNotes: many(eventNotes),
 }));
@@ -67,11 +67,11 @@ export const artistsRelations = relations(artists, ({ one, many }) => ({
     relationName: 'artists_subdivisionId_subdivisions_id',
   }),
   artistNotes: many(artistNotes),
-  artistAvailabilities: many(artistAvailabilities),
   events: many(events),
+  artistAvailabilities: many(artistAvailabilities),
+  artistLanguages: many(artistLanguages),
   artistZones: many(artistZones),
   managerArtists: many(managerArtists),
-  artistLanguages: many(artistLanguages),
 }));
 
 export const countriesRelations = relations(countries, ({ many }) => ({
@@ -121,7 +121,19 @@ export const subdivisionsRelations = relations(subdivisions, ({ one, many }) => 
   }),
 }));
 
+export const profileNotesRelations = relations(profileNotes, ({ one }) => ({
+  profile: one(profiles, {
+    fields: [profileNotes.receiverProfileId],
+    references: [profiles.id],
+  }),
+  user: one(users, {
+    fields: [profileNotes.writerId],
+    references: [users.id],
+  }),
+}));
+
 export const profilesRelations = relations(profiles, ({ one, many }) => ({
+  profileNotes: many(profileNotes),
   country_billingCountryId: one(countries, {
     fields: [profiles.billingCountryId],
     references: [countries.id],
@@ -146,22 +158,10 @@ export const profilesRelations = relations(profiles, ({ one, many }) => ({
     fields: [profiles.userId],
     references: [users.id],
   }),
-  profileNotes: many(profileNotes),
   venues: many(venues),
   events: many(events),
   managerArtists: many(managerArtists),
   profileLanguages: many(profileLanguages),
-}));
-
-export const profileNotesRelations = relations(profileNotes, ({ one }) => ({
-  profile: one(profiles, {
-    fields: [profileNotes.receiverProfileId],
-    references: [profiles.id],
-  }),
-  user: one(users, {
-    fields: [profileNotes.writerId],
-    references: [users.id],
-  }),
 }));
 
 export const artistNotesRelations = relations(artistNotes, ({ one }) => ({
@@ -173,14 +173,6 @@ export const artistNotesRelations = relations(artistNotes, ({ one }) => ({
     fields: [artistNotes.writerId],
     references: [users.id],
   }),
-}));
-
-export const artistAvailabilitiesRelations = relations(artistAvailabilities, ({ one, many }) => ({
-  artist: one(artists, {
-    fields: [artistAvailabilities.artistId],
-    references: [artists.id],
-  }),
-  events: many(events),
 }));
 
 export const venuesRelations = relations(venues, ({ one, many }) => ({
@@ -211,19 +203,7 @@ export const venuesRelations = relations(venues, ({ one, many }) => ({
   events: many(events),
 }));
 
-export const eventNotesRelations = relations(eventNotes, ({ one }) => ({
-  event: one(events, {
-    fields: [eventNotes.eventId],
-    references: [events.id],
-  }),
-  user: one(users, {
-    fields: [eventNotes.writerId],
-    references: [users.id],
-  }),
-}));
-
 export const eventsRelations = relations(events, ({ one, many }) => ({
-  eventNotes: many(eventNotes),
   artist: one(artists, {
     fields: [events.artistId],
     references: [artists.id],
@@ -244,10 +224,46 @@ export const eventsRelations = relations(events, ({ one, many }) => ({
     fields: [events.venueId],
     references: [venues.id],
   }),
+  eventNotes: many(eventNotes),
+}));
+
+export const artistAvailabilitiesRelations = relations(artistAvailabilities, ({ one, many }) => ({
+  events: many(events),
+  artist: one(artists, {
+    fields: [artistAvailabilities.artistId],
+    references: [artists.id],
+  }),
 }));
 
 export const moCoordinatorsRelations = relations(moCoordinators, ({ many }) => ({
   events: many(events),
+}));
+
+export const eventNotesRelations = relations(eventNotes, ({ one }) => ({
+  event: one(events, {
+    fields: [eventNotes.eventId],
+    references: [events.id],
+  }),
+  user: one(users, {
+    fields: [eventNotes.writerId],
+    references: [users.id],
+  }),
+}));
+
+export const artistLanguagesRelations = relations(artistLanguages, ({ one }) => ({
+  artist: one(artists, {
+    fields: [artistLanguages.artistId],
+    references: [artists.id],
+  }),
+  language: one(languages, {
+    fields: [artistLanguages.languageId],
+    references: [languages.id],
+  }),
+}));
+
+export const languagesRelations = relations(languages, ({ many }) => ({
+  artistLanguages: many(artistLanguages),
+  profileLanguages: many(profileLanguages),
 }));
 
 export const artistZonesRelations = relations(artistZones, ({ one }) => ({
@@ -274,22 +290,6 @@ export const managerArtistsRelations = relations(managerArtists, ({ one }) => ({
     fields: [managerArtists.managerProfileId],
     references: [profiles.id],
   }),
-}));
-
-export const artistLanguagesRelations = relations(artistLanguages, ({ one }) => ({
-  artist: one(artists, {
-    fields: [artistLanguages.artistId],
-    references: [artists.id],
-  }),
-  language: one(languages, {
-    fields: [artistLanguages.languageId],
-    references: [languages.id],
-  }),
-}));
-
-export const languagesRelations = relations(languages, ({ many }) => ({
-  artistLanguages: many(artistLanguages),
-  profileLanguages: many(profileLanguages),
 }));
 
 export const profileLanguagesRelations = relations(profileLanguages, ({ one }) => ({
