@@ -129,7 +129,6 @@ export default function EventsCalendar({ userRole, artists, venues }: EventsCale
           toolbar: (props) => (
             <Toolbar
               {...(props as RBCToolbarProps<CalendarEvent, object>)}
-              userRole={userRole}
               filters={filters}
               artists={artists}
               venues={venues}

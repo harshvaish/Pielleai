@@ -14,7 +14,7 @@ import { cn } from '@/lib/utils';
 import { useEffect, useState } from 'react';
 import { Check, Eraser } from 'lucide-react';
 import { Zone } from '@/lib/types';
-import { ZoneBadge } from '../badges/ZonesBadge';
+import { ZoneBadge } from '../Badges/ZonesBadge';
 
 type ZoneSelectProps = {
   initialValue: string[];

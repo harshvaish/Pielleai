@@ -1,11 +1,24 @@
-import TourManagerBadge from '@/app/(private)/_components/badges/TourManagerBadge';
-import UserBadge from '@/app/(private)/_components/badges/UserBadge';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { TabsContent } from '@/components/ui/tabs';
 import { ArtistListData, ArtistManagerData } from '@/lib/types';
 import RemoveManagedArtistButton from '../RemoveManagedArtistButton';
+import UserBadge from '@/app/(private)/_components/Badges/UserBadge';
+import TourManagerBadge from '@/app/(private)/_components/Badges/TourManagerBadge';
 
-export default function ManagedArtistsTab({ tabValue, data }: { tabValue: string; data: ArtistManagerData<ArtistListData> }) {
+export default function ManagedArtistsTab({
+  tabValue,
+  data,
+}: {
+  tabValue: string;
+  data: ArtistManagerData<ArtistListData>;
+}) {
   const { artists } = data;
 
   return (
@@ -64,7 +77,9 @@ export default function ManagedArtistsTab({ tabValue, data }: { tabValue: string
       ) : (
         <section className='max-h-80 flex flex-col justify-center items-center bg-white rounded-2xl p-8'>
           <h2 className='text-base font-bold'>Nessun artista</h2>
-          <div className='text-sm font-medium text-zinc-400'>Aggiungine uno per vederlo nella lista</div>
+          <div className='text-sm font-medium text-zinc-400'>
+            Aggiungine uno per vederlo nella lista
+          </div>
         </section>
       )}
     </TabsContent>

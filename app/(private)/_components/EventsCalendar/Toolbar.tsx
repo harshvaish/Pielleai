@@ -9,13 +9,11 @@ import {
   ArtistSelectData,
   CalendarEvent,
   EventsCalendarFilters,
-  UserRole,
   VenueSelectData,
 } from '@/lib/types';
 import { FiltersButton } from './FiltersButton';
 
 type ToolbarProps = RbcToolbarProps<CalendarEvent, object> & {
-  userRole: UserRole;
   filters: EventsCalendarFilters;
   artists: ArtistSelectData[];
   venues: VenueSelectData[];
@@ -26,7 +24,6 @@ export function Toolbar({
   view,
   onNavigate,
   onView,
-  userRole,
   filters,
   artists,
   venues,
@@ -77,7 +74,6 @@ export function Toolbar({
 
         {/* filters button */}
         <FiltersButton
-          userRole={userRole}
           filters={filters}
           artists={artists}
           venues={venues}

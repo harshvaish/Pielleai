@@ -14,7 +14,7 @@ import { cn } from '@/lib/utils';
 import { useEffect, useState } from 'react';
 import { Check, Eraser } from 'lucide-react';
 import { venueTypes } from '@/lib/database/schema';
-import VenueTypeBadge from '../badges/VenueTypeBadge';
+import VenueTypeBadge from '../Badges/VenueTypeBadge';
 
 type VenueTypeSelectProps = { initialValue: string[]; onConfirm: (selected: string[]) => void };
 

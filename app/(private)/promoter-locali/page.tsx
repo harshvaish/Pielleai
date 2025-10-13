@@ -7,11 +7,8 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { TablePagination } from '../_components/form/TablePagination';
-import UserBadge from '../_components/badges/UserBadge';
-import StatusBadge from '../_components/badges/StatusBadge';
 import { NEW_USER_TIME } from '@/lib/constants';
 import CreateButton from './_components/create/CreateButton';
-import VenuesBadge from '../_components/badges/VenuesBadge';
 import FiltersButton from './_components/filters/FiltersButton';
 import { VenueManagersTableFilters } from '@/lib/types';
 import { hasRole, resolveNextPath, splitCsv } from '@/lib/utils';
@@ -23,6 +20,9 @@ import getSession from '@/lib/data/auth/get-session';
 import { getUserProfileIdCached } from '@/lib/cache/users';
 import { getPaginatedVenueManagers } from '@/lib/data/venue-managers/get-paginated-venue-managers';
 import { getVenuesCached } from '@/lib/cache/venues';
+import UserBadge from '../_components/Badges/UserBadge';
+import StatusBadge from '../_components/Badges/StatusBadge';
+import VenuesBadge from '../_components/Badges/VenuesBadge';
 
 type VenueManagersPageProps = {
   searchParams?: Promise<{

@@ -7,8 +7,6 @@ import { getProfileNotes } from '@/lib/data/notes/get-profile-notes';
 import { cn, hasRole, resolveNextPath } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import StatusBadge from '../../_components/badges/StatusBadge';
-import NotesSection from '../../_components/notes/NotesSection';
 import ToggleBlockButton from '../../_components/ToggleBlockButton';
 import UpdateButton from './_components/update/UpdateButton';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -20,6 +18,8 @@ import ManagedVenuesTab from './_components/Tabs/ManagedVenuesTab';
 import PersonalDataTab from './_components/Tabs/PersonalDataTab';
 import getSession from '@/lib/data/auth/get-session';
 import { getUserProfileIdCached } from '@/lib/cache/users';
+import StatusBadge from '../../_components/Badges/StatusBadge';
+import NotesSection from '../../_components/Notes/NotesSection';
 
 type VenueManagerDetailPageProps = { params: Promise<{ uid: string }> };
 

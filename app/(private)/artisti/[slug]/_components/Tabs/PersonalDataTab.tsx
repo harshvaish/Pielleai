@@ -1,10 +1,10 @@
 import { Separator } from '@/components/ui/separator';
 import { TabsContent } from '@/components/ui/tabs';
 import { ArtistData, UserRole } from '@/lib/types';
-import ZonesBadge from '../../../../_components/badges/ZonesBadge';
-import TourManagerBadge from '@/app/(private)/_components/badges/TourManagerBadge';
-import ManagersBadge from '@/app/(private)/_components/badges/ManagersBadge';
 import { GENDERS_LABELS } from '@/lib/constants';
+import ManagersBadge from '@/app/(private)/_components/Badges/ManagersBadge';
+import TourManagerBadge from '@/app/(private)/_components/Badges/TourManagerBadge';
+import ZonesBadge from '@/app/(private)/_components/Badges/ZonesBadge';
 
 type PersonalDataTabProps = { tabValue: string; data: ArtistData; userRole: UserRole };
 

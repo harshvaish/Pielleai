@@ -2,13 +2,7 @@
 
 import { Button } from '@/components/ui/button';
 import { Eraser, ListFilter } from 'lucide-react';
-import {
-  ArtistSelectData,
-  EventsCalendarFilters,
-  EventStatus,
-  UserRole,
-  VenueSelectData,
-} from '@/lib/types';
+import { ArtistSelectData, EventsCalendarFilters, EventStatus, VenueSelectData } from '@/lib/types';
 import { useState, useTransition } from 'react';
 import { cn } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
@@ -20,13 +14,12 @@ import { eventStatus } from '@/lib/database/schema';
 import EventStatusBadge from '../Badges/EventStatusBadge';
 
 type FiltersButtonProps = {
-  userRole: UserRole;
   filters: EventsCalendarFilters;
   artists: ArtistSelectData[];
   venues: VenueSelectData[];
 };
 
-export function FiltersButton({ userRole, filters, artists, venues }: FiltersButtonProps) {
+export function FiltersButton({ filters, artists, venues }: FiltersButtonProps) {
   const router = useRouter();
   const [open, setOpen] = useState<boolean>(false);
   const [isPending, startTransition] = useTransition();
@@ -38,8 +31,6 @@ export function FiltersButton({ userRole, filters, artists, venues }: FiltersBut
   const active = Boolean(
     filters.artistIds.length || filters.venueIds.length || filters.status.length,
   );
-
-  const isAdmin = userRole === 'admin';
 
   const resetHandler = () => {
     setArtistIds([]);
@@ -122,8 +113,6 @@ export function FiltersButton({ userRole, filters, artists, venues }: FiltersBut
         <div className='space-y-2'>
           <div className='text-sm font-semibold'>Stato</div>
           {eventStatus.enumValues.map((s) => {
-            if (!isAdmin && s === 'conflict') return null;
-
             const checked = status.includes(s);
 
             return (

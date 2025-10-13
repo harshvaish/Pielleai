@@ -1,6 +1,5 @@
 'use client';
 
-import UserRoleBadge from '../../_components/badges/UserRoleBadge';
 import { Check, Mail, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { UserToApprove } from '@/lib/types';
@@ -11,6 +10,7 @@ import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { SpinnerLoading } from '@/app/_components/SpinnerLoading';
 import { cn } from '@/lib/utils';
+import UserRoleBadge from '../../_components/Badges/UserRoleBadge';
 
 type UserToApproveTileProps = {
   user: UserToApprove;
@@ -38,7 +38,7 @@ export default function UserToApproveTile({ user }: UserToApproveTileProps) {
     <div
       className={cn(
         'md:flex md:justify-between md:items-center gap-2 space-y-4 md:space-y-0 px-2 md:px-4 py-4 md:py-8 border-b border-zinc-100 rounded-2xl transition-colors hover:bg-zinc-50',
-        loadingStatus && 'bg-zinc-100'
+        loadingStatus && 'bg-zinc-100',
       )}
     >
       <div className='space-y-2'>
