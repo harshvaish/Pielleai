@@ -5,12 +5,12 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: 'mzmigzmqxpmypbmvklfh.supabase.co',
+        hostname: 'jgjrbqnrktvderpshwvt.supabase.co',
         pathname: '/storage/v1/object/public/**',
       }, // prod bucket
       {
         protocol: 'https',
-        hostname: 'gtngzgymtzhrmtyoidxr.supabase.co',
+        hostname: 'jausinxleymssicnplvv.supabase.co',
         pathname: '/storage/v1/object/public/**',
       }, // stage bucket
     ],
