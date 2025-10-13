@@ -1,11 +1,24 @@
 'server only';
 
 import { database } from '@/lib/database/connection';
-import { artists, events, artistAvailabilities, venues, profiles, users } from '@/lib/database/schema';
+import {
+  artists,
+  events,
+  artistAvailabilities,
+  venues,
+  profiles,
+  users,
+} from '@/lib/database/schema';
 import { CalendarEvent, EventsCalendarFilters } from '@/lib/types';
 import { and, desc, eq, inArray, sql } from 'drizzle-orm';
 
-export async function getCalendarEvents({ status, artistIds, venueIds, startDate, endDate }: EventsCalendarFilters): Promise<CalendarEvent[]> {
+export async function getCalendarEvents({
+  status,
+  artistIds,
+  venueIds,
+  startDate,
+  endDate,
+}: EventsCalendarFilters): Promise<CalendarEvent[]> {
   try {
     const rangeWindow = sql`tstzrange(
                             ${startDate}::timestamptz,
@@ -17,7 +30,7 @@ export async function getCalendarEvents({ status, artistIds, venueIds, startDate
       status.length > 0 ? inArray(events.status, status) : undefined,
       artistIds.length > 0 ? inArray(events.artistId, artistIds.map(Number)) : undefined,
       venueIds.length > 0 ? inArray(events.venueId, venueIds.map(Number)) : undefined,
-      rangeWindow ? sql`${artistAvailabilities.timeRange} && ${rangeWindow}` : undefined
+      rangeWindow ? sql`${artistAvailabilities.timeRange} && ${rangeWindow}` : undefined,
     );
 
     const eventsResult = await database
@@ -54,6 +67,7 @@ export async function getCalendarEvents({ status, artistIds, venueIds, startDate
         },
 
         status: events.status,
+        hasConflict: events.hasConflict,
       })
       .from(events)
       .innerJoin(artistAvailabilities, eq(events.availabilityId, artistAvailabilities.id))

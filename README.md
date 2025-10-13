@@ -72,7 +72,4 @@ TODO
 
 TO REQUEST:
 
-- se evento è in conflitto come lo devono vedere i manager?
-- aggiungere conflict come nuova colonna e non come status
 - fare test di tutti i bug fixed
-- rimuovere status disabled e rely only on banned?

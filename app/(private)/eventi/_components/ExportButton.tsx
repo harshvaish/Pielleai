@@ -18,6 +18,7 @@ export default function ExportButton({ filters }: ExportButtonProps) {
 
   const active = Boolean(
     filters.status.length ||
+      filters.conflict ||
       filters.artistIds.length ||
       filters.artistManagerIds.length ||
       filters.venueIds.length ||
@@ -35,6 +36,7 @@ export default function ExportButton({ filters }: ExportButtonProps) {
           },
           body: JSON.stringify({
             s: filters.status,
+            c: filters.conflict,
             a: filters.artistIds,
             m: filters.artistManagerIds,
             v: filters.venueIds,

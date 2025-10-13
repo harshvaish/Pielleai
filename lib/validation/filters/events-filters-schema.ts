@@ -9,6 +9,7 @@ import {
 export const eventsFiltersSchema = z.object({
   currentPage: idValidation,
   status: z.array(eventStatusEnumValidation),
+  conflict: z.boolean(),
   artistIds: z.array(stringIdValidation),
   artistManagerIds: z.array(stringIdValidation),
   venueIds: z.array(stringIdValidation),

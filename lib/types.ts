@@ -550,6 +550,7 @@ export type Event = {
 export type EventsTableFilters = {
   currentPage: number | null;
   status: EventStatus[];
+  conflict: boolean;
   artistIds: string[];
   artistManagerIds: string[];
   venueIds: string[];
@@ -579,6 +580,7 @@ export interface CalendarEvent extends RbcEvent {
     surname: string | null;
   };
   status: EventStatus;
+  hasConflict: boolean;
 
   start: Date;
   end: Date;

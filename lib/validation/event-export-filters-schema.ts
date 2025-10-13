@@ -3,6 +3,7 @@ import { dateValidation, eventStatusEnumValidation, stringIdValidation } from '.
 
 export const eventsExportFiltersSchema = z.object({
   s: z.array(eventStatusEnumValidation),
+  c: z.boolean(),
   a: z.array(stringIdValidation),
   m: z.array(stringIdValidation),
   v: z.array(stringIdValidation),

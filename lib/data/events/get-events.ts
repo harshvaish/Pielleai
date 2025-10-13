@@ -22,6 +22,7 @@ export async function getEvents(
   {
     currentPage,
     status,
+    conflict,
     artistIds,
     artistManagerIds,
     venueIds,
@@ -78,6 +79,7 @@ export async function getEvents(
     // Build reusable filters
     const filters = and(
       status.length > 0 ? inArray(events.status, status) : undefined,
+      conflict ? eq(events.hasConflict, true) : undefined,
       artistIds.length > 0 ? inArray(events.artistId, artistIds.map(Number)) : undefined,
       artistManagerIdsFilter.length > 0
         ? inArray(events.artistManagerProfileId, artistManagerIdsFilter)

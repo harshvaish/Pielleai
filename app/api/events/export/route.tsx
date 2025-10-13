@@ -12,6 +12,7 @@ type CSVRow = {
   evento_inizio: string;
   evento_fine: string;
   evento_stato: string;
+  evento_conflitto: boolean;
 
   artista_id: number;
   artista_nome: string;
@@ -95,11 +96,12 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       );
     }
 
-    const { s, a, m, v, sd, ed } = validation.data;
+    const { s, c, a, m, v, sd, ed } = validation.data;
 
     const result = await getEvents(user, {
       currentPage: null,
       status: s,
+      conflict: c,
       artistIds: a,
       artistManagerIds: m,
       venueIds: v,
@@ -114,6 +116,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       evento_inizio: formatInTimeZone(event.availability.startDate, TIME_ZONE, 'dd/MM/yyyy HH:mm'),
       evento_fine: formatInTimeZone(event.availability.endDate, TIME_ZONE, 'dd/MM/yyyy HH:mm'),
       evento_stato: EVENT_STATUS_LABELS[event.status],
+      evento_conflitto: event.hasConflict,
 
       artista_id: event.artist.id,
       artista_nome: event.artist.name,

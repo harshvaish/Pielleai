@@ -16,11 +16,13 @@ import ExportButton from './_components/ExportButton';
 import getSession from '@/lib/data/auth/get-session';
 import { getUserProfileIdCached } from '@/lib/cache/users';
 import { getEvents } from '@/lib/data/events/get-events';
+import ConflictFilterButton from './_components/filters/ConflictFilterButton';
 
 type EventsPageProps = {
   searchParams?: Promise<{
     page?: string;
     status?: string;
+    conflict?: string;
     artist?: string;
     manager?: string;
     venue?: string;
@@ -56,6 +58,7 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
   const filters: EventsTableFilters = {
     currentPage: currentPage,
     status: splitCsv(sp?.status) as EventStatus[],
+    conflict: sp?.conflict === 'true',
     artistIds: splitCsv(sp?.artist),
     artistManagerIds: splitCsv(sp?.manager),
     venueIds: splitCsv(sp?.venue),
@@ -119,6 +122,7 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
           />
         </div>
         <div className='flex items-center gap-2'>
+          {isAdmin && <ConflictFilterButton />}
           <FiltersButton
             userRole={user.role}
             filters={filters}

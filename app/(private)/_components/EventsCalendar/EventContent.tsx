@@ -5,6 +5,7 @@ import ArtistsBadge from '../Badges/ArtistsBadge';
 import ManagersBadge from '../Badges/ManagersBadge';
 import VenuesBadge from '../Badges/VenuesBadge';
 import EventStatusBadge from '../Badges/EventStatusBadge';
+import EventConflictBadge from '../Badges/EventConflictBadge';
 
 type EventContentProps = {
   userRole: UserRole;
@@ -21,7 +22,10 @@ export default function EventContent({ userRole, event }: EventContentProps) {
   return (
     <div className='grid sm:grid-cols-2 gap-4 p-2'>
       <div className='space-y-2'>
-        <EventStatusBadge status={event.status} />
+        <div className='flex items-center gap-2'>
+          <EventStatusBadge status={event.status} />
+          {isAdmin && event.hasConflict && <EventConflictBadge />}
+        </div>
 
         <div className='flex items-center gap-4'>
           <div className='flex items-center gap-1 text-zinc-700'>

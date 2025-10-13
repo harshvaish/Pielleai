@@ -56,17 +56,13 @@ export async function deleteArtistAvailability(
         .select({
           id: events.id,
           status: events.status,
-          previousStatus: events.previousStatus,
         })
         .from(events)
         .where(eq(events.availabilityId, availabilityId));
 
       // Block delete if any protected event is present
       const hasProtected = eventsAttached.some(
-        (e) =>
-          e.status === 'pre-confirmed' ||
-          e.status === 'confirmed' ||
-          e.previousStatus === 'pre-confirmed',
+        (e) => e.status === 'pre-confirmed' || e.status === 'confirmed',
       );
       if (hasProtected) {
         throw new AppError('Disponibilità collegata ad un evento approvato.');
