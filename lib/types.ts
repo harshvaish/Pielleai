@@ -193,6 +193,7 @@ export type ArtistData = {
   name: string;
   surname: string;
   stageName: string;
+  bio: string;
   phone: string;
   email: string;
   languages: Language[];
@@ -262,10 +263,15 @@ export type ArtistTableData = Pick<
   | 'name'
   | 'surname'
   | 'stageName'
+  | 'bio'
   | 'phone'
   | 'email'
   | 'company'
   | 'managers'
+  | 'tiktokUrl'
+  | 'facebookUrl'
+  | 'instagramUrl'
+  | 'xUrl'
 >;
 
 export type ArtistListData = Pick<
@@ -364,6 +370,7 @@ export type VenueData = {
   updatedAt: Date;
   avatarUrl: string;
   name: string;
+  bio: string;
   type: VenueType;
   capacity: number;
 

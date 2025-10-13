@@ -1,13 +1,7 @@
 'server only';
 
 import { database } from '@/lib/database/connection';
-import {
-  countries,
-  subdivisions,
-  profiles,
-  venues,
-  users,
-} from '@/lib/database/schema';
+import { countries, subdivisions, profiles, venues, users } from '@/lib/database/schema';
 import { VenueData } from '@/lib/types';
 import { eq } from 'drizzle-orm';
 import { alias } from 'drizzle-orm/pg-core';
@@ -30,6 +24,7 @@ export async function getVenue(slug: string): Promise<VenueData | null> {
 
         avatarUrl: venues.avatarUrl,
         name: venues.name,
+        bio: venues.bio,
         capacity: venues.capacity,
         type: venues.type,
 
@@ -107,10 +102,7 @@ export async function getVenue(slug: string): Promise<VenueData | null> {
       .innerJoin(country, eq(venues.countryId, country.id))
       .innerJoin(subdivision, eq(venues.subdivisionId, subdivision.id))
       .innerJoin(billingCountry, eq(venues.billingCountryId, billingCountry.id))
-      .innerJoin(
-        billingSubdivision,
-        eq(venues.billingSubdivisionId, billingSubdivision.id)
-      )
+      .innerJoin(billingSubdivision, eq(venues.billingSubdivisionId, billingSubdivision.id))
       .where(eq(venues.slug, slug))
       .limit(1);
 

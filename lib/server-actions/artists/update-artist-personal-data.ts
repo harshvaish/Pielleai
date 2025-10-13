@@ -125,6 +125,7 @@ export const updateArtistPersonalData = async (
           name: validation.data.name,
           surname: validation.data.surname,
           stageName: validation.data.stageName,
+          bio: validation.data.bio,
           email: validation.data.email,
           phone: validation.data.phone,
           birthDate: validation.data.birthDate,

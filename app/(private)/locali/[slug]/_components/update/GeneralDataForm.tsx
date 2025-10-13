@@ -34,6 +34,7 @@ export default function GeneralDataForm({
     () => ({
       avatarUrl: venueData.avatarUrl || '',
       name: venueData.name || '',
+      bio: venueData.bio || '',
       type: venueData.type || 'small',
       capacity: venueData.capacity || 0,
       address: venueData.address || '',

@@ -24,6 +24,7 @@ import ArtistManagersSelect from '../create/ArtistManagersSelect';
 import { Checkbox } from '@/components/ui/checkbox';
 import { profileGenders } from '@/lib/database/schema';
 import { GENDERS_LABELS } from '@/lib/constants';
+import { Textarea } from '@/components/ui/textarea';
 
 type StepOneProps = {
   userRole: UserRole;
@@ -161,6 +162,24 @@ export default function StepOne({
         />
         {errors.stageName && (
           <p className='text-xs text-destructive mt-2'>{errors.stageName.message as string}</p>
+        )}
+      </div>
+
+      <div className='flex flex-col'>
+        <label
+          htmlFor='bio'
+          className='block text-sm font-semibold mb-2'
+        >
+          Biografia
+        </label>
+        <Textarea
+          id='bio'
+          {...register('bio')}
+          placeholder='Aggiungi la biografia'
+          className='resize-none max-w-full h-full shadow-none'
+        />
+        {errors.bio && (
+          <p className='text-xs text-destructive mt-2'>{errors.bio.message as string}</p>
         )}
       </div>
 

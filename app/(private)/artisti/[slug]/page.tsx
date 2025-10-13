@@ -44,7 +44,7 @@ export default async function ArtistDetailPage({ params }: ArtistDetailPageProps
   const target = resolveNextPath({ user, hasProfile: Boolean(profileId) });
   if (target) redirect(target);
 
-  if (!hasRole(user, ['admin', 'artist-manager', 'venue-manager'])) {
+  if (!hasRole(user, ['admin', 'artist-manager'])) {
     notFound();
   }
 
@@ -128,7 +128,7 @@ export default async function ArtistDetailPage({ params }: ArtistDetailPageProps
       <div className={cn('mb-6', isAdmin && 'grid lg:grid-cols-[60%_auto] gap-6 ')}>
         {/* main details section */}
         <section className='bg-white py-8 px-6 rounded-2xl overflow-x-hidden'>
-          <div className='flex flex-col lg:flex-row lg:justify-between gap-4 lg:gap-2'>
+          <div className='flex flex-col xl:flex-row xl:justify-between gap-4 lg:gap-2 mb-4'>
             <div className='flex items-center gap-4'>
               <Image
                 src={userData.avatarUrl}
@@ -153,7 +153,7 @@ export default async function ArtistDetailPage({ params }: ArtistDetailPageProps
               </div>
             </div>
 
-            <div className='max-w-full flex flex-col lg:items-end gap-0.5 overflow-x-auto'>
+            <div className='max-w-full flex flex-col xl:items-end gap-0.5 overflow-x-auto'>
               <div className='flex flex-col lg:flex-row text-sm font-semibold text-zinc-500 whitespace-nowrap'>
                 ID: {userData.id}
               </div>
@@ -165,7 +165,11 @@ export default async function ArtistDetailPage({ params }: ArtistDetailPageProps
               </div>
             </div>
           </div>
+
+          <div className='text-xs font-medium text-zinc-500'>{userData.bio}</div>
+
           <Separator className='my-6' />
+
           <div className='grid grid-cols-[minmax(200px,max-content)_max-content] gap-2 lg:gap-6 overflow-x-auto'>
             <span className='text-sm font-semibold text-zinc-600'>Email</span>
             <span className='text-sm font-medium text-zinc-500'>{userData.email}</span>

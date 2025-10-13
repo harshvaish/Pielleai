@@ -12,6 +12,12 @@ export const nameValidation = z
   .regex(/^[\p{L}\s'-]+$/u, 'Può contenere solo lettere, spazi, trattini o apostrofi.')
   .trim();
 
+export const bioValidation = z
+  .string('Campo malformato.')
+  .min(10, 'Minimo 10 caratteri.')
+  .max(1000, 'Massimo 1000 caratteri.')
+  .trim();
+
 export const emailValidation = z.email('Formato non valido. (Es. info@eaglebooking.it)').trim();
 
 export const passwordValidation = z
@@ -99,6 +105,55 @@ export const otpValidation = z
   .min(6, 'Deve contenere 6 cifre.')
   .max(6, 'Deve contenere 6 cifre.')
   .regex(/^[0-9]+$/, 'Può contenere solo numeri.');
+
+//socials
+export const tiktokUrlValidation = z.preprocess(
+  (val) => (typeof val === 'string' && val.trim() !== '' ? val : undefined),
+  z
+    .url('Inserisci un link valido.')
+    .refine(
+      (url) => url.startsWith(`https://www.tiktok.com/`),
+      'Deve iniziare con "https://www.tiktok.com/".',
+    )
+    .trim()
+    .optional(),
+);
+
+export const facebookUrlValidation = z.preprocess(
+  (val) => (typeof val === 'string' && val.trim() !== '' ? val : undefined),
+  z
+    .url('Inserisci un link valido.')
+    .refine(
+      (url) => url.startsWith(`https://www.facebook.com/`),
+      'Deve iniziare con "https://www.facebook.com/".',
+    )
+    .trim()
+    .optional(),
+);
+
+export const instagramUrlValidation = z.preprocess(
+  (val) => (typeof val === 'string' && val.trim() !== '' ? val : undefined),
+  z
+    .url('Inserisci un link valido.')
+    .refine(
+      (url) => url.startsWith(`https://www.instagram.com/`),
+      'Deve iniziare con "https://www.instagram.com/".',
+    )
+    .trim()
+    .optional(),
+);
+
+export const xUrlValidation = z.preprocess(
+  (val) => (typeof val === 'string' && val.trim() !== '' ? val : undefined),
+  z
+    .url('Inserisci un link valido.')
+    .refine(
+      (url) => url.startsWith('https://twitter.com/') || url.startsWith('https://x.com/'),
+      'Deve iniziare con "https://twitter.com/" o "https://x.com/"',
+    )
+    .trim()
+    .optional(),
+);
 
 // utils
 export function getZodErrors(errorObj: z.core.$ZodError<unknown>): string[] {

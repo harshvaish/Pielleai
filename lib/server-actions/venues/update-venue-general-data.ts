@@ -75,6 +75,7 @@ export const updateVenueGeneralData = async (
       .set({
         avatarUrl: validation.data.avatarUrl,
         name: validation.data.name,
+        bio: validation.data.bio,
         type: validation.data.type,
         capacity: validation.data.capacity,
         address: validation.data.address,

@@ -11,6 +11,7 @@ import {
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
 import Image from 'next/image';
+import { VenueS3FormSchema } from '@/lib/validation/venue-form-schema';
 
 export default function StepThree() {
   const [openItem, setOpenItem] = useState<string>('tiktok');
@@ -18,7 +19,7 @@ export default function StepThree() {
     register,
     control,
     formState: { errors },
-  } = useFormContext();
+  } = useFormContext<VenueS3FormSchema>();
 
   return (
     <>
@@ -210,7 +211,9 @@ export default function StepThree() {
               </label>
               <Input
                 id='facebookFollowers'
-                {...register('facebookFollowers')}
+                {...register('facebookFollowers', {
+                  valueAsNumber: true,
+                })}
                 placeholder='1000'
                 type='number'
                 min={0}
@@ -321,7 +324,9 @@ export default function StepThree() {
               </label>
               <Input
                 id='instagramFollowers'
-                {...register('instagramFollowers')}
+                {...register('instagramFollowers', {
+                  valueAsNumber: true,
+                })}
                 placeholder='1000'
                 type='number'
                 min={0}
@@ -427,7 +432,9 @@ export default function StepThree() {
               </label>
               <Input
                 id='xFollowers'
-                {...register('xFollowers')}
+                {...register('xFollowers', {
+                  valueAsNumber: true,
+                })}
                 placeholder='1000'
                 type='number'
                 min={0}

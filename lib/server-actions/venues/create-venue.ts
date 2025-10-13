@@ -107,6 +107,7 @@ export const createVenue = async (data: VenueFormSchema): Promise<ServerActionRe
         status: 'active',
         avatarUrl: validation.data.avatarUrl,
         name: validation.data.name,
+        bio: validation.data.bio,
         type: validation.data.type,
         capacity: validation.data.capacity,
         managerProfileId: validation.data.venueManagerId,

@@ -76,7 +76,7 @@ export default function ArtistsBadge({ artists, userRole }: ArtistsBadgeProps) {
 }
 
 function ArtistBadge({ artist, userRole }: { artist: ArtistSelectData; userRole: UserRole }) {
-  const isAdmin = userRole === 'admin';
+  const isVenueManager = userRole === 'venue-manager';
   const isDisabled = artist.status === 'disabled';
 
   return (
@@ -84,7 +84,7 @@ function ArtistBadge({ artist, userRole }: { artist: ArtistSelectData; userRole:
       href={`/artisti/${artist.slug}`}
       className={cn(
         'w-max max-w-60 flex flex-nowrap items-center gap-2 bg-zinc-50 hover:bg-zinc-100 p-2 rounded-md transition-colors',
-        !isAdmin && 'pointer-events-none hover:cursor-pointer',
+        isVenueManager && 'pointer-events-none',
       )}
     >
       <Avatar className='w-5 h-5'>

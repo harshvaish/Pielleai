@@ -105,6 +105,7 @@ export const artists = pgTable(
     name: text().notNull(),
     surname: text().notNull(),
     stageName: text('stage_name').notNull(),
+    bio: text('bio').notNull(),
     phone: text().notNull(),
     avatarUrl: text('avatar_url').notNull(),
     status: userStatus().notNull(),
@@ -425,6 +426,7 @@ export const venues = pgTable(
   {
     id: serial().primaryKey().notNull(),
     name: text().notNull(),
+    bio: text('bio').notNull(),
     slug: uuid().defaultRandom().notNull(),
     status: userStatus().notNull(),
     avatarUrl: text('avatar_url').notNull(),

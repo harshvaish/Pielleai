@@ -11,6 +11,7 @@ import {
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
 import Image from 'next/image';
+import { ArtistS3FormSchema } from '@/lib/validation/artist-form-schema';
 
 export default function StepThree() {
   const [openItem, setOpenItem] = useState<string>('tiktok');
@@ -18,7 +19,7 @@ export default function StepThree() {
     register,
     control,
     formState: { errors },
-  } = useFormContext();
+  } = useFormContext<ArtistS3FormSchema>();
 
   return (
     <>
@@ -209,7 +210,9 @@ export default function StepThree() {
               </label>
               <Input
                 id='facebookFollowers'
-                {...register('facebookFollowers')}
+                {...register('facebookFollowers', {
+                  valueAsNumber: true,
+                })}
                 placeholder='Inserisci il numero di followers'
                 type='number'
                 min={0}
@@ -320,7 +323,9 @@ export default function StepThree() {
               </label>
               <Input
                 id='instagramFollowers'
-                {...register('instagramFollowers')}
+                {...register('instagramFollowers', {
+                  valueAsNumber: true,
+                })}
                 placeholder='Inserisci il numero di followers'
                 type='number'
                 min={0}
@@ -426,7 +431,9 @@ export default function StepThree() {
               </label>
               <Input
                 id='xFollowers'
-                {...register('xFollowers')}
+                {...register('xFollowers', {
+                  valueAsNumber: true,
+                })}
                 placeholder='Inserisci il numero di followers'
                 type='number'
                 min={0}

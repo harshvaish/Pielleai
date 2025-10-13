@@ -61,6 +61,7 @@ export default function CreateVenueForm({
     defaultValues: {
       avatarUrl: undefined,
       name: '',
+      bio: '',
       type: 'small',
       capacity: undefined,
       address: '',

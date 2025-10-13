@@ -49,6 +49,7 @@ export default function PersonalDataForm({
       name: userData.name || '',
       surname: userData.surname || '',
       stageName: userData.stageName || '',
+      bio: userData.bio || '',
       phone: userData.phone || '',
       email: userData.email || '',
       birthDate: userData.birthDate || '',

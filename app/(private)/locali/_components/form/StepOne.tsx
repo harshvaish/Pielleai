@@ -15,6 +15,7 @@ import Image from 'next/image';
 import { venueTypes } from '@/lib/database/schema';
 import { VENUE_TYPE_LABELS } from '@/lib/constants';
 import { VenueS1FormSchema } from '@/lib/validation/venue-form-schema';
+import { Textarea } from '@/components/ui/textarea';
 
 type StepOneProps = {
   userRole: UserRole;
@@ -110,6 +111,24 @@ export default function StepOne({ userRole, countries, venueManagers }: StepOneP
             <p className='text-xs text-destructive mt-2'>{errors.name.message as string}</p>
           )}
         </div>
+      </div>
+
+      <div className='flex flex-col'>
+        <label
+          htmlFor='bio'
+          className='block text-sm font-semibold mb-2'
+        >
+          Biografia
+        </label>
+        <Textarea
+          id='bio'
+          {...register('bio')}
+          placeholder='Aggiungi la biografia'
+          className='resize-none max-w-full h-full shadow-none'
+        />
+        {errors.bio && (
+          <p className='text-xs text-destructive mt-2'>{errors.bio.message as string}</p>
+        )}
       </div>
 
       <Separator className='my-4' />

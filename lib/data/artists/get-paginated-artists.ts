@@ -93,11 +93,17 @@ export async function getPaginatedArtists({
         name: artists.name,
         surname: artists.surname,
         stageName: artists.stageName,
+        bio: artists.bio,
         email: artists.email,
         phone: artists.phone,
         company: artists.company,
         status: artists.status,
         createdAt: artists.createdAt,
+
+        tiktokUrl: artists.tiktokUrl,
+        facebookUrl: artists.facebookUrl,
+        instagramUrl: artists.instagramUrl,
+        xUrl: artists.xUrl,
       })
       .from(artists)
       .where(filters)

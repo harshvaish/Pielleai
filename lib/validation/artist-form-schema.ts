@@ -9,6 +9,11 @@ import {
   nameValidation,
   phoneValidation,
   taxCodeValidation,
+  bioValidation,
+  tiktokUrlValidation,
+  facebookUrlValidation,
+  instagramUrlValidation,
+  xUrlValidation,
 } from './_general';
 
 export const artistS1FormSchema = z.object({
@@ -26,6 +31,8 @@ export const artistS1FormSchema = z.object({
     .min(2, 'Minimo 2 caratteri.')
     .max(100, 'Massimo 100 caratteri.')
     .trim(),
+
+  bio: bioValidation,
 
   phone: phoneValidation,
 
@@ -197,14 +204,7 @@ export const artistS2FormSchema = z
 export type ArtistS2FormSchema = z.infer<typeof artistS2FormSchema>;
 
 export const artistS3FormSchema = z.object({
-  tiktokUrl: z.preprocess(
-    (val) => (typeof val === 'string' && val.trim() !== '' ? val : undefined),
-    z
-      .url('Inserisci un link valido.')
-      .refine((url) => url.startsWith(`https://www.tiktok.com/`), 'Campo non valido.')
-      .trim()
-      .optional(),
-  ),
+  tiktokUrl: tiktokUrlValidation,
 
   tiktokUsername: z.preprocess(
     (val) => (typeof val === 'string' && val.trim() !== '' ? val : undefined),
@@ -237,14 +237,7 @@ export const artistS3FormSchema = z.object({
       .optional(),
   ),
 
-  facebookUrl: z.preprocess(
-    (val) => (typeof val === 'string' && val.trim() !== '' ? val : undefined),
-    z
-      .url('Inserisci un link valido.')
-      .refine((url) => url.startsWith(`https://www.facebook.com/`), 'Campo non valido.')
-      .trim()
-      .optional(),
-  ),
+  facebookUrl: facebookUrlValidation,
 
   facebookUsername: z.preprocess(
     (val) => (typeof val === 'string' && val.trim() !== '' ? val : undefined),
@@ -274,14 +267,7 @@ export const artistS3FormSchema = z.object({
       .optional(),
   ),
 
-  instagramUrl: z.preprocess(
-    (val) => (typeof val === 'string' && val.trim() !== '' ? val : undefined),
-    z
-      .url('Inserisci un link valido.')
-      .refine((url) => url.startsWith(`https://www.instagram.com/`), 'Campo non valido.')
-      .trim()
-      .optional(),
-  ),
+  instagramUrl: instagramUrlValidation,
 
   instagramUsername: z.preprocess(
     (val) => (typeof val === 'string' && val.trim() !== '' ? val : undefined),
@@ -311,17 +297,7 @@ export const artistS3FormSchema = z.object({
       .optional(),
   ),
 
-  xUrl: z.preprocess(
-    (val) => (typeof val === 'string' && val.trim() !== '' ? val : undefined),
-    z
-      .url('Inserisci un link valido.')
-      .refine(
-        (url) => url.startsWith('https://twitter.com/') || url.startsWith('https://x.com/'),
-        'Campo non valido.',
-      )
-      .trim()
-      .optional(),
-  ),
+  xUrl: xUrlValidation,
 
   xUsername: z.preprocess(
     (val) => (typeof val === 'string' && val.trim() !== '' ? val : undefined),

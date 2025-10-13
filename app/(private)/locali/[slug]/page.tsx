@@ -91,7 +91,7 @@ export default async function VenueDetailPage({ params }: VenueDetailPageProps) 
       {/* main details section */}
       <section className='bg-white py-8 px-6 rounded-2xl mb-6'>
         <div className='flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4'>
-          <div className='space-y-2'>
+          <div className='space-y-4'>
             <div className='flex items-center gap-4'>
               <Image
                 src={venue.avatarUrl}
@@ -156,6 +156,7 @@ export default async function VenueDetailPage({ params }: VenueDetailPageProps) 
                 isSmall={true}
               />
             </div>
+            <div className='text-xs font-medium text-zinc-500'>{venue.bio}</div>
           </div>
 
           <div className='flex flex-col lg:items-end gap-0.5'>
