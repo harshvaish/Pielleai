@@ -6,7 +6,16 @@ import { profiles, users, venues } from '@/lib/database/schema';
 import { VenuesTableFilters, VenueTableData } from '@/lib/types';
 import { and, count, desc, eq, gte, ilike, inArray } from 'drizzle-orm';
 
-export async function getPaginatedVenues({ currentPage, name, company, taxCode, address, types, managerIds, capacity }: VenuesTableFilters): Promise<{
+export async function getPaginatedVenues({
+  currentPage,
+  name,
+  company,
+  taxCode,
+  address,
+  types,
+  managerIds,
+  capacity,
+}: VenuesTableFilters): Promise<{
   data: VenueTableData[];
   totalPages: number;
   currentPage: number;
@@ -43,7 +52,7 @@ export async function getPaginatedVenues({ currentPage, name, company, taxCode, 
       address ? ilike(venues.address, `%${address}%`) : undefined,
       types.length > 0 ? inArray(venues.type, types) : undefined,
       managersFilteredVenueIds ? inArray(venues.id, managersFilteredVenueIds) : undefined,
-      capacity ? gte(venues.capacity, parseInt(capacity)) : undefined
+      capacity ? gte(venues.capacity, parseInt(capacity)) : undefined,
     );
 
     // Get paginated venues and total count
@@ -55,6 +64,7 @@ export async function getPaginatedVenues({ currentPage, name, company, taxCode, 
           status: venues.status,
           avatarUrl: venues.avatarUrl,
           name: venues.name,
+          bio: venues.bio,
           company: venues.company,
           taxCode: venues.taxCode,
           address: venues.address,
@@ -69,6 +79,11 @@ export async function getPaginatedVenues({ currentPage, name, company, taxCode, 
             status: users.status,
           },
           createdAt: venues.createdAt,
+
+          tiktokUrl: venues.tiktokUrl,
+          facebookUrl: venues.facebookUrl,
+          instagramUrl: venues.instagramUrl,
+          xUrl: venues.xUrl,
         })
         .from(venues)
         .innerJoin(profiles, eq(venues.managerProfileId, profiles.id))

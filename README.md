@@ -58,18 +58,29 @@ WORKFLOW
 - Frontend (FE)
   Convert received UTC values back to the business timezone for display.
 
-TODO
+GIT FOR VERCEL DEPLOYMENT
+Bisogna settare i git config prima di pushare in modo da matchare account con permessi. Per superare i controlli di vercel l'ultimo commit deve essere fatto da una email con permessi.
+
+git config --global user.email services@eaglebooking.it
+git config --global user.name ServicesEagleBooking
+git config --global user.username ServicesEagleBooking
+
+git config --global user.email tech@filli.it
+git config --global user.name FilliTech
+git config --global user.username FilliTech
+
+ENHANCEMENT
 
 - change timestampz of better auth schemas
-- change email sender
 - create subfolders for upload based on entity
-- static params on dynamic param routes?
 - send email when pre-confirm or confirm
-- crone job to make the events and availabilities expired
 - get stuff to fill edit and create forms client side and not in the page server side -> create endpoints
 - search input (first 5 suggestions based on venues or artits numbers then on seach)
 - refactor avatar upload input
 
-TO REQUEST:
+TODO
 
-- fare test di tutti i bug fixed
+- sendgrid stuff (api key, sender)
+- test everything
+- update linear
+- check crone job to make the events and availabilities expired

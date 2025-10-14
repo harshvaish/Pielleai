@@ -103,7 +103,7 @@ export default function StepOne({ userRole, countries, venueManagers }: StepOneP
           <Input
             id='name'
             {...register('name')}
-            placeholder='La madunina'
+            placeholder='Inserisci il nome del locale'
             className={errors.name ? 'border-destructive text-destructive' : ''}
             autoComplete='name'
           />
@@ -123,7 +123,7 @@ export default function StepOne({ userRole, countries, venueManagers }: StepOneP
         <Textarea
           id='bio'
           {...register('bio')}
-          placeholder='Aggiungi la biografia'
+          placeholder='Inserisci la biografia'
           className='resize-none max-w-full h-full shadow-none'
         />
         {errors.bio && (
@@ -182,7 +182,7 @@ export default function StepOne({ userRole, countries, venueManagers }: StepOneP
           {...register('capacity', {
             valueAsNumber: true,
           })}
-          placeholder='1000'
+          placeholder='Inserisci la capienza'
           type='number'
           min={0}
           step={1}
@@ -205,7 +205,7 @@ export default function StepOne({ userRole, countries, venueManagers }: StepOneP
         <Input
           id='address'
           {...register('address')}
-          placeholder='Via Duomo 1'
+          placeholder="Inserisci l'indirizzo"
           className={errors.address ? 'border-destructive text-destructive' : ''}
           autoComplete='street-address'
         />
@@ -317,7 +317,7 @@ export default function StepOne({ userRole, countries, venueManagers }: StepOneP
           <Input
             id='city'
             {...register('city')}
-            placeholder='Milano'
+            placeholder='Inserisci il comune'
             className={errors.city ? 'border-destructive text-destructive' : ''}
           />
           {errors.city && (
@@ -339,7 +339,7 @@ export default function StepOne({ userRole, countries, venueManagers }: StepOneP
                 e.target.value = e.target.value.toUpperCase();
               },
             })}
-            placeholder='20100'
+            placeholder='Inserisci il CAP'
             className={errors.zipCode ? 'border-destructive text-destructive' : ''}
           />
           {errors.zipCode && (

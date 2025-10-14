@@ -132,7 +132,10 @@ export default async function VenueManagersPage({ searchParams }: VenueManagersP
                   <TableCell>{manager.email}</TableCell>
                   <TableCell>{manager.phone}</TableCell>
                   <TableCell>
-                    <VenuesBadge venues={manager.venues} />
+                    <VenuesBadge
+                      userRole={user.role}
+                      venues={manager.venues}
+                    />
                   </TableCell>
                 </TableRow>
               );

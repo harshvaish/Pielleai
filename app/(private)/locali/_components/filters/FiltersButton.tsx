@@ -121,7 +121,7 @@ export default function FiltersButton({ userRole, filters, venueManagers }: Filt
           <div className='flex flex-col'>
             <div className='text-sm font-semibold mb-2'>Nome</div>
             <Input
-              placeholder='La Madunina'
+              placeholder='Inserisci il nome del locale'
               value={name}
               onChange={(e) => setName(e.target.value)}
             />
@@ -131,7 +131,7 @@ export default function FiltersButton({ userRole, filters, venueManagers }: Filt
             <div className='text-sm font-semibold mb-2'>Ragione sociale</div>
             <Input
               type='company'
-              placeholder='Milano Ovest'
+              placeholder='Inserisci la ragione sociale'
               value={company}
               onChange={(e) => setcompany(e.target.value)}
             />
@@ -142,7 +142,7 @@ export default function FiltersButton({ userRole, filters, venueManagers }: Filt
           <div className='flex flex-col'>
             <div className='text-sm font-semibold mb-2'>Partita IVA</div>
             <Input
-              placeholder='0123456789'
+              placeholder='Inserisci il codice partita IVA'
               value={taxCode}
               onChange={(e) => setTaxCode(e.target.value)}
             />
@@ -151,7 +151,7 @@ export default function FiltersButton({ userRole, filters, venueManagers }: Filt
           <div className='flex flex-col'>
             <div className='text-sm font-semibold mb-2'>Indirizzo</div>
             <Input
-              placeholder='Via Duomo 1'
+              placeholder="Inserisci l'indirizzo"
               value={address}
               onChange={(e) => setAddress(e.target.value)}
             />
@@ -173,7 +173,7 @@ export default function FiltersButton({ userRole, filters, venueManagers }: Filt
               type='number'
               min={0}
               step={1}
-              placeholder='1000'
+              placeholder='Inserisci la capienza minima'
               value={capacity}
               onChange={(e) => setCapacity(e.target.value)}
             />

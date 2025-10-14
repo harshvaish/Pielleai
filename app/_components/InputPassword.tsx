@@ -19,7 +19,7 @@ export default function InputPassword({ error, ...props }: InputPasswordProps) {
         autoComplete='password'
         minLength={8}
         maxLength={16}
-        placeholder='Inserisci la tua password'
+        placeholder='Inserisci la password'
         {...props}
       />
       <div

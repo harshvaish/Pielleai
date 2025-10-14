@@ -68,7 +68,7 @@ export default function SignUpForm() {
               <div className='text-sm font-semibold mb-2'>Email</div>
               <Input
                 type='email'
-                placeholder='esempio@milanoovest.it'
+                placeholder="Inserisci l'email"
                 autoComplete='email'
                 {...register('email')}
                 className={errors.email ? 'border-destructive text-destructive' : ''}

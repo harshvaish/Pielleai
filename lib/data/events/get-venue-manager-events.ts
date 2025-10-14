@@ -72,7 +72,7 @@ export async function getVenueManagerEvents(profileId: number): Promise<{ data: 
           surname: profiles.surname,
         },
 
-        tourManagerEmail: artists.tourManagerEmail,
+        tourManagerEmail: events.tourManagerEmail,
 
         administrationEmail: events.administrationEmail,
         payrollConsultantEmail: events.payrollConsultantEmail,

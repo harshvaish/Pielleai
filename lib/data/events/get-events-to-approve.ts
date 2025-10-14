@@ -29,12 +29,14 @@ export async function getEventsToApprove(): Promise<{ data: Event[] }> {
           surname: artists.surname,
           stageName: artists.stageName,
         },
+
         availability: {
           id: artistAvailabilities.id,
           startDate: artistAvailabilities.startDate,
           endDate: artistAvailabilities.endDate,
           status: artistAvailabilities.status,
         },
+
         venue: {
           id: venues.id,
           status: venues.status,
@@ -56,7 +58,7 @@ export async function getEventsToApprove(): Promise<{ data: Event[] }> {
           surname: profiles.surname,
         },
 
-        tourManagerEmail: artists.tourManagerEmail,
+        tourManagerEmail: events.tourManagerEmail,
 
         administrationEmail: events.administrationEmail,
         payrollConsultantEmail: events.payrollConsultantEmail,

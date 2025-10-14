@@ -129,7 +129,10 @@ export default function EventTile({
             />
             <span className='text-xs text-zinc-600'>Location</span>
           </div>
-          <VenuesBadge venues={[event.venue]} />
+          <VenuesBadge
+            userRole={userRole}
+            venues={[event.venue]}
+          />
         </div>
 
         {isAdmin && event.artistManager && (
@@ -278,7 +281,10 @@ export default function EventTile({
                   />
                   <span className='text-xs text-zinc-600'>Location</span>
                 </div>
-                <VenuesBadge venues={[event.venue]} />
+                <VenuesBadge
+                  userRole={userRole}
+                  venues={[event.venue]}
+                />
               </div>
 
               {isAdmin && event.artistManager && (

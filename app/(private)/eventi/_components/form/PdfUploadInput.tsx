@@ -51,6 +51,9 @@ export default function PdfUploadInput() {
 
   const onDeleteHandler = () => {
     setValue('tecnicalRiderDocument', undefined);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
   };
 
   const uploadPdf = async (file: File) => {
@@ -104,16 +107,16 @@ export default function PdfUploadInput() {
         size='sm'
         variant='outline'
         className={cn(
-          'w-full justify-start text-sm font-normal',
+          'w-full grid grid-cols-[max-content_1fr_max-content] text-sm font-normal overflow-hidden',
           errors.tecnicalRiderDocument && 'border-destructive text-destructive',
         )}
         onClick={() => fileInputRef.current?.click()}
         disabled={uploading}
       >
         <Upload />
-        <span className={cn('truncate', pdf && pdf.name ? 'pe-6' : 'text-zinc-400')}>
+        <div className={cn('text-start truncate', pdf && pdf.name ? 'pe-6' : 'text-zinc-400')}>
           {uploading ? 'Caricamento...' : pdf && pdf.name ? pdf.name : 'Carica pdf'}
-        </span>
+        </div>
       </Button>
       {pdf && pdf.url && (
         <Button

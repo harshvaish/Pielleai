@@ -80,7 +80,7 @@ export default function StepThree() {
               <Input
                 id='tiktokUsername'
                 {...register('tiktokUsername')}
-                placeholder='Shiva'
+                placeholder='Inserisci il nome profilo'
                 className={errors.tiktokUsername ? 'border-destructive text-destructive' : ''}
               />
               {errors.tiktokUsername && (
@@ -101,7 +101,7 @@ export default function StepThree() {
                 {...register('tiktokFollowers', {
                   valueAsNumber: true,
                 })}
-                placeholder='1000'
+                placeholder='Inserisci il numero di followers'
                 type='number'
                 min={0}
                 step={1}
@@ -193,7 +193,7 @@ export default function StepThree() {
               <Input
                 id='facebookUsername'
                 {...register('facebookUsername')}
-                placeholder='Shiva'
+                placeholder='Inserisci il nome profilo'
                 className={errors.facebookUsername ? 'border-destructive text-destructive' : ''}
               />
               {errors.facebookUsername && (
@@ -214,7 +214,7 @@ export default function StepThree() {
                 {...register('facebookFollowers', {
                   valueAsNumber: true,
                 })}
-                placeholder='1000'
+                placeholder='Inserisci il numero di followers'
                 type='number'
                 min={0}
                 step={1}
@@ -306,7 +306,7 @@ export default function StepThree() {
               <Input
                 id='instagramUsername'
                 {...register('instagramUsername')}
-                placeholder='Shiva'
+                placeholder='Inserisci il nome profilo'
                 className={errors.instagramUsername ? 'border-destructive text-destructive' : ''}
               />
               {errors.instagramUsername && (
@@ -327,7 +327,7 @@ export default function StepThree() {
                 {...register('instagramFollowers', {
                   valueAsNumber: true,
                 })}
-                placeholder='1000'
+                placeholder='Inserisci il numero di followers'
                 type='number'
                 min={0}
                 step={1}
@@ -414,7 +414,7 @@ export default function StepThree() {
               <Input
                 id='xUsername'
                 {...register('xUsername')}
-                placeholder='Shiva'
+                placeholder='Inserisci il nome profilo'
                 className={errors.xUsername ? 'border-destructive text-destructive' : ''}
               />
               {errors.xUsername && (
@@ -435,7 +435,7 @@ export default function StepThree() {
                 {...register('xFollowers', {
                   valueAsNumber: true,
                 })}
-                placeholder='1000'
+                placeholder='Inserisci il numero di followers'
                 type='number'
                 min={0}
                 step={1}

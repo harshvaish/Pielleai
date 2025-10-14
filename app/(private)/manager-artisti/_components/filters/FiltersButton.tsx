@@ -105,7 +105,7 @@ export default function FiltersButton({ filters, artists }: FiltersButtonProps) 
           <div className='flex flex-col'>
             <div className='text-sm font-semibold mb-2'>Nome completo</div>
             <Input
-              placeholder='Mario Rossi'
+              placeholder='Inserisci il nome completo'
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
             />
@@ -115,7 +115,7 @@ export default function FiltersButton({ filters, artists }: FiltersButtonProps) 
             <div className='text-sm font-semibold mb-2'>Email</div>
             <Input
               type='email'
-              placeholder='info@eaglebooking.it'
+              placeholder="Inserisci l'email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
             />
@@ -126,7 +126,7 @@ export default function FiltersButton({ filters, artists }: FiltersButtonProps) 
           <div className='flex flex-col'>
             <div className='text-sm font-semibold mb-2'>Numero di telefono</div>
             <Input
-              placeholder='+39 123456789'
+              placeholder='Inserisci il numero di telefono, es. +39 0123456789'
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
             />
@@ -135,7 +135,7 @@ export default function FiltersButton({ filters, artists }: FiltersButtonProps) 
           <div className='flex flex-col'>
             <div className='text-sm font-semibold mb-2'>Ragione sociale</div>
             <Input
-              placeholder='Milano Ovest'
+              placeholder='Inserisci la ragione sociale'
               value={company}
               onChange={(e) => setCompany(e.target.value)}
             />

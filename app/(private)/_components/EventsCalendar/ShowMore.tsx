@@ -18,6 +18,8 @@ export default function ShowMore({ slotDate, events, userRole }: ShowMoreProps) 
   const [open, setOpen] = useState<boolean>(false);
   const date = format(slotDate, 'dd/MM/yyyy');
 
+  const isAdmin = userRole === 'admin';
+
   return (
     <>
       <Button
@@ -36,7 +38,7 @@ export default function ShowMore({ slotDate, events, userRole }: ShowMoreProps) 
         open={open}
         onOpenChange={setOpen}
         title={`Eventi del ${date}`}
-        description="Consulta i dati principali dell'evento, per vederne tutti i dettagli o per fare modifiche vai alla sezione eventi."
+        description={`Consulta i dati principali dell'evento, per vederne tutti i dettagli ${isAdmin ? 'o per fare modifiche ' : ''}vai alla sezione eventi.`}
       >
         {events.map((event, index) => {
           return (

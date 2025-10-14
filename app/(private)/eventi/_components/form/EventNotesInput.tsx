@@ -50,7 +50,7 @@ export default function EventNotesInput() {
       {isInputVisible && (
         <div>
           <Input
-            placeholder='Da controllare le luci...'
+            placeholder='Inserisci una nota'
             value={newNote}
             className={cn(error && 'text-destructive border-destructive')}
             onChange={(e) => setNewNote(e.target.value)}

@@ -68,7 +68,7 @@ export const NAVBAR_LINKS: NavbarLink[] = [
     href: '/locali',
     iconSrc: '/images/navbar-icons/venues.svg',
     iconAlt: 'icona Locali',
-    visibleTo: ['admin', 'venue-manager'],
+    visibleTo: ['admin', 'venue-manager', 'artist-manager'],
     separator: false,
   },
 ];

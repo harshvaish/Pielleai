@@ -152,7 +152,7 @@ export default function EventForm({ artists, venues, moCoordinators }: EventForm
             <Input
               type='email'
               {...register('tourManagerEmail')}
-              placeholder='tour.manager@eaglebooking.it'
+              placeholder="Inserisci l'email del tour manager"
               className={errors.tourManagerEmail ? 'border-destructive text-destructive' : ''}
             />
             {errors.tourManagerEmail && (
@@ -167,7 +167,7 @@ export default function EventForm({ artists, venues, moCoordinators }: EventForm
             <Input
               type='email'
               {...register('administrationEmail')}
-              placeholder='info@eaglebooking.it'
+              placeholder="Inserisci l'email di assistenza"
               className={errors.administrationEmail ? 'border-destructive text-destructive' : ''}
             />
             {errors.administrationEmail && (
@@ -182,7 +182,7 @@ export default function EventForm({ artists, venues, moCoordinators }: EventForm
             <Input
               type='email'
               {...register('payrollConsultantEmail')}
-              placeholder='consulente@eaglebooking.it'
+              placeholder="Inserisci l'email del consulente ingaggi"
               className={errors.payrollConsultantEmail ? 'border-destructive text-destructive' : ''}
             />
             {errors.payrollConsultantEmail && (
@@ -208,7 +208,7 @@ export default function EventForm({ artists, venues, moCoordinators }: EventForm
                 {...register('moCost', {
                   setValueAs: (v) => (v === '' ? undefined : parseFloat(v)),
                 })}
-                placeholder='1000'
+                placeholder='Inserisci il costo cachet lordo'
                 type='number'
                 min={0}
                 step={0.01}
@@ -241,7 +241,7 @@ export default function EventForm({ artists, venues, moCoordinators }: EventForm
                 {...register('depositCost', {
                   setValueAs: (v) => (v === '' ? undefined : parseFloat(v)),
                 })}
-                placeholder='1000'
+                placeholder='Inserisci il costo acconto'
                 type='number'
                 min={0}
                 step={0.01}
@@ -260,7 +260,7 @@ export default function EventForm({ artists, venues, moCoordinators }: EventForm
                 {...register('venueManagerCost', {
                   setValueAs: (v) => (v === '' ? undefined : parseFloat(v)),
                 })}
-                placeholder='1000'
+                placeholder='Inserisci il costo fee promoter'
                 type='number'
                 min={0}
                 step={0.01}
@@ -279,7 +279,7 @@ export default function EventForm({ artists, venues, moCoordinators }: EventForm
               <div className='text-sm font-semibold mb-2'>Numero fattura acconto</div>
               <Input
                 {...register('depositInvoiceNumber')}
-                placeholder='123456789'
+                placeholder='Inserisci il numero fattura acconto'
                 className={errors.depositInvoiceNumber ? 'border-destructive text-destructive' : ''}
               />
               {errors.depositInvoiceNumber && (
@@ -295,7 +295,7 @@ export default function EventForm({ artists, venues, moCoordinators }: EventForm
                 {...register('expenseReimbursement', {
                   setValueAs: (v) => (v === '' ? undefined : parseFloat(v)),
                 })}
-                placeholder='1000'
+                placeholder='Inserisci il costo rimborso spese'
                 type='number'
                 min={0}
                 step={0.01}
@@ -316,7 +316,7 @@ export default function EventForm({ artists, venues, moCoordinators }: EventForm
                 {...register('bookingPercentage', {
                   setValueAs: (v) => (v === '' ? undefined : parseFloat(v)),
                 })}
-                placeholder='30%'
+                placeholder='Inserisci la percentuale booking'
                 type='number'
                 min={0}
                 step={0.01}
@@ -335,7 +335,7 @@ export default function EventForm({ artists, venues, moCoordinators }: EventForm
                 {...register('supplierCost', {
                   setValueAs: (v) => (v === '' ? undefined : parseFloat(v)),
                 })}
-                placeholder='1000'
+                placeholder='Inserisci il costo fornitore'
                 type='number'
                 min={0}
                 step={0.01}
@@ -357,7 +357,7 @@ export default function EventForm({ artists, venues, moCoordinators }: EventForm
               {...register('moArtistAdvancedExpenses', {
                 setValueAs: (v) => (v === '' ? undefined : parseFloat(v)),
               })}
-              placeholder='1000'
+              placeholder='Inserisci il costo spese anticipate da Milano Ovest per Artista'
               type='number'
               min={0}
               step={0.01}
@@ -379,7 +379,7 @@ export default function EventForm({ artists, venues, moCoordinators }: EventForm
                 {...register('artistNetCost', {
                   setValueAs: (v) => (v === '' ? undefined : parseFloat(v)),
                 })}
-                placeholder='1000'
+                placeholder='Inserisci il costo netto artista'
                 type='number'
                 min={0}
                 step={0.01}
@@ -398,7 +398,7 @@ export default function EventForm({ artists, venues, moCoordinators }: EventForm
                 {...register('artistUpfrontCost', {
                   setValueAs: (v) => (v === '' ? undefined : parseFloat(v)),
                 })}
-                placeholder='1000'
+                placeholder='Inserisci il costo anticipo artista'
                 type='number'
                 min={0}
                 step={0.01}
@@ -422,7 +422,7 @@ export default function EventForm({ artists, venues, moCoordinators }: EventForm
               <div className='text-sm font-semibold mb-2'>Hotel</div>
               <Input
                 {...register('hotel')}
-                placeholder='Milano Ovest Hotel'
+                placeholder="Inserisci il nome dell'hotel"
                 className={errors.hotel ? 'border-destructive text-destructive' : ''}
               />
               {errors.hotel && (
@@ -434,7 +434,7 @@ export default function EventForm({ artists, venues, moCoordinators }: EventForm
               <div className='text-sm font-semibold mb-2'>Ristorante</div>
               <Input
                 {...register('restaurant')}
-                placeholder='MoPizza'
+                placeholder='Inserisci il nome del ristorante'
                 className={errors.restaurant ? 'border-destructive text-destructive' : ''}
               />
               {errors.restaurant && (
@@ -450,7 +450,7 @@ export default function EventForm({ artists, venues, moCoordinators }: EventForm
               <div className='text-sm font-semibold mb-2'>Referente serata</div>
               <Input
                 {...register('eveningContact')}
-                placeholder='Mario Rossi'
+                placeholder='Inserisci il nome del referente serata'
                 className={errors.eveningContact ? 'border-destructive text-destructive' : ''}
               />
               {errors.eveningContact && (
@@ -513,7 +513,7 @@ export default function EventForm({ artists, venues, moCoordinators }: EventForm
                 {...register('totalCost', {
                   setValueAs: (v) => (v === '' ? undefined : parseFloat(v)),
                 })}
-                placeholder='1000'
+                placeholder="Inserisci l'incasso totale"
                 type='number'
                 min={0}
                 step={0.01}
@@ -532,7 +532,7 @@ export default function EventForm({ artists, venues, moCoordinators }: EventForm
                 {...register('transportationsCost', {
                   setValueAs: (v) => (v === '' ? undefined : parseFloat(v)),
                 })}
-                placeholder='1000'
+                placeholder='Inserisci il saldo trasporti'
                 type='number'
                 min={0}
                 step={0.01}
@@ -552,7 +552,7 @@ export default function EventForm({ artists, venues, moCoordinators }: EventForm
               {...register('cashBalanceCost', {
                 setValueAs: (v) => (v === '' ? undefined : parseFloat(v)),
               })}
-              placeholder='1000'
+              placeholder='Inserisci il saldo cassa'
               type='number'
               min={0}
               step={0.01}

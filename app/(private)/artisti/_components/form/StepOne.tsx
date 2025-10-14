@@ -193,7 +193,7 @@ export default function StepOne({
         <Input
           id='phone'
           {...register('phone')}
-          placeholder='Inserisci il numero di telefono es. +39 0123456789'
+          placeholder='Inserisci il numero di telefono, es. +39 0123456789'
           className={errors.phone ? 'border-destructive text-destructive' : ''}
           autoComplete='tel'
         />
@@ -613,7 +613,7 @@ export default function StepOne({
           <Input
             id='tourManagerPhone'
             {...register('tourManagerPhone')}
-            placeholder='Inserisci il numero di telefono del tour manager es. +39 0123456789'
+            placeholder='Inserisci il numero di telefono del tour manager, es. +39 0123456789'
             className={errors.tourManagerPhone ? 'border-destructive text-destructive' : ''}
             autoComplete='tel'
           />

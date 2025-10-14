@@ -427,6 +427,7 @@ export type VenueTableData = Pick<
   | 'status'
   | 'avatarUrl'
   | 'name'
+  | 'bio'
   | 'company'
   | 'taxCode'
   | 'address'
@@ -434,6 +435,10 @@ export type VenueTableData = Pick<
   | 'type'
   | 'capacity'
   | 'createdAt'
+  | 'tiktokUrl'
+  | 'facebookUrl'
+  | 'instagramUrl'
+  | 'xUrl'
 >;
 
 export type VenueSelectData = Pick<

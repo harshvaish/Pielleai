@@ -20,7 +20,7 @@ export default function StepTwo() {
         <Input
           id='signUpEmail'
           {...register('signUpEmail')}
-          placeholder='info@eaglebooking.it'
+          placeholder="Inserisci l'email"
           className={errors.signUpEmail ? 'border-destructive text-destructive' : ''}
         />
         {errors.signUpEmail && (
@@ -37,7 +37,7 @@ export default function StepTwo() {
         <Input
           id='signUpPassword'
           {...register('signUpPassword')}
-          placeholder='********'
+          placeholder='Inserisci la password'
           className={errors.signUpPassword ? 'border-destructive text-destructive' : ''}
         />
         {errors.signUpPassword && (

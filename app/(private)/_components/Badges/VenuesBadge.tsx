@@ -6,13 +6,18 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { VenueBadgeData } from '@/lib/types';
+import { UserRole, VenueBadgeData } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { ChevronDown } from 'lucide-react';
 import Link from 'next/link';
 import { useState } from 'react';
 
-export default function VenuesBadge({ venues }: { venues: VenueBadgeData[] }) {
+type VenuesBadgeProps = {
+  userRole: UserRole;
+  venues: VenueBadgeData[];
+};
+
+export default function VenuesBadge({ userRole, venues }: VenuesBadgeProps) {
   const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
   const count = venues.length;
 
@@ -21,7 +26,12 @@ export default function VenuesBadge({ venues }: { venues: VenueBadgeData[] }) {
   if (count === 1) {
     const venue = venues[0];
 
-    return <VenueBadge venue={venue} />;
+    return (
+      <VenueBadge
+        userRole={userRole}
+        venue={venue}
+      />
+    );
   }
 
   return (
@@ -56,6 +66,7 @@ export default function VenuesBadge({ venues }: { venues: VenueBadgeData[] }) {
           return (
             <VenueBadge
               key={venue.id}
+              userRole={userRole}
               venue={venue}
             />
           );
@@ -65,13 +76,17 @@ export default function VenuesBadge({ venues }: { venues: VenueBadgeData[] }) {
   );
 }
 
-function VenueBadge({ venue }: { venue: VenueBadgeData }) {
+function VenueBadge({ userRole, venue }: { userRole: UserRole; venue: VenueBadgeData }) {
+  const isArtistManager = userRole === 'artist-manager';
   const isDisabled = venue.status === 'disabled';
 
   return (
     <Link
       href={`/locali/${venue.slug}`}
-      className='w-max max-w-60 flex flex-nowrap items-center gap-2 bg-zinc-50 hover:bg-zinc-100 p-2 rounded-md transition-colors'
+      className={cn(
+        'w-max max-w-60 flex flex-nowrap items-center gap-2 bg-zinc-50 hover:bg-zinc-100 p-2 rounded-md transition-colors',
+        isArtistManager && 'pointer-events-none',
+      )}
     >
       <Avatar className='w-5 h-5'>
         <AvatarImage

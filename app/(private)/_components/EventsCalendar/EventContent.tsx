@@ -45,7 +45,10 @@ export default function EventContent({ userRole, event }: EventContentProps) {
       <div className='space-y-2'>
         <div className='flex items-center gap-2'>
           <span className='w-16 text-xs text-zinc-700 font-medium'>Location</span>
-          <VenuesBadge venues={[event.venue]} />
+          <VenuesBadge
+            userRole={userRole}
+            venues={[event.venue]}
+          />
         </div>
 
         <div className='flex items-center gap-2'>

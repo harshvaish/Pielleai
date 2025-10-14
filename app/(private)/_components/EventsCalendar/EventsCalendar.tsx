@@ -59,6 +59,8 @@ export default function EventsCalendar({ userRole, artists, venues }: EventsCale
   const [dialogOpen, setDialogOpen] = useState<boolean>(false);
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
 
+  const isAdmin = userRole === 'admin';
+
   const filters: EventsCalendarFilters = {
     artistIds: splitCsv(searchParams.get('a')),
     venueIds: splitCsv(searchParams.get('v')),
@@ -160,7 +162,7 @@ export default function EventsCalendar({ userRole, artists, venues }: EventsCale
           if (!open) window.setTimeout(() => setSelectedEvent(null), 200);
         }}
         title={`Evento #${selectedEvent?.id ?? ''}`}
-        description="Consulta i dati principali dell'evento, per vederne tutti i dettagli o per fare modifiche vai alla sezione eventi."
+        description={`Consulta i dati principali dell'evento, per vederne tutti i dettagli ${isAdmin ? 'o per fare modifiche ' : ''}vai alla sezione eventi.`}
       >
         {selectedEvent && (
           <EventContent

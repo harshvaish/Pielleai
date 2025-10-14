@@ -161,6 +161,7 @@ export const createEvent = async (data: EventFormSchema): Promise<ServerActionRe
           status: validation.data.status,
 
           artistManagerProfileId: artistManagerProfileId || null,
+          tourManagerEmail: validation.data.tourManagerEmail || null,
           administrationEmail: validation.data.administrationEmail || null,
           payrollConsultantEmail: validation.data.payrollConsultantEmail || null,
           moCost: validation.data.moCost?.toString() ?? null,

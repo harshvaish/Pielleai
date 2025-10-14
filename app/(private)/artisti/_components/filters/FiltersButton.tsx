@@ -123,7 +123,7 @@ export default function FiltersButton({
             <div className='text-sm font-semibold mb-2'>Email</div>
             <Input
               type='email'
-              placeholder='Inserisci la tua email'
+              placeholder="Inserisci l'email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
             />
@@ -133,7 +133,7 @@ export default function FiltersButton({
         <div className='flex flex-col'>
           <div className='text-sm font-semibold mb-2'>Numero di telefono</div>
           <Input
-            placeholder='Inserisci il numero di telefono es. +39 0123456789'
+            placeholder='Inserisci il numero di telefono, es. +39 0123456789'
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
           />
