@@ -32,10 +32,10 @@ export const sendOTPEmail = async (
     // Construct email message
     const msg = {
       to: userEmail,
-      from: 'tech@uilconvenzioni.it',
-      templateId: 'd-31cad32ba6a7471c993aa92279090b49',
+      from: 'info@eaglebooking.it',
+      templateId: 'd-e38ed34ad9684b34861267a4b67b9c67',
       dynamic_template_data: {
-        redirect_url: `${process.env.NEXT_PUBLIC_APP_URL}/conferma-email/manager-artisti`,
+        redirect_url: `${process.env.NEXT_PUBLIC_APP_URL}/conferma-email`,
         code: code,
       },
     };

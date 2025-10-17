@@ -24,6 +24,7 @@ import ChangePasswordTile from './_components/action-tiles/ChangePaswordTile';
 import { getUserProfileIdCached } from '@/lib/cache/users';
 import BillingDataTab from '../_components/Tabs/BillingDataTab';
 import DeleteAccountTile from './_components/action-tiles/DeleteAccountTile';
+import Link from 'next/link';
 
 export const dynamic = 'force-dynamic';
 
@@ -151,17 +152,16 @@ export default async function ProfilePage() {
 
         {/* action section */}
         <section className='bg-white py-8 px-6 rounded-2xl overflow-x-hidden'>
-          <div className='flex justify-between gap-4 px-2 py-3 rounded-md hover:bg-zinc-50 hover:cursor-pointer'>
-            <span className='text-sm font-semibold text-zinc-600'>Termini e condizioni</span>
-            <SquareArrowOutUpRight className='size-4 stroke-1 text-zinc-700' />
-          </div>
-
-          <Separator />
-
-          <div className='flex justify-between gap-4 px-2 py-3 rounded-md hover:bg-zinc-50 hover:cursor-pointer'>
+          <Link
+            href='https://jausinxleymssicnplvv.supabase.co/storage/v1/object/public/eagle-booking-staging/files/EagleBooking%20-%20Informativa%20Privacy.pdf'
+            prefetch={false}
+            target='_blank'
+            rel='noopener noreferrer'
+            className='flex justify-between gap-4 px-2 py-3 rounded-md hover:bg-zinc-50 hover:cursor-pointer'
+          >
             <span className='text-sm font-semibold text-zinc-600'>Informativa sulla privacy</span>
             <SquareArrowOutUpRight className='size-4 stroke-1 text-zinc-700' />
-          </div>
+          </Link>
 
           <Separator />
 

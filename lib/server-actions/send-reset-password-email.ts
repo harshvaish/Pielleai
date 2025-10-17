@@ -33,10 +33,10 @@ export const sendResetPasswordEmail = async (
     // Construct email message
     const msg = {
       to: userEmail,
-      from: 'tech@uilconvenzioni.it',
-      templateId: 'd-874a04c239354062bb98ac9c87c3819c',
+      from: 'info@eaglebooking.it',
+      templateId: 'd-136e1d3210084867b0c4917d4ac68c05',
       dynamic_template_data: {
-        reset_link: url,
+        redirect_url: url,
       },
     };
 

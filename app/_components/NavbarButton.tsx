@@ -73,21 +73,14 @@ export default function NavbarButton({ user }: NavbarButtonProps) {
               <Separator />
 
               <Link
-                href=''
+                href='https://jausinxleymssicnplvv.supabase.co/storage/v1/object/public/eagle-booking-staging/files/EagleBooking%20-%20Informativa%20Privacy.pdf'
                 prefetch={false}
+                target='_blank'
+                rel='noopener noreferrer'
                 className='flex items-center gap-2 text-sm text-blue-600 font-medium rounded-xl p-2 hover:bg-zinc-50'
               >
                 <SquareArrowOutUpRight className='size-3' />
                 Informativa sulla privacy
-              </Link>
-
-              <Link
-                href=''
-                prefetch={false}
-                className='flex items-center gap-2 text-sm text-blue-600 font-medium rounded-xl p-2 hover:bg-zinc-50'
-              >
-                <SquareArrowOutUpRight className='size-3' />
-                Termini e Condizioni
               </Link>
 
               <Separator />
@@ -141,13 +134,15 @@ export default function NavbarButton({ user }: NavbarButtonProps) {
 
             <Separator />
 
-            <div className='flex items-center gap-2 text-sm text-blue-700 font-medium p-2 transition-colors rounded-md hover:bg-zinc-50 hover:cursor-pointer'>
+            <Link
+              href='https://jausinxleymssicnplvv.supabase.co/storage/v1/object/public/eagle-booking-staging/files/EagleBooking%20-%20Informativa%20Privacy.pdf'
+              prefetch={false}
+              target='_blank'
+              rel='noopener noreferrer'
+              className='flex items-center gap-2 text-sm text-blue-700 font-medium p-2 transition-colors rounded-md hover:bg-zinc-50 hover:cursor-pointer'
+            >
               <SquareArrowOutUpRight className='size-3' /> Informativa sulla privacy
-            </div>
-
-            <div className='flex items-center gap-2 text-sm text-blue-700 font-medium p-2 transition-colors rounded-md hover:bg-zinc-50 hover:cursor-pointer'>
-              <SquareArrowOutUpRight className='size-3' /> Termini e Condizioni
-            </div>
+            </Link>
 
             <Separator />
 

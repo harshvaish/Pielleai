@@ -106,14 +106,16 @@ export default function SignUpForm() {
                   htmlFor='acceptTerms'
                   className={cn('text-xs font-normal', errors.acceptTerms && 'text-destructive')}
                 >
-                  Accetto i{' '}
-                  <span className='underline underline-offset-2 hover:cursor-pointer'>
-                    Termini e le Condizioni
-                  </span>{' '}
-                  e l&apos;{' '}
-                  <span className='underline underline-offset-2 hover:cursor-pointer'>
+                  Accetto l&apos;
+                  <Link
+                    href='https://jausinxleymssicnplvv.supabase.co/storage/v1/object/public/eagle-booking-staging/files/EagleBooking%20-%20Informativa%20Privacy.pdf'
+                    prefetch={false}
+                    target='_blank'
+                    rel='noopener noreferrer'
+                    className='underline underline-offset-2 hover:cursor-pointer'
+                  >
                     Informativa sulla Privacy
-                  </span>{' '}
+                  </Link>{' '}
                   della piattaforma.
                 </label>
               </div>

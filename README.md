@@ -61,13 +61,9 @@ WORKFLOW
 GIT FOR VERCEL DEPLOYMENT
 Bisogna settare i git config prima di pushare in modo da matchare account con permessi. Per superare i controlli di vercel l'ultimo commit deve essere fatto da una email con permessi.
 
-git config --global user.email services@eaglebooking.it
-git config --global user.name ServicesEagleBooking
-git config --global user.username ServicesEagleBooking
+git config --global user.email services@eaglebooking.it && git config --global user.name ServicesEagleBooking && git config --global user.username ServicesEagleBooking
 
-git config --global user.email tech@filli.it
-git config --global user.name FilliTech
-git config --global user.username FilliTech
+git config --global user.email tech@filli.it && git config --global user.name FilliTech && git config --global user.username FilliTech
 
 ENHANCEMENT
 
@@ -81,6 +77,6 @@ ENHANCEMENT
 TODO
 
 - sendgrid stuff (api key, sender)
-- test everything
 - update linear
 - check crone job to make the events and availabilities expired
+- deploy to stage updated version

@@ -14,7 +14,7 @@ export default function VenueCard({ venue }: VenueCardProps) {
         alt={`Immagine locale ${venue.name}`}
         width={240}
         height={312}
-        className='w-[240px] aspect-[1/1.3] object-cover bg-white rounded-xl'
+        className='w-[150px] md:w-[200px] lg:w-[240px] aspect-[1/1.3] object-cover bg-white rounded-xl'
       />
       <div className='flex flex-col gap-4'>
         <div className='text-xl font-bold'>{venue.name}</div>
