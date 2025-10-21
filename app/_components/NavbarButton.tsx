@@ -73,7 +73,7 @@ export default function NavbarButton({ user }: NavbarButtonProps) {
               <Separator />
 
               <Link
-                href='https://jausinxleymssicnplvv.supabase.co/storage/v1/object/public/eagle-booking-staging/files/EagleBooking%20-%20Informativa%20Privacy.pdf'
+                href='https://jgjrbqnrktvderpshwvt.supabase.co/storage/v1/object/public/eagle-booking/files/EagleBooking%20-%20Informativa%20Privacy.pdf'
                 prefetch={false}
                 target='_blank'
                 rel='noopener noreferrer'
@@ -135,7 +135,7 @@ export default function NavbarButton({ user }: NavbarButtonProps) {
             <Separator />
 
             <Link
-              href='https://jausinxleymssicnplvv.supabase.co/storage/v1/object/public/eagle-booking-staging/files/EagleBooking%20-%20Informativa%20Privacy.pdf'
+              href='https://jgjrbqnrktvderpshwvt.supabase.co/storage/v1/object/public/eagle-booking/files/EagleBooking%20-%20Informativa%20Privacy.pdf'
               prefetch={false}
               target='_blank'
               rel='noopener noreferrer'

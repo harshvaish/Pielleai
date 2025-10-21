@@ -108,7 +108,7 @@ export default function SignUpForm() {
                 >
                   Accetto l&apos;
                   <Link
-                    href='https://jausinxleymssicnplvv.supabase.co/storage/v1/object/public/eagle-booking-staging/files/EagleBooking%20-%20Informativa%20Privacy.pdf'
+                    href='https://jgjrbqnrktvderpshwvt.supabase.co/storage/v1/object/public/eagle-booking/files/EagleBooking%20-%20Informativa%20Privacy.pdf'
                     prefetch={false}
                     target='_blank'
                     rel='noopener noreferrer'
