@@ -174,23 +174,6 @@ export default function EventTile({
           </div>
         )}
 
-        {isAdmin && event.administrationEmail && (
-          <div className='flex justify-between items-center gap-4'>
-            <div className='flex items-center gap-1'>
-              <Image
-                className='w-4 h-4'
-                src='/images/navbar-icons/venue-managers.svg'
-                alt='icona con tre pallini'
-                width={16}
-                height={16}
-                loading='lazy'
-              />
-              <span className='text-xs text-zinc-600'>Amministrazione</span>
-            </div>
-            <span className='text-xs text-zinc-500 font-semibold'>{event.administrationEmail}</span>
-          </div>
-        )}
-
         <Separator className='my-4' />
 
         <div className={cn('grid gap-2', isVenueManager ? '' : 'grid-cols-2')}>
@@ -324,25 +307,6 @@ export default function EventTile({
                   </div>
                   <span className='text-xs text-zinc-500 font-semibold'>
                     {event.tourManagerEmail}
-                  </span>
-                </div>
-              )}
-
-              {isAdmin && event.administrationEmail && (
-                <div className='flex items-center gap-4'>
-                  <div className='flex items-center gap-1'>
-                    <Image
-                      className='w-4 h-4'
-                      src='/images/navbar-icons/venue-managers.svg'
-                      alt='icona con tre pallini'
-                      width={16}
-                      height={16}
-                      loading='lazy'
-                    />
-                    <span className='text-xs text-zinc-600'>Amministrazione</span>
-                  </div>
-                  <span className='text-xs text-zinc-500 font-semibold'>
-                    {event.administrationEmail}
                   </span>
                 </div>
               )}

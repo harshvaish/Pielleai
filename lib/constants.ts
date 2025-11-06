@@ -106,7 +106,7 @@ export const EVENT_STATUS_LABELS: Record<EventStatus, string> = {
 
 //venues
 export const VENUE_TYPE_LABELS: Record<VenueType, string> = {
-  small: 'Club / DJ set',
+  small: 'Piccola < 3.000',
   medium: 'Media > 3.000',
   big: 'Grande > 10.000',
 };

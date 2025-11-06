@@ -74,22 +74,21 @@ export async function getVenueManagerEvents(profileId: number): Promise<{ data: 
 
         tourManagerEmail: events.tourManagerEmail,
 
-        administrationEmail: events.administrationEmail,
         payrollConsultantEmail: events.payrollConsultantEmail,
 
         moCost: events.moCost,
         venueManagerCost: events.venueManagerCost,
         depositCost: events.depositCost,
         depositInvoiceNumber: events.depositInvoiceNumber,
-        expenseReimbursement: events.expenseReimbursement,
         bookingPercentage: events.bookingPercentage,
-        supplierCost: events.supplierCost,
         moArtistAdvancedExpenses: events.moArtistAdvancedExpenses,
         artistNetCost: events.artistNetCost,
         artistUpfrontCost: events.artistUpfrontCost,
 
         hotel: events.hotel,
+        hotelCost: events.hotelCost,
         restaurant: events.restaurant,
+        restaurantCost: events.restaurantCost,
         eveningContact: events.eveningContact,
 
         moCoordinator: {

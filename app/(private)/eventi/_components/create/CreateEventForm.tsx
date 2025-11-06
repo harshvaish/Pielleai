@@ -38,7 +38,6 @@ export default function CreateEventForm({
 
       artistManagerProfileId: undefined,
       tourManagerEmail: '',
-      administrationEmail: '',
       payrollConsultantEmail: '',
       notes: [],
 
@@ -46,9 +45,7 @@ export default function CreateEventForm({
       venueManagerCost: undefined,
       depositCost: undefined,
       depositInvoiceNumber: '',
-      expenseReimbursement: undefined,
       bookingPercentage: undefined,
-      supplierCost: undefined,
       moArtistAdvancedExpenses: undefined,
       artistNetCost: undefined,
       artistUpfrontCost: undefined,

@@ -29,11 +29,6 @@ export const eventFormSchema = z.object({
     emailValidation.optional(),
   ),
 
-  administrationEmail: z.preprocess(
-    (val) => (typeof val === 'string' && val.trim() !== '' ? val : undefined),
-    emailValidation.optional(),
-  ),
-
   payrollConsultantEmail: z.preprocess(
     (val) => (typeof val === 'string' && val.trim() !== '' ? val : undefined),
     emailValidation.optional(),
@@ -63,20 +58,10 @@ export const eventFormSchema = z.object({
       .optional(),
   ),
 
-  expenseReimbursement: z
-    .number('Campo malformato.')
-    .positive('Può contenere solo numeri positivi.')
-    .optional(),
-
   bookingPercentage: z
     .number('Campo malformato.')
     .min(0, 'Minimo 0.')
     .max(100, 'Massimo 100.')
-    .optional(),
-
-  supplierCost: z
-    .number('Campo malformato.')
-    .positive('Può contenere solo numeri positivi.')
     .optional(),
 
   moArtistAdvancedExpenses: z
@@ -104,6 +89,11 @@ export const eventFormSchema = z.object({
       .optional(),
   ),
 
+  hotelCost: z
+    .number('Campo malformato.')
+    .positive('Può contenere solo numeri positivi.')
+    .optional(),
+
   restaurant: z.preprocess(
     (val) => (typeof val === 'string' && val.trim() !== '' ? val : undefined),
     z
@@ -113,6 +103,11 @@ export const eventFormSchema = z.object({
       .trim()
       .optional(),
   ),
+
+  restaurantCost: z
+    .number('Campo malformato.')
+    .positive('Può contenere solo numeri positivi.')
+    .optional(),
 
   eveningContact: z.preprocess(
     (val) => (typeof val === 'string' && val.trim() !== '' ? val : undefined),

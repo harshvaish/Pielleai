@@ -76,7 +76,5 @@ ENHANCEMENT
 
 TODO
 
-- sendgrid stuff (api key, sender)
-- update linear
-- check crone job to make the events and availabilities expired
-- deploy to stage updated version
+- remove fields administrationEmail, expenseReimbursement, supplierCost from events table
+- add campi hotelCost and restaurantCost

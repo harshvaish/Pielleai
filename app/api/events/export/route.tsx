@@ -32,22 +32,21 @@ type CSVRow = {
 
   tour_manager_email: string;
 
-  consulenza: string;
   ingaggi: string;
 
   cachet_lordo: string;
   acconto: string;
   fee_promoter: string;
   numero_fattura_acconto: string;
-  rimborso_spese: string;
   percentuale_booking: string;
-  fornitore: string;
   spese_anticipate: string;
   netto_artista: string;
   anticipo_artista: string;
 
   hotel: string;
+  costo_hotel: string;
   ristorante: string;
+  costo_ristorante: string;
   referente_serata: string;
 
   coordinatore_nome: string;
@@ -136,22 +135,21 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
       tour_manager_email: event?.tourManagerEmail ?? '',
 
-      consulenza: event?.administrationEmail ?? '',
       ingaggi: event?.payrollConsultantEmail ?? '',
 
       cachet_lordo: event?.moCost ?? '',
       acconto: event?.depositCost ?? '',
       fee_promoter: event?.venueManagerCost ?? '',
       numero_fattura_acconto: event?.depositInvoiceNumber ?? '',
-      rimborso_spese: event?.expenseReimbursement ?? '',
       percentuale_booking: event?.bookingPercentage ?? '',
-      fornitore: event?.supplierCost ?? '',
       spese_anticipate: event?.moArtistAdvancedExpenses ?? '',
       netto_artista: event?.artistNetCost ?? '',
       anticipo_artista: event?.artistUpfrontCost ?? '',
 
       hotel: event?.hotel ?? '',
+      costo_hotel: event?.hotelCost ?? '',
       ristorante: event?.restaurant ?? '',
+      costo_ristorante: event?.restaurantCost ?? '',
       referente_serata: event?.eveningContact ?? '',
 
       coordinatore_nome: event?.moCoordinator?.name ?? '',

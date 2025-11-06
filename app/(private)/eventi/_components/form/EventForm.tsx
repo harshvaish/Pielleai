@@ -17,6 +17,7 @@ import { eventStatus } from '@/lib/database/schema';
 import { EventFormSchema } from '@/lib/validation/event-form-schema';
 import ArtistAvailabilitySelectWithCreate from './ArtistAvailabilitySelectWithCreate';
 import EventStatusBadge from '@/app/(private)/_components/Badges/EventStatusBadge';
+import { useEffect, useMemo } from 'react';
 
 type EventForm = {
   artists: ArtistSelectData[];
@@ -29,11 +30,81 @@ export default function EventForm({ artists, venues, moCoordinators }: EventForm
     watch,
     register,
     control,
+    setValue,
     formState: { errors },
   } = useFormContext<EventFormSchema>();
 
   const selectedVenueId = watch('venueId');
   const selectedVenue = venues.find((venue) => venue.id == selectedVenueId);
+
+  // Watch the values needed for calculation
+  const moCost = watch('moCost');
+  const bookingPercentage = watch('bookingPercentage');
+  const moArtistAdvancedExpenses = watch('moArtistAdvancedExpenses');
+  const venueManagerCost = watch('venueManagerCost');
+  const totalCost = watch('totalCost');
+  const transportationsCost = watch('transportationsCost');
+  const hotelCost = watch('hotelCost');
+  const restaurantCost = watch('restaurantCost');
+
+  // Calculate artistNetCost
+  const artistNetCost = useMemo(() => {
+    if (moCost && bookingPercentage !== undefined) {
+      return moCost - moCost * (bookingPercentage / 100);
+    }
+    return undefined;
+  }, [moCost, bookingPercentage]);
+
+  // Calculate booking percentage in euros
+  const bookingPercentageAmount = useMemo(() => {
+    if (moCost && bookingPercentage !== undefined) {
+      return moCost * (bookingPercentage / 100);
+    }
+    return undefined;
+  }, [moCost, bookingPercentage]);
+
+  // Calculate artistUpfrontCost (Saldo)
+  const artistUpfrontCost = useMemo(() => {
+    if (moCost !== undefined) {
+      const expenses = moArtistAdvancedExpenses ?? 0;
+      const booking = bookingPercentageAmount ?? 0;
+      const venueCost = venueManagerCost ?? 0;
+      return moCost - expenses - booking - venueCost;
+    }
+    return undefined;
+  }, [moCost, moArtistAdvancedExpenses, bookingPercentageAmount, venueManagerCost]);
+
+  // Calculate cashBalanceCost (Saldo totale)
+  const cashBalanceCost = useMemo(() => {
+    const total = totalCost ?? 0;
+    const transportations = transportationsCost ?? 0;
+    const hotel = hotelCost ?? 0;
+    const restaurant = restaurantCost ?? 0;
+
+    // Only calculate if at least one value is present
+    if (
+      totalCost !== undefined ||
+      transportationsCost !== undefined ||
+      hotelCost !== undefined ||
+      restaurantCost !== undefined
+    ) {
+      return total + transportations + hotel + restaurant;
+    }
+    return undefined;
+  }, [totalCost, transportationsCost, hotelCost, restaurantCost]);
+
+  // Update the form value when calculation changes
+  useEffect(() => {
+    setValue('artistNetCost', artistNetCost);
+  }, [artistNetCost, setValue]);
+
+  useEffect(() => {
+    setValue('artistUpfrontCost', artistUpfrontCost);
+  }, [artistUpfrontCost, setValue]);
+
+  useEffect(() => {
+    setValue('cashBalanceCost', cashBalanceCost);
+  }, [cashBalanceCost, setValue]);
 
   return (
     <>
@@ -163,21 +234,6 @@ export default function EventForm({ artists, venues, moCoordinators }: EventForm
           </div>
 
           <div className='flex flex-col'>
-            <div className='text-sm font-semibold mb-2'>Assistenza</div>
-            <Input
-              type='email'
-              {...register('administrationEmail')}
-              placeholder="Inserisci l'email di assistenza"
-              className={errors.administrationEmail ? 'border-destructive text-destructive' : ''}
-            />
-            {errors.administrationEmail && (
-              <p className='text-xs text-destructive mt-2'>
-                {errors.administrationEmail.message as string}
-              </p>
-            )}
-          </div>
-
-          <div className='flex flex-col'>
             <div className='text-sm font-semibold mb-2'>Ingaggi</div>
             <Input
               type='email'
@@ -191,10 +247,6 @@ export default function EventForm({ artists, venues, moCoordinators }: EventForm
               </p>
             )}
           </div>
-
-          <Separator className='bg-zinc-200' />
-
-          <EventNotesInput />
         </TabsContent>
 
         <TabsContent
@@ -274,39 +326,18 @@ export default function EventForm({ artists, venues, moCoordinators }: EventForm
             </div>
           </div>
 
-          <div className='grid sm:grid-cols-2 gap-4'>
-            <div className='flex flex-col'>
-              <div className='text-sm font-semibold mb-2'>Numero fattura acconto</div>
-              <Input
-                {...register('depositInvoiceNumber')}
-                placeholder='Inserisci il numero fattura acconto'
-                className={errors.depositInvoiceNumber ? 'border-destructive text-destructive' : ''}
-              />
-              {errors.depositInvoiceNumber && (
-                <p className='text-xs text-destructive mt-2'>
-                  {errors.depositInvoiceNumber.message as string}
-                </p>
-              )}
-            </div>
-
-            <div className='flex flex-col'>
-              <div className='text-sm font-semibold mb-2'>Rimborso spese</div>
-              <Input
-                {...register('expenseReimbursement', {
-                  setValueAs: (v) => (v === '' ? undefined : parseFloat(v)),
-                })}
-                placeholder='Inserisci il costo rimborso spese'
-                type='number'
-                min={0}
-                step={0.01}
-                className={errors.expenseReimbursement ? 'border-destructive text-destructive' : ''}
-              />
-              {errors.expenseReimbursement && (
-                <p className='text-xs text-destructive mt-2'>
-                  {errors.expenseReimbursement.message as string}
-                </p>
-              )}
-            </div>
+          <div className='flex flex-col'>
+            <div className='text-sm font-semibold mb-2'>Numero fattura acconto</div>
+            <Input
+              {...register('depositInvoiceNumber')}
+              placeholder='Inserisci il numero fattura acconto'
+              className={errors.depositInvoiceNumber ? 'border-destructive text-destructive' : ''}
+            />
+            {errors.depositInvoiceNumber && (
+              <p className='text-xs text-destructive mt-2'>
+                {errors.depositInvoiceNumber.message as string}
+              </p>
+            )}
           </div>
 
           <div className='grid sm:grid-cols-2 gap-4'>
@@ -319,6 +350,7 @@ export default function EventForm({ artists, venues, moCoordinators }: EventForm
                 placeholder='Inserisci la percentuale booking'
                 type='number'
                 min={0}
+                max={100}
                 step={0.01}
                 className={errors.bookingPercentage ? 'border-destructive text-destructive' : ''}
               />
@@ -328,36 +360,27 @@ export default function EventForm({ artists, venues, moCoordinators }: EventForm
                 </p>
               )}
             </div>
-
             <div className='flex flex-col'>
-              <div className='text-sm font-semibold mb-2'>Fornitore</div>
-              <Input
-                {...register('supplierCost', {
-                  setValueAs: (v) => (v === '' ? undefined : parseFloat(v)),
-                })}
-                placeholder='Inserisci il costo fornitore'
-                type='number'
-                min={0}
-                step={0.01}
-                className={errors.supplierCost ? 'border-destructive text-destructive' : ''}
-              />
-              {errors.supplierCost && (
-                <p className='text-xs text-destructive mt-2'>
-                  {errors.supplierCost.message as string}
-                </p>
-              )}
+              <div className='text-sm font-semibold mb-2'>Percentuale booking in €</div>
+              <div className='h-10 flex items-center text-sm'>
+                {bookingPercentageAmount ? (
+                  <span className='truncate'>{bookingPercentageAmount.toFixed(2)} </span>
+                ) : (
+                  <span className='text-zinc-400'>
+                    Inserisci cachet lordo e percentuale booking
+                  </span>
+                )}
+              </div>
             </div>
           </div>
 
           <div className='flex flex-col'>
-            <div className='text-sm font-semibold mb-2'>
-              Spese anticipate da Milano Ovest per Artista
-            </div>
+            <div className='text-sm font-semibold mb-2'>Spese anticipate per l&apos;artista</div>
             <Input
               {...register('moArtistAdvancedExpenses', {
                 setValueAs: (v) => (v === '' ? undefined : parseFloat(v)),
               })}
-              placeholder='Inserisci il costo spese anticipate da Milano Ovest per Artista'
+              placeholder="Inserisci le spese anticipate per l'artista"
               type='number'
               min={0}
               step={0.01}
@@ -375,16 +398,15 @@ export default function EventForm({ artists, venues, moCoordinators }: EventForm
           <div className='grid sm:grid-cols-2 gap-4'>
             <div className='flex flex-col'>
               <div className='text-sm font-semibold mb-2'>Netto artista</div>
-              <Input
-                {...register('artistNetCost', {
-                  setValueAs: (v) => (v === '' ? undefined : parseFloat(v)),
-                })}
-                placeholder='Inserisci il costo netto artista'
-                type='number'
-                min={0}
-                step={0.01}
-                className={errors.artistNetCost ? 'border-destructive text-destructive' : ''}
-              />
+              <div className='h-10 flex items-center text-sm'>
+                {artistNetCost ? (
+                  <span className='truncate'>{artistNetCost?.toFixed(2) ?? ''}</span>
+                ) : (
+                  <span className='text-zinc-400'>
+                    Inserisci cachet lordo e percentuale booking
+                  </span>
+                )}
+              </div>
               {errors.artistNetCost && (
                 <p className='text-xs text-destructive mt-2'>
                   {errors.artistNetCost.message as string}
@@ -393,17 +415,16 @@ export default function EventForm({ artists, venues, moCoordinators }: EventForm
             </div>
 
             <div className='flex flex-col'>
-              <div className='text-sm font-semibold mb-2'>Anticipo artista</div>
-              <Input
-                {...register('artistUpfrontCost', {
-                  setValueAs: (v) => (v === '' ? undefined : parseFloat(v)),
-                })}
-                placeholder='Inserisci il costo anticipo artista'
-                type='number'
-                min={0}
-                step={0.01}
-                className={errors.artistUpfrontCost ? 'border-destructive text-destructive' : ''}
-              />
+              <div className='text-sm font-semibold mb-2'>Saldo</div>
+              <div className='h-10 flex items-center text-sm'>
+                {artistUpfrontCost !== undefined ? (
+                  <span className='truncate'>{artistUpfrontCost.toFixed(2)}</span>
+                ) : (
+                  <span className='text-zinc-400'>
+                    Inserisci cachet lordo, spese anticipate e fee promoter
+                  </span>
+                )}
+              </div>
               {errors.artistUpfrontCost && (
                 <p className='text-xs text-destructive mt-2'>
                   {errors.artistUpfrontCost.message as string}
@@ -411,6 +432,10 @@ export default function EventForm({ artists, venues, moCoordinators }: EventForm
               )}
             </div>
           </div>
+
+          <Separator className='bg-zinc-200' />
+
+          <EventNotesInput />
         </TabsContent>
 
         <TabsContent
@@ -508,12 +533,52 @@ export default function EventForm({ artists, venues, moCoordinators }: EventForm
 
           <div className='grid sm:grid-cols-2 gap-4'>
             <div className='flex flex-col'>
-              <div className='text-sm font-semibold mb-2'>Incasso totale</div>
+              <div className='text-sm font-semibold mb-2'>Saldo hotel</div>
+              <Input
+                {...register('hotelCost', {
+                  setValueAs: (v) => (v === '' ? undefined : parseFloat(v)),
+                })}
+                placeholder='Inserisci il saldo hotel'
+                type='number'
+                min={0}
+                step={0.01}
+                className={errors.hotelCost ? 'border-destructive text-destructive' : ''}
+              />
+              {errors.hotelCost && (
+                <p className='text-xs text-destructive mt-2'>
+                  {errors.hotelCost.message as string}
+                </p>
+              )}
+            </div>
+
+            <div className='flex flex-col'>
+              <div className='text-sm font-semibold mb-2'>Saldo ristorante</div>
+              <Input
+                {...register('restaurantCost', {
+                  setValueAs: (v) => (v === '' ? undefined : parseFloat(v)),
+                })}
+                placeholder='Inserisci il saldo ristorante'
+                type='number'
+                min={0}
+                step={0.01}
+                className={errors.restaurantCost ? 'border-destructive text-destructive' : ''}
+              />
+              {errors.restaurantCost && (
+                <p className='text-xs text-destructive mt-2'>
+                  {errors.restaurantCost.message as string}
+                </p>
+              )}
+            </div>
+          </div>
+
+          <div className='grid sm:grid-cols-2 gap-4'>
+            <div className='flex flex-col'>
+              <div className='text-sm font-semibold mb-2'>Saldo cachet</div>
               <Input
                 {...register('totalCost', {
                   setValueAs: (v) => (v === '' ? undefined : parseFloat(v)),
                 })}
-                placeholder="Inserisci l'incasso totale"
+                placeholder='Inserisci il saldo cachet'
                 type='number'
                 min={0}
                 step={0.01}
@@ -527,12 +592,12 @@ export default function EventForm({ artists, venues, moCoordinators }: EventForm
             </div>
 
             <div className='flex flex-col'>
-              <div className='text-sm font-semibold mb-2'>Saldo trasporti</div>
+              <div className='text-sm font-semibold mb-2'>Spese di trasporto</div>
               <Input
                 {...register('transportationsCost', {
                   setValueAs: (v) => (v === '' ? undefined : parseFloat(v)),
                 })}
-                placeholder='Inserisci il saldo trasporti'
+                placeholder='Inserisci le spese di trasporto'
                 type='number'
                 min={0}
                 step={0.01}
@@ -547,17 +612,14 @@ export default function EventForm({ artists, venues, moCoordinators }: EventForm
           </div>
 
           <div className='flex flex-col'>
-            <div className='text-sm font-semibold mb-2'>Saldo cassa</div>
-            <Input
-              {...register('cashBalanceCost', {
-                setValueAs: (v) => (v === '' ? undefined : parseFloat(v)),
-              })}
-              placeholder='Inserisci il saldo cassa'
-              type='number'
-              min={0}
-              step={0.01}
-              className={errors.cashBalanceCost ? 'border-destructive text-destructive' : ''}
-            />
+            <div className='text-sm font-semibold mb-2'>Saldo totale</div>
+            <div className='h-10 flex items-center text-sm'>
+              {cashBalanceCost !== undefined ? (
+                <span className='truncate'>{cashBalanceCost.toFixed(2)}</span>
+              ) : (
+                <span className='text-zinc-400'>Inserisci i valori necessari</span>
+              )}
+            </div>
             {errors.cashBalanceCost && (
               <p className='text-xs text-destructive mt-2'>
                 {errors.cashBalanceCost.message as string}
@@ -900,7 +962,7 @@ export default function EventForm({ artists, venues, moCoordinators }: EventForm
                     checked={field.value}
                     onCheckedChange={(checked) => field.onChange(checked === true)}
                   />
-                  Bordereau
+                  Borderò a carico del locale
                 </label>
               )}
             />

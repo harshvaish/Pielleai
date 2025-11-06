@@ -504,7 +504,6 @@ export type Event = {
   artistManager: ArtistManagerSelectData | null;
 
   tourManagerEmail: string | null;
-  administrationEmail: string | null;
   payrollConsultantEmail: string | null;
 
   moCost: string | null;
@@ -515,11 +514,7 @@ export type Event = {
 
   depositInvoiceNumber: string | null;
 
-  expenseReimbursement: string | null;
-
   bookingPercentage: string | null;
-
-  supplierCost: string | null;
 
   moArtistAdvancedExpenses: string | null;
 
@@ -528,7 +523,9 @@ export type Event = {
   artistUpfrontCost: string | null;
 
   hotel: string | null;
+  hotelCost: string | null;
   restaurant: string | null;
+  restaurantCost: string | null;
   eveningContact: string | null;
   moCoordinator: MoCoordinator | null;
 

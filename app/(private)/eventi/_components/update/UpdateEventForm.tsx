@@ -47,7 +47,6 @@ export default function UpdateEventForm({
       venueId: event.venue.id,
 
       tourManagerEmail: event.tourManagerEmail || '',
-      administrationEmail: event.administrationEmail || '',
       payrollConsultantEmail: event.payrollConsultantEmail || '',
       notes: event.notes.flatMap((note) => note.content) || [],
 
@@ -55,9 +54,7 @@ export default function UpdateEventForm({
       venueManagerCost: parseFloat(event.venueManagerCost || '') || undefined,
       depositCost: parseFloat(event.depositCost || '') || undefined,
       depositInvoiceNumber: event.depositInvoiceNumber || undefined,
-      expenseReimbursement: parseFloat(event.expenseReimbursement || '') || undefined,
       bookingPercentage: parseFloat(event.bookingPercentage || '') || undefined,
-      supplierCost: parseFloat(event.supplierCost || '') || undefined,
       moArtistAdvancedExpenses: parseFloat(event.moArtistAdvancedExpenses || '') || undefined,
       artistNetCost: parseFloat(event.artistNetCost || '') || undefined,
       artistUpfrontCost: parseFloat(event.artistUpfrontCost || '') || undefined,

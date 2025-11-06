@@ -193,22 +193,21 @@ export const updateEvent = async (
 
           artistManagerProfileId: artistManagerProfileId || null,
           tourManagerEmail: validation.data.tourManagerEmail || null,
-          administrationEmail: validation.data.administrationEmail || null,
           payrollConsultantEmail: validation.data.payrollConsultantEmail || null,
 
           moCost: validation.data.moCost?.toString() ?? null,
           venueManagerCost: validation.data.venueManagerCost?.toString() ?? null,
           depositCost: validation.data.depositCost?.toString() ?? null,
           depositInvoiceNumber: validation.data.depositInvoiceNumber || null,
-          expenseReimbursement: validation.data.expenseReimbursement?.toString() ?? null,
           bookingPercentage: validation.data.bookingPercentage?.toString() ?? null,
-          supplierCost: validation.data.supplierCost?.toString() ?? null,
           moArtistAdvancedExpenses: validation.data.moArtistAdvancedExpenses?.toString() ?? null,
           artistNetCost: validation.data.artistNetCost?.toString() ?? null,
           artistUpfrontCost: validation.data.artistUpfrontCost?.toString() ?? null,
 
           hotel: validation.data.hotel || null,
+          hotelCost: validation.data.hotelCost?.toString() ?? null,
           restaurant: validation.data.restaurant || null,
+          restaurantCost: validation.data.restaurantCost?.toString() ?? null,
           eveningContact: validation.data.eveningContact || null,
           moCoordinatorId: validation.data.moCoordinatorId || null,
 
