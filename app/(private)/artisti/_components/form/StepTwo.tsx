@@ -169,12 +169,12 @@ export default function StepTwo({ countries }: { countries: Country[] }) {
           htmlFor='billingAddress'
           className='block text-sm font-semibold mb-2'
         >
-          Indirizzo di fatturazione
+          Sede legale
         </label>
         <Input
           id='billingAddress'
           {...register('billingAddress')}
-          placeholder="Inserisci l'indirizzo di fatturazione"
+          placeholder='Inserisci sede legale'
           className={errors.billingAddress ? 'border-destructive text-destructive' : ''}
         />
         {errors.billingAddress && (
@@ -187,7 +187,7 @@ export default function StepTwo({ countries }: { countries: Country[] }) {
             htmlFor='billingCountryId'
             className='block text-sm font-semibold mb-2'
           >
-            Stato di fatturazione
+            Nazione
           </label>
           <Controller
             control={control}
@@ -207,7 +207,7 @@ export default function StepTwo({ countries }: { countries: Country[] }) {
                   )}
                   size='sm'
                 >
-                  {field.value?.name ?? 'seleziona stato'}
+                  {field.value?.name ?? 'seleziona nazione'}
                 </SelectTrigger>
                 <SelectContent>
                   {countries.map((country) => (

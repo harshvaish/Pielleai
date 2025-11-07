@@ -35,43 +35,32 @@ export const createVenue = async (data: VenueFormSchema): Promise<ServerActionRe
     const { countryId, subdivisionId, venueManagerId, billingCountry, billingSubdivisionId } =
       validation.data;
 
-    const [
-      countryCheck,
-      subdivisionCheck,
-      billingCountryCheck,
-      billingSubdivisionCheck,
-      venueManagerCheck,
-    ] = await Promise.all([
-      database.select({ id: countries.id }).from(countries).where(eq(countries.id, countryId)),
+    const [countryCheck, subdivisionCheck, billingCountryCheck, billingSubdivisionCheck] =
+      await Promise.all([
+        database.select({ id: countries.id }).from(countries).where(eq(countries.id, countryId)),
 
-      database
-        .select({ id: subdivisions.id, countryId: subdivisions.countryId })
-        .from(subdivisions)
-        .where(eq(subdivisions.id, subdivisionId)),
+        database
+          .select({ id: subdivisions.id, countryId: subdivisions.countryId })
+          .from(subdivisions)
+          .where(eq(subdivisions.id, subdivisionId)),
 
-      database
-        .select({ id: countries.id })
-        .from(countries)
-        .where(eq(countries.id, billingCountry.id)),
+        database
+          .select({ id: countries.id })
+          .from(countries)
+          .where(eq(countries.id, billingCountry.id)),
 
-      database
-        .select({ id: subdivisions.id, countryId: subdivisions.countryId })
-        .from(subdivisions)
-        .where(eq(subdivisions.id, billingSubdivisionId)),
-
-      database
-        .select({ id: users.id })
-        .from(profiles)
-        .innerJoin(users, eq(profiles.userId, users.id))
-        .where(and(eq(users.role, 'venue-manager'), eq(profiles.id, venueManagerId))),
-    ]);
+        database
+          .select({ id: subdivisions.id, countryId: subdivisions.countryId })
+          .from(subdivisions)
+          .where(eq(subdivisions.id, billingSubdivisionId)),
+      ]);
 
     if (countryCheck.length !== 1) {
       throw new AppError('Stato selezionato non valido.');
     }
 
     if (billingCountryCheck.length !== 1) {
-      throw new AppError('Stato di fatturazione selezionato non valido.');
+      throw new AppError('Nazione selezionata non valida.');
     }
 
     if (subdivisionCheck.length !== 1) {
@@ -87,30 +76,36 @@ export const createVenue = async (data: VenueFormSchema): Promise<ServerActionRe
     }
 
     if (billingSubdivisionCheck[0].countryId != billingCountry.id) {
-      throw new AppError(
-        'La provincia di fatturazione non appartiene allo stato di fatturazione selezionato.',
-      );
+      throw new AppError('La provincia di fatturazione non appartiene alla nazione selezionata.');
     }
 
-    if (venueManagerCheck.length !== 1) {
-      throw new AppError('Manager selezionato non valido.');
-    }
+    if (venueManagerId) {
+      const venueManagerCheck = await database
+        .select({ id: users.id })
+        .from(profiles)
+        .innerJoin(users, eq(profiles.userId, users.id))
+        .where(and(eq(users.role, 'venue-manager'), eq(profiles.id, venueManagerId)));
 
-    if (!isAdmin && venueManagerCheck[0].id != user.id) {
-      console.error('[createVenue] - Error: venueManagerId is not the current user', session);
-      throw new AppError('Non è possibile selezionare un promoter diverso da te.');
+      if (venueManagerCheck.length !== 1) {
+        throw new AppError('Manager selezionato non valido.');
+      }
+
+      if (!isAdmin && venueManagerCheck[0].id != user.id) {
+        console.error('[createVenue] - Error: venueManagerId is not the current user', session);
+        throw new AppError('Non è possibile selezionare un promoter diverso da te.');
+      }
     }
 
     const venueResult = await database
       .insert(venues)
       .values({
         status: 'active',
-        avatarUrl: validation.data.avatarUrl,
+        avatarUrl: validation.data.avatarUrl || null,
         name: validation.data.name,
-        bio: validation.data.bio,
+        bio: validation.data.bio || null,
         type: validation.data.type,
         capacity: validation.data.capacity,
-        managerProfileId: validation.data.venueManagerId,
+        managerProfileId: validation.data.venueManagerId || null,
 
         address: validation.data.address,
         countryId: validation.data.countryId,
@@ -120,20 +115,18 @@ export const createVenue = async (data: VenueFormSchema): Promise<ServerActionRe
 
         company: validation.data.company,
         taxCode: validation.data.taxCode,
-        ipiCode: validation.data.ipiCode,
+        vatCode: validation.data.vatCode,
         bicCode: validation.data.bicCode,
         abaRoutingNumber: validation.data.abaRoutingNumber,
-        iban: validation.data.iban,
         sdiRecipientCode: validation.data.sdiRecipientCode,
         billingAddress: validation.data.billingAddress,
         billingCountryId: validation.data.billingCountry.id,
         billingSubdivisionId: validation.data.billingSubdivisionId,
         billingCity: validation.data.billingCity,
         billingZipCode: validation.data.billingZipCode,
-        billingEmail: validation.data.billingEmail,
-        billingPhone: validation.data.billingPhone,
+        billingEmail: validation.data.billingEmail || null,
+        billingPhone: validation.data.billingPhone || null,
         billingPec: validation.data.billingPec,
-        taxableInvoice: validation.data.taxableInvoice === 'true',
 
         tiktokUrl: validation.data.tiktokUrl || null,
         tiktokUsername: validation.data.tiktokUsername || null,

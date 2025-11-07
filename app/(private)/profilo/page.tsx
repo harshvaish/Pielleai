@@ -25,6 +25,7 @@ import { getUserProfileIdCached } from '@/lib/cache/users';
 import BillingDataTab from '../_components/Tabs/BillingDataTab';
 import DeleteAccountTile from './_components/action-tiles/DeleteAccountTile';
 import Link from 'next/link';
+import { AVATAR_FALLBACK } from '@/lib/constants';
 
 export const dynamic = 'force-dynamic';
 
@@ -104,7 +105,7 @@ export default async function ProfilePage() {
           <div className='flex flex-col lg:flex-row lg:justify-between gap-4 lg:gap-2'>
             <div className='flex items-center gap-4'>
               <Image
-                src={userData.avatarUrl}
+                src={userData.avatarUrl || AVATAR_FALLBACK}
                 alt='Icona profilo manager artista'
                 width={60}
                 height={60}

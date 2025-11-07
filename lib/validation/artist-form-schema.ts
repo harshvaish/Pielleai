@@ -14,13 +14,19 @@ import {
   facebookUrlValidation,
   instagramUrlValidation,
   xUrlValidation,
+  avatarUrlValidation,
+  cityValidation,
+  zipCodeValidation,
+  ipiCodeValidation,
+  ibanValidation,
+  countryValidation,
+  bicCodeValidation,
+  abaRoutingNumberValidation,
+  sdiRecipientCodeValidation,
 } from './_general';
 
 export const artistS1FormSchema = z.object({
-  avatarUrl: z
-    .url('Inserisci un link valido.')
-    .refine((url) => url.startsWith(`${process.env.NEXT_PUBLIC_SUPABASE_URL}`), 'Campo non valido.')
-    .trim(),
+  avatarUrl: avatarUrlValidation,
 
   name: nameValidation,
 
@@ -48,25 +54,30 @@ export const artistS1FormSchema = z.object({
 
   languages: z.array(idValidation, 'Campo malformato').min(1, 'Campo obbligatorio.'),
 
-  address: addressValidation,
+  address: z.preprocess(
+    (val) => (typeof val === 'string' && val.trim() !== '' ? val : undefined),
+    addressValidation.optional(),
+  ),
 
-  countryId: idValidation,
+  countryId: z.preprocess(
+    (val) => (typeof val === 'number' && !isNaN(val) ? val : undefined),
+    idValidation.optional(),
+  ),
 
-  subdivisionId: idValidation,
+  subdivisionId: z.preprocess(
+    (val) => (typeof val === 'number' && !isNaN(val) ? val : undefined),
+    idValidation.optional(),
+  ),
 
-  city: z
-    .string('Campo malformato.')
-    .min(2, 'Minimo 2 caratteri.')
-    .max(100, 'Massimo 100 caratteri.')
-    .regex(/^[\p{L}\s'-]+$/u, 'Può contenere solo lettere, spazi, trattini o apostrofi.')
-    .trim(),
+  city: z.preprocess(
+    (val) => (typeof val === 'string' && val.trim() !== '' ? val : undefined),
+    cityValidation.optional(),
+  ),
 
-  zipCode: z
-    .string('Campo malformato.')
-    .min(3, 'Minimo 3 caratteri.')
-    .max(20, 'Massimo 20 caratteri.')
-    .regex(/^[A-Z0-9\- ]+$/, 'Può contenere solo lettere maiuscole, numeri, trattini o spazi.')
-    .trim(),
+  zipCode: z.preprocess(
+    (val) => (typeof val === 'string' && val.trim() !== '' ? val : undefined),
+    zipCodeValidation.optional(),
+  ),
 
   gender: profileGendersEnumValidation,
 
@@ -87,80 +98,80 @@ export type ArtistS1FormSchema = z.infer<typeof artistS1FormSchema>;
 
 export const artistS2FormSchema = z
   .object({
-    company: companyValidation,
-
-    taxCode: taxCodeValidation,
-
-    ipiCode: z
-      .string('Campo malformato.')
-      .min(9, 'Minimo 9 cifre.')
-      .max(20, 'Massimo 20 cifre.')
-      .regex(/^\d+$/, 'Può contenere solo numeri.')
-      .trim(),
-
-    bicCode: z
-      .string()
-      .min(8, 'Minimo 8 caratteri.')
-      .max(20, 'Massimo 20 caratteri.')
-      .regex(/^[A-Z0-9]+$/, 'Può contenere solo lettere maiuscole e numeri.')
-      .trim()
-      .optional(),
-
-    abaRoutingNumber: z
-      .string()
-      .min(5, 'Minimo 5 cifre.')
-      .max(12, 'Massimo 12 cifre.')
-      .regex(/^\d+$/, 'Può contenere solo numeri.')
-      .trim()
-      .optional(),
-
-    iban: z
-      .string('Campo malformato.')
-      .min(15, 'Minimo 15 caratteri.')
-      .max(50, 'Massimo 50 caratteri.')
-      .regex(/^[A-Z]{2}\d{2}[A-Z0-9]+$/, 'Può contenere solo lettere maiuscole e numeri.')
-      .trim(),
-
-    sdiRecipientCode: z
-      .string()
-      .length(7, 'Deve contenere esattamente 7 caratteri.')
-      .regex(/^[A-Z0-9]{7}$/, 'Può contenere solo lettere maiuscole e numeri.')
-      .trim()
-      .optional(),
-
-    billingAddress: addressValidation,
-
-    billingCountry: z.object(
-      {
-        id: z.number("Seleziona un'opzione valida."),
-        name: z.string("Seleziona un'opzione valida."),
-        code: z.string().length(2, "Seleziona un'opzione valida."),
-        isEu: z.boolean("Seleziona un'opzione valida."),
-      },
-      "Seleziona un'opzione valida.",
+    company: z.preprocess(
+      (val) => (typeof val === 'string' && val.trim() !== '' ? val : undefined),
+      companyValidation.optional(),
     ),
 
-    billingSubdivisionId: idValidation,
+    taxCode: z.preprocess(
+      (val) => (typeof val === 'string' && val.trim() !== '' ? val : undefined),
+      taxCodeValidation.optional(),
+    ),
 
-    billingCity: z
-      .string('Campo malformato.')
-      .min(2, 'Minimo 2 caratteri.')
-      .max(100, 'Massimo 100 caratteri.')
-      .regex(/^[\p{L}\s'-]+$/u, 'Può contenere solo lettere, spazi, trattini o apostrofi.')
-      .trim(),
+    ipiCode: z.preprocess(
+      (val) => (typeof val === 'string' && val.trim() !== '' ? val : undefined),
+      ipiCodeValidation.optional(),
+    ),
 
-    billingZipCode: z
-      .string('Campo malformato.')
-      .min(3, 'Minimo 3 caratteri.')
-      .max(20, 'Massimo 20 caratteri.')
-      .regex(/^[A-Z0-9\- ]+$/, 'Può contenere solo lettere maiuscole, numeri, trattini o spazi.')
-      .trim(),
+    bicCode: z.preprocess(
+      (val) => (typeof val === 'string' && val.trim() !== '' ? val : undefined),
+      bicCodeValidation.optional(),
+    ),
 
-    billingEmail: emailValidation,
+    abaRoutingNumber: z.preprocess(
+      (val) => (typeof val === 'string' && val.trim() !== '' ? val : undefined),
+      abaRoutingNumberValidation.optional(),
+    ),
 
-    billingPhone: phoneValidation,
+    iban: z.preprocess(
+      (val) => (typeof val === 'string' && val.trim() !== '' ? val : undefined),
+      ibanValidation.optional(),
+    ),
 
-    billingPec: emailValidation,
+    sdiRecipientCode: z.preprocess(
+      (val) => (typeof val === 'string' && val.trim() !== '' ? val : undefined),
+      sdiRecipientCodeValidation.optional(),
+    ),
+
+    billingAddress: z.preprocess(
+      (val) => (typeof val === 'string' && val.trim() !== '' ? val : undefined),
+      addressValidation.optional(),
+    ),
+
+    billingCountry: z.preprocess(
+      (val) => (typeof val === 'number' && !isNaN(val) ? val : undefined),
+      countryValidation.optional(),
+    ),
+
+    billingSubdivisionId: z.preprocess(
+      (val) => (typeof val === 'number' && !isNaN(val) ? val : undefined),
+      idValidation.optional(),
+    ),
+
+    billingCity: z.preprocess(
+      (val) => (typeof val === 'string' && val.trim() !== '' ? val : undefined),
+      cityValidation.optional(),
+    ),
+
+    billingZipCode: z.preprocess(
+      (val) => (typeof val === 'string' && val.trim() !== '' ? val : undefined),
+      zipCodeValidation.optional(),
+    ),
+
+    billingEmail: z.preprocess(
+      (val) => (typeof val === 'string' && val.trim() !== '' ? val : undefined),
+      emailValidation.optional(),
+    ),
+
+    billingPhone: z.preprocess(
+      (val) => (typeof val === 'string' && val.trim() !== '' ? val : undefined),
+      phoneValidation.optional(),
+    ),
+
+    billingPec: z.preprocess(
+      (val) => (typeof val === 'string' && val.trim() !== '' ? val : undefined),
+      emailValidation.optional(),
+    ),
 
     taxableInvoice: z
       .string('Campo malformato.')

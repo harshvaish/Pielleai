@@ -11,6 +11,7 @@ import { VenueListData, VenueManagerData } from '@/lib/types';
 import RemoveManagedVenueButton from '../RemoveManagedVenueButton';
 import VenueTypeBadge from '@/app/(private)/_components/Badges/VenueTypeBadge';
 import UserBadge from '@/app/(private)/_components/Badges/UserBadge';
+import { AVATAR_FALLBACK } from '@/lib/constants';
 
 type ManagedVenuesTabProps = { tabValue: string; data: VenueManagerData<VenueListData> };
 
@@ -25,7 +26,7 @@ export default function ManagedVenuesTab({ tabValue, data }: ManagedVenuesTabPro
             <TableRow>
               <TableHead>Nome locale</TableHead>
               <TableHead>Ragione sociale</TableHead>
-              <TableHead>Partita IVA</TableHead>
+              <TableHead>Codice fiscale</TableHead>
               <TableHead>Indirizzo</TableHead>
               <TableHead>Tipologia locale</TableHead>
               <TableHead>Capienza</TableHead>
@@ -46,7 +47,7 @@ export default function ManagedVenuesTab({ tabValue, data }: ManagedVenuesTabPro
                     <UserBadge
                       name={venue.name}
                       surname={''}
-                      avatarUrl={venue.avatarUrl}
+                      avatarUrl={venue.avatarUrl || AVATAR_FALLBACK}
                       isDisabled={isDisabled}
                       href={`/locali/${venue.slug}`}
                     />

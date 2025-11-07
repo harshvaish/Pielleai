@@ -76,5 +76,5 @@ ENHANCEMENT
 
 TODO
 
-- remove fields administrationEmail, expenseReimbursement, supplierCost from events table
-- add campi hotelCost and restaurantCost
+- remove venue image if setted
+- remove venue promoter if setted

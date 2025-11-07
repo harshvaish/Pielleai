@@ -105,7 +105,7 @@ export const createVenueManagerProfile = async (
         .insert(profiles)
         .values({
           userId: uid,
-          avatarUrl: data.avatarUrl,
+          avatarUrl: data.avatarUrl || null,
           name: data.name,
           surname: data.surname,
           phone: data.phone,

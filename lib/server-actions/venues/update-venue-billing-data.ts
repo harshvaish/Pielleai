@@ -52,7 +52,7 @@ export const updateVenueBillingData = async (
     ]);
 
     if (billingCountryCheck.length !== 1) {
-      throw new AppError('Stato di fatturazione selezionato non valido.');
+      throw new AppError('Nazione selezionata non valida.');
     }
 
     if (billingSubdivisionCheck.length !== 1) {
@@ -60,9 +60,7 @@ export const updateVenueBillingData = async (
     }
 
     if (billingSubdivisionCheck[0].countryId != billingCountry.id) {
-      throw new AppError(
-        'La provincia di fatturazione non appartiene allo stato di fatturazione selezionato.',
-      );
+      throw new AppError('La provincia di fatturazione non appartiene alla nazione selezionata.');
     }
 
     const updateResult = await database
@@ -70,20 +68,18 @@ export const updateVenueBillingData = async (
       .set({
         company: validation.data.company,
         taxCode: validation.data.taxCode,
-        ipiCode: validation.data.ipiCode,
+        vatCode: validation.data.vatCode,
         bicCode: validation.data.bicCode || null,
         abaRoutingNumber: validation.data.abaRoutingNumber || null,
-        iban: validation.data.iban,
         sdiRecipientCode: validation.data.sdiRecipientCode || null,
         billingAddress: validation.data.billingAddress,
         billingCountryId: validation.data.billingCountry.id,
         billingSubdivisionId: validation.data.billingSubdivisionId,
         billingCity: validation.data.billingCity,
         billingZipCode: validation.data.billingZipCode,
-        billingEmail: validation.data.billingEmail,
-        billingPhone: validation.data.billingPhone,
+        billingEmail: validation.data.billingEmail || null,
+        billingPhone: validation.data.billingPhone || null,
         billingPec: validation.data.billingPec,
-        taxableInvoice: validation.data.taxableInvoice === 'true',
         updatedAt: new Date(),
       })
       .where(eq(venues.id, venueId))

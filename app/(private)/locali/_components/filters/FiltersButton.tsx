@@ -140,9 +140,9 @@ export default function FiltersButton({ userRole, filters, venueManagers }: Filt
 
         <div className='grid sm:grid-cols-2 gap-4'>
           <div className='flex flex-col'>
-            <div className='text-sm font-semibold mb-2'>Partita IVA</div>
+            <div className='text-sm font-semibold mb-2'>Codice fiscale</div>
             <Input
-              placeholder='Inserisci il codice partita IVA'
+              placeholder='Inserisci il codice fiscale'
               value={taxCode}
               onChange={(e) => setTaxCode(e.target.value)}
             />

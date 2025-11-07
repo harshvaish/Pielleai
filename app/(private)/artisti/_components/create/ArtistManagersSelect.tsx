@@ -6,6 +6,7 @@ import { Select, SelectTrigger, SelectContent, SelectItem } from '@/components/u
 import { X } from 'lucide-react';
 import { ArtistManagerSelectData } from '@/lib/types';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { AVATAR_FALLBACK } from '@/lib/constants';
 
 type ArtistManagersSelectProps = {
   artistManagers: ArtistManagerSelectData[];
@@ -49,7 +50,7 @@ export default function ArtistManagersSelect({
             >
               <div className='flex items-center gap-2 flex-nowrap'>
                 <Avatar className='w-6 h-6'>
-                  <AvatarImage src={manager.avatarUrl} />
+                  <AvatarImage src={manager.avatarUrl || AVATAR_FALLBACK} />
                   <AvatarFallback>{manager.name.substring(0, 1).toUpperCase()}</AvatarFallback>
                 </Avatar>
                 {manager.name} {manager.surname}

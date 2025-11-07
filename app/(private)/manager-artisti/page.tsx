@@ -7,7 +7,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { TablePagination } from '../_components/form/TablePagination';
-import { NEW_USER_TIME } from '@/lib/constants';
+import { AVATAR_FALLBACK, NEW_USER_TIME } from '@/lib/constants';
 import FiltersButton from './_components/filters/FiltersButton';
 import { ArtistManagersTableFilters } from '@/lib/types';
 import CreateButton from './_components/create/CreateButton';
@@ -124,7 +124,7 @@ export default async function ArtistManagersPage({ searchParams }: ArtistManager
                       <UserBadge
                         name={manager.name}
                         surname={manager.surname}
-                        avatarUrl={manager.avatarUrl}
+                        avatarUrl={manager.avatarUrl || AVATAR_FALLBACK}
                         isDisabled={isDisabled}
                         href={`/manager-artisti/${manager.id}`}
                       />

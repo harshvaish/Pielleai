@@ -56,12 +56,16 @@ export const updateArtistPersonalData = async (
         .from(languagesTable)
         .where(inArray(languagesTable.id, languages)),
 
-      database.select({ id: countries.id }).from(countries).where(eq(countries.id, countryId)),
+      countryId
+        ? database.select({ id: countries.id }).from(countries).where(eq(countries.id, countryId))
+        : null,
 
-      database
-        .select({ id: subdivisions.id, countryId: subdivisions.countryId })
-        .from(subdivisions)
-        .where(eq(subdivisions.id, subdivisionId)),
+      subdivisionId
+        ? database
+            .select({ id: subdivisions.id, countryId: subdivisions.countryId })
+            .from(subdivisions)
+            .where(eq(subdivisions.id, subdivisionId))
+        : null,
 
       database.select({ id: zonesTable.id }).from(zonesTable).where(inArray(zonesTable.id, zones)),
     ]);
@@ -70,15 +74,15 @@ export const updateArtistPersonalData = async (
       throw new AppError('Una o più lingue selezionate non valide.');
     }
 
-    if (countryCheck.length !== 1) {
+    if (countryCheck && countryCheck.length !== 1) {
       throw new AppError('Stato selezionato non valido.');
     }
 
-    if (subdivisionCheck.length !== 1) {
+    if (subdivisionCheck && subdivisionCheck.length !== 1) {
       throw new AppError('Provincia selezionata non valida.');
     }
 
-    if (subdivisionCheck[0].countryId != countryId) {
+    if (subdivisionCheck && countryId && subdivisionCheck[0].countryId != countryId) {
       throw new AppError('La provincia selezionata non appartiene allo stato indicato.');
     }
 

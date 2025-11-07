@@ -73,10 +73,9 @@ export default function CreateVenueForm({
 
       company: '',
       taxCode: '',
-      ipiCode: '',
+      vatCode: '',
       bicCode: '',
       abaRoutingNumber: '',
-      iban: '',
       sdiRecipientCode: '',
       billingAddress: '',
       billingCountry: undefined,
@@ -86,7 +85,6 @@ export default function CreateVenueForm({
       billingEmail: '',
       billingPhone: '',
       billingPec: '',
-      taxableInvoice: 'false',
 
       tiktokUrl: '',
       tiktokUsername: '',

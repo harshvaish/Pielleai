@@ -39,19 +39,13 @@ export const updateVenueGeneralData = async (
 
     const { countryId, subdivisionId, venueManagerId } = validation.data;
 
-    const [countryCheck, subdivisionCheck, venueManagerCheck] = await Promise.all([
+    const [countryCheck, subdivisionCheck] = await Promise.all([
       database.select({ id: countries.id }).from(countries).where(eq(countries.id, countryId)),
 
       database
         .select({ id: subdivisions.id, countryId: subdivisions.countryId })
         .from(subdivisions)
         .where(eq(subdivisions.id, subdivisionId)),
-
-      database
-        .select({ id: profiles.id })
-        .from(profiles)
-        .innerJoin(users, eq(profiles.userId, users.id))
-        .where(and(eq(users.role, 'venue-manager'), eq(profiles.id, venueManagerId))),
     ]);
 
     if (countryCheck.length !== 1) {
@@ -66,14 +60,22 @@ export const updateVenueGeneralData = async (
       throw new AppError('La provincia selezionata non appartiene allo stato indicato.');
     }
 
-    if (venueManagerCheck.length !== 1) {
-      throw new AppError('Manager selezionato non valido.');
+    if (venueManagerId) {
+      const venueManagerCheck = await database
+        .select({ id: profiles.id })
+        .from(profiles)
+        .innerJoin(users, eq(profiles.userId, users.id))
+        .where(and(eq(users.role, 'venue-manager'), eq(profiles.id, venueManagerId)));
+
+      if (venueManagerCheck.length !== 1) {
+        throw new AppError('Manager selezionato non valido.');
+      }
     }
 
     const updateResult = await database
       .update(venues)
       .set({
-        avatarUrl: validation.data.avatarUrl,
+        avatarUrl: validation.data.avatarUrl || null,
         name: validation.data.name,
         bio: validation.data.bio,
         type: validation.data.type,
@@ -83,7 +85,7 @@ export const updateVenueGeneralData = async (
         subdivisionId: validation.data.subdivisionId,
         city: validation.data.city,
         zipCode: validation.data.zipCode,
-        managerProfileId: venueManagerId,
+        managerProfileId: venueManagerId || null,
         updatedAt: new Date(),
       })
       .where(eq(venues.id, venueId))

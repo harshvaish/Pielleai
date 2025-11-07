@@ -2,7 +2,7 @@
 
 import { database } from '@/lib/database/connection';
 import { profiles, users, venues } from '@/lib/database/schema';
-import { VenueSelectData } from '@/lib/types';
+import { VenueManagerSelectData, VenueSelectData } from '@/lib/types';
 import { and, asc, eq, inArray } from 'drizzle-orm';
 
 export async function getVenues(managerProfileId?: number): Promise<VenueSelectData[]> {
@@ -38,8 +38,8 @@ export async function getVenues(managerProfileId?: number): Promise<VenueSelectD
         },
       })
       .from(venues)
-      .innerJoin(profiles, eq(venues.managerProfileId, profiles.id))
-      .innerJoin(users, eq(profiles.userId, users.id))
+      .leftJoin(profiles, eq(venues.managerProfileId, profiles.id))
+      .leftJoin(users, eq(profiles.userId, users.id))
       .where(
         and(
           eq(venues.status, 'active'),
@@ -48,7 +48,12 @@ export async function getVenues(managerProfileId?: number): Promise<VenueSelectD
       )
       .orderBy(asc(venues.name));
 
-    return results;
+    const normalizedVenues = results.map((venue) => ({
+      ...venue,
+      manager: venue.manager?.id ? (venue.manager as VenueManagerSelectData) : null,
+    }));
+
+    return normalizedVenues;
   } catch (error) {
     console.error('[getVenues] - Error: ', error);
     throw new Error('Recupero locali non riuscito.');

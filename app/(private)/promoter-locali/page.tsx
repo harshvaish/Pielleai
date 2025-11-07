@@ -7,7 +7,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { TablePagination } from '../_components/form/TablePagination';
-import { NEW_USER_TIME } from '@/lib/constants';
+import { AVATAR_FALLBACK, NEW_USER_TIME } from '@/lib/constants';
 import CreateButton from './_components/create/CreateButton';
 import FiltersButton from './_components/filters/FiltersButton';
 import { VenueManagersTableFilters } from '@/lib/types';
@@ -122,7 +122,7 @@ export default async function VenueManagersPage({ searchParams }: VenueManagersP
                       <UserBadge
                         name={manager.name}
                         surname={manager.surname}
-                        avatarUrl={manager.avatarUrl}
+                        avatarUrl={manager.avatarUrl || AVATAR_FALLBACK}
                         isDisabled={isDisabled}
                         href={`/promoter-locali/${manager.id}`}
                       />

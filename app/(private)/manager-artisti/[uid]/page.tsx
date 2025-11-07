@@ -12,7 +12,7 @@ import ToggleBlockButton from '../../_components/ToggleBlockButton';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Ellipsis } from 'lucide-react';
 import { toZonedTime } from 'date-fns-tz';
-import { TIME_ZONE } from '@/lib/constants';
+import { AVATAR_FALLBACK, TIME_ZONE } from '@/lib/constants';
 import { getLanguagesCached } from '@/lib/cache/languages';
 import { getCountriesCached } from '@/lib/cache/countries';
 import { getArtistManagerCached } from '@/lib/cache/artist-managers';
@@ -101,7 +101,7 @@ export default async function ArtistManagerDetailPage({ params }: ArtistManagerD
           <div className='flex flex-col lg:flex-row lg:justify-between gap-4 lg:gap-2'>
             <div className='flex items-center gap-4'>
               <Image
-                src={userData.avatarUrl}
+                src={userData.avatarUrl || AVATAR_FALLBACK}
                 alt='Icona profilo manager artista'
                 width={60}
                 height={60}

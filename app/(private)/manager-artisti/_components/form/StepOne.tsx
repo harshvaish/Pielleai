@@ -28,6 +28,7 @@ export default function StepOne({
     control,
     watch,
     resetField,
+    setValue,
     formState: { errors },
   } = useFormContext<ArtistManagerS1FormSchema>();
 
@@ -82,6 +83,7 @@ export default function StepOne({
                 value={field.value}
                 onChange={field.onChange}
                 hasError={!!errors.avatarUrl}
+                onDelete={() => setValue('avatarUrl', undefined, { shouldDirty: true })}
               />
             )}
           />

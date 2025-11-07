@@ -4,9 +4,15 @@ import { PAGINATED_TABLE_ROWS_X_PAGE } from '@/lib/constants';
 import { database } from '@/lib/database/connection';
 import { profiles, users, venues } from '@/lib/database/schema';
 import { VenueManagerTableData, VenueBadgeData, VenueManagersTableFilters } from '@/lib/types';
-import { and, count, desc, eq, ilike, inArray, or } from 'drizzle-orm';
+import { and, count, desc, eq, ilike, inArray, isNotNull, or } from 'drizzle-orm';
 
-export async function getPaginatedVenueManagers({ currentPage, fullName, email, phone, venueIds }: VenueManagersTableFilters): Promise<{
+export async function getPaginatedVenueManagers({
+  currentPage,
+  fullName,
+  email,
+  phone,
+  venueIds,
+}: VenueManagersTableFilters): Promise<{
   data: VenueManagerTableData[];
   totalPages: number;
   currentPage: number;
@@ -22,9 +28,9 @@ export async function getPaginatedVenueManagers({ currentPage, fullName, email, 
       const managerResults = await database
         .select({ managerProfileId: venues.managerProfileId })
         .from(venues)
-        .where(inArray(venues.id, venueIds.map(Number)));
+        .where(and(inArray(venues.id, venueIds.map(Number)), isNotNull(venues.managerProfileId)));
 
-      venueFilteredManagerIds = [...new Set(managerResults.map((r) => r.managerProfileId))];
+      venueFilteredManagerIds = [...new Set(managerResults.map((r) => r.managerProfileId!))];
 
       if (venueFilteredManagerIds.length === 0) {
         return {
@@ -39,10 +45,12 @@ export async function getPaginatedVenueManagers({ currentPage, fullName, email, 
     const filters = and(
       eq(users.role, 'venue-manager'),
       inArray(users.status, ['active', 'disabled']),
-      fullName ? or(ilike(profiles.name, `%${fullName}%`), ilike(profiles.surname, `%${fullName}%`)) : undefined,
+      fullName
+        ? or(ilike(profiles.name, `%${fullName}%`), ilike(profiles.surname, `%${fullName}%`))
+        : undefined,
       email ? ilike(users.email, `%${email}%`) : undefined,
       phone ? ilike(profiles.phone, `%${phone}%`) : undefined,
-      venueFilteredManagerIds ? inArray(profiles.id, venueFilteredManagerIds) : undefined
+      venueFilteredManagerIds ? inArray(profiles.id, venueFilteredManagerIds) : undefined,
     );
 
     // Get paginated data
@@ -78,25 +86,36 @@ export async function getPaginatedVenueManagers({ currentPage, fullName, email, 
           name: venues.name,
         })
         .from(venues)
-        .where(inArray(venues.managerProfileId, managerProfilesIds)),
+        .where(
+          and(
+            inArray(venues.managerProfileId, managerProfilesIds),
+            isNotNull(venues.managerProfileId),
+          ),
+        ),
 
-      database.select({ userCount: count() }).from(users).innerJoin(profiles, eq(users.id, profiles.userId)).where(filters),
+      database
+        .select({ userCount: count() })
+        .from(users)
+        .innerJoin(profiles, eq(users.id, profiles.userId))
+        .where(filters),
     ]);
 
     // Group venues by managerProfileId
     const venuesByManager: Record<number, VenueBadgeData[]> = {};
 
     for (const row of venuesResult) {
-      if (!venuesByManager[row.managerId]) {
-        venuesByManager[row.managerId] = [];
+      if (row.managerId) {
+        if (!venuesByManager[row.managerId]) {
+          venuesByManager[row.managerId] = [];
+        }
+        venuesByManager[row.managerId].push({
+          id: row.id,
+          status: row.status,
+          slug: row.slug,
+          avatarUrl: row.avatarUrl,
+          name: row.name,
+        });
       }
-      venuesByManager[row.managerId].push({
-        id: row.id,
-        status: row.status,
-        slug: row.slug,
-        avatarUrl: row.avatarUrl,
-        name: row.name,
-      });
     }
 
     // Merge managers + artists

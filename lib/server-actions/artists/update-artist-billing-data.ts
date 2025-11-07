@@ -40,49 +40,55 @@ export const updateArtistBillingData = async (
     const { billingCountry, billingSubdivisionId } = validation.data;
 
     const [billingCountryCheck, billingSubdivisionCheck] = await Promise.all([
-      database
-        .select({ id: countries.id })
-        .from(countries)
-        .where(eq(countries.id, billingCountry.id)),
+      billingCountry
+        ? database
+            .select({ id: countries.id })
+            .from(countries)
+            .where(eq(countries.id, billingCountry.id))
+        : null,
 
-      database
-        .select({ id: subdivisions.id, countryId: subdivisions.countryId })
-        .from(subdivisions)
-        .where(eq(subdivisions.id, billingSubdivisionId)),
+      billingSubdivisionId
+        ? database
+            .select({ id: subdivisions.id, countryId: subdivisions.countryId })
+            .from(subdivisions)
+            .where(eq(subdivisions.id, billingSubdivisionId))
+        : null,
     ]);
 
-    if (billingCountryCheck.length !== 1) {
-      throw new AppError('Stato di fatturazione selezionato non valido.');
+    if (billingCountryCheck && billingCountryCheck.length !== 1) {
+      throw new AppError('Nazione selezionata non valida.');
     }
 
-    if (billingSubdivisionCheck.length !== 1) {
+    if (billingSubdivisionCheck && billingSubdivisionCheck.length !== 1) {
       throw new AppError('Provincia di fatturazione selezionata non valida.');
     }
 
-    if (billingSubdivisionCheck[0].countryId != billingCountry.id) {
-      throw new AppError(
-        'La provincia di fatturazione non appartiene allo stato di fatturazione selezionato.',
-      );
+    if (
+      billingSubdivisionCheck &&
+      billingCountry &&
+      billingSubdivisionCheck[0].countryId != billingCountry.id
+    ) {
+      throw new AppError('La provincia di fatturazione non appartiene alla nazione selezionata.');
     }
 
     const updateResult = await database
       .update(artists)
       .set({
-        company: validation.data.company,
-        taxCode: validation.data.taxCode,
-        ipiCode: validation.data.ipiCode,
+        company: validation.data.company || null,
+        taxCode: validation.data.taxCode || null,
+        ipiCode: validation.data.ipiCode || null,
         bicCode: validation.data.bicCode || null,
         abaRoutingNumber: validation.data.abaRoutingNumber || null,
-        iban: validation.data.iban,
+        iban: validation.data.iban || null,
         sdiRecipientCode: validation.data.sdiRecipientCode || null,
-        billingAddress: validation.data.billingAddress,
-        billingCountryId: validation.data.billingCountry.id,
-        billingSubdivisionId: validation.data.billingSubdivisionId,
-        billingCity: validation.data.billingCity,
-        billingZipCode: validation.data.billingZipCode,
-        billingEmail: validation.data.billingEmail,
-        billingPhone: validation.data.billingPhone,
-        billingPec: validation.data.billingPec,
+        billingAddress: validation.data.billingAddress || null,
+        billingCountryId: validation.data.billingCountry?.id || null,
+        billingSubdivisionId: validation.data.billingSubdivisionId || null,
+        billingCity: validation.data.billingCity || null,
+        billingZipCode: validation.data.billingZipCode || null,
+        billingEmail: validation.data.billingEmail || null,
+        billingPhone: validation.data.billingPhone || null,
+        billingPec: validation.data.billingPec || null,
         taxableInvoice: validation.data.taxableInvoice === 'true',
         updatedAt: new Date(),
       })

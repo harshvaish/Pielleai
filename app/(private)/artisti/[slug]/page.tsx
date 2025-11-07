@@ -175,10 +175,18 @@ export default async function ArtistDetailPage({ params }: ArtistDetailPageProps
             <span className='text-sm font-medium text-zinc-500'>{userData.email}</span>
             <span className='text-sm font-semibold text-zinc-600'>Numero di telefono</span>
             <span className='text-sm font-medium text-zinc-500'>{userData.phone}</span>
-            <span className='text-sm font-semibold text-zinc-600'>Indirizzo PEC</span>
-            <span className='text-sm font-medium text-zinc-500'>{userData.billingPec}</span>
-            <span className='text-sm font-semibold text-zinc-600'>Ragione sociale</span>
-            <span className='text-sm font-medium text-zinc-500'>{userData.company}</span>
+            {userData.billingPec && (
+              <>
+                <span className='text-sm font-semibold text-zinc-600'>Indirizzo PEC</span>
+                <span className='text-sm font-medium text-zinc-500'>{userData.billingPec}</span>
+              </>
+            )}
+            {userData.company && (
+              <>
+                <span className='text-sm font-semibold text-zinc-600'>Ragione sociale</span>
+                <span className='text-sm font-medium text-zinc-500'>{userData.company}</span>
+              </>
+            )}
           </div>
         </section>
 

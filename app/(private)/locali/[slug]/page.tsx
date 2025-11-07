@@ -18,6 +18,8 @@ import VenueTypeBadge from '../../_components/Badges/VenueTypeBadge';
 import UserBadge from '../../_components/Badges/UserBadge';
 import BillingDataTab from '../../_components/Tabs/BillingDataTab';
 import SocialDataTab from '../../_components/Tabs/SocialDataTab';
+import { ManagerBadgeFallback } from '../../_components/Badges/ManagersBadge';
+import { AVATAR_FALLBACK } from '@/lib/constants';
 
 type VenueDetailPageProps = { params: Promise<{ slug: string }> };
 
@@ -94,7 +96,7 @@ export default async function VenueDetailPage({ params }: VenueDetailPageProps) 
           <div className='space-y-4'>
             <div className='flex items-center gap-4'>
               <Image
-                src={venue.avatarUrl}
+                src={venue.avatarUrl || AVATAR_FALLBACK}
                 alt='Icona profilo locale'
                 width={60}
                 height={60}
@@ -124,17 +126,22 @@ export default async function VenueDetailPage({ params }: VenueDetailPageProps) 
                     />
                     <span className='text-sm text-zinc-600'>Promoter locale</span>
                   </div>
-                  <UserBadge
-                    avatarUrl={venue.manager.avatarUrl}
-                    href={`/promoter-locali/${venue.manager.id}`}
-                    name={venue.manager.name}
-                    surname={venue.manager.surname}
-                    isDisabled={venue.manager.status === 'disabled'}
-                    isSmall={true}
-                  />
+                  {venue.manager ? (
+                    <UserBadge
+                      avatarUrl={venue.manager.avatarUrl || AVATAR_FALLBACK}
+                      href={`/promoter-locali/${venue.manager.id}`}
+                      name={venue.manager.name}
+                      surname={venue.manager.surname}
+                      isDisabled={venue.manager.status === 'disabled'}
+                      isSmall={true}
+                    />
+                  ) : (
+                    <ManagerBadgeFallback />
+                  )}
                 </div>
               </div>
             </div>
+
             <div className='flex lg:hidden items-center gap-4'>
               <div className='flex items-center gap-1'>
                 <Image
@@ -147,14 +154,18 @@ export default async function VenueDetailPage({ params }: VenueDetailPageProps) 
                 />
                 <span className='text-sm text-zinc-600'>Promoter locale</span>
               </div>
-              <UserBadge
-                avatarUrl={venue.manager.avatarUrl}
-                href={`/promoter-locali/${venue.manager.id}`}
-                name={venue.manager.name}
-                surname={venue.manager.surname}
-                isDisabled={venue.manager.status === 'disabled'}
-                isSmall={true}
-              />
+              {venue.manager ? (
+                <UserBadge
+                  avatarUrl={venue.manager.avatarUrl || AVATAR_FALLBACK}
+                  href={`/promoter-locali/${venue.manager.id}`}
+                  name={venue.manager.name}
+                  surname={venue.manager.surname}
+                  isDisabled={venue.manager.status === 'disabled'}
+                  isSmall={true}
+                />
+              ) : (
+                <ManagerBadgeFallback />
+              )}
             </div>
             <div className='text-xs font-medium text-zinc-500'>{venue.bio}</div>
           </div>

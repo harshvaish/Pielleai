@@ -98,7 +98,7 @@ export const createArtistManager = async (
     }
 
     if (billingCountryCheck.length !== 1) {
-      throw new AppError('Stato di fatturazione selezionato non valido.');
+      throw new AppError('Nazione selezionata non valida.');
     }
 
     if (subdivisionCheck.length !== 1) {
@@ -114,9 +114,7 @@ export const createArtistManager = async (
     }
 
     if (billingSubdivisionCheck[0].countryId != billingCountry.id) {
-      throw new AppError(
-        'La provincia di fatturazione non appartiene allo stato di fatturazione selezionato.',
-      );
+      throw new AppError('La provincia di fatturazione non appartiene alla nazione selezionata.');
     }
 
     await database.transaction(async (tx) => {
@@ -144,7 +142,7 @@ export const createArtistManager = async (
         .insert(profiles)
         .values({
           userId: newUserId,
-          avatarUrl: data.avatarUrl,
+          avatarUrl: data.avatarUrl || null,
           name: data.name,
           surname: data.surname,
           phone: data.phone,

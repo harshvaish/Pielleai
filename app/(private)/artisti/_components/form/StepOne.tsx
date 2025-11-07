@@ -46,6 +46,7 @@ export default function StepOne({
     control,
     watch,
     resetField,
+    setValue,
     formState: { errors },
   } = useFormContext();
 
@@ -102,6 +103,7 @@ export default function StepOne({
                 value={field.value}
                 onChange={field.onChange}
                 hasError={!!errors.avatarUrl}
+                onDelete={() => setValue('avatarUrl', undefined, { shouldDirty: true })}
               />
             )}
           />
@@ -176,7 +178,10 @@ export default function StepOne({
           id='bio'
           {...register('bio')}
           placeholder='Aggiungi la biografia'
-          className='resize-none max-w-full h-full shadow-none'
+          className={cn(
+            'resize-none max-w-full h-full shadow-none',
+            errors.bio && 'border-destructive text-destructive',
+          )}
         />
         {errors.bio && (
           <p className='text-xs text-destructive mt-2'>{errors.bio.message as string}</p>

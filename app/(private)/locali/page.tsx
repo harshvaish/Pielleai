@@ -7,7 +7,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { TablePagination } from '../_components/form/TablePagination';
-import { NEW_USER_TIME } from '@/lib/constants';
+import { AVATAR_FALLBACK, NEW_USER_TIME } from '@/lib/constants';
 import { VenuesTableFilters, VenueType } from '@/lib/types';
 import FiltersButton from './_components/filters/FiltersButton';
 import CreateButton from './_components/create/CreateButton';
@@ -130,7 +130,7 @@ export default async function VenuesPage({ searchParams }: VenuesPageProps) {
               <TableRow>
                 <TableHead>Nome</TableHead>
                 <TableHead>Ragione sociale</TableHead>
-                <TableHead>Partita IVA</TableHead>
+                <TableHead>Codice fiscale</TableHead>
                 <TableHead>Indirizzo</TableHead>
                 <TableHead>Tipologia</TableHead>
                 <TableHead>Promoter</TableHead>
@@ -157,7 +157,7 @@ export default async function VenuesPage({ searchParams }: VenuesPageProps) {
                         <UserBadge
                           name={venue.name}
                           surname={''}
-                          avatarUrl={venue.avatarUrl}
+                          avatarUrl={venue.avatarUrl || AVATAR_FALLBACK}
                           isDisabled={isDisabled}
                           href={`/locali/${venue.slug}`}
                         />
@@ -173,7 +173,7 @@ export default async function VenuesPage({ searchParams }: VenuesPageProps) {
                     <TableCell>
                       <ManagersBadge
                         userRole={user.role}
-                        managers={[venue.manager]}
+                        managers={venue.manager ? [venue.manager] : []}
                         pathSegment='promoter-locali'
                       />
                     </TableCell>

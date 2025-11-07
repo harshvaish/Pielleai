@@ -10,18 +10,24 @@ import {
   isValidImageMagicNumber,
 } from '@/lib/utils';
 import { avatarUploadSchema } from '@/lib/validation/avatar-upload-schema';
-import { Plus, UserRound } from 'lucide-react';
+import { Plus, UserRound, X } from 'lucide-react';
 import Image from 'next/image';
 import React, { useEffect, useRef, useState, useTransition } from 'react';
 import { toast } from 'sonner';
 
 type AvatarUploadInputProps = {
-  value?: string;
-  onChange: (newValue: string) => void;
+  value?: string | undefined;
+  onChange: (newValue: string | undefined) => void;
   hasError: boolean;
+  onDelete: () => void;
 };
 
-export default function AvatarUploadInput({ value, onChange, hasError }: AvatarUploadInputProps) {
+export default function AvatarUploadInput({
+  value,
+  onChange,
+  hasError,
+  onDelete,
+}: AvatarUploadInputProps) {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [preview, setPreview] = useState<string | null>(value ?? null);
   const [isPending, startTransition] = useTransition();
@@ -95,6 +101,15 @@ export default function AvatarUploadInput({ value, onChange, hasError }: AvatarU
     setPreview(url);
   };
 
+  const handleDelete = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onDelete();
+    setPreview(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
   useEffect(() => {
     if (value) {
       setPreview(value);
@@ -132,9 +147,25 @@ export default function AvatarUploadInput({ value, onChange, hasError }: AvatarU
         ) : (
           <UserRound className='size-8 text-zinc-400' />
         )}
-        <div className='absolute -bottom-1 right-0 w-6 h-6 flex justify-center items-center bg-emerald-600 text-white rounded-full transition-transform group-hover:scale-105'>
-          <Plus className='size-4' />
-        </div>
+
+        {/* Upload button - only show when no image */}
+        {!preview && (
+          <div className='absolute -bottom-1 right-0 w-6 h-6 flex justify-center items-center bg-emerald-600 text-white rounded-full transition-transform group-hover:scale-105'>
+            <Plus className='size-4' />
+          </div>
+        )}
+
+        {/* Delete button - only show when image exists */}
+        {preview && !isPending && (
+          <button
+            type='button'
+            onClick={handleDelete}
+            className='absolute -top-1 -right-1 w-6 h-6 flex justify-center items-center bg-destructive text-white rounded-full transition-transform hover:scale-110 z-10'
+            aria-label='Rimuovi immagine'
+          >
+            <X className='size-4' />
+          </button>
+        )}
       </div>
     </>
   );

@@ -24,10 +24,9 @@ export default function BillingDataForm({
     () => ({
       company: venueData.company || '',
       taxCode: venueData.taxCode || '',
-      ipiCode: venueData.ipiCode || '',
+      vatCode: venueData.vatCode || '',
       bicCode: venueData.bicCode || undefined,
       abaRoutingNumber: venueData.abaRoutingNumber || undefined,
-      iban: venueData.iban || '',
       sdiRecipientCode: venueData.sdiRecipientCode || undefined,
       billingAddress: venueData.billingAddress || '',
       billingCountry: venueData.billingCountry || 0,
@@ -37,7 +36,6 @@ export default function BillingDataForm({
       billingEmail: venueData.billingEmail || '',
       billingPhone: venueData.billingPhone || '',
       billingPec: venueData.billingPec || '',
-      taxableInvoice: venueData.taxableInvoice.toString() || 'false',
     }),
     [venueData],
   );

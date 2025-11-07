@@ -30,19 +30,19 @@ export default function PersonalDataTab({ tabValue, data, userRole }: PersonalDa
           <span className='text-sm font-medium text-zinc-500'>{data.birthPlace}</span>
 
           <span className='text-sm font-semibold text-zinc-600'>Indirizzo di residenza</span>
-          <span className='text-sm font-medium text-zinc-500'>{data.address}</span>
+          <span className='text-sm font-medium text-zinc-500'>{data.address || '-'}</span>
 
           <span className='text-sm font-semibold text-zinc-600'>CAP</span>
-          <span className='text-sm font-medium text-zinc-500'>{data.zipCode}</span>
+          <span className='text-sm font-medium text-zinc-500'>{data.zipCode || '-'}</span>
 
           <span className='text-sm font-semibold text-zinc-600'>Comune</span>
-          <span className='text-sm font-medium text-zinc-500'>{data.city}</span>
+          <span className='text-sm font-medium text-zinc-500'>{data.city || '-'}</span>
 
           <span className='text-sm font-semibold text-zinc-600'>Provincia</span>
-          <span className='text-sm font-medium text-zinc-500'>{data.subdivision.name}</span>
+          <span className='text-sm font-medium text-zinc-500'>{data.subdivision?.name || '-'}</span>
 
           <span className='text-sm font-semibold text-zinc-600'>Stato</span>
-          <span className='text-sm font-medium text-zinc-500'>{data.country.name}</span>
+          <span className='text-sm font-medium text-zinc-500'>{data.country?.name || '-'}</span>
 
           <span className='text-sm font-semibold text-zinc-600'>Sesso</span>
           <span className='text-sm font-medium text-zinc-500'>{GENDERS_LABELS[data.gender]}</span>

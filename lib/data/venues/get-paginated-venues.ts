@@ -3,7 +3,7 @@
 import { PAGINATED_TABLE_ROWS_X_PAGE } from '@/lib/constants';
 import { database } from '@/lib/database/connection';
 import { profiles, users, venues } from '@/lib/database/schema';
-import { VenuesTableFilters, VenueTableData } from '@/lib/types';
+import { VenueManagerSelectData, VenuesTableFilters, VenueTableData } from '@/lib/types';
 import { and, count, desc, eq, gte, ilike, inArray } from 'drizzle-orm';
 
 export async function getPaginatedVenues({
@@ -86,8 +86,8 @@ export async function getPaginatedVenues({
           xUrl: venues.xUrl,
         })
         .from(venues)
-        .innerJoin(profiles, eq(venues.managerProfileId, profiles.id))
-        .innerJoin(users, eq(profiles.userId, users.id))
+        .leftJoin(profiles, eq(venues.managerProfileId, profiles.id))
+        .leftJoin(users, eq(profiles.userId, users.id))
         .where(filters)
         .orderBy(desc(venues.createdAt))
         .limit(limit)
@@ -95,10 +95,16 @@ export async function getPaginatedVenues({
       database.select({ venueCount: count() }).from(venues).where(filters),
     ]);
 
+    // Nullify manager if not present
+    const nomarlizedVenues = venuesResult.map((venue) => ({
+      ...venue,
+      manager: venue.manager?.id ? (venue.manager as VenueManagerSelectData) : null,
+    }));
+
     const totalPages = Math.ceil(Number(venueCount) / limit);
 
     return {
-      data: venuesResult,
+      data: nomarlizedVenues,
       totalPages,
       currentPage,
     };

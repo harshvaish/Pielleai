@@ -12,13 +12,17 @@ import {
   instagramUrlValidation,
   venueTypesEnumValidation,
   xUrlValidation,
+  vatCodeValidation,
+  avatarUrlValidation,
+  cityValidation,
+  zipCodeValidation,
+  bicCodeValidation,
+  abaRoutingNumberValidation,
+  sdiRecipientCodeValidation,
 } from './_general';
 
 export const venueS1FormSchema = z.object({
-  avatarUrl: z
-    .url('Inserisci un link valido.')
-    .refine((url) => url.startsWith(`${process.env.NEXT_PUBLIC_SUPABASE_URL}`), 'Campo non valido.')
-    .trim(),
+  avatarUrl: avatarUrlValidation.optional(),
 
   name: z
     .string('Campo malformato.')
@@ -26,7 +30,10 @@ export const venueS1FormSchema = z.object({
     .max(100, 'Massimo 100 caratteri.')
     .trim(),
 
-  bio: bioValidation,
+  bio: z.preprocess(
+    (val) => (typeof val === 'string' && val.trim() !== '' ? val : undefined),
+    bioValidation.optional(),
+  ),
 
   type: venueTypesEnumValidation,
 
@@ -41,21 +48,14 @@ export const venueS1FormSchema = z.object({
 
   subdivisionId: idValidation,
 
-  city: z
-    .string('Campo malformato.')
-    .min(2, 'Minimo 2 caratteri.')
-    .max(100, 'Massimo 100 caratteri.')
-    .regex(/^[\p{L}\s'-]+$/u, 'Può contenere solo lettere, spazi, trattini o apostrofi.')
-    .trim(),
+  city: cityValidation,
 
-  zipCode: z
-    .string('Campo malformato.')
-    .min(3, 'Minimo 3 caratteri.')
-    .max(20, 'Massimo 20 caratteri.')
-    .regex(/^[A-Z0-9\- ]+$/, 'Può contenere solo lettere maiuscole, numeri, trattini o spazi.')
-    .trim(),
+  zipCode: zipCodeValidation,
 
-  venueManagerId: idValidation,
+  venueManagerId: z.preprocess(
+    (val) => (typeof val === 'number' && !isNaN(val) ? val : undefined),
+    idValidation.optional(),
+  ),
 });
 
 export type VenueS1FormSchema = z.infer<typeof venueS1FormSchema>;
@@ -66,42 +66,13 @@ export const venueS2FormSchema = z
 
     taxCode: taxCodeValidation,
 
-    ipiCode: z
-      .string('Campo malformato.')
-      .min(9, 'Minimo 9 cifre.')
-      .max(20, 'Massimo 20 cifre.')
-      .regex(/^\d+$/, 'Può contenere solo numeri.')
-      .trim(),
+    vatCode: vatCodeValidation,
 
-    bicCode: z
-      .string()
-      .min(8, 'Minimo 8 caratteri.')
-      .max(20, 'Massimo 20 caratteri.')
-      .regex(/^[A-Z0-9]+$/, 'Può contenere solo lettere maiuscole e numeri.')
-      .trim()
-      .optional(),
+    bicCode: bicCodeValidation.optional(),
 
-    abaRoutingNumber: z
-      .string()
-      .min(5, 'Minimo 5 cifre.')
-      .max(12, 'Massimo 12 cifre.')
-      .regex(/^\d+$/, 'Può contenere solo numeri.')
-      .trim()
-      .optional(),
+    abaRoutingNumber: abaRoutingNumberValidation.optional(),
 
-    iban: z
-      .string('Campo malformato.')
-      .min(15, 'Minimo 15 caratteri.')
-      .max(50, 'Massimo 50 caratteri.')
-      .regex(/^[A-Z]{2}\d{2}[A-Z0-9]+$/, 'Può contenere solo lettere maiuscole e numeri.')
-      .trim(),
-
-    sdiRecipientCode: z
-      .string()
-      .length(7, 'Deve contenere esattamente 7 caratteri.')
-      .regex(/^[A-Z0-9]{7}$/, 'Può contenere solo lettere maiuscole e numeri.')
-      .trim()
-      .optional(),
+    sdiRecipientCode: sdiRecipientCodeValidation.optional(),
 
     billingAddress: addressValidation,
 
@@ -131,17 +102,17 @@ export const venueS2FormSchema = z
       .regex(/^[A-Z0-9\- ]+$/, 'Può contenere solo lettere maiuscole, numeri, trattini o spazi.')
       .trim(),
 
-    billingEmail: emailValidation,
+    billingEmail: z.preprocess(
+      (val) => (typeof val === 'string' && val.trim() !== '' ? val : undefined),
+      emailValidation.optional(),
+    ),
 
-    billingPhone: phoneValidation,
+    billingPhone: z.preprocess(
+      (val) => (typeof val === 'string' && val.trim() !== '' ? val : undefined),
+      phoneValidation.optional(),
+    ),
 
     billingPec: emailValidation,
-
-    taxableInvoice: z
-      .string('Campo malformato.')
-      .refine((val) => val === 'true' || val === 'false', {
-        message: "Seleziona un'opzione valida",
-      }),
   })
   .check((ctx) => {
     const { billingCountry, bicCode, abaRoutingNumber, sdiRecipientCode } = ctx.value;

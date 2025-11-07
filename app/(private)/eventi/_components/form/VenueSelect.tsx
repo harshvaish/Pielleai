@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils';
 import { VenueSelectData } from '@/lib/types';
 import Image from 'next/image';
 import { EventFormSchema } from '@/lib/validation/event-form-schema';
+import { AVATAR_FALLBACK } from '@/lib/constants';
 
 type VenueSelectProps = { venues: VenueSelectData[] };
 
@@ -42,7 +43,7 @@ export default function VenueSelect({ venues }: VenueSelectProps) {
               >
                 <div className='flex items-center gap-2 flex-nowrap'>
                   <Image
-                    src={venue.avatarUrl}
+                    src={venue.avatarUrl || AVATAR_FALLBACK}
                     alt='Immagine profilo locale'
                     height={24}
                     width={24}

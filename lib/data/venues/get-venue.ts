@@ -2,7 +2,7 @@
 
 import { database } from '@/lib/database/connection';
 import { countries, subdivisions, profiles, venues, users } from '@/lib/database/schema';
-import { VenueData } from '@/lib/types';
+import { VenueData, VenueManagerSelectData } from '@/lib/types';
 import { eq } from 'drizzle-orm';
 import { alias } from 'drizzle-orm/pg-core';
 
@@ -53,10 +53,9 @@ export async function getVenue(slug: string): Promise<VenueData | null> {
 
         company: venues.company,
         taxCode: venues.taxCode,
-        ipiCode: venues.ipiCode,
+        vatCode: venues.vatCode,
         bicCode: venues.bicCode,
         abaRoutingNumber: venues.abaRoutingNumber,
-        iban: venues.iban,
         sdiRecipientCode: venues.sdiRecipientCode,
         billingAddress: venues.billingAddress,
         billingCountry: {
@@ -74,7 +73,6 @@ export async function getVenue(slug: string): Promise<VenueData | null> {
         billingEmail: venues.billingEmail,
         billingPhone: venues.billingPhone,
         billingPec: venues.billingPec,
-        taxableInvoice: venues.taxableInvoice,
 
         tiktokUrl: venues.tiktokUrl,
         tiktokUsername: venues.tiktokUsername,
@@ -97,8 +95,8 @@ export async function getVenue(slug: string): Promise<VenueData | null> {
         xCreatedAt: venues.xCreatedAt,
       })
       .from(venues)
-      .innerJoin(profiles, eq(venues.managerProfileId, profiles.id))
-      .innerJoin(users, eq(profiles.userId, users.id))
+      .leftJoin(profiles, eq(venues.managerProfileId, profiles.id))
+      .leftJoin(users, eq(profiles.userId, users.id))
       .innerJoin(country, eq(venues.countryId, country.id))
       .innerJoin(subdivision, eq(venues.subdivisionId, subdivision.id))
       .innerJoin(billingCountry, eq(venues.billingCountryId, billingCountry.id))
@@ -108,7 +106,14 @@ export async function getVenue(slug: string): Promise<VenueData | null> {
 
     if (!venueResult.length) return null;
 
-    return venueResult[0];
+    const normalizedVenue = {
+      ...venueResult[0],
+      manager: venueResult[0].manager?.id
+        ? (venueResult[0].manager as VenueManagerSelectData)
+        : null,
+    };
+
+    return normalizedVenue;
   } catch (error) {
     console.error('[getVenue] - Error:', error);
     throw new Error('Recupero dati locale non riuscito.');

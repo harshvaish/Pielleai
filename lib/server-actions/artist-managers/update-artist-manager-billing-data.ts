@@ -58,7 +58,7 @@ export const updateArtistManagerBillingData = async (
     ]);
 
     if (billingCountryCheck.length !== 1) {
-      throw new AppError('Stato di fatturazione selezionato non valido.');
+      throw new AppError('Nazione selezionata non valida.');
     }
 
     if (billingSubdivisionCheck.length !== 1) {
@@ -66,9 +66,7 @@ export const updateArtistManagerBillingData = async (
     }
 
     if (billingSubdivisionCheck[0].countryId != billingCountry.id) {
-      throw new AppError(
-        'La provincia di fatturazione non appartiene allo stato di fatturazione selezionato.',
-      );
+      throw new AppError('La provincia di fatturazione non appartiene alla nazione selezionata.');
     }
 
     const updateResult = await database

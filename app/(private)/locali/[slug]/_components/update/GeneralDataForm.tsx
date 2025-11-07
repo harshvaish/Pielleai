@@ -32,7 +32,7 @@ export default function GeneralDataForm({
 
   const defaultValues = useMemo(
     () => ({
-      avatarUrl: venueData.avatarUrl || '',
+      avatarUrl: venueData.avatarUrl || undefined,
       name: venueData.name || '',
       bio: venueData.bio || '',
       type: venueData.type || 'small',
@@ -42,7 +42,7 @@ export default function GeneralDataForm({
       subdivisionId: venueData.subdivision.id || 0,
       city: venueData.city || '',
       zipCode: venueData.zipCode || '',
-      venueManagerId: venueData.manager.profileId || 0,
+      venueManagerId: venueData.manager?.profileId || undefined,
       acceptTerms: true,
     }),
     [venueData],

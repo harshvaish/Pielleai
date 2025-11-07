@@ -67,22 +67,30 @@ export const createArtist = async (data: ArtistFormSchema): Promise<ServerAction
         .from(languagesTable)
         .where(inArray(languagesTable.id, languages)),
 
-      database.select({ id: countries.id }).from(countries).where(eq(countries.id, countryId)),
+      countryId
+        ? database.select({ id: countries.id }).from(countries).where(eq(countries.id, countryId))
+        : null,
 
-      database
-        .select({ id: subdivisions.id, countryId: subdivisions.countryId })
-        .from(subdivisions)
-        .where(eq(subdivisions.id, subdivisionId)),
+      subdivisionId
+        ? database
+            .select({ id: subdivisions.id, countryId: subdivisions.countryId })
+            .from(subdivisions)
+            .where(eq(subdivisions.id, subdivisionId))
+        : null,
 
-      database
-        .select({ id: countries.id })
-        .from(countries)
-        .where(eq(countries.id, billingCountry.id)),
+      billingCountry
+        ? database
+            .select({ id: countries.id })
+            .from(countries)
+            .where(eq(countries.id, billingCountry.id))
+        : null,
 
-      database
-        .select({ id: subdivisions.id, countryId: subdivisions.countryId })
-        .from(subdivisions)
-        .where(eq(subdivisions.id, billingSubdivisionId)),
+      billingSubdivisionId
+        ? database
+            .select({ id: subdivisions.id, countryId: subdivisions.countryId })
+            .from(subdivisions)
+            .where(eq(subdivisions.id, billingSubdivisionId))
+        : null,
 
       database.select({ id: zonesTable.id }).from(zonesTable).where(inArray(zonesTable.id, zones)),
     ]);
@@ -91,30 +99,32 @@ export const createArtist = async (data: ArtistFormSchema): Promise<ServerAction
       throw new AppError('Una o più lingue selezionate non valide.');
     }
 
-    if (countryCheck.length !== 1) {
+    if (countryCheck && countryCheck.length !== 1) {
       throw new AppError('Stato selezionato non valido.');
     }
 
-    if (billingCountryCheck.length !== 1) {
-      throw new AppError('Stato di fatturazione selezionato non valido.');
-    }
-
-    if (subdivisionCheck.length !== 1) {
+    if (subdivisionCheck && subdivisionCheck.length !== 1) {
       throw new AppError('Provincia selezionata non valida.');
     }
 
-    if (billingSubdivisionCheck.length !== 1) {
-      throw new AppError('Provincia di fatturazione selezionata non valida.');
-    }
-
-    if (subdivisionCheck[0].countryId != countryId) {
+    if (subdivisionCheck && countryId && subdivisionCheck[0].countryId != countryId) {
       throw new AppError('La provincia selezionata non appartiene allo stato indicato');
     }
 
-    if (billingSubdivisionCheck[0].countryId != billingCountry.id) {
-      throw new AppError(
-        'La provincia di fatturazione non appartiene allo stato di fatturazione selezionato.',
-      );
+    if (billingCountryCheck && billingCountryCheck.length !== 1) {
+      throw new AppError('Nazione selezionata non valida.');
+    }
+
+    if (billingSubdivisionCheck && billingSubdivisionCheck.length !== 1) {
+      throw new AppError('Provincia di fatturazione selezionata non valida.');
+    }
+
+    if (
+      billingSubdivisionCheck &&
+      billingCountry &&
+      billingSubdivisionCheck[0].countryId != billingCountry.id
+    ) {
+      throw new AppError('La provincia di fatturazione non appartiene alla nazione selezionata.');
     }
 
     if (zonesCheck.length !== zones.length) {
@@ -153,31 +163,31 @@ export const createArtist = async (data: ArtistFormSchema): Promise<ServerAction
           birthDate: validation.data.birthDate,
           birthPlace: validation.data.birthPlace,
           gender: validation.data.gender,
-          address: validation.data.address,
-          countryId: validation.data.countryId,
-          subdivisionId: validation.data.subdivisionId,
-          city: validation.data.city,
-          zipCode: validation.data.zipCode,
+          address: validation.data.address || null,
+          countryId: validation.data.countryId || null,
+          subdivisionId: validation.data.subdivisionId || null,
+          city: validation.data.city || null,
+          zipCode: validation.data.zipCode || null,
           tourManagerName: validation.data.tourManagerName,
           tourManagerSurname: validation.data.tourManagerSurname,
           tourManagerEmail: validation.data.tourManagerEmail,
           tourManagerPhone: validation.data.tourManagerPhone,
 
-          company: validation.data.company,
-          taxCode: validation.data.taxCode,
-          ipiCode: validation.data.ipiCode,
-          bicCode: validation.data.bicCode,
-          abaRoutingNumber: validation.data.abaRoutingNumber,
-          iban: validation.data.iban,
-          sdiRecipientCode: validation.data.sdiRecipientCode,
-          billingAddress: validation.data.billingAddress,
-          billingCountryId: validation.data.billingCountry.id,
-          billingSubdivisionId: validation.data.billingSubdivisionId,
-          billingCity: validation.data.billingCity,
-          billingZipCode: validation.data.billingZipCode,
-          billingEmail: validation.data.billingEmail,
-          billingPhone: validation.data.billingPhone,
-          billingPec: validation.data.billingPec,
+          company: validation.data.company || null,
+          taxCode: validation.data.taxCode || null,
+          ipiCode: validation.data.ipiCode || null,
+          bicCode: validation.data.bicCode || null,
+          abaRoutingNumber: validation.data.abaRoutingNumber || null,
+          iban: validation.data.iban || null,
+          sdiRecipientCode: validation.data.sdiRecipientCode || null,
+          billingAddress: validation.data.billingAddress || null,
+          billingCountryId: validation.data.billingCountry?.id || null,
+          billingSubdivisionId: validation.data.billingSubdivisionId || null,
+          billingCity: validation.data.billingCity || null,
+          billingZipCode: validation.data.billingZipCode || null,
+          billingEmail: validation.data.billingEmail || null,
+          billingPhone: validation.data.billingPhone || null,
+          billingPec: validation.data.billingPec || null,
           taxableInvoice: validation.data.taxableInvoice === 'true',
 
           tiktokUrl: validation.data.tiktokUrl || null,

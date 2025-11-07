@@ -6,6 +6,7 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { AVATAR_FALLBACK } from '@/lib/constants';
 import { ArtistManagerSelectData, UserRole, VenueManagerSelectData } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { ChevronDown } from 'lucide-react';
@@ -23,19 +24,7 @@ export default function ManagersBadge({ userRole, managers, pathSegment }: Manag
   const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
   const count = managers.length;
 
-  if (!count)
-    return (
-      <div className='w-max flex flex-nowrap items-center gap-2 p-2'>
-        <Image
-          src='/images/icon-black.svg'
-          alt='icona Milano Ovest'
-          width={20}
-          height={20}
-          className='w-5 h-5'
-        />
-        <span className='text-xs font-semibold'>Milano Ovest</span>
-      </div>
-    );
+  if (!count) return <ManagerBadgeFallback />;
 
   if (count === 1) {
     const manager = managers[0];
@@ -61,7 +50,7 @@ export default function ManagersBadge({ userRole, managers, pathSegment }: Manag
                 key={index}
                 className='w-5 h-5'
               >
-                <AvatarImage src={manager.avatarUrl} />
+                <AvatarImage src={manager.avatarUrl || AVATAR_FALLBACK} />
                 <AvatarFallback>{manager.name.substring(0, 1).toUpperCase()}</AvatarFallback>
               </Avatar>
             );
@@ -113,7 +102,7 @@ function ManagerBadge({
     >
       <Avatar className='w-5 h-5'>
         <AvatarImage
-          src={manager.avatarUrl}
+          src={manager.avatarUrl || AVATAR_FALLBACK}
           className={isDisabled ? 'grayscale' : ''}
         />
         <AvatarFallback>{manager.name.substring(0, 1).toUpperCase()}</AvatarFallback>
@@ -130,5 +119,20 @@ function ManagerBadge({
         </div>
       </div>
     </Link>
+  );
+}
+
+export function ManagerBadgeFallback() {
+  return (
+    <div className='w-max flex flex-nowrap items-center gap-2 p-2'>
+      <Image
+        src={AVATAR_FALLBACK}
+        alt='icona Milano Ovest'
+        width={20}
+        height={20}
+        className='w-5 h-5'
+      />
+      <span className='text-xs font-semibold'>Milano Ovest</span>
+    </div>
   );
 }

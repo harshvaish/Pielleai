@@ -85,7 +85,7 @@ export const updateArtistManagerPersonalData = async (
       const updateResult = await tx
         .update(profiles)
         .set({
-          avatarUrl: data.avatarUrl,
+          avatarUrl: data.avatarUrl || null,
           name: data.name,
           surname: data.surname,
           phone: data.phone,

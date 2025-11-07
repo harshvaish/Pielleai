@@ -9,13 +9,19 @@ import {
   phoneValidation,
   taxCodeValidation,
   profileGendersEnumValidation,
+  avatarUrlValidation,
+  cityValidation,
+  zipCodeValidation,
+  ipiCodeValidation,
+  ibanValidation,
+  countryValidation,
+  bicCodeValidation,
+  abaRoutingNumberValidation,
+  sdiRecipientCodeValidation,
 } from './_general';
 
 export const artistManagerS1FormSchema = z.object({
-  avatarUrl: z
-    .url('Campo obbligatorio.')
-    .refine((url) => url.startsWith(`${process.env.NEXT_PUBLIC_SUPABASE_URL}`), 'Campo non valido.')
-    .trim(),
+  avatarUrl: avatarUrlValidation.optional(),
 
   name: nameValidation,
 
@@ -39,19 +45,9 @@ export const artistManagerS1FormSchema = z.object({
 
   subdivisionId: idValidation,
 
-  city: z
-    .string('Campo malformato.')
-    .min(2, 'Minimo 2 caratteri.')
-    .max(100, 'Massimo 100 caratteri.')
-    .regex(/^[\p{L}\s'-]+$/u, 'Può contenere solo lettere, spazi, trattini o apostrofi.')
-    .trim(),
+  city: cityValidation,
 
-  zipCode: z
-    .string('Campo malformato.')
-    .min(3, 'Minimo 3 caratteri.')
-    .max(20, 'Massimo 20 caratteri.')
-    .regex(/^[A-Z0-9\- ]+$/, 'Può contenere solo lettere maiuscole, numeri, trattini o spazi.')
-    .trim(),
+  zipCode: zipCodeValidation,
 
   gender: profileGendersEnumValidation,
 });
@@ -64,54 +60,19 @@ export const artistManagerS2FormSchema = z
 
     taxCode: taxCodeValidation,
 
-    ipiCode: z
-      .string('Campo malformato.')
-      .min(9, 'Minimo 9 cifre.')
-      .max(20, 'Massimo 20 cifre.')
-      .regex(/^\d+$/, 'Può contenere solo numeri.')
-      .trim(),
+    ipiCode: ipiCodeValidation,
 
-    bicCode: z
-      .string()
-      .min(8, 'Minimo 8 caratteri.')
-      .max(20, 'Massimo 20 caratteri.')
-      .regex(/^[A-Z0-9]+$/, 'Può contenere solo lettere maiuscole e numeri.')
-      .trim()
-      .optional(),
+    bicCode: bicCodeValidation.optional(),
 
-    abaRoutingNumber: z
-      .string()
-      .min(5, 'Minimo 5 cifre.')
-      .max(12, 'Massimo 12 cifre.')
-      .regex(/^\d+$/, 'Può contenere solo numeri.')
-      .trim()
-      .optional(),
+    abaRoutingNumber: abaRoutingNumberValidation.optional(),
 
-    iban: z
-      .string('Campo malformato.')
-      .min(15, 'Minimo 15 caratteri.')
-      .max(50, 'Massimo 50 caratteri.')
-      .regex(/^[A-Z]{2}\d{2}[A-Z0-9]+$/, 'Può contenere solo lettere maiuscole e numeri.')
-      .trim(),
+    iban: ibanValidation,
 
-    sdiRecipientCode: z
-      .string()
-      .length(7, 'Deve contenere esattamente 7 caratteri.')
-      .regex(/^[A-Z0-9]{7}$/, 'Può contenere solo lettere maiuscole e numeri.')
-      .trim()
-      .optional(),
+    sdiRecipientCode: sdiRecipientCodeValidation.optional(),
 
     billingAddress: addressValidation,
 
-    billingCountry: z.object(
-      {
-        id: z.number("Seleziona un'opzione valida."),
-        name: z.string("Seleziona un'opzione valida."),
-        code: z.string().length(2, "Seleziona un'opzione valida."),
-        isEu: z.boolean("Seleziona un'opzione valida."),
-      },
-      "Seleziona un'opzione valida.",
-    ),
+    billingCountry: countryValidation,
 
     billingSubdivisionId: idValidation,
 

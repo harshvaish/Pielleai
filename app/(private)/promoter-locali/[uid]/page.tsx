@@ -20,6 +20,7 @@ import getSession from '@/lib/data/auth/get-session';
 import { getUserProfileIdCached } from '@/lib/cache/users';
 import StatusBadge from '../../_components/Badges/StatusBadge';
 import NotesSection from '../../_components/Notes/NotesSection';
+import { AVATAR_FALLBACK } from '@/lib/constants';
 
 type VenueManagerDetailPageProps = { params: Promise<{ uid: string }> };
 
@@ -98,7 +99,7 @@ export default async function VenueManagerDetailPage({ params }: VenueManagerDet
           <div className='flex flex-col lg:flex-row lg:justify-between gap-4 lg:gap-2'>
             <div className='flex items-center gap-4'>
               <Image
-                src={userData.avatarUrl}
+                src={userData.avatarUrl || AVATAR_FALLBACK}
                 alt='Icona profilo promoter locali'
                 width={60}
                 height={60}

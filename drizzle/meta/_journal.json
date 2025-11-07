@@ -5,43 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1751031332600,
-      "tag": "0000_broken_johnny_blaze",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1751043513992,
-      "tag": "0001_high_darkhawk",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1751044261446,
-      "tag": "0002_bent_warlock",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "7",
-      "when": 1751044608308,
-      "tag": "0003_famous_phil_sheldon",
-      "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "7",
-      "when": 1760179477977,
-      "tag": "0004_careful_ender_wiggin",
-      "breakpoints": true
-    },
-    {
-      "idx": 5,
-      "version": "7",
-      "when": 1762425689321,
-      "tag": "0005_giant_exiles",
+      "when": 1762526124811,
+      "tag": "0000_sleepy_shard",
       "breakpoints": true
     }
   ]

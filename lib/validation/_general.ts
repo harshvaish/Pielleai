@@ -1,6 +1,11 @@
 import { z } from 'zod/v4';
 import { eventStatus, profileGenders, userStatus, venueTypes } from '../database/schema';
 
+export const avatarUrlValidation = z
+  .url('Campo obbligatorio.')
+  .refine((url) => url.startsWith(`${process.env.NEXT_PUBLIC_SUPABASE_URL}`), 'Campo non valido.')
+  .trim();
+
 export const timeValidation = z
   .string('Campo malformato.')
   .regex(/^([01]\d|2[0-3]):[0-5]\d$/, 'Può contenere solo numeri o ":".');
@@ -29,7 +34,6 @@ export const passwordValidation = z
 export const phoneValidation = z
   .string('Campo malformato.')
   .min(8, 'Minimo 8 caratteri.')
-  .max(20, 'Massimo 20 caratteri.')
   .regex(/^\+\d{1,3}\s?\d+$/, 'Formato non valido. Esempio: +39 123456789')
   .trim();
 
@@ -46,10 +50,75 @@ export const taxCodeValidation = z
   .regex(/^[A-Z0-9\-]+$/, 'Può contenere solo lettere maiuscole, numeri e trattini.')
   .trim();
 
+export const vatCodeValidation = z
+  .string('Campo malformato.')
+  .min(9, 'Minimo 9 cifre.')
+  .max(20, 'Massimo 20 cifre.')
+  .regex(/^\d+$/, 'Può contenere solo numeri.')
+  .trim();
+
+export const ipiCodeValidation = z
+  .string('Campo malformato.')
+  .min(9, 'Minimo 9 cifre.')
+  .max(20, 'Massimo 20 cifre.')
+  .regex(/^\d+$/, 'Può contenere solo numeri.')
+  .trim();
+
+export const ibanValidation = z
+  .string('Campo malformato.')
+  .min(15, 'Minimo 15 caratteri.')
+  .max(50, 'Massimo 50 caratteri.')
+  .regex(/^[A-Z]{2}\d{2}[A-Z0-9]+$/, 'Può contenere solo lettere maiuscole e numeri.')
+  .trim();
+
 export const addressValidation = z
   .string('Campo malformato.')
   .min(5, 'Minimo 5 caratteri.')
   .max(150, 'Massimo 150 caratteri.')
+  .trim();
+
+export const cityValidation = z
+  .string('Campo malformato.')
+  .min(2, 'Minimo 2 caratteri.')
+  .max(100, 'Massimo 100 caratteri.')
+  .regex(/^[\p{L}\s'-]+$/u, 'Può contenere solo lettere, spazi, trattini o apostrofi.')
+  .trim();
+
+export const zipCodeValidation = z
+  .string('Campo malformato.')
+  .min(3, 'Minimo 3 caratteri.')
+  .max(20, 'Massimo 20 caratteri.')
+  .regex(/^[A-Z0-9\- ]+$/, 'Può contenere solo lettere maiuscole, numeri, trattini o spazi.')
+  .trim();
+
+export const countryValidation = z.object(
+  {
+    id: z.number("Seleziona un'opzione valida."),
+    name: z.string("Seleziona un'opzione valida."),
+    code: z.string().length(2, "Seleziona un'opzione valida."),
+    isEu: z.boolean("Seleziona un'opzione valida."),
+  },
+  "Seleziona un'opzione valida.",
+);
+
+export const bicCodeValidation = z
+  .string()
+  .min(8, 'Minimo 8 caratteri.')
+  .max(20, 'Massimo 20 caratteri.')
+  .regex(/^[A-Z0-9]+$/, 'Può contenere solo lettere maiuscole e numeri.')
+  .trim();
+
+export const abaRoutingNumberValidation = z
+  .string()
+  .min(5, 'Minimo 5 cifre.')
+  .max(12, 'Massimo 12 cifre.')
+  .regex(/^\d+$/, 'Può contenere solo numeri.')
+  .trim();
+
+export const sdiRecipientCodeValidation = z
+  .string()
+  .length(7, 'Deve contenere esattamente 7 caratteri.')
+  .regex(/^[A-Z0-9]{7}$/, 'Può contenere solo lettere maiuscole e numeri.')
   .trim();
 
 export const userIdValidation = z

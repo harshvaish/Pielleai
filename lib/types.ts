@@ -118,7 +118,7 @@ export type ArtistManagerData<T = ArtistListData | ArtistSelectData> = {
   status: UserStatus;
   createdAt: Date;
   updatedAt: Date;
-  avatarUrl: string;
+  avatarUrl: string | null;
   name: string;
   surname: string;
   phone: string;
@@ -199,11 +199,11 @@ export type ArtistData = {
   languages: Language[];
   birthDate: string;
   birthPlace: string;
-  address: string;
-  country: Country;
-  subdivision: Subdivision;
-  city: string;
-  zipCode: string;
+  address: string | null;
+  country: Country | null;
+  subdivision: Subdivision | null;
+  city: string | null;
+  zipCode: string | null;
   gender: Gender;
   zones: Zone[];
 
@@ -214,21 +214,21 @@ export type ArtistData = {
   tourManagerSurname: string;
   tourManagerPhone: string;
 
-  company: string;
-  taxCode: string;
-  ipiCode: string;
+  company: string | null;
+  taxCode: string | null;
+  ipiCode: string | null;
   bicCode: string | null;
   abaRoutingNumber: string | null;
-  iban: string;
+  iban: string | null;
   sdiRecipientCode: string | null;
-  billingAddress: string;
-  billingCountry: Country;
-  billingSubdivision: Subdivision;
-  billingCity: string;
-  billingZipCode: string;
-  billingEmail: string;
-  billingPhone: string;
-  billingPec: string;
+  billingAddress: string | null;
+  billingCountry: Country | null;
+  billingSubdivision: Subdivision | null;
+  billingCity: string | null;
+  billingZipCode: string | null;
+  billingEmail: string | null;
+  billingPhone: string | null;
+  billingPec: string | null;
   taxableInvoice: boolean;
 
   tiktokUrl: string | null;
@@ -312,7 +312,7 @@ export type VenueManagerData<T = VenueTableData | VenueListData | VenueBadgeData
   createdAt: Date;
   updatedAt: Date;
 
-  avatarUrl: string;
+  avatarUrl: string | null;
   name: string;
   surname: string;
   phone: string;
@@ -368,9 +368,9 @@ export type VenueData = {
   status: UserStatus;
   createdAt: Date;
   updatedAt: Date;
-  avatarUrl: string;
+  avatarUrl: string | null;
   name: string;
-  bio: string;
+  bio: string | null;
   type: VenueType;
   capacity: number;
 
@@ -380,24 +380,22 @@ export type VenueData = {
   city: string;
   zipCode: string;
 
-  manager: VenueManagerSelectData;
+  manager: VenueManagerSelectData | null;
 
   company: string;
   taxCode: string;
-  ipiCode: string;
+  vatCode: string;
   bicCode: string | null;
   abaRoutingNumber: string | null;
-  iban: string;
   sdiRecipientCode: string | null;
   billingAddress: string;
   billingCountry: Country;
   billingSubdivision: Subdivision;
   billingCity: string;
   billingZipCode: string;
-  billingEmail: string;
-  billingPhone: string;
+  billingEmail: string | null;
+  billingPhone: string | null;
   billingPec: string;
-  taxableInvoice: boolean;
 
   tiktokUrl: string | null;
   tiktokUsername: string | null;

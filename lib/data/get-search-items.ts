@@ -4,8 +4,7 @@ import { database } from '@/lib/database/connection';
 import { SearchItem } from '../types';
 import { and, eq, ilike, inArray, or, sql } from 'drizzle-orm';
 import { union } from 'drizzle-orm/pg-core';
-import { profiles } from '@/drizzle/schema';
-import { artists, users, venues } from '../database/schema';
+import { profiles, artists, users, venues } from '../database/schema';
 
 export async function getSearchItems(search: string): Promise<SearchItem[]> {
   // build %term% for ILIKE (trim to avoid accidental leading/trailing spaces)
@@ -27,7 +26,12 @@ export async function getSearchItems(search: string): Promise<SearchItem[]> {
       })
       .from(profiles)
       .innerJoin(users, eq(profiles.userId, users.id))
-      .where(and(inArray(users.role, ['artist-manager', 'venue-manager']), or(ilike(profiles.name, term), ilike(profiles.surname, term))));
+      .where(
+        and(
+          inArray(users.role, ['artist-manager', 'venue-manager']),
+          or(ilike(profiles.name, term), ilike(profiles.surname, term)),
+        ),
+      );
 
     const artistsQuery = database
       .select({
@@ -37,7 +41,9 @@ export async function getSearchItems(search: string): Promise<SearchItem[]> {
         role: sql<string>`'Artista'`,
       })
       .from(artists)
-      .where(or(ilike(artists.name, term), ilike(artists.surname, term), ilike(artists.stageName, term)));
+      .where(
+        or(ilike(artists.name, term), ilike(artists.surname, term), ilike(artists.stageName, term)),
+      );
 
     const venuesQuery = database
       .select({

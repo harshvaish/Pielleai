@@ -77,6 +77,9 @@ export const NAVBAR_LINKS: NavbarLink[] = [
 export const AU_MAX_SIZE_MB = 5;
 export const AU_ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 
+// avatar fallback
+export const AVATAR_FALLBACK = '/images/icon-black.svg';
+
 // pdf upload
 export const PDFU_MAX_SIZE_MB = 10;
 export const PDFU_ALLOWED_MIME_TYPES = ['application/pdf'];

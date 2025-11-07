@@ -24,6 +24,7 @@ export default function StepOne({ languages, countries }: StepOneProps) {
     control,
     watch,
     resetField,
+    setValue,
     formState: { errors },
   } = useFormContext<VenueManagerS1FormSchema>();
 
@@ -78,6 +79,7 @@ export default function StepOne({ languages, countries }: StepOneProps) {
                 value={field.value}
                 onChange={field.onChange}
                 hasError={!!errors.avatarUrl}
+                onDelete={() => setValue('avatarUrl', undefined, { shouldDirty: true })}
               />
             )}
           />

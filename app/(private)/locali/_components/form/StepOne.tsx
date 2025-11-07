@@ -13,9 +13,11 @@ import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import Image from 'next/image';
 import { venueTypes } from '@/lib/database/schema';
-import { VENUE_TYPE_LABELS } from '@/lib/constants';
+import { AVATAR_FALLBACK, VENUE_TYPE_LABELS } from '@/lib/constants';
 import { VenueS1FormSchema } from '@/lib/validation/venue-form-schema';
 import { Textarea } from '@/components/ui/textarea';
+import { Button } from '@/components/ui/button';
+import { X } from 'lucide-react';
 
 type StepOneProps = {
   userRole: UserRole;
@@ -29,6 +31,7 @@ export default function StepOne({ userRole, countries, venueManagers }: StepOneP
     control,
     watch,
     resetField,
+    setValue,
     formState: { errors },
   } = useFormContext<VenueS1FormSchema>();
 
@@ -38,6 +41,11 @@ export default function StepOne({ userRole, countries, venueManagers }: StepOneP
 
   const selectedCountryId = watch('countryId');
   const selectedSubdivisionId = watch('subdivisionId');
+  const venueManagerId = watch('venueManagerId');
+
+  const selectedVenueManager = venueManagers.find(
+    (manager) => manager.profileId === venueManagerId,
+  );
 
   const { data: response, isLoading } = useSWR(
     selectedCountryId ? `/api/country-subdivisions?c=${selectedCountryId}` : null,
@@ -86,6 +94,7 @@ export default function StepOne({ userRole, countries, venueManagers }: StepOneP
                 value={field.value}
                 onChange={field.onChange}
                 hasError={!!errors.avatarUrl}
+                onDelete={() => setValue('avatarUrl', undefined, { shouldDirty: true })}
               />
             )}
           />
@@ -363,26 +372,32 @@ export default function StepOne({ userRole, countries, venueManagers }: StepOneP
             name='venueManagerId'
             render={({ field }) => (
               <Select
-                value={field.value?.toString()}
-                onValueChange={(v) => field.onChange(parseInt(v))}
+                value={field.value?.toString() ?? ''}
+                onValueChange={(v) => field.onChange(v ? parseInt(v) : undefined)}
               >
-                <SelectTrigger
-                  id='venueManagerId'
-                  className={cn(
-                    'w-full',
-                    errors.venueManagerId && 'border-destructive text-destructive',
+                <div className='flex items-center gap-2'>
+                  <SelectTrigger
+                    id='venueManagerId'
+                    className={cn(
+                      'w-full',
+                      errors.venueManagerId && 'border-destructive text-destructive',
+                    )}
+                    size='sm'
+                  >
+                    {selectedVenueManager
+                      ? `${selectedVenueManager.name} ${selectedVenueManager.surname}`
+                      : 'Seleziona un promoter'}
+                  </SelectTrigger>
+                  {venueManagerId && (
+                    <Button
+                      variant='outline'
+                      size='icon'
+                      onClick={() => setValue('venueManagerId', undefined, { shouldDirty: true })}
+                    >
+                      <X className='size-4' />
+                    </Button>
                   )}
-                  size='sm'
-                >
-                  {(() => {
-                    const selected = venueManagers.find(
-                      (manager) => manager.profileId === field.value,
-                    );
-                    return selected
-                      ? `${selected.name} ${selected.surname}`
-                      : 'Seleziona un promoter';
-                  })()}
-                </SelectTrigger>
+                </div>
                 <SelectContent>
                   {venueManagers.map((manager) => (
                     <SelectItem
@@ -391,7 +406,7 @@ export default function StepOne({ userRole, countries, venueManagers }: StepOneP
                     >
                       <div className='flex items-center gap-2 flex-nowrap'>
                         <Image
-                          src={manager.avatarUrl}
+                          src={manager.avatarUrl || AVATAR_FALLBACK}
                           alt='Immagine profilo utente'
                           height={24}
                           width={24}

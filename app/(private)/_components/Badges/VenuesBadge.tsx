@@ -6,6 +6,7 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { AVATAR_FALLBACK } from '@/lib/constants';
 import { UserRole, VenueBadgeData } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { ChevronDown } from 'lucide-react';
@@ -47,7 +48,7 @@ export default function VenuesBadge({ userRole, venues }: VenuesBadgeProps) {
                 key={index}
                 className='w-5 h-5'
               >
-                <AvatarImage src={venue.avatarUrl} />
+                <AvatarImage src={venue.avatarUrl || AVATAR_FALLBACK} />
                 <AvatarFallback>{venue.name.substring(0, 1).toUpperCase()}</AvatarFallback>
               </Avatar>
             );
@@ -90,7 +91,7 @@ function VenueBadge({ userRole, venue }: { userRole: UserRole; venue: VenueBadge
     >
       <Avatar className='w-5 h-5'>
         <AvatarImage
-          src={venue.avatarUrl}
+          src={venue.avatarUrl || AVATAR_FALLBACK}
           className={isDisabled ? 'grayscale' : ''}
         />
         <AvatarFallback>{venue.name.substring(0, 1).toUpperCase()}</AvatarFallback>

@@ -1,9 +1,148 @@
 {
-  "id": "0c983c81-2f62-4c1e-8eec-d9a55539d515",
-  "prevId": "00000000-0000-0000-0000-000000000000",
+  "id": "00000000-0000-0000-0000-000000000000",
+  "prevId": "",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
+    "public.artist_availabilities": {
+      "name": "artist_availabilities",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "nextval('artist_availabilities_id_seq'::regclass)"
+        },
+        "artist_id": {
+          "name": "artist_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "start_date": {
+          "name": "start_date",
+          "type": "timestamp(6) with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "end_date": {
+          "name": "end_date",
+          "type": "timestamp(6) with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "status": {
+          "name": "status",
+          "type": "availability_status",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'available'"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp(6) with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp(6) with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "time_range": {
+          "name": "time_range",
+          "type": "tstzrange",
+          "primaryKey": false,
+          "notNull": false,
+          "generated": {
+            "as": "tstzrange(start_date, end_date, '[)'::text)",
+            "type": "stored"
+          }
+        }
+      },
+      "indexes": {
+        "idx_artist_availabilities_time_range_gist": {
+          "name": "idx_artist_availabilities_time_range_gist",
+          "columns": [
+            {
+              "expression": "time_range",
+              "asc": true,
+              "nulls": "last",
+              "opclass": "range_ops",
+              "isExpression": false
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "gist",
+          "with": {}
+        },
+        "idx_avail_artist_id": {
+          "name": "idx_avail_artist_id",
+          "columns": [
+            {
+              "expression": "artist_id",
+              "asc": true,
+              "nulls": "last",
+              "opclass": "int4_ops",
+              "isExpression": false
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "idx_avail_status": {
+          "name": "idx_avail_status",
+          "columns": [
+            {
+              "expression": "status",
+              "asc": true,
+              "nulls": "last",
+              "opclass": "enum_ops",
+              "isExpression": false
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "artist_availabilities_artist_id_fkey": {
+          "name": "artist_availabilities_artist_id_fkey",
+          "tableFrom": "artist_availabilities",
+          "tableTo": "artists",
+          "schemaTo": "public",
+          "columnsFrom": [
+            "artist_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "chk_time_range": {
+          "name": "chk_time_range",
+          "value": "start_date < end_date"
+        }
+      },
+      "policies": {},
+      "isRLSEnabled": true
+    },
     "public.accounts": {
       "name": "accounts",
       "schema": "",
@@ -52,13 +191,13 @@
         },
         "access_token_expires_at": {
           "name": "access_token_expires_at",
-          "type": "timestamp",
+          "type": "timestamp(6)",
           "primaryKey": false,
           "notNull": false
         },
         "refresh_token_expires_at": {
           "name": "refresh_token_expires_at",
-          "type": "timestamp",
+          "type": "timestamp(6)",
           "primaryKey": false,
           "notNull": false
         },
@@ -76,13 +215,13 @@
         },
         "created_at": {
           "name": "created_at",
-          "type": "timestamp",
+          "type": "timestamp(6)",
           "primaryKey": false,
           "notNull": true
         },
         "updated_at": {
           "name": "updated_at",
-          "type": "timestamp",
+          "type": "timestamp(6)",
           "primaryKey": false,
           "notNull": true
         }
@@ -93,6 +232,7 @@
           "name": "accounts_user_id_users_id_fk",
           "tableFrom": "accounts",
           "tableTo": "users",
+          "schemaTo": "public",
           "columnsFrom": [
             "user_id"
           ],
@@ -105,55 +245,9 @@
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
-      "policies": {},
       "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.countries": {
-      "name": "countries",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "serial",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "code": {
-          "name": "code",
-          "type": "varchar(2)",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "name": {
-          "name": "name",
-          "type": "varchar(100)",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": false,
-          "default": "now()"
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {},
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "countries_code_key": {
-          "name": "countries_code_key",
-          "nullsNotDistinct": false,
-          "columns": [
-            "code"
-          ]
-        }
-      },
       "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
+      "isRLSEnabled": true
     },
     "public.languages": {
       "name": "languages",
@@ -161,9 +255,10 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "serial",
+          "type": "integer",
           "primaryKey": true,
-          "notNull": true
+          "notNull": true,
+          "default": "nextval('languages_id_seq'::regclass)"
         },
         "code": {
           "name": "code",
@@ -179,9 +274,9 @@
         },
         "created_at": {
           "name": "created_at",
-          "type": "timestamp",
+          "type": "timestamp(6) with time zone",
           "primaryKey": false,
-          "notNull": false,
+          "notNull": true,
           "default": "now()"
         }
       },
@@ -190,99 +285,16 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
         "languages_code_key": {
-          "name": "languages_code_key",
-          "nullsNotDistinct": false,
           "columns": [
             "code"
-          ]
-        }
-      },
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.sessions": {
-      "name": "sessions",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "text",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "expires_at": {
-          "name": "expires_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "token": {
-          "name": "token",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "ip_address": {
-          "name": "ip_address",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "user_agent": {
-          "name": "user_agent",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "user_id": {
-          "name": "user_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "sessions_user_id_users_id_fk": {
-          "name": "sessions_user_id_users_id_fk",
-          "tableFrom": "sessions",
-          "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
           ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "sessions_token_unique": {
-          "name": "sessions_token_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "token"
-          ]
+          "name": "languages_code_key"
         }
       },
-      "policies": {},
       "checkConstraints": {},
-      "isRLSEnabled": false
+      "policies": {},
+      "isRLSEnabled": true
     },
     "public.subdivisions": {
       "name": "subdivisions",
@@ -290,9 +302,10 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "serial",
+          "type": "integer",
           "primaryKey": true,
-          "notNull": true
+          "notNull": true,
+          "default": "nextval('subdivisions_id_seq'::regclass)"
         },
         "country_id": {
           "name": "country_id",
@@ -308,9 +321,9 @@
         },
         "created_at": {
           "name": "created_at",
-          "type": "timestamp",
+          "type": "timestamp(6) with time zone",
           "primaryKey": false,
-          "notNull": false,
+          "notNull": true,
           "default": "now()"
         }
       },
@@ -320,21 +333,1709 @@
           "name": "subdivisions_country_id_fkey",
           "tableFrom": "subdivisions",
           "tableTo": "countries",
+          "schemaTo": "public",
           "columnsFrom": [
             "country_id"
           ],
           "columnsTo": [
             "id"
           ],
-          "onDelete": "cascade",
-          "onUpdate": "cascade"
+          "onDelete": "restrict",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
-      "policies": {},
       "checkConstraints": {},
-      "isRLSEnabled": false
+      "policies": {},
+      "isRLSEnabled": true
+    },
+    "public.events": {
+      "name": "events",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "nextval('events_id_seq'::regclass)"
+        },
+        "artist_id": {
+          "name": "artist_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "artist_manager_profile_id": {
+          "name": "artist_manager_profile_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "availability_id": {
+          "name": "availability_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "venue_id": {
+          "name": "venue_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "payroll_consultant_email": {
+          "name": "payroll_consultant_email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "mo_cost": {
+          "name": "mo_cost",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "venue_manager_cost": {
+          "name": "venue_manager_cost",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "deposit_cost": {
+          "name": "deposit_cost",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "deposit_invoice_number": {
+          "name": "deposit_invoice_number",
+          "type": "varchar(100)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "booking_percentage": {
+          "name": "booking_percentage",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "mo_artist_advanced_expenses": {
+          "name": "mo_artist_advanced_expenses",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "artist_net_cost": {
+          "name": "artist_net_cost",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "artist_upfront_cost": {
+          "name": "artist_upfront_cost",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "total_cost": {
+          "name": "total_cost",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "transportations_cost": {
+          "name": "transportations_cost",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "cash_balance_cost": {
+          "name": "cash_balance_cost",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "hotel": {
+          "name": "hotel",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "restaurant": {
+          "name": "restaurant",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "evening_contact": {
+          "name": "evening_contact",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "mo_coordinator_id": {
+          "name": "mo_coordinator_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "sound_check_start": {
+          "name": "sound_check_start",
+          "type": "time(6)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "sound_check_end": {
+          "name": "sound_check_end",
+          "type": "time(6)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "tecnical_rider_url": {
+          "name": "tecnical_rider_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "tecnical_rider_name": {
+          "name": "tecnical_rider_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "contract_signing": {
+          "name": "contract_signing",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "deposit_invoice_issuing": {
+          "name": "deposit_invoice_issuing",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "deposit_receipt_verification": {
+          "name": "deposit_receipt_verification",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "tech_sheet_submission": {
+          "name": "tech_sheet_submission",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "artist_engagement": {
+          "name": "artist_engagement",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "professionals_engagement": {
+          "name": "professionals_engagement",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "accompanying_persons_engagement": {
+          "name": "accompanying_persons_engagement",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "performance": {
+          "name": "performance",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "post_date_feedback": {
+          "name": "post_date_feedback",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "bordereau": {
+          "name": "bordereau",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp(6) with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp(6) with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "tour_manager_email": {
+          "name": "tour_manager_email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "has_conflict": {
+          "name": "has_conflict",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "status": {
+          "name": "status",
+          "type": "event_status",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'proposed'"
+        },
+        "hotel_cost": {
+          "name": "hotel_cost",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "restaurant_cost": {
+          "name": "restaurant_cost",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "idx_events_artist_id": {
+          "name": "idx_events_artist_id",
+          "columns": [
+            {
+              "expression": "artist_id",
+              "asc": true,
+              "nulls": "last",
+              "opclass": "int4_ops",
+              "isExpression": false
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "idx_events_availability_id": {
+          "name": "idx_events_availability_id",
+          "columns": [
+            {
+              "expression": "availability_id",
+              "asc": true,
+              "nulls": "last",
+              "opclass": "int4_ops",
+              "isExpression": false
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "idx_events_has_conflict": {
+          "name": "idx_events_has_conflict",
+          "columns": [
+            {
+              "expression": "availability_id",
+              "asc": true,
+              "nulls": "last",
+              "opclass": "bool_ops",
+              "isExpression": false
+            },
+            {
+              "expression": "has_conflict",
+              "asc": true,
+              "nulls": "last",
+              "opclass": "bool_ops",
+              "isExpression": false
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "where": "(has_conflict = true)",
+          "with": {}
+        },
+        "idx_events_manager_pid": {
+          "name": "idx_events_manager_pid",
+          "columns": [
+            {
+              "expression": "artist_manager_profile_id",
+              "asc": true,
+              "nulls": "last",
+              "opclass": "int4_ops",
+              "isExpression": false
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "idx_events_status": {
+          "name": "idx_events_status",
+          "columns": [
+            {
+              "expression": "status",
+              "asc": true,
+              "nulls": "last",
+              "opclass": "enum_ops",
+              "isExpression": false
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "idx_events_status_artist_created_desc": {
+          "name": "idx_events_status_artist_created_desc",
+          "columns": [
+            {
+              "expression": "status",
+              "asc": true,
+              "nulls": "last",
+              "opclass": "timestamptz_ops",
+              "isExpression": false
+            },
+            {
+              "expression": "artist_id",
+              "asc": true,
+              "nulls": "last",
+              "opclass": "timestamptz_ops",
+              "isExpression": false
+            },
+            {
+              "expression": "created_at",
+              "asc": false,
+              "nulls": "first",
+              "opclass": "timestamptz_ops",
+              "isExpression": false
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "idx_events_status_created_desc": {
+          "name": "idx_events_status_created_desc",
+          "columns": [
+            {
+              "expression": "status",
+              "asc": true,
+              "nulls": "last",
+              "opclass": "enum_ops",
+              "isExpression": false
+            },
+            {
+              "expression": "created_at",
+              "asc": false,
+              "nulls": "first",
+              "opclass": "enum_ops",
+              "isExpression": false
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "idx_events_status_venue_created_desc": {
+          "name": "idx_events_status_venue_created_desc",
+          "columns": [
+            {
+              "expression": "status",
+              "asc": true,
+              "nulls": "last",
+              "opclass": "timestamptz_ops",
+              "isExpression": false
+            },
+            {
+              "expression": "venue_id",
+              "asc": true,
+              "nulls": "last",
+              "opclass": "timestamptz_ops",
+              "isExpression": false
+            },
+            {
+              "expression": "created_at",
+              "asc": false,
+              "nulls": "first",
+              "opclass": "timestamptz_ops",
+              "isExpression": false
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "idx_events_venue_id": {
+          "name": "idx_events_venue_id",
+          "columns": [
+            {
+              "expression": "venue_id",
+              "asc": true,
+              "nulls": "last",
+              "opclass": "int4_ops",
+              "isExpression": false
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "ux_events_one_confirmed_per_availability": {
+          "name": "ux_events_one_confirmed_per_availability",
+          "columns": [
+            {
+              "expression": "availability_id",
+              "asc": true,
+              "nulls": "last",
+              "opclass": "int4_ops",
+              "isExpression": false
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "where": "(status = 'confirmed'::event_status)",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "fk_events_artist": {
+          "name": "fk_events_artist",
+          "tableFrom": "events",
+          "tableTo": "artists",
+          "schemaTo": "public",
+          "columnsFrom": [
+            "artist_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        },
+        "fk_events_availability": {
+          "name": "fk_events_availability",
+          "tableFrom": "events",
+          "tableTo": "artist_availabilities",
+          "schemaTo": "public",
+          "columnsFrom": [
+            "availability_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        },
+        "fk_events_manager_profile": {
+          "name": "fk_events_manager_profile",
+          "tableFrom": "events",
+          "tableTo": "profiles",
+          "schemaTo": "public",
+          "columnsFrom": [
+            "artist_manager_profile_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        },
+        "fk_events_mo_coordinator": {
+          "name": "fk_events_mo_coordinator",
+          "tableFrom": "events",
+          "tableTo": "mo_coordinators",
+          "schemaTo": "public",
+          "columnsFrom": [
+            "mo_coordinator_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        },
+        "fk_events_venue": {
+          "name": "fk_events_venue",
+          "tableFrom": "events",
+          "tableTo": "venues",
+          "schemaTo": "public",
+          "columnsFrom": [
+            "venue_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "unique_artist_availability_venue": {
+          "columns": [
+            "artist_id",
+            "availability_id",
+            "venue_id"
+          ],
+          "nullsNotDistinct": false,
+          "name": "unique_artist_availability_venue"
+        }
+      },
+      "checkConstraints": {},
+      "policies": {},
+      "isRLSEnabled": true
+    },
+    "public.profiles": {
+      "name": "profiles",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "nextval('profiles_id_seq'::regclass)"
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "surname": {
+          "name": "surname",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "phone": {
+          "name": "phone",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "avatar_url": {
+          "name": "avatar_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "birth_date": {
+          "name": "birth_date",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "birth_place": {
+          "name": "birth_place",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "address": {
+          "name": "address",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "country_id": {
+          "name": "country_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "subdivision_id": {
+          "name": "subdivision_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "city": {
+          "name": "city",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "zip_code": {
+          "name": "zip_code",
+          "type": "varchar(10)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "gender": {
+          "name": "gender",
+          "type": "profile_genders",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "company": {
+          "name": "company",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "tax_code": {
+          "name": "tax_code",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "ipi_code": {
+          "name": "ipi_code",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "bic_code": {
+          "name": "bic_code",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "aba_routing_number": {
+          "name": "aba_routing_number",
+          "type": "varchar(20)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "iban": {
+          "name": "iban",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "sdi_recipient_code": {
+          "name": "sdi_recipient_code",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "billing_address": {
+          "name": "billing_address",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "billing_country_id": {
+          "name": "billing_country_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "billing_subdivision_id": {
+          "name": "billing_subdivision_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "billing_city": {
+          "name": "billing_city",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "billing_zip_code": {
+          "name": "billing_zip_code",
+          "type": "varchar(10)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "billing_email": {
+          "name": "billing_email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "billing_pec": {
+          "name": "billing_pec",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "billing_phone": {
+          "name": "billing_phone",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "taxable_invoice": {
+          "name": "taxable_invoice",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp(6) with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp(6) with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "idx_profiles_company_trgm": {
+          "name": "idx_profiles_company_trgm",
+          "columns": [
+            {
+              "expression": "company",
+              "asc": true,
+              "nulls": "last",
+              "opclass": "gin_trgm_ops",
+              "isExpression": false
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "gin",
+          "with": {}
+        },
+        "idx_profiles_created_at_desc": {
+          "name": "idx_profiles_created_at_desc",
+          "columns": [
+            {
+              "expression": "created_at",
+              "asc": false,
+              "nulls": "first",
+              "opclass": "timestamptz_ops",
+              "isExpression": false
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "idx_profiles_name_trgm": {
+          "name": "idx_profiles_name_trgm",
+          "columns": [
+            {
+              "expression": "name",
+              "asc": true,
+              "nulls": "last",
+              "opclass": "gin_trgm_ops",
+              "isExpression": false
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "gin",
+          "with": {}
+        },
+        "idx_profiles_phone_trgm": {
+          "name": "idx_profiles_phone_trgm",
+          "columns": [
+            {
+              "expression": "phone",
+              "asc": true,
+              "nulls": "last",
+              "opclass": "gin_trgm_ops",
+              "isExpression": false
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "gin",
+          "with": {}
+        },
+        "idx_profiles_surname_trgm": {
+          "name": "idx_profiles_surname_trgm",
+          "columns": [
+            {
+              "expression": "surname",
+              "asc": true,
+              "nulls": "last",
+              "opclass": "gin_trgm_ops",
+              "isExpression": false
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "gin",
+          "with": {}
+        },
+        "idx_profiles_user_id": {
+          "name": "idx_profiles_user_id",
+          "columns": [
+            {
+              "expression": "user_id",
+              "asc": true,
+              "nulls": "last",
+              "opclass": "text_ops",
+              "isExpression": false
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "uq_profiles_user_id": {
+          "name": "uq_profiles_user_id",
+          "columns": [
+            {
+              "expression": "user_id",
+              "asc": true,
+              "nulls": "last",
+              "opclass": "text_ops",
+              "isExpression": false
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "profiles_billing_country_id_fkey": {
+          "name": "profiles_billing_country_id_fkey",
+          "tableFrom": "profiles",
+          "tableTo": "countries",
+          "schemaTo": "public",
+          "columnsFrom": [
+            "billing_country_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        },
+        "profiles_billing_subdivision_id_fkey": {
+          "name": "profiles_billing_subdivision_id_fkey",
+          "tableFrom": "profiles",
+          "tableTo": "subdivisions",
+          "schemaTo": "public",
+          "columnsFrom": [
+            "billing_subdivision_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        },
+        "profiles_country_id_fkey": {
+          "name": "profiles_country_id_fkey",
+          "tableFrom": "profiles",
+          "tableTo": "countries",
+          "schemaTo": "public",
+          "columnsFrom": [
+            "country_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        },
+        "profiles_subdivision_id_fkey": {
+          "name": "profiles_subdivision_id_fkey",
+          "tableFrom": "profiles",
+          "tableTo": "subdivisions",
+          "schemaTo": "public",
+          "columnsFrom": [
+            "subdivision_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        },
+        "profiles_user_id_fkey": {
+          "name": "profiles_user_id_fkey",
+          "tableFrom": "profiles",
+          "tableTo": "users",
+          "schemaTo": "public",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {},
+      "policies": {},
+      "isRLSEnabled": true
+    },
+    "public.zones": {
+      "name": "zones",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "nextval('zones_id_seq'::regclass)"
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp(6) with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "zones_name_key": {
+          "columns": [
+            "name"
+          ],
+          "nullsNotDistinct": false,
+          "name": "zones_name_key"
+        }
+      },
+      "checkConstraints": {},
+      "policies": {},
+      "isRLSEnabled": true
+    },
+    "public.artists": {
+      "name": "artists",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "nextval('artists_id_seq'::regclass)"
+        },
+        "email": {
+          "name": "email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "surname": {
+          "name": "surname",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "stage_name": {
+          "name": "stage_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "phone": {
+          "name": "phone",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "avatar_url": {
+          "name": "avatar_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "status": {
+          "name": "status",
+          "type": "user_status",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "birth_date": {
+          "name": "birth_date",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "birth_place": {
+          "name": "birth_place",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "address": {
+          "name": "address",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "country_id": {
+          "name": "country_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "subdivision_id": {
+          "name": "subdivision_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "city": {
+          "name": "city",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "zip_code": {
+          "name": "zip_code",
+          "type": "varchar(10)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "gender": {
+          "name": "gender",
+          "type": "profile_genders",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "tour_manager_name": {
+          "name": "tour_manager_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "tour_manager_surname": {
+          "name": "tour_manager_surname",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "tour_manager_email": {
+          "name": "tour_manager_email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "tour_manager_phone": {
+          "name": "tour_manager_phone",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "company": {
+          "name": "company",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "tax_code": {
+          "name": "tax_code",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "ipi_code": {
+          "name": "ipi_code",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "bic_code": {
+          "name": "bic_code",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "aba_routing_number": {
+          "name": "aba_routing_number",
+          "type": "varchar(20)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "iban": {
+          "name": "iban",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "sdi_recipient_code": {
+          "name": "sdi_recipient_code",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "billing_address": {
+          "name": "billing_address",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "billing_country_id": {
+          "name": "billing_country_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "billing_subdivision_id": {
+          "name": "billing_subdivision_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "billing_city": {
+          "name": "billing_city",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "billing_zip_code": {
+          "name": "billing_zip_code",
+          "type": "varchar(10)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "billing_email": {
+          "name": "billing_email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "billing_pec": {
+          "name": "billing_pec",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "billing_phone": {
+          "name": "billing_phone",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "taxable_invoice": {
+          "name": "taxable_invoice",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "tiktok_url": {
+          "name": "tiktok_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "tiktok_username": {
+          "name": "tiktok_username",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "tiktok_followers": {
+          "name": "tiktok_followers",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "tiktok_created_at": {
+          "name": "tiktok_created_at",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "facebook_url": {
+          "name": "facebook_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "facebook_username": {
+          "name": "facebook_username",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "facebook_followers": {
+          "name": "facebook_followers",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "facebook_created_at": {
+          "name": "facebook_created_at",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "instagram_url": {
+          "name": "instagram_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "instagram_username": {
+          "name": "instagram_username",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "instagram_followers": {
+          "name": "instagram_followers",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "instagram_created_at": {
+          "name": "instagram_created_at",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "x_url": {
+          "name": "x_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "x_username": {
+          "name": "x_username",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "x_followers": {
+          "name": "x_followers",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "x_created_at": {
+          "name": "x_created_at",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp(6) with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp(6) with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "slug": {
+          "name": "slug",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "bio": {
+          "name": "bio",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "idx_artists_created_at_desc": {
+          "name": "idx_artists_created_at_desc",
+          "columns": [
+            {
+              "expression": "created_at",
+              "asc": false,
+              "nulls": "first",
+              "opclass": "timestamptz_ops",
+              "isExpression": false
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "idx_artists_email_trgm": {
+          "name": "idx_artists_email_trgm",
+          "columns": [
+            {
+              "expression": "email",
+              "asc": true,
+              "nulls": "last",
+              "opclass": "gin_trgm_ops",
+              "isExpression": false
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "gin",
+          "with": {}
+        },
+        "idx_artists_name_trgm": {
+          "name": "idx_artists_name_trgm",
+          "columns": [
+            {
+              "expression": "name",
+              "asc": true,
+              "nulls": "last",
+              "opclass": "gin_trgm_ops",
+              "isExpression": false
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "gin",
+          "with": {}
+        },
+        "idx_artists_phone_trgm": {
+          "name": "idx_artists_phone_trgm",
+          "columns": [
+            {
+              "expression": "phone",
+              "asc": true,
+              "nulls": "last",
+              "opclass": "gin_trgm_ops",
+              "isExpression": false
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "gin",
+          "with": {}
+        },
+        "idx_artists_stage_name_trgm": {
+          "name": "idx_artists_stage_name_trgm",
+          "columns": [
+            {
+              "expression": "stage_name",
+              "asc": true,
+              "nulls": "last",
+              "opclass": "gin_trgm_ops",
+              "isExpression": false
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "gin",
+          "with": {}
+        },
+        "idx_artists_surname_trgm": {
+          "name": "idx_artists_surname_trgm",
+          "columns": [
+            {
+              "expression": "surname",
+              "asc": true,
+              "nulls": "last",
+              "opclass": "gin_trgm_ops",
+              "isExpression": false
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "gin",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "artists_billing_country_id_fkey": {
+          "name": "artists_billing_country_id_fkey",
+          "tableFrom": "artists",
+          "tableTo": "countries",
+          "schemaTo": "public",
+          "columnsFrom": [
+            "billing_country_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "restrict"
+        },
+        "artists_billing_subdivision_id_fkey": {
+          "name": "artists_billing_subdivision_id_fkey",
+          "tableFrom": "artists",
+          "tableTo": "subdivisions",
+          "schemaTo": "public",
+          "columnsFrom": [
+            "billing_subdivision_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "restrict"
+        },
+        "artists_country_id_fkey": {
+          "name": "artists_country_id_fkey",
+          "tableFrom": "artists",
+          "tableTo": "countries",
+          "schemaTo": "public",
+          "columnsFrom": [
+            "country_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "restrict"
+        },
+        "artists_subdivision_id_fkey": {
+          "name": "artists_subdivision_id_fkey",
+          "tableFrom": "artists",
+          "tableTo": "subdivisions",
+          "schemaTo": "public",
+          "columnsFrom": [
+            "subdivision_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "restrict"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "artists_slug_key": {
+          "columns": [
+            "slug"
+          ],
+          "nullsNotDistinct": false,
+          "name": "artists_slug_key"
+        }
+      },
+      "checkConstraints": {},
+      "policies": {},
+      "isRLSEnabled": true
+    },
+    "public.countries": {
+      "name": "countries",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "nextval('countries_id_seq'::regclass)"
+        },
+        "code": {
+          "name": "code",
+          "type": "varchar(2)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar(100)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp(6) with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "is_eu": {
+          "name": "is_eu",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "countries_code_key": {
+          "columns": [
+            "code"
+          ],
+          "nullsNotDistinct": false,
+          "name": "countries_code_key"
+        }
+      },
+      "checkConstraints": {},
+      "policies": {},
+      "isRLSEnabled": true
+    },
+    "public.event_notes": {
+      "name": "event_notes",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "nextval('event_notes_id_seq'::regclass)"
+        },
+        "writer_id": {
+          "name": "writer_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "event_id": {
+          "name": "event_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "content": {
+          "name": "content",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp(6) with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "event_notes_event_id_fkey": {
+          "name": "event_notes_event_id_fkey",
+          "tableFrom": "event_notes",
+          "tableTo": "events",
+          "schemaTo": "public",
+          "columnsFrom": [
+            "event_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "event_notes_writer_id_fkey": {
+          "name": "event_notes_writer_id_fkey",
+          "tableFrom": "event_notes",
+          "tableTo": "users",
+          "schemaTo": "public",
+          "columnsFrom": [
+            "writer_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {},
+      "policies": {},
+      "isRLSEnabled": true
+    },
+    "public.mo_coordinators": {
+      "name": "mo_coordinators",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "nextval('mo_coordinators_id_seq'::regclass)"
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "surname": {
+          "name": "surname",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp(6) with time zone",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {},
+      "policies": {},
+      "isRLSEnabled": true
     },
     "public.users": {
       "name": "users",
@@ -372,7 +2073,7 @@
         },
         "role": {
           "name": "role",
-          "type": "user_role",
+          "type": "user_roles",
           "typeSchema": "public",
           "primaryKey": false,
           "notNull": true,
@@ -380,32 +2081,788 @@
         },
         "created_at": {
           "name": "created_at",
-          "type": "timestamp",
+          "type": "timestamp(6)",
           "primaryKey": false,
           "notNull": true
         },
         "updated_at": {
           "name": "updated_at",
-          "type": "timestamp",
+          "type": "timestamp(6)",
           "primaryKey": false,
           "notNull": true
+        },
+        "banned": {
+          "name": "banned",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "ban_reason": {
+          "name": "ban_reason",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "ban_expires": {
+          "name": "ban_expires",
+          "type": "timestamp(6)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "status": {
+          "name": "status",
+          "type": "user_status",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'waiting-for-approval'"
         }
       },
-      "indexes": {},
+      "indexes": {
+        "idx_users_email_trgm": {
+          "name": "idx_users_email_trgm",
+          "columns": [
+            {
+              "expression": "email",
+              "asc": true,
+              "nulls": "last",
+              "opclass": "gin_trgm_ops",
+              "isExpression": false
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "gin",
+          "with": {}
+        },
+        "idx_users_role": {
+          "name": "idx_users_role",
+          "columns": [
+            {
+              "expression": "role",
+              "asc": true,
+              "nulls": "last",
+              "opclass": "enum_ops",
+              "isExpression": false
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "idx_users_role_status": {
+          "name": "idx_users_role_status",
+          "columns": [
+            {
+              "expression": "role",
+              "asc": true,
+              "nulls": "last",
+              "opclass": "enum_ops",
+              "isExpression": false
+            },
+            {
+              "expression": "status",
+              "asc": true,
+              "nulls": "last",
+              "opclass": "enum_ops",
+              "isExpression": false
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "idx_users_status": {
+          "name": "idx_users_status",
+          "columns": [
+            {
+              "expression": "status",
+              "asc": true,
+              "nulls": "last",
+              "opclass": "enum_ops",
+              "isExpression": false
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
         "users_email_unique": {
-          "name": "users_email_unique",
-          "nullsNotDistinct": false,
           "columns": [
             "email"
-          ]
+          ],
+          "nullsNotDistinct": false,
+          "name": "users_email_unique"
         }
       },
-      "policies": {},
       "checkConstraints": {},
-      "isRLSEnabled": false
+      "policies": {},
+      "isRLSEnabled": true
+    },
+    "public.profile_notes": {
+      "name": "profile_notes",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "nextval('profile_notes_id_seq'::regclass)"
+        },
+        "writer_id": {
+          "name": "writer_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "receiver_profile_id": {
+          "name": "receiver_profile_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "content": {
+          "name": "content",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp(6) with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "profile_notes_receiver_profile_id_fkey": {
+          "name": "profile_notes_receiver_profile_id_fkey",
+          "tableFrom": "profile_notes",
+          "tableTo": "profiles",
+          "schemaTo": "public",
+          "columnsFrom": [
+            "receiver_profile_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "profile_notes_writer_id_fkey": {
+          "name": "profile_notes_writer_id_fkey",
+          "tableFrom": "profile_notes",
+          "tableTo": "users",
+          "schemaTo": "public",
+          "columnsFrom": [
+            "writer_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {},
+      "policies": {},
+      "isRLSEnabled": true
+    },
+    "public.venues": {
+      "name": "venues",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "nextval('venues_id_seq'::regclass)"
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "slug": {
+          "name": "slug",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "status": {
+          "name": "status",
+          "type": "user_status",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "avatar_url": {
+          "name": "avatar_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "type": {
+          "name": "type",
+          "type": "venue_types",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "capacity": {
+          "name": "capacity",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "address": {
+          "name": "address",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "country_id": {
+          "name": "country_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "subdivision_id": {
+          "name": "subdivision_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "city": {
+          "name": "city",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "zip_code": {
+          "name": "zip_code",
+          "type": "varchar(10)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "manager_profile_id": {
+          "name": "manager_profile_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "company": {
+          "name": "company",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "tax_code": {
+          "name": "tax_code",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "vat_code": {
+          "name": "vat_code",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "bic_code": {
+          "name": "bic_code",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "aba_routing_number": {
+          "name": "aba_routing_number",
+          "type": "varchar(20)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "sdi_recipient_code": {
+          "name": "sdi_recipient_code",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "billing_address": {
+          "name": "billing_address",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "billing_country_id": {
+          "name": "billing_country_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "billing_subdivision_id": {
+          "name": "billing_subdivision_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "billing_city": {
+          "name": "billing_city",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "billing_zip_code": {
+          "name": "billing_zip_code",
+          "type": "varchar(10)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "billing_email": {
+          "name": "billing_email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "billing_pec": {
+          "name": "billing_pec",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "billing_phone": {
+          "name": "billing_phone",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "taxable_invoice": {
+          "name": "taxable_invoice",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "tiktok_url": {
+          "name": "tiktok_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "tiktok_username": {
+          "name": "tiktok_username",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "tiktok_followers": {
+          "name": "tiktok_followers",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "tiktok_created_at": {
+          "name": "tiktok_created_at",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "facebook_url": {
+          "name": "facebook_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "facebook_username": {
+          "name": "facebook_username",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "facebook_followers": {
+          "name": "facebook_followers",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "facebook_created_at": {
+          "name": "facebook_created_at",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "instagram_url": {
+          "name": "instagram_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "instagram_username": {
+          "name": "instagram_username",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "instagram_followers": {
+          "name": "instagram_followers",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "instagram_created_at": {
+          "name": "instagram_created_at",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "x_url": {
+          "name": "x_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "x_username": {
+          "name": "x_username",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "x_followers": {
+          "name": "x_followers",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "x_created_at": {
+          "name": "x_created_at",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp(6) with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp(6) with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "bio": {
+          "name": "bio",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "idx_venues_address_trgm": {
+          "name": "idx_venues_address_trgm",
+          "columns": [
+            {
+              "expression": "address",
+              "asc": true,
+              "nulls": "last",
+              "opclass": "gin_trgm_ops",
+              "isExpression": false
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "gin",
+          "with": {}
+        },
+        "idx_venues_capacity": {
+          "name": "idx_venues_capacity",
+          "columns": [
+            {
+              "expression": "capacity",
+              "asc": true,
+              "nulls": "last",
+              "opclass": "int4_ops",
+              "isExpression": false
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "idx_venues_company_trgm": {
+          "name": "idx_venues_company_trgm",
+          "columns": [
+            {
+              "expression": "company",
+              "asc": true,
+              "nulls": "last",
+              "opclass": "gin_trgm_ops",
+              "isExpression": false
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "gin",
+          "with": {}
+        },
+        "idx_venues_created_at_desc": {
+          "name": "idx_venues_created_at_desc",
+          "columns": [
+            {
+              "expression": "created_at",
+              "asc": false,
+              "nulls": "first",
+              "opclass": "timestamptz_ops",
+              "isExpression": false
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "idx_venues_manager_profile_id": {
+          "name": "idx_venues_manager_profile_id",
+          "columns": [
+            {
+              "expression": "manager_profile_id",
+              "asc": true,
+              "nulls": "last",
+              "opclass": "int4_ops",
+              "isExpression": false
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "idx_venues_name_trgm": {
+          "name": "idx_venues_name_trgm",
+          "columns": [
+            {
+              "expression": "name",
+              "asc": true,
+              "nulls": "last",
+              "opclass": "gin_trgm_ops",
+              "isExpression": false
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "gin",
+          "with": {}
+        },
+        "idx_venues_tax_code_trgm": {
+          "name": "idx_venues_tax_code_trgm",
+          "columns": [
+            {
+              "expression": "tax_code",
+              "asc": true,
+              "nulls": "last",
+              "opclass": "gin_trgm_ops",
+              "isExpression": false
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "gin",
+          "with": {}
+        },
+        "idx_venues_type": {
+          "name": "idx_venues_type",
+          "columns": [
+            {
+              "expression": "type",
+              "asc": true,
+              "nulls": "last",
+              "opclass": "enum_ops",
+              "isExpression": false
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "venues_billing_country_id_fkey": {
+          "name": "venues_billing_country_id_fkey",
+          "tableFrom": "venues",
+          "tableTo": "countries",
+          "schemaTo": "public",
+          "columnsFrom": [
+            "billing_country_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        },
+        "venues_billing_subdivision_id_fkey": {
+          "name": "venues_billing_subdivision_id_fkey",
+          "tableFrom": "venues",
+          "tableTo": "subdivisions",
+          "schemaTo": "public",
+          "columnsFrom": [
+            "billing_subdivision_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        },
+        "venues_country_id_fkey": {
+          "name": "venues_country_id_fkey",
+          "tableFrom": "venues",
+          "tableTo": "countries",
+          "schemaTo": "public",
+          "columnsFrom": [
+            "country_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        },
+        "venues_manager_profile_id_fkey": {
+          "name": "venues_manager_profile_id_fkey",
+          "tableFrom": "venues",
+          "tableTo": "profiles",
+          "schemaTo": "public",
+          "columnsFrom": [
+            "manager_profile_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "venues_subdivision_id_fkey": {
+          "name": "venues_subdivision_id_fkey",
+          "tableFrom": "venues",
+          "tableTo": "subdivisions",
+          "schemaTo": "public",
+          "columnsFrom": [
+            "subdivision_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "venues_slug_key": {
+          "columns": [
+            "slug"
+          ],
+          "nullsNotDistinct": false,
+          "name": "venues_slug_key"
+        }
+      },
+      "checkConstraints": {},
+      "policies": {},
+      "isRLSEnabled": true
+    },
+    "public.artist_notes": {
+      "name": "artist_notes",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "nextval('artist_notes_id_seq'::regclass)"
+        },
+        "writer_id": {
+          "name": "writer_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "artist_id": {
+          "name": "artist_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "content": {
+          "name": "content",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp(6) with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "artist_notes_artist_id_fkey": {
+          "name": "artist_notes_artist_id_fkey",
+          "tableFrom": "artist_notes",
+          "tableTo": "artists",
+          "schemaTo": "public",
+          "columnsFrom": [
+            "artist_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "artist_notes_writer_id_fkey": {
+          "name": "artist_notes_writer_id_fkey",
+          "tableFrom": "artist_notes",
+          "tableTo": "users",
+          "schemaTo": "public",
+          "columnsFrom": [
+            "writer_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {},
+      "policies": {},
+      "isRLSEnabled": true
     },
     "public.verifications": {
       "name": "verifications",
@@ -431,19 +2888,19 @@
         },
         "expires_at": {
           "name": "expires_at",
-          "type": "timestamp",
+          "type": "timestamp(6)",
           "primaryKey": false,
           "notNull": true
         },
         "created_at": {
           "name": "created_at",
-          "type": "timestamp",
+          "type": "timestamp(6)",
           "primaryKey": false,
           "notNull": false
         },
         "updated_at": {
           "name": "updated_at",
-          "type": "timestamp",
+          "type": "timestamp(6)",
           "primaryKey": false,
           "notNull": false
         }
@@ -452,40 +2909,671 @@
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
-      "policies": {},
       "checkConstraints": {},
-      "isRLSEnabled": false
+      "policies": {},
+      "isRLSEnabled": true
+    },
+    "public.sessions": {
+      "name": "sessions",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "expires_at": {
+          "name": "expires_at",
+          "type": "timestamp(6)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "token": {
+          "name": "token",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp(6)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp(6)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "ip_address": {
+          "name": "ip_address",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "user_agent": {
+          "name": "user_agent",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "impersonated_by": {
+          "name": "impersonated_by",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "sessions_user_id_users_id_fk": {
+          "name": "sessions_user_id_users_id_fk",
+          "tableFrom": "sessions",
+          "tableTo": "users",
+          "schemaTo": "public",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "sessions_token_unique": {
+          "columns": [
+            "token"
+          ],
+          "nullsNotDistinct": false,
+          "name": "sessions_token_unique"
+        }
+      },
+      "checkConstraints": {},
+      "policies": {},
+      "isRLSEnabled": true
+    },
+    "public.artist_zones": {
+      "name": "artist_zones",
+      "schema": "",
+      "columns": {
+        "artist_id": {
+          "name": "artist_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "zone_id": {
+          "name": "zone_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp(6) with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "artist_zones_artist_id_fkey": {
+          "name": "artist_zones_artist_id_fkey",
+          "tableFrom": "artist_zones",
+          "tableTo": "artists",
+          "schemaTo": "public",
+          "columnsFrom": [
+            "artist_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "artist_zones_zone_id_fkey": {
+          "name": "artist_zones_zone_id_fkey",
+          "tableFrom": "artist_zones",
+          "tableTo": "zones",
+          "schemaTo": "public",
+          "columnsFrom": [
+            "zone_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "artist_zones_pkey": {
+          "name": "artist_zones_pkey",
+          "columns": [
+            "artist_id",
+            "zone_id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraints": {},
+      "policies": {},
+      "isRLSEnabled": true
+    },
+    "public.manager_artists": {
+      "name": "manager_artists",
+      "schema": "",
+      "columns": {
+        "manager_profile_id": {
+          "name": "manager_profile_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "artist_id": {
+          "name": "artist_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp(6) with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "manager_artists_artist_id_fkey": {
+          "name": "manager_artists_artist_id_fkey",
+          "tableFrom": "manager_artists",
+          "tableTo": "artists",
+          "schemaTo": "public",
+          "columnsFrom": [
+            "artist_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "manager_artists_manager_profile_id_fkey": {
+          "name": "manager_artists_manager_profile_id_fkey",
+          "tableFrom": "manager_artists",
+          "tableTo": "profiles",
+          "schemaTo": "public",
+          "columnsFrom": [
+            "manager_profile_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "manager_artists_pkey": {
+          "name": "manager_artists_pkey",
+          "columns": [
+            "manager_profile_id",
+            "artist_id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraints": {},
+      "policies": {},
+      "isRLSEnabled": true
+    },
+    "public.profile_languages": {
+      "name": "profile_languages",
+      "schema": "",
+      "columns": {
+        "profile_id": {
+          "name": "profile_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "language_id": {
+          "name": "language_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp(6) with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "profile_languages_language_id_fkey": {
+          "name": "profile_languages_language_id_fkey",
+          "tableFrom": "profile_languages",
+          "tableTo": "languages",
+          "schemaTo": "public",
+          "columnsFrom": [
+            "language_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "profile_languages_profile_id_fkey": {
+          "name": "profile_languages_profile_id_fkey",
+          "tableFrom": "profile_languages",
+          "tableTo": "profiles",
+          "schemaTo": "public",
+          "columnsFrom": [
+            "profile_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "profile_languages_pkey": {
+          "name": "profile_languages_pkey",
+          "columns": [
+            "profile_id",
+            "language_id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraints": {},
+      "policies": {},
+      "isRLSEnabled": true
+    },
+    "public.artist_languages": {
+      "name": "artist_languages",
+      "schema": "",
+      "columns": {
+        "artist_id": {
+          "name": "artist_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "language_id": {
+          "name": "language_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp(6) with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "artist_languages_artist_id_fkey": {
+          "name": "artist_languages_artist_id_fkey",
+          "tableFrom": "artist_languages",
+          "tableTo": "artists",
+          "schemaTo": "public",
+          "columnsFrom": [
+            "artist_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "artist_languages_language_id_fkey": {
+          "name": "artist_languages_language_id_fkey",
+          "tableFrom": "artist_languages",
+          "tableTo": "languages",
+          "schemaTo": "public",
+          "columnsFrom": [
+            "language_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "artist_languages_pkey": {
+          "name": "artist_languages_pkey",
+          "columns": [
+            "artist_id",
+            "language_id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraints": {},
+      "policies": {},
+      "isRLSEnabled": true
     }
   },
   "enums": {
-    "public.gender_enum": {
-      "name": "gender_enum",
-      "schema": "public",
+    "public.availability_status": {
+      "name": "availability_status",
       "values": [
-        "maschile",
-        "femminile",
-        "Non-binary"
-      ]
+        "available",
+        "booked",
+        "expired"
+      ],
+      "schema": "public"
     },
-    "public.user_role": {
-      "name": "user_role",
-      "schema": "public",
+    "public.event_status": {
+      "name": "event_status",
       "values": [
-        "admin",
+        "proposed",
+        "pre-confirmed",
+        "confirmed",
+        "rejected",
+        "ended"
+      ],
+      "schema": "public"
+    },
+    "public.profile_genders": {
+      "name": "profile_genders",
+      "values": [
+        "male",
+        "female",
+        "non-binary"
+      ],
+      "schema": "public"
+    },
+    "public.user_roles": {
+      "name": "user_roles",
+      "values": [
+        "user",
         "artist-manager",
         "venue-manager",
-        "user"
-      ]
+        "admin"
+      ],
+      "schema": "public"
+    },
+    "public.user_status": {
+      "name": "user_status",
+      "values": [
+        "active",
+        "waiting-for-approval",
+        "disabled",
+        "banned"
+      ],
+      "schema": "public"
+    },
+    "public.venue_types": {
+      "name": "venue_types",
+      "values": [
+        "small",
+        "medium",
+        "big"
+      ],
+      "schema": "public"
     }
   },
   "schemas": {},
-  "sequences": {},
+  "sequences": {
+    "public.artist_availabilities_id_seq": {
+      "name": "artist_availabilities_id_seq",
+      "schema": "public",
+      "startWith": "1",
+      "minValue": "1",
+      "maxValue": "2147483647",
+      "increment": "1",
+      "cycle": false,
+      "cache": "1"
+    },
+    "public.artist_notes_id_seq": {
+      "name": "artist_notes_id_seq",
+      "schema": "public",
+      "startWith": "1",
+      "minValue": "1",
+      "maxValue": "2147483647",
+      "increment": "1",
+      "cycle": false,
+      "cache": "1"
+    },
+    "public.artists_id_seq": {
+      "name": "artists_id_seq",
+      "schema": "public",
+      "startWith": "1",
+      "minValue": "1",
+      "maxValue": "2147483647",
+      "increment": "1",
+      "cycle": false,
+      "cache": "1"
+    },
+    "public.countries_id_seq": {
+      "name": "countries_id_seq",
+      "schema": "public",
+      "startWith": "1",
+      "minValue": "1",
+      "maxValue": "2147483647",
+      "increment": "1",
+      "cycle": false,
+      "cache": "1"
+    },
+    "public.event_notes_id_seq": {
+      "name": "event_notes_id_seq",
+      "schema": "public",
+      "startWith": "1",
+      "minValue": "1",
+      "maxValue": "2147483647",
+      "increment": "1",
+      "cycle": false,
+      "cache": "1"
+    },
+    "public.events_id_seq": {
+      "name": "events_id_seq",
+      "schema": "public",
+      "startWith": "1",
+      "minValue": "1",
+      "maxValue": "2147483647",
+      "increment": "1",
+      "cycle": false,
+      "cache": "1"
+    },
+    "public.languages_id_seq": {
+      "name": "languages_id_seq",
+      "schema": "public",
+      "startWith": "1",
+      "minValue": "1",
+      "maxValue": "2147483647",
+      "increment": "1",
+      "cycle": false,
+      "cache": "1"
+    },
+    "public.mo_coordinators_id_seq": {
+      "name": "mo_coordinators_id_seq",
+      "schema": "public",
+      "startWith": "1",
+      "minValue": "1",
+      "maxValue": "2147483647",
+      "increment": "1",
+      "cycle": false,
+      "cache": "1"
+    },
+    "public.profile_notes_id_seq": {
+      "name": "profile_notes_id_seq",
+      "schema": "public",
+      "startWith": "1",
+      "minValue": "1",
+      "maxValue": "2147483647",
+      "increment": "1",
+      "cycle": false,
+      "cache": "1"
+    },
+    "public.profiles_id_seq": {
+      "name": "profiles_id_seq",
+      "schema": "public",
+      "startWith": "1",
+      "minValue": "1",
+      "maxValue": "2147483647",
+      "increment": "1",
+      "cycle": false,
+      "cache": "1"
+    },
+    "public.subdivisions_id_seq": {
+      "name": "subdivisions_id_seq",
+      "schema": "public",
+      "startWith": "1",
+      "minValue": "1",
+      "maxValue": "2147483647",
+      "increment": "1",
+      "cycle": false,
+      "cache": "1"
+    },
+    "public.venues_id_seq": {
+      "name": "venues_id_seq",
+      "schema": "public",
+      "startWith": "1",
+      "minValue": "1",
+      "maxValue": "2147483647",
+      "increment": "1",
+      "cycle": false,
+      "cache": "1"
+    },
+    "public.zones_id_seq": {
+      "name": "zones_id_seq",
+      "schema": "public",
+      "startWith": "1",
+      "minValue": "1",
+      "maxValue": "2147483647",
+      "increment": "1",
+      "cycle": false,
+      "cache": "1"
+    }
+  },
   "roles": {},
   "policies": {},
   "views": {},
   "_meta": {
-    "columns": {},
     "schemas": {},
-    "tables": {}
+    "tables": {},
+    "columns": {}
+  },
+  "internal": {
+    "tables": {
+      "artist_availabilities": {
+        "columns": {
+          "id": {
+            "isDefaultAnExpression": true
+          }
+        }
+      },
+      "languages": {
+        "columns": {
+          "id": {
+            "isDefaultAnExpression": true
+          }
+        }
+      },
+      "subdivisions": {
+        "columns": {
+          "id": {
+            "isDefaultAnExpression": true
+          }
+        }
+      },
+      "events": {
+        "columns": {
+          "id": {
+            "isDefaultAnExpression": true
+          }
+        }
+      },
+      "profiles": {
+        "columns": {
+          "id": {
+            "isDefaultAnExpression": true
+          }
+        }
+      },
+      "zones": {
+        "columns": {
+          "id": {
+            "isDefaultAnExpression": true
+          }
+        }
+      },
+      "artists": {
+        "columns": {
+          "id": {
+            "isDefaultAnExpression": true
+          }
+        }
+      },
+      "countries": {
+        "columns": {
+          "id": {
+            "isDefaultAnExpression": true
+          }
+        }
+      },
+      "event_notes": {
+        "columns": {
+          "id": {
+            "isDefaultAnExpression": true
+          }
+        }
+      },
+      "mo_coordinators": {
+        "columns": {
+          "id": {
+            "isDefaultAnExpression": true
+          }
+        }
+      },
+      "profile_notes": {
+        "columns": {
+          "id": {
+            "isDefaultAnExpression": true
+          }
+        }
+      },
+      "venues": {
+        "columns": {
+          "id": {
+            "isDefaultAnExpression": true
+          }
+        }
+      },
+      "artist_notes": {
+        "columns": {
+          "id": {
+            "isDefaultAnExpression": true
+          }
+        }
+      }
+    }
   }
 }

@@ -5,20 +5,24 @@ import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import { cn, fetcher } from '@/lib/utils';
 import { Select, SelectContent, SelectItem, SelectTrigger } from '@/components/ui/select';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Country, Subdivision } from '@/lib/types';
 import useSWR from 'swr';
 import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
+import { VenueS2FormSchema } from '@/lib/validation/venue-form-schema';
 
-export default function StepTwo({ countries }: { countries: Country[] }) {
+type StepTwoProps = {
+  countries: Country[];
+};
+
+export default function StepTwo({ countries }: StepTwoProps) {
   const {
     register,
     control,
     watch,
     setValue,
     formState: { errors },
-  } = useFormContext();
+  } = useFormContext<VenueS2FormSchema>();
 
   const [subdivisions, setSubdivisions] = useState<Subdivision[]>([]);
 
@@ -82,99 +86,15 @@ export default function StepTwo({ countries }: { countries: Country[] }) {
     <>
       <div className='flex flex-col'>
         <label
-          htmlFor='company'
-          className='block text-sm font-semibold mb-2'
-        >
-          Ragione sociale
-        </label>
-        <Input
-          id='company'
-          {...register('company')}
-          placeholder='Inserisci la ragione sociale'
-          className={errors.company ? 'border-destructive text-destructive' : ''}
-        />
-        {errors.company && (
-          <p className='text-xs text-destructive mt-2'>{errors.company.message as string}</p>
-        )}
-      </div>
-      <div className='grid grid-cols-2 gap-4'>
-        <div className='flex flex-col'>
-          <label
-            htmlFor='taxCode'
-            className='block text-sm font-semibold mb-2'
-          >
-            Codice fiscale
-          </label>
-          <Input
-            id='taxCode'
-            {...register('taxCode', {
-              onChange: (e) => {
-                e.target.value = e.target.value.toUpperCase();
-              },
-            })}
-            placeholder='Inserisci il codice fiscale'
-            className={errors.taxCode ? 'border-destructive text-destructive' : ''}
-          />
-          {errors.taxCode && (
-            <p className='text-xs text-destructive mt-2'>{errors.taxCode.message as string}</p>
-          )}
-        </div>
-        <div className='flex flex-col'>
-          <label
-            htmlFor='ipiCode'
-            className='block text-sm font-semibold mb-2'
-          >
-            Codice IPI
-          </label>
-          <Input
-            id='ipiCode'
-            placeholder='Inserisci il codice IPI'
-            inputMode='numeric'
-            {...register('ipiCode', {
-              onChange: (e) => {
-                e.target.value = e.target.value.replace(/\D/g, '');
-              },
-            })}
-            className={errors.ipiCode ? 'border-destructive text-destructive' : ''}
-          />
-          {errors.ipiCode && (
-            <p className='text-xs text-destructive mt-2'>{errors.ipiCode.message as string}</p>
-          )}
-        </div>
-      </div>
-      <div className='flex flex-col'>
-        <label
-          htmlFor='iban'
-          className='block text-sm font-semibold mb-2'
-        >
-          IBAN
-        </label>
-        <Input
-          id='iban'
-          {...register('iban', {
-            onChange: (e) => {
-              e.target.value = e.target.value.toUpperCase();
-            },
-          })}
-          placeholder="Inserisci l'IBAN"
-          className={errors.iban ? 'border-destructive text-destructive' : ''}
-        />
-        {errors.iban && (
-          <p className='text-xs text-destructive mt-2'>{errors.iban.message as string}</p>
-        )}
-      </div>
-      <Separator className='my-4' />
-      <div className='flex flex-col'>
-        <label
           htmlFor='billingAddress'
           className='block text-sm font-semibold mb-2'
         >
-          Indirizzo di fatturazione
+          Sede legale
         </label>
         <Input
           id='billingAddress'
           {...register('billingAddress')}
-          placeholder="Inserisci l'indirizzo di fatturazione"
+          placeholder='Inserisci sede legale'
           className={errors.billingAddress ? 'border-destructive text-destructive' : ''}
         />
         {errors.billingAddress && (
@@ -187,7 +107,7 @@ export default function StepTwo({ countries }: { countries: Country[] }) {
             htmlFor='billingCountryId'
             className='block text-sm font-semibold mb-2'
           >
-            Stato di fatturazione
+            Nazione
           </label>
           <Controller
             control={control}
@@ -207,7 +127,7 @@ export default function StepTwo({ countries }: { countries: Country[] }) {
                   )}
                   size='sm'
                 >
-                  {field.value?.name ?? 'seleziona stato'}
+                  {field.value?.name ?? 'seleziona nazione'}
                 </SelectTrigger>
                 <SelectContent>
                   {countries.map((country) => (
@@ -275,6 +195,7 @@ export default function StepTwo({ countries }: { countries: Country[] }) {
           )}
         </div>
       </div>
+
       <div className='grid grid-cols-2 gap-4'>
         <div className='flex flex-col'>
           <label
@@ -318,7 +239,75 @@ export default function StepTwo({ countries }: { countries: Country[] }) {
           )}
         </div>
       </div>
+
       <Separator className='my-4' />
+
+      <div className='flex flex-col'>
+        <label
+          htmlFor='company'
+          className='block text-sm font-semibold mb-2'
+        >
+          Ragione sociale
+        </label>
+        <Input
+          id='company'
+          {...register('company')}
+          placeholder='Inserisci la ragione sociale'
+          className={errors.company ? 'border-destructive text-destructive' : ''}
+        />
+        {errors.company && (
+          <p className='text-xs text-destructive mt-2'>{errors.company.message as string}</p>
+        )}
+      </div>
+
+      <div className='grid grid-cols-2 gap-4'>
+        <div className='flex flex-col'>
+          <label
+            htmlFor='taxCode'
+            className='block text-sm font-semibold mb-2'
+          >
+            Codice fiscale
+          </label>
+          <Input
+            id='taxCode'
+            {...register('taxCode', {
+              onChange: (e) => {
+                e.target.value = e.target.value.toUpperCase();
+              },
+            })}
+            placeholder='Inserisci il codice fiscale'
+            className={errors.taxCode ? 'border-destructive text-destructive' : ''}
+          />
+          {errors.taxCode && (
+            <p className='text-xs text-destructive mt-2'>{errors.taxCode.message as string}</p>
+          )}
+        </div>
+        <div className='flex flex-col'>
+          <label
+            htmlFor='vatCode'
+            className='block text-sm font-semibold mb-2'
+          >
+            Partita IVA
+          </label>
+          <Input
+            id='vatCode'
+            placeholder='Inserisci la partita IVA'
+            inputMode='numeric'
+            {...register('vatCode', {
+              onChange: (e) => {
+                e.target.value = e.target.value.replace(/\D/g, '');
+              },
+            })}
+            className={errors.vatCode ? 'border-destructive text-destructive' : ''}
+          />
+          {errors.vatCode && (
+            <p className='text-xs text-destructive mt-2'>{errors.vatCode.message as string}</p>
+          )}
+        </div>
+      </div>
+
+      <Separator className='my-4' />
+
       <div className='grid grid-cols-2 gap-4'>
         <div className='flex flex-col'>
           <label
@@ -374,6 +363,31 @@ export default function StepTwo({ countries }: { countries: Country[] }) {
           <p className='text-xs text-destructive mt-2'>{errors.billingPec.message as string}</p>
         )}
       </div>
+      {isITA && (
+        <div className='flex flex-col'>
+          <label
+            htmlFor='sdiRecipientCode'
+            className='block text-sm font-semibold mb-2'
+          >
+            Codice destinatario SDI
+          </label>
+          <Input
+            id='sdiRecipientCode'
+            {...register('sdiRecipientCode', {
+              onChange: (e) => {
+                e.target.value = e.target.value.toUpperCase();
+              },
+            })}
+            placeholder='Inserisci il codice destinatario SDI'
+            className={errors.sdiRecipientCode ? 'border-destructive text-destructive' : ''}
+          />
+          {errors.sdiRecipientCode && (
+            <p className='text-xs text-destructive mt-2'>
+              {errors.sdiRecipientCode.message as string}
+            </p>
+          )}
+        </div>
+      )}
       {!isEU && (
         <div className='flex flex-col'>
           <label
@@ -423,73 +437,6 @@ export default function StepTwo({ countries }: { countries: Country[] }) {
           )}
         </div>
       )}
-      {isITA && (
-        <div className='flex flex-col'>
-          <label
-            htmlFor='sdiRecipientCode'
-            className='block text-sm font-semibold mb-2'
-          >
-            Codice destinatario SDI
-          </label>
-          <Input
-            id='sdiRecipientCode'
-            {...register('sdiRecipientCode', {
-              onChange: (e) => {
-                e.target.value = e.target.value.toUpperCase();
-              },
-            })}
-            placeholder='Inserisci il codice destinatario SDI'
-            className={errors.sdiRecipientCode ? 'border-destructive text-destructive' : ''}
-          />
-          {errors.sdiRecipientCode && (
-            <p className='text-xs text-destructive mt-2'>
-              {errors.sdiRecipientCode.message as string}
-            </p>
-          )}
-        </div>
-      )}
-      <Separator className='my-4' />
-      <div className='flex flex-col'>
-        <label
-          htmlFor='taxableInvoice'
-          className='block text-sm font-semibold mb-2'
-        >
-          Riporta imponibile in fattura
-        </label>
-        <Controller
-          control={control}
-          name='taxableInvoice'
-          render={({ field }) => (
-            <RadioGroup
-              value={field.value}
-              onValueChange={(value) => field.onChange(value)}
-              className='flex flex-wrap gap-2'
-            >
-              <label
-                className={cn(
-                  'h-10 flex items-center gap-2 text-sm p-2 rounded-xl border hover:cursor-pointer',
-                  errors.taxableInvoice && 'border-destructive text-destructive',
-                )}
-              >
-                <RadioGroupItem value={'true'} />
-                Sì
-              </label>
-              <label
-                className={cn(
-                  'h-10 flex items-center gap-2 text-sm p-2 rounded-xl border hover:cursor-pointer',
-                  errors.taxableInvoice && 'border-destructive text-destructive',
-                )}
-              >
-                <RadioGroupItem value={'false'} />
-                No
-              </label>
-            </RadioGroup>
-          )}
-        />
-        {errors.taxableInvoice && (
-          <p className='text-xs text-destructive mt-2'>{errors.taxableInvoice.message as string}</p>
-        )}
-      </div>
     </>
   );
 }

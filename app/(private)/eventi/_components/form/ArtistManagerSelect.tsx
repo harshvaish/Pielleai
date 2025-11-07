@@ -9,6 +9,7 @@ import { ArtistManagerSelectData } from '@/lib/types';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import { EventFormSchema } from '@/lib/validation/event-form-schema';
+import { AVATAR_FALLBACK } from '@/lib/constants';
 
 export default function ArtistManagerSelect() {
   const { watch, control, formState } = useFormContext<EventFormSchema>();
@@ -63,7 +64,7 @@ export default function ArtistManagerSelect() {
               >
                 <div className='flex items-center gap-2 flex-nowrap'>
                   <Image
-                    src={manager.avatarUrl}
+                    src={manager.avatarUrl || AVATAR_FALLBACK}
                     alt='Immagine profilo utente'
                     height={24}
                     width={24}

@@ -1,6 +1,5 @@
 'server only';
 
-import { users } from '@/drizzle/schema';
 import { database } from '@/lib/database/connection';
 import {
   artistLanguages,
@@ -12,6 +11,7 @@ import {
   zones,
   managerArtists,
   profiles,
+  users,
 } from '@/lib/database/schema';
 import { ArtistData } from '@/lib/types';
 import { eq } from 'drizzle-orm';
@@ -109,10 +109,10 @@ export async function getArtist(slug: string): Promise<ArtistData | null> {
         xCreatedAt: artists.xCreatedAt,
       })
       .from(artists)
-      .innerJoin(country, eq(artists.countryId, country.id))
-      .innerJoin(subdivision, eq(artists.subdivisionId, subdivision.id))
-      .innerJoin(billingCountry, eq(artists.billingCountryId, billingCountry.id))
-      .innerJoin(billingSubdivision, eq(artists.billingSubdivisionId, billingSubdivision.id))
+      .leftJoin(country, eq(artists.countryId, country.id))
+      .leftJoin(subdivision, eq(artists.subdivisionId, subdivision.id))
+      .leftJoin(billingCountry, eq(artists.billingCountryId, billingCountry.id))
+      .leftJoin(billingSubdivision, eq(artists.billingSubdivisionId, billingSubdivision.id))
       .where(eq(artists.slug, slug))
       .groupBy(artists.id, country.id, subdivision.id, billingCountry.id, billingSubdivision.id)
       .limit(1);

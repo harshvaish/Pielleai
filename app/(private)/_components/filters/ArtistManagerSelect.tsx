@@ -15,6 +15,7 @@ import { Check, Eraser } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useEffect, useState } from 'react';
 import ResponsivePopover from '@/app/_components/ResponsivePopover';
+import { AVATAR_FALLBACK } from '@/lib/constants';
 
 export default function ArtistManagerSelect({
   initialValue,
@@ -83,7 +84,7 @@ export default function ArtistManagerSelect({
                     <div className='w-full flex justify-between items-center gap-2 hover:cursor-pointer'>
                       <div className='flex items-center gap-2 truncate'>
                         <Avatar className='w-6 h-6'>
-                          <AvatarImage src={manager.avatarUrl} />
+                          <AvatarImage src={manager.avatarUrl || AVATAR_FALLBACK} />
                           <AvatarFallback>
                             {manager.name.substring(0, 1).toUpperCase()}
                           </AvatarFallback>

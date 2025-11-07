@@ -1,3 +1,4 @@
+import { AVATAR_FALLBACK } from '@/lib/constants';
 import { VenueTableData } from '@/lib/types';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -10,7 +11,7 @@ export default function VenueCard({ venue }: VenueCardProps) {
   return (
     <div className='grid grid-cols-[max-content_1fr] gap-4'>
       <Image
-        src={venue.avatarUrl}
+        src={venue.avatarUrl || AVATAR_FALLBACK}
         alt={`Immagine locale ${venue.name}`}
         width={240}
         height={312}
@@ -18,7 +19,7 @@ export default function VenueCard({ venue }: VenueCardProps) {
       />
       <div className='flex flex-col gap-4'>
         <div className='text-xl font-bold'>{venue.name}</div>
-        <div className='text-xs font-medium text-zinc-500'>{venue.bio}</div>
+        {venue.bio && <div className='text-xs font-medium text-zinc-500'>{venue.bio}</div>}
 
         <div className='flex items-center gap-2'>
           {venue.tiktokUrl && (
