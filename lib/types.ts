@@ -2,6 +2,7 @@ import { Event as RbcEvent } from 'react-big-calendar';
 import {
   availabilityStatus,
   eventStatus,
+  contractStatus,
   profileGenders,
   userRoles,
   userStatus,
@@ -32,6 +33,7 @@ export type Gender = (typeof profileGenders.enumValues)[number];
 export type UserRole = (typeof userRoles.enumValues)[number];
 export type UserStatus = (typeof userStatus.enumValues)[number];
 export type VenueType = (typeof venueTypes.enumValues)[number];
+export type ContractStatus  = (typeof contractStatus.enumValues)[number];
 
 // users
 export type UserToApprove = {

@@ -39,6 +39,15 @@ export const userStatus = pgEnum('user_status', [
 ]);
 export const venueTypes = pgEnum('venue_types', ['small', 'medium', 'big']);
 
+export const contractStatus = pgEnum('contract_status', [
+  'all',
+  'to-sign',
+  'signed',
+  'refused',
+  'error',
+  'archived',
+]);
+
 export const sessions = pgTable(
   'sessions',
   {
@@ -641,6 +650,28 @@ export const events = pgTable(
       table.availabilityId,
       table.venueId,
     ),
+  ],
+);
+
+export const contracts = pgTable(
+  'contracts',
+  {
+    id: serial().primaryKey().notNull(),
+    eventId: integer('event_id').notNull(),
+    status: contractStatus().default('to-sign').notNull(),
+    fileUrl: text('file_url'),
+    fileName: text('file_name'),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    index('idx_contracts_status').using('btree', table.status.asc().nullsLast().op('enum_ops')),
+    foreignKey({
+      columns: [table.eventId],
+      foreignColumns: [events.id],
+      name: 'contracts_event_id_fkey',
+    }).onDelete('cascade'),
+    unique('contracts_event_id_key').on(table.eventId),
   ],
 );
 

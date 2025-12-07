@@ -1,5 +1,5 @@
 import { View } from 'react-big-calendar';
-import { EventStatus, Gender, NavbarLink, VenueType } from './types';
+import { ContractStatus, EventStatus, Gender, NavbarLink, VenueType } from './types';
 
 export const TIME_ZONE = 'Europe/Rome';
 
@@ -71,6 +71,15 @@ export const NAVBAR_LINKS: NavbarLink[] = [
     visibleTo: ['admin', 'venue-manager', 'artist-manager'],
     separator: false,
   },
+  {
+    label: 'Contract Managment',
+    href: '/contract-managment',
+    iconSrc: '/images/navbar-icons/contract-management.svg',
+    iconAlt: 'icona Contract managment',
+    visibleTo: ['admin', 'venue-manager', 'artist-manager'],
+    separator: false,
+  },
+
 ];
 
 // avatar upload
@@ -112,4 +121,15 @@ export const VENUE_TYPE_LABELS: Record<VenueType, string> = {
   small: 'Piccola < 3.000',
   medium: 'Media > 3.000',
   big: 'Grande > 10.000',
+};
+
+//events
+export const CONTRACT_STATUS_LABELS: Record<ContractStatus, string> = {
+  'all': 'All',
+  'to-sign': 'To sign',
+  'signed': 'Signed',
+  'refused': 'Refused',
+  'error': 'Error',
+  'archived': 'Archived',
+
 };

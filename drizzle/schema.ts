@@ -29,6 +29,13 @@ export const eventStatus = pgEnum('event_status', [
   'rejected',
   'ended',
 ]);
+export const contractStatus = pgEnum('contract_status', [
+  'all',
+  'pre-confirmed',
+  'confirmed',
+  'rejected',
+  'ended',
+]);
 export const profileGenders = pgEnum('profile_genders', ['male', 'female', 'non-binary']);
 export const userRoles = pgEnum('user_roles', ['user', 'artist-manager', 'venue-manager', 'admin']);
 export const userStatus = pgEnum('user_status', [
