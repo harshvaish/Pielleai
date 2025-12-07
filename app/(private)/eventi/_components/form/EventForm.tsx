@@ -18,6 +18,8 @@ import { EventFormSchema } from '@/lib/validation/event-form-schema';
 import ArtistAvailabilitySelectWithCreate from './ArtistAvailabilitySelectWithCreate';
 import EventStatusBadge from '@/app/(private)/_components/Badges/EventStatusBadge';
 import { useEffect, useMemo } from 'react';
+import { Button } from '@/components/ui/button';
+import { QUESTION_ICON, UPLOAD_ICON, FILE_ICON, DOWNLOAD_ICON, DELETE_ICON, CIRCLE_RIGHT_ICON } from '@/lib/constants';
 
 type EventForm = {
   artists: ArtistSelectData[];
@@ -105,6 +107,13 @@ export default function EventForm({ artists, venues, moCoordinators }: EventForm
   useEffect(() => {
     setValue('cashBalanceCost', cashBalanceCost);
   }, [cashBalanceCost, setValue]);
+
+  const contractStatusOptions = [
+    { value: "draft", label: "Draft" },
+    { value: "pending", label: "Pending" },
+    { value: "ready", label: "Ready" },
+    { value: "sent", label: "Sent to DocuSign" },
+  ];
 
   return (
     <>
@@ -202,6 +211,7 @@ export default function EventForm({ artists, venues, moCoordinators }: EventForm
           <TabsTrigger value='b'>Financial</TabsTrigger>
           <TabsTrigger value='c'>Scheda tecnica</TabsTrigger>
           <TabsTrigger value='d'>Attività</TabsTrigger>
+          <TabsTrigger value='e'>Contract</TabsTrigger>
         </TabsList>
 
         <TabsContent
@@ -971,6 +981,208 @@ export default function EventForm({ artists, venues, moCoordinators }: EventForm
             )}
           </div>
         </TabsContent>
+        <TabsContent value="e" className="flex flex-col gap-6 p-2">
+
+          {/* STATUS BAR */}
+          <div className="flex justify-between items-start">
+
+            <div className="flex flex-col gap-1">
+              <Controller
+                control={control}
+                name="contractStatus"
+                render={({ field }) => {
+                  const selected = contractStatusOptions.find(s => s.value === field.value);
+                  const isMissing = !selected;
+
+                  return (
+                    <Select value={field.value} onValueChange={field.onChange}>
+                      <SelectTrigger
+                        id="contractStatus"
+                        className=
+                        "h-8 w-40 rounded-xl flex items-center gap-2 px-3 text-xs font-medium"
+
+
+                        size="sm"
+                      >
+
+                        {/* Label (Missing data or selected label) */}
+                        <span className={cn(
+                          "truncate",
+                          !selected ? "text-[#D97706]" : ""
+                        )}>
+                          {selected?.label ?? "Missing data"}
+                        </span>
+
+                        {/* Question icon (always inside, on right) */}
+                        <img
+                          src={isMissing ? QUESTION_ICON : CIRCLE_RIGHT_ICON}
+                          alt="info"
+                          width={14}
+                          height={14}
+                          className="opacity-80 ml-auto"
+                        />
+                      </SelectTrigger>
+
+                      <SelectContent>
+                        {contractStatusOptions.map(status => (
+                          <SelectItem key={status.value} value={status.value}>
+                            {status.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  );
+                }}
+              />
+
+
+
+              <span className="text-xs text-zinc-500">
+                Status changed on 13/11/25 by Ann Carrot
+              </span>
+            </div>
+
+            {/* BUTTONS */}
+            <div className="flex items-center gap-2">
+              <button
+                disabled
+                className="
+        h-10 px-4 rounded-xl 
+        bg-zinc-100 border border-zinc-200 
+        text-zinc-400 
+        text-sm cursor-not-allowed
+      "
+              >
+                Regenerate
+              </button>
+
+              <Button
+                type='button'
+                size='sm'
+                className='max-w-max'
+              >      Send to DocuSign
+              </Button>
+            </div>
+          </div>
+
+
+          {/* CONTRACT FILE BLOCK */}
+          <div className="flex flex-col gap-2">
+
+            <div className="text-sm font-semibold">Contract file</div>
+
+            <Controller
+              control={control}
+              name="signedContractDocument"
+              render={({ field }) => (
+                <>
+                  {/* -------- CASE: FILE EXISTS -------- */}
+                  {field.value?.name ? (
+                    <div className="flex items-center gap-3 w-fit">
+
+                      {/* FILE CHIP */}
+                      <div
+                        className="
+                flex items-center gap-2
+                bg-white 
+                border border-zinc-300 
+                rounded-full 
+                px-4 py-1.5 
+                shadow-sm
+                w-fit
+              "
+                      >
+                        {/* File icon from assets */}
+                        <img
+                          src={FILE_ICON}
+                          alt="file"
+                          className="w-4 h-4"
+                        />
+
+                        {/* File Name */}
+                        <span className="text-sm text-zinc-800 font-medium">
+                          {field.value.name}
+                        </span>
+                      </div>
+
+                      {/* DOWNLOAD */}
+                      <button
+                        type="button"
+                        onClick={() => window.open(field.value.url, "_blank")}
+                        className="text-zinc-600 hover:text-zinc-900"
+                      >
+                        <img
+                          src={DOWNLOAD_ICON}
+                          alt="download"
+                          className="w-4 h-4 opacity-80 hover:opacity-100"
+                        />
+                      </button>
+
+                      {/* DELETE */}
+                      <button
+                        type="button"
+                        onClick={() => field.onChange(undefined)}
+                        className="text-red-500 hover:text-red-700"
+                      >
+                        <img
+                          src={DELETE_ICON}
+                          alt="delete"
+                          className="w-4 h-4 opacity-80 hover:opacity-100"
+                        />
+                      </button>
+                    </div>
+                  ) : (
+                    /* -------- CASE: NO FILE YET -------- */
+                    <button
+                      type="button"
+                      className="
+              flex items-center gap-2 
+              bg-white 
+              border border-zinc-300 
+              rounded-xl 
+              px-4 py-2 
+              text-sm text-zinc-700 
+              shadow-sm
+              w-fit
+            "
+                      onClick={() => document.getElementById("contract-upload")?.click()}
+                    >
+                      <img src={UPLOAD_ICON} alt="upload" className="w-4 h-4" />
+                      <span>Upload</span>
+
+                      {/* Hidden input */}
+                      <input
+                        id="contract-upload"
+                        type="file"
+                        accept="application/pdf"
+                        className="hidden"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (!file) return;
+
+                          field.onChange({
+                            name: file.name,
+                            url: URL.createObjectURL(file),
+                          });
+                        }}
+                      />
+                    </button>
+                  )}
+
+                  {/* ERROR MESSAGE */}
+                  {errors.signedContractDocument && (
+                    <p className="text-xs text-destructive mt-1">
+                      {errors.signedContractDocument.message as string}
+                    </p>
+                  )}
+                </>
+              )}
+            />
+          </div>
+
+
+        </TabsContent>
+
       </Tabs>
     </>
   );

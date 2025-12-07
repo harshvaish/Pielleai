@@ -89,6 +89,15 @@ export const AU_ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 // avatar fallback
 export const AVATAR_FALLBACK = '/images/icon-black.svg';
 
+// icon
+export const QUESTION_ICON = '/images/question-icon.svg';
+export const UPLOAD_ICON = '/images/upload-icon.svg';
+export const DOWNLOAD_ICON = '/images/download-icon.svg';
+export const DELETE_ICON = '/images/delete-icon.svg';
+export const FILE_ICON = '/images/file-icon.svg';
+export const CIRCLE_RIGHT_ICON = '/images/caret-circle-right-icon.svg';
+
+
 // pdf upload
 export const PDFU_MAX_SIZE_MB = 10;
 export const PDFU_ALLOWED_MIME_TYPES = ['application/pdf'];
