@@ -1,12 +1,19 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { ContractStatus } from '@/lib/types';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useTransition } from 'react';
 
+export type ContractFilterStatus =
+  | 'all'
+  | 'to-sign'
+  | 'signed'
+  | 'refused'
+  | 'error'
+  | 'archived';
+
 type StatusFilterButtonProps = {
-  status: ContractStatus;
+  status: ContractFilterStatus;
   label: string;
 };
 
@@ -16,25 +23,16 @@ export default function StatusFilterButton({ status, label }: StatusFilterButton
   const [isPending, startTransition] = useTransition();
 
   const selectedStatuses = searchParams.get('status')?.split(',') ?? [];
-  const isActive = selectedStatuses.includes(status);
+  const noStatusSelected = selectedStatuses.length === 0;
+  const isActive = status === 'all' ? noStatusSelected || selectedStatuses.includes('all') : selectedStatuses.includes(status);
 
   const onClickHandler = () => {
     const params = new URLSearchParams(searchParams.toString());
 
-    let newStatuses: string[];
-
-    if (isActive) {
-      // Remove the clicked status
-      newStatuses = selectedStatuses.filter((s) => s !== status);
+    if (status === 'all') {
+      params.delete('status'); // default view shows all
     } else {
-      // Add the clicked status
-      newStatuses = [...selectedStatuses, status];
-    }
-
-    if (newStatuses.length > 0) {
-      params.set('status', newStatuses.join(','));
-    } else {
-      params.delete('status');
+      params.set('status', status);
     }
 
     params.set('page', '1'); // Reset to page 1 when filtering

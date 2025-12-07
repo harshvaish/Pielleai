@@ -157,6 +157,7 @@ export default async function ArtistManagersPage({ searchParams }: ArtistManager
         <TablePagination
           totalPages={totalPages}
           currentPage={currentPage}
+          searchParams={sp ?? {}}
         />
       )}
     </div>

@@ -160,6 +160,7 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
         <TablePagination
           totalPages={totalPages}
           currentPage={currentPage}
+          searchParams={sp ?? {}}
         />
       )}
     </div>

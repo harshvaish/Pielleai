@@ -196,6 +196,7 @@ export default async function VenuesPage({ searchParams }: VenuesPageProps) {
         <TablePagination
           totalPages={totalPages}
           currentPage={currentPage}
+          searchParams={sp ?? {}}
         />
       )}
     </div>

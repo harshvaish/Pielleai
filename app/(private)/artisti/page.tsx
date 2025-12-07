@@ -194,6 +194,7 @@ export default async function ArtistsPage({ searchParams }: ArtistsPageProps) {
         <TablePagination
           totalPages={totalPages}
           currentPage={currentPage}
+          searchParams={sp ?? {}}
         />
       )}
     </div>
