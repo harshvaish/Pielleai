@@ -1,31 +1,44 @@
-'use client';
+"use client";
 
-import { ArtistSelectData, MoCoordinator, VenueSelectData } from '@/lib/types';
-import { Select, SelectContent, SelectItem, SelectTrigger } from '@/components/ui/select';
-import { cn } from '@/lib/utils';
-import { Separator } from '@/components/ui/separator';
-import { Input } from '@/components/ui/input';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import PdfUploadInput from '@/app/(private)/eventi/_components/form/PdfUploadInput';
-import { Checkbox } from '@/components/ui/checkbox';
-import VenueSelect from './VenueSelect';
-import ArtistManagerSelect from './ArtistManagerSelect';
-import EventNotesInput from './EventNotesInput';
-import { Controller, useFormContext } from 'react-hook-form';
-import ArtistSelect from './ArtistSelect';
-import { eventStatus } from '@/lib/database/schema';
-import { EventFormSchema } from '@/lib/validation/event-form-schema';
-import ArtistAvailabilitySelectWithCreate from './ArtistAvailabilitySelectWithCreate';
-import EventStatusBadge from '@/app/(private)/_components/Badges/EventStatusBadge';
-import { useEffect, useMemo } from 'react';
-import { Button } from '@/components/ui/button';
-import { QUESTION_ICON, UPLOAD_ICON, FILE_ICON, DOWNLOAD_ICON, DELETE_ICON, CIRCLE_RIGHT_ICON } from '@/lib/constants';
+import { ArtistSelectData, MoCoordinator, VenueSelectData } from "@/lib/types";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+} from "@/components/ui/select";
+import { cn } from "@/lib/utils";
+import { Separator } from "@/components/ui/separator";
+import { Input } from "@/components/ui/input";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import PdfUploadInput from "@/app/(private)/eventi/_components/form/PdfUploadInput";
+import { Checkbox } from "@/components/ui/checkbox";
+import VenueSelect from "./VenueSelect";
+import ArtistManagerSelect from "./ArtistManagerSelect";
+import EventNotesInput from "./EventNotesInput";
+import { Controller, useFormContext } from "react-hook-form";
+import ArtistSelect from "./ArtistSelect";
+import { eventStatus } from "@/lib/database/schema";
+import { EventFormSchema } from "@/lib/validation/event-form-schema";
+import ArtistAvailabilitySelectWithCreate from "./ArtistAvailabilitySelectWithCreate";
+import EventStatusBadge from "@/app/(private)/_components/Badges/EventStatusBadge";
+import { useEffect, useMemo } from "react";
+import { Button } from "@/components/ui/button";
+import {
+  QUESTION_ICON,
+  UPLOAD_ICON,
+  FILE_ICON,
+  DOWNLOAD_ICON,
+  DELETE_ICON,
+  CIRCLE_RIGHT_ICON,
+  GREEN_TICK_ICON,
+} from "@/lib/constants";
 import {
   Accordion,
   AccordionItem,
   AccordionTrigger,
   AccordionContent,
-} from "@/components/ui/accordion"
+} from "@/components/ui/accordion";
 
 type EventForm = {
   artists: ArtistSelectData[];
@@ -33,7 +46,11 @@ type EventForm = {
   moCoordinators: MoCoordinator[];
 };
 
-export default function EventForm({ artists, venues, moCoordinators }: EventForm) {
+export default function EventForm({
+  artists,
+  venues,
+  moCoordinators,
+}: EventForm) {
   const {
     watch,
     register,
@@ -42,18 +59,18 @@ export default function EventForm({ artists, venues, moCoordinators }: EventForm
     formState: { errors },
   } = useFormContext<EventFormSchema>();
 
-  const selectedVenueId = watch('venueId');
+  const selectedVenueId = watch("venueId");
   const selectedVenue = venues.find((venue) => venue.id == selectedVenueId);
 
   // Watch the values needed for calculation
-  const moCost = watch('moCost');
-  const bookingPercentage = watch('bookingPercentage');
-  const moArtistAdvancedExpenses = watch('moArtistAdvancedExpenses');
-  const venueManagerCost = watch('venueManagerCost');
-  const totalCost = watch('totalCost');
-  const transportationsCost = watch('transportationsCost');
-  const hotelCost = watch('hotelCost');
-  const restaurantCost = watch('restaurantCost');
+  const moCost = watch("moCost");
+  const bookingPercentage = watch("bookingPercentage");
+  const moArtistAdvancedExpenses = watch("moArtistAdvancedExpenses");
+  const venueManagerCost = watch("venueManagerCost");
+  const totalCost = watch("totalCost");
+  const transportationsCost = watch("transportationsCost");
+  const hotelCost = watch("hotelCost");
+  const restaurantCost = watch("restaurantCost");
 
   // Calculate artistNetCost
   const artistNetCost = useMemo(() => {
@@ -80,7 +97,12 @@ export default function EventForm({ artists, venues, moCoordinators }: EventForm
       return moCost - expenses - booking - venueCost;
     }
     return undefined;
-  }, [moCost, moArtistAdvancedExpenses, bookingPercentageAmount, venueManagerCost]);
+  }, [
+    moCost,
+    moArtistAdvancedExpenses,
+    bookingPercentageAmount,
+    venueManagerCost,
+  ]);
 
   // Calculate cashBalanceCost (Saldo totale)
   const cashBalanceCost = useMemo(() => {
@@ -103,15 +125,15 @@ export default function EventForm({ artists, venues, moCoordinators }: EventForm
 
   // Update the form value when calculation changes
   useEffect(() => {
-    setValue('artistNetCost', artistNetCost);
+    setValue("artistNetCost", artistNetCost);
   }, [artistNetCost, setValue]);
 
   useEffect(() => {
-    setValue('artistUpfrontCost', artistUpfrontCost);
+    setValue("artistUpfrontCost", artistUpfrontCost);
   }, [artistUpfrontCost, setValue]);
 
   useEffect(() => {
-    setValue('cashBalanceCost', cashBalanceCost);
+    setValue("cashBalanceCost", cashBalanceCost);
   }, [cashBalanceCost, setValue]);
 
   const contractStatusOptions = [
@@ -135,27 +157,47 @@ export default function EventForm({ artists, venues, moCoordinators }: EventForm
         "admin@agency.com",
       ],
       history: [
-        { action: "Contract uploaded", user: "Ann Carrot", date: "2025-11-12 14:32" },
-        { action: "Status changed to Ready", user: "Luca Bianchi", date: "2025-11-13 10:15" },
-        { action: "Sent to DocuSign", user: "Marco Rossi", date: "2025-11-14 09:48" }
-      ]
+        {
+          action: "Contract uploaded",
+          user: "Ann Carrot",
+          date: "2025-11-12 14:32",
+        },
+        {
+          action: "Status changed to Ready",
+          user: "Luca Bianchi",
+          date: "2025-11-13 10:15",
+        },
+        {
+          action: "Sent to DocuSign",
+          user: "Marco Rossi",
+          date: "2025-11-14 09:48",
+        },
+      ],
     },
 
     signedContractDocument: {
       name: "Contract_Artist_AnnCarrot.pdf",
-      url: "https://dummyfiles.com/contracts/contract_123.pdf"
-    }
+      url: "https://dummyfiles.com/contracts/contract_123.pdf",
+    },
   };
 
+  function isSectionComplete(values: Record<string, any>, fields: string[]) {
+    return fields.every((f) => {
+      const val = values[f];
+
+      // Consider empty, null, undefined, false as incomplete
+      return val !== undefined && val !== null && val !== "" && val !== false;
+    });
+  }
 
   return (
     <>
-      <div className='flex justify-between items-center gap-2'>
-        <div className='flex flex-col'>
-          <div className='text-sm font-semibold mb-2'>Artista</div>
+      <div className="flex justify-between items-center gap-2">
+        <div className="flex flex-col">
+          <div className="text-sm font-semibold mb-2">Artista</div>
           <Controller
             control={control}
-            name='artistId'
+            name="artistId"
             render={({ field }) => (
               <ArtistSelect
                 artists={artists}
@@ -166,32 +208,31 @@ export default function EventForm({ artists, venues, moCoordinators }: EventForm
             )}
           />
           {errors.artistId && (
-            <p className='text-xs text-destructive mt-2'>{errors.artistId.message as string}</p>
+            <p className="text-xs text-destructive mt-2">
+              {errors.artistId.message as string}
+            </p>
           )}
         </div>
 
-        <div className='flex flex-col'>
-          <div className='text-sm font-semibold mb-2'>Stato</div>
+        <div className="flex flex-col">
+          <div className="text-sm font-semibold mb-2">Stato</div>
           <Controller
             control={control}
-            name='status'
+            name="status"
             render={({ field }) => (
-              <Select
-                value={field.value}
-                onValueChange={field.onChange}
-              >
+              <Select value={field.value} onValueChange={field.onChange}>
                 <SelectTrigger
-                  className={cn('min-w-40', errors.status && 'border-destructive text-destructive')}
-                  size='sm'
+                  className={cn(
+                    "min-w-40",
+                    errors.status && "border-destructive text-destructive"
+                  )}
+                  size="sm"
                 >
                   <EventStatusBadge status={field.value} />
                 </SelectTrigger>
                 <SelectContent>
                   {eventStatus.enumValues.map((status) => (
-                    <SelectItem
-                      key={status}
-                      value={status}
-                    >
+                    <SelectItem key={status} value={status}>
                       <EventStatusBadge status={status} />
                     </SelectItem>
                   ))}
@@ -200,216 +241,250 @@ export default function EventForm({ artists, venues, moCoordinators }: EventForm
             )}
           />
           {errors.status && (
-            <p className='text-xs text-destructive mt-2'>{errors.status.message as string}</p>
+            <p className="text-xs text-destructive mt-2">
+              {errors.status.message as string}
+            </p>
           )}
         </div>
       </div>
 
-      <div className='flex flex-col'>
-        <div className='text-sm font-semibold mb-2'>Data</div>
+      <div className="flex flex-col">
+        <div className="text-sm font-semibold mb-2">Data</div>
         {<ArtistAvailabilitySelectWithCreate />}
         {errors.availability && (
-          <p className='text-xs text-destructive mt-2'>Seleziona una disponibilità valida.</p>
+          <p className="text-xs text-destructive mt-2">
+            Seleziona una disponibilità valida.
+          </p>
         )}
       </div>
 
-      <div className='grid sm:grid-cols-2 gap-4'>
-        <div className='flex flex-col'>
-          <div className='text-sm font-semibold mb-2'>Location</div>
+      <div className="grid sm:grid-cols-2 gap-4">
+        <div className="flex flex-col">
+          <div className="text-sm font-semibold mb-2">Location</div>
           <VenueSelect venues={venues} />
           {errors.venueId && (
-            <p className='text-xs text-destructive mt-2'>{errors.venueId.message as string}</p>
+            <p className="text-xs text-destructive mt-2">
+              {errors.venueId.message as string}
+            </p>
           )}
         </div>
 
-        <div className='flex flex-col'>
-          <div className='text-sm font-semibold mb-2'>Indirizzo del locale</div>
+        <div className="flex flex-col">
+          <div className="text-sm font-semibold mb-2">Indirizzo del locale</div>
 
-          <div className='h-10 flex items-center text-sm'>
+          <div className="h-10 flex items-center text-sm">
             {selectedVenue?.address ? (
-              <span className='truncate'>{selectedVenue?.address}</span>
+              <span className="truncate">{selectedVenue?.address}</span>
             ) : (
-              <span className='text-zinc-400'>Seleziona un locale</span>
+              <span className="text-zinc-400">Seleziona un locale</span>
             )}
           </div>
         </div>
       </div>
 
-      <Tabs
-        defaultValue='a'
-        className='bg-zinc-50 p-1 rounded-2xl border'
-      >
-        <TabsList className='w-full justify-start gap-4 bg-white p-1 rounded-xl overflow-x-auto'>
-          <TabsTrigger value='a'>Contatti</TabsTrigger>
-          <TabsTrigger value='b'>Financial</TabsTrigger>
-          <TabsTrigger value='c'>Scheda tecnica</TabsTrigger>
-          <TabsTrigger value='d'>Attività</TabsTrigger>
-          <TabsTrigger value='e'>Contract</TabsTrigger>
+      <Tabs defaultValue="a" className="bg-zinc-50 p-1 rounded-2xl border">
+        <TabsList className="w-full justify-start gap-4 bg-white p-1 rounded-xl overflow-x-auto">
+          <TabsTrigger value="a">Contatti</TabsTrigger>
+          <TabsTrigger value="b">Financial</TabsTrigger>
+          <TabsTrigger value="c">Scheda tecnica</TabsTrigger>
+          <TabsTrigger value="d">Attività</TabsTrigger>
+          <TabsTrigger value="e">Contract</TabsTrigger>
         </TabsList>
 
-        <TabsContent
-          value='a'
-          className='flex flex-col gap-4 p-2'
-        >
-          <div className='flex flex-col'>
-            <div className='text-sm font-semibold mb-2'>Manager artista</div>
+        <TabsContent value="a" className="flex flex-col gap-4 p-2">
+          <div className="flex flex-col">
+            <div className="text-sm font-semibold mb-2">Manager artista</div>
             <ArtistManagerSelect />
             {errors.artistManagerProfileId && (
-              <p className='text-xs text-destructive mt-2'>
+              <p className="text-xs text-destructive mt-2">
                 {errors.artistManagerProfileId.message as string}
               </p>
             )}
           </div>
 
-          <div className='flex flex-col'>
-            <div className='text-sm font-semibold mb-2'>Tour manager</div>
+          <div className="flex flex-col">
+            <div className="text-sm font-semibold mb-2">Tour manager</div>
             <Input
-              type='email'
-              {...register('tourManagerEmail')}
+              type="email"
+              {...register("tourManagerEmail")}
               placeholder="Inserisci l'email del tour manager"
-              className={errors.tourManagerEmail ? 'border-destructive text-destructive' : ''}
+              className={
+                errors.tourManagerEmail
+                  ? "border-destructive text-destructive"
+                  : ""
+              }
             />
             {errors.tourManagerEmail && (
-              <p className='text-xs text-destructive mt-2'>
+              <p className="text-xs text-destructive mt-2">
                 {errors.tourManagerEmail.message as string}
               </p>
             )}
           </div>
 
-          <div className='flex flex-col'>
-            <div className='text-sm font-semibold mb-2'>Ingaggi</div>
+          <div className="flex flex-col">
+            <div className="text-sm font-semibold mb-2">Ingaggi</div>
             <Input
-              type='email'
-              {...register('payrollConsultantEmail')}
+              type="email"
+              {...register("payrollConsultantEmail")}
               placeholder="Inserisci l'email del consulente ingaggi"
-              className={errors.payrollConsultantEmail ? 'border-destructive text-destructive' : ''}
+              className={
+                errors.payrollConsultantEmail
+                  ? "border-destructive text-destructive"
+                  : ""
+              }
             />
             {errors.payrollConsultantEmail && (
-              <p className='text-xs text-destructive mt-2'>
+              <p className="text-xs text-destructive mt-2">
                 {errors.payrollConsultantEmail.message as string}
               </p>
             )}
           </div>
         </TabsContent>
 
-        <TabsContent
-          value='b'
-          className='flex flex-col gap-4 p-2'
-        >
-          <div className='grid sm:grid-cols-2 gap-4'>
-            <div className='flex flex-col'>
-              <div className='text-sm font-semibold mb-2'>Cachet lordo</div>
+        <TabsContent value="b" className="flex flex-col gap-4 p-2">
+          <div className="grid sm:grid-cols-2 gap-4">
+            <div className="flex flex-col">
+              <div className="text-sm font-semibold mb-2">Cachet lordo</div>
               <Input
-                {...register('moCost', {
-                  setValueAs: (v) => (v === '' ? undefined : parseFloat(v)),
+                {...register("moCost", {
+                  setValueAs: (v) => (v === "" ? undefined : parseFloat(v)),
                 })}
-                placeholder='Inserisci il costo cachet lordo'
-                type='number'
+                placeholder="Inserisci il costo cachet lordo"
+                type="number"
                 min={0}
                 step={0.01}
-                className={errors.moCost ? 'border-destructive text-destructive' : ''}
+                className={
+                  errors.moCost ? "border-destructive text-destructive" : ""
+                }
               />
               {errors.moCost && (
-                <p className='text-xs text-destructive mt-2'>{errors.moCost.message as string}</p>
+                <p className="text-xs text-destructive mt-2">
+                  {errors.moCost.message as string}
+                </p>
               )}
             </div>
 
-            <div className='flex flex-col'>
-              <div className='text-sm font-semibold mb-2'>Nome promoter</div>
+            <div className="flex flex-col">
+              <div className="text-sm font-semibold mb-2">Nome promoter</div>
 
-              <div className='h-10 flex items-center text-sm'>
+              <div className="h-10 flex items-center text-sm">
                 {selectedVenue?.manager?.name ? (
-                  <span className='truncate'>
-                    {selectedVenue?.manager?.name} {selectedVenue?.manager?.surname}
+                  <span className="truncate">
+                    {selectedVenue?.manager?.name}{" "}
+                    {selectedVenue?.manager?.surname}
                   </span>
                 ) : (
-                  <span className='text-zinc-400'>Seleziona un locale</span>
+                  <span className="text-zinc-400">Seleziona un locale</span>
                 )}
               </div>
             </div>
           </div>
 
-          <div className='grid sm:grid-cols-2 gap-4'>
-            <div className='flex flex-col'>
-              <div className='text-sm font-semibold mb-2'>Acconto</div>
+          <div className="grid sm:grid-cols-2 gap-4">
+            <div className="flex flex-col">
+              <div className="text-sm font-semibold mb-2">Acconto</div>
               <Input
-                {...register('depositCost', {
-                  setValueAs: (v) => (v === '' ? undefined : parseFloat(v)),
+                {...register("depositCost", {
+                  setValueAs: (v) => (v === "" ? undefined : parseFloat(v)),
                 })}
-                placeholder='Inserisci il costo acconto'
-                type='number'
+                placeholder="Inserisci il costo acconto"
+                type="number"
                 min={0}
                 step={0.01}
-                className={errors.depositCost ? 'border-destructive text-destructive' : ''}
+                className={
+                  errors.depositCost
+                    ? "border-destructive text-destructive"
+                    : ""
+                }
               />
               {errors.depositCost && (
-                <p className='text-xs text-destructive mt-2'>
+                <p className="text-xs text-destructive mt-2">
                   {errors.depositCost.message as string}
                 </p>
               )}
             </div>
 
-            <div className='flex flex-col'>
-              <div className='text-sm font-semibold mb-2'>Fee promoter</div>
+            <div className="flex flex-col">
+              <div className="text-sm font-semibold mb-2">Fee promoter</div>
               <Input
-                {...register('venueManagerCost', {
-                  setValueAs: (v) => (v === '' ? undefined : parseFloat(v)),
+                {...register("venueManagerCost", {
+                  setValueAs: (v) => (v === "" ? undefined : parseFloat(v)),
                 })}
-                placeholder='Inserisci il costo fee promoter'
-                type='number'
+                placeholder="Inserisci il costo fee promoter"
+                type="number"
                 min={0}
                 step={0.01}
-                className={errors.venueManagerCost ? 'border-destructive text-destructive' : ''}
+                className={
+                  errors.venueManagerCost
+                    ? "border-destructive text-destructive"
+                    : ""
+                }
               />
               {errors.venueManagerCost && (
-                <p className='text-xs text-destructive mt-2'>
+                <p className="text-xs text-destructive mt-2">
                   {errors.venueManagerCost.message as string}
                 </p>
               )}
             </div>
           </div>
 
-          <div className='flex flex-col'>
-            <div className='text-sm font-semibold mb-2'>Numero fattura acconto</div>
+          <div className="flex flex-col">
+            <div className="text-sm font-semibold mb-2">
+              Numero fattura acconto
+            </div>
             <Input
-              {...register('depositInvoiceNumber')}
-              placeholder='Inserisci il numero fattura acconto'
-              className={errors.depositInvoiceNumber ? 'border-destructive text-destructive' : ''}
+              {...register("depositInvoiceNumber")}
+              placeholder="Inserisci il numero fattura acconto"
+              className={
+                errors.depositInvoiceNumber
+                  ? "border-destructive text-destructive"
+                  : ""
+              }
             />
             {errors.depositInvoiceNumber && (
-              <p className='text-xs text-destructive mt-2'>
+              <p className="text-xs text-destructive mt-2">
                 {errors.depositInvoiceNumber.message as string}
               </p>
             )}
           </div>
 
-          <div className='grid sm:grid-cols-2 gap-4'>
-            <div className='flex flex-col'>
-              <div className='text-sm font-semibold mb-2'>Percentuale booking</div>
+          <div className="grid sm:grid-cols-2 gap-4">
+            <div className="flex flex-col">
+              <div className="text-sm font-semibold mb-2">
+                Percentuale booking
+              </div>
               <Input
-                {...register('bookingPercentage', {
-                  setValueAs: (v) => (v === '' ? undefined : parseFloat(v)),
+                {...register("bookingPercentage", {
+                  setValueAs: (v) => (v === "" ? undefined : parseFloat(v)),
                 })}
-                placeholder='Inserisci la percentuale booking'
-                type='number'
+                placeholder="Inserisci la percentuale booking"
+                type="number"
                 min={0}
                 max={100}
                 step={0.01}
-                className={errors.bookingPercentage ? 'border-destructive text-destructive' : ''}
+                className={
+                  errors.bookingPercentage
+                    ? "border-destructive text-destructive"
+                    : ""
+                }
               />
               {errors.bookingPercentage && (
-                <p className='text-xs text-destructive mt-2'>
+                <p className="text-xs text-destructive mt-2">
                   {errors.bookingPercentage.message as string}
                 </p>
               )}
             </div>
-            <div className='flex flex-col'>
-              <div className='text-sm font-semibold mb-2'>Percentuale booking in €</div>
-              <div className='h-10 flex items-center text-sm'>
+            <div className="flex flex-col">
+              <div className="text-sm font-semibold mb-2">
+                Percentuale booking in €
+              </div>
+              <div className="h-10 flex items-center text-sm">
                 {bookingPercentageAmount ? (
-                  <span className='truncate'>{bookingPercentageAmount.toFixed(2)} </span>
+                  <span className="truncate">
+                    {bookingPercentageAmount.toFixed(2)}{" "}
+                  </span>
                 ) : (
-                  <span className='text-zinc-400'>
+                  <span className="text-zinc-400">
                     Inserisci cachet lordo e percentuale booking
                   </span>
                 )}
@@ -417,145 +492,160 @@ export default function EventForm({ artists, venues, moCoordinators }: EventForm
             </div>
           </div>
 
-          <div className='flex flex-col'>
-            <div className='text-sm font-semibold mb-2'>Spese anticipate per l&apos;artista</div>
+          <div className="flex flex-col">
+            <div className="text-sm font-semibold mb-2">
+              Spese anticipate per l&apos;artista
+            </div>
             <Input
-              {...register('moArtistAdvancedExpenses', {
-                setValueAs: (v) => (v === '' ? undefined : parseFloat(v)),
+              {...register("moArtistAdvancedExpenses", {
+                setValueAs: (v) => (v === "" ? undefined : parseFloat(v)),
               })}
               placeholder="Inserisci le spese anticipate per l'artista"
-              type='number'
+              type="number"
               min={0}
               step={0.01}
               className={
-                errors.moArtistAdvancedExpenses ? 'border-destructive text-destructive' : ''
+                errors.moArtistAdvancedExpenses
+                  ? "border-destructive text-destructive"
+                  : ""
               }
             />
             {errors.moArtistAdvancedExpenses && (
-              <p className='text-xs text-destructive mt-2'>
+              <p className="text-xs text-destructive mt-2">
                 {errors.moArtistAdvancedExpenses.message as string}
               </p>
             )}
           </div>
 
-          <div className='grid sm:grid-cols-2 gap-4'>
-            <div className='flex flex-col'>
-              <div className='text-sm font-semibold mb-2'>Netto artista</div>
-              <div className='h-10 flex items-center text-sm'>
+          <div className="grid sm:grid-cols-2 gap-4">
+            <div className="flex flex-col">
+              <div className="text-sm font-semibold mb-2">Netto artista</div>
+              <div className="h-10 flex items-center text-sm">
                 {artistNetCost ? (
-                  <span className='truncate'>{artistNetCost?.toFixed(2) ?? ''}</span>
+                  <span className="truncate">
+                    {artistNetCost?.toFixed(2) ?? ""}
+                  </span>
                 ) : (
-                  <span className='text-zinc-400'>
+                  <span className="text-zinc-400">
                     Inserisci cachet lordo e percentuale booking
                   </span>
                 )}
               </div>
               {errors.artistNetCost && (
-                <p className='text-xs text-destructive mt-2'>
+                <p className="text-xs text-destructive mt-2">
                   {errors.artistNetCost.message as string}
                 </p>
               )}
             </div>
 
-            <div className='flex flex-col'>
-              <div className='text-sm font-semibold mb-2'>Saldo</div>
-              <div className='h-10 flex items-center text-sm'>
+            <div className="flex flex-col">
+              <div className="text-sm font-semibold mb-2">Saldo</div>
+              <div className="h-10 flex items-center text-sm">
                 {artistUpfrontCost !== undefined ? (
-                  <span className='truncate'>{artistUpfrontCost.toFixed(2)}</span>
+                  <span className="truncate">
+                    {artistUpfrontCost.toFixed(2)}
+                  </span>
                 ) : (
-                  <span className='text-zinc-400'>
+                  <span className="text-zinc-400">
                     Inserisci cachet lordo, spese anticipate e fee promoter
                   </span>
                 )}
               </div>
               {errors.artistUpfrontCost && (
-                <p className='text-xs text-destructive mt-2'>
+                <p className="text-xs text-destructive mt-2">
                   {errors.artistUpfrontCost.message as string}
                 </p>
               )}
             </div>
           </div>
 
-          <Separator className='bg-zinc-200' />
+          <Separator className="bg-zinc-200" />
 
           <EventNotesInput />
         </TabsContent>
 
-        <TabsContent
-          value='c'
-          className='flex flex-col gap-4 p-2'
-        >
-          <div className='grid sm:grid-cols-2 gap-4'>
-            <div className='flex flex-col'>
-              <div className='text-sm font-semibold mb-2'>Hotel</div>
+        <TabsContent value="c" className="flex flex-col gap-4 p-2">
+          <div className="grid sm:grid-cols-2 gap-4">
+            <div className="flex flex-col">
+              <div className="text-sm font-semibold mb-2">Hotel</div>
               <Input
-                {...register('hotel')}
+                {...register("hotel")}
                 placeholder="Inserisci il nome dell'hotel"
-                className={errors.hotel ? 'border-destructive text-destructive' : ''}
+                className={
+                  errors.hotel ? "border-destructive text-destructive" : ""
+                }
               />
               {errors.hotel && (
-                <p className='text-xs text-destructive mt-2'>{errors.hotel.message as string}</p>
+                <p className="text-xs text-destructive mt-2">
+                  {errors.hotel.message as string}
+                </p>
               )}
             </div>
 
-            <div className='flex flex-col'>
-              <div className='text-sm font-semibold mb-2'>Ristorante</div>
+            <div className="flex flex-col">
+              <div className="text-sm font-semibold mb-2">Ristorante</div>
               <Input
-                {...register('restaurant')}
-                placeholder='Inserisci il nome del ristorante'
-                className={errors.restaurant ? 'border-destructive text-destructive' : ''}
+                {...register("restaurant")}
+                placeholder="Inserisci il nome del ristorante"
+                className={
+                  errors.restaurant ? "border-destructive text-destructive" : ""
+                }
               />
               {errors.restaurant && (
-                <p className='text-xs text-destructive mt-2'>
+                <p className="text-xs text-destructive mt-2">
                   {errors.restaurant.message as string}
                 </p>
               )}
             </div>
           </div>
 
-          <div className='grid sm:grid-cols-2 gap-4'>
-            <div className='flex flex-col'>
-              <div className='text-sm font-semibold mb-2'>Referente serata</div>
+          <div className="grid sm:grid-cols-2 gap-4">
+            <div className="flex flex-col">
+              <div className="text-sm font-semibold mb-2">Referente serata</div>
               <Input
-                {...register('eveningContact')}
-                placeholder='Inserisci il nome del referente serata'
-                className={errors.eveningContact ? 'border-destructive text-destructive' : ''}
+                {...register("eveningContact")}
+                placeholder="Inserisci il nome del referente serata"
+                className={
+                  errors.eveningContact
+                    ? "border-destructive text-destructive"
+                    : ""
+                }
               />
               {errors.eveningContact && (
-                <p className='text-xs text-destructive mt-2'>
+                <p className="text-xs text-destructive mt-2">
                   {errors.eveningContact.message as string}
                 </p>
               )}
             </div>
 
-            <div className='flex flex-col'>
-              <div className='text-sm font-semibold mb-2'>Coordinatore Milano Ovest</div>
+            <div className="flex flex-col">
+              <div className="text-sm font-semibold mb-2">
+                Coordinatore Milano Ovest
+              </div>
 
               <Controller
                 control={control}
-                name='moCoordinatorId'
+                name="moCoordinatorId"
                 render={({ field }) => (
                   <Select
                     value={field.value?.toString()}
                     onValueChange={(v) => field.onChange(parseInt(v))}
                   >
                     <SelectTrigger
-                      id='moCoordinatorId'
+                      id="moCoordinatorId"
                       className={cn(
-                        'w-full',
-                        errors.moCoordinatorId && 'border-destructive text-destructive',
+                        "w-full",
+                        errors.moCoordinatorId &&
+                          "border-destructive text-destructive"
                       )}
-                      size='sm'
+                      size="sm"
                     >
-                      {moCoordinators.find((mc) => mc.id == field.value)?.name ||
-                        'Seleziona coordinatore'}
+                      {moCoordinators.find((mc) => mc.id == field.value)
+                        ?.name || "Seleziona coordinatore"}
                     </SelectTrigger>
                     <SelectContent>
                       {moCoordinators.map((mc) => (
-                        <SelectItem
-                          key={mc.id}
-                          value={mc.id?.toString()}
-                        >
+                        <SelectItem key={mc.id} value={mc.id?.toString()}>
                           {mc.name} {mc.surname}
                         </SelectItem>
                       ))}
@@ -565,154 +655,178 @@ export default function EventForm({ artists, venues, moCoordinators }: EventForm
               />
 
               {errors.moCoordinatorId && (
-                <p className='text-xs text-destructive mt-2'>
+                <p className="text-xs text-destructive mt-2">
                   {errors.moCoordinatorId.message as string}
                 </p>
               )}
             </div>
           </div>
 
-          <Separator className='bg-zinc-200' />
+          <Separator className="bg-zinc-200" />
 
-          <div className='grid sm:grid-cols-2 gap-4'>
-            <div className='flex flex-col'>
-              <div className='text-sm font-semibold mb-2'>Saldo hotel</div>
+          <div className="grid sm:grid-cols-2 gap-4">
+            <div className="flex flex-col">
+              <div className="text-sm font-semibold mb-2">Saldo hotel</div>
               <Input
-                {...register('hotelCost', {
-                  setValueAs: (v) => (v === '' ? undefined : parseFloat(v)),
+                {...register("hotelCost", {
+                  setValueAs: (v) => (v === "" ? undefined : parseFloat(v)),
                 })}
-                placeholder='Inserisci il saldo hotel'
-                type='number'
+                placeholder="Inserisci il saldo hotel"
+                type="number"
                 min={0}
                 step={0.01}
-                className={errors.hotelCost ? 'border-destructive text-destructive' : ''}
+                className={
+                  errors.hotelCost ? "border-destructive text-destructive" : ""
+                }
               />
               {errors.hotelCost && (
-                <p className='text-xs text-destructive mt-2'>
+                <p className="text-xs text-destructive mt-2">
                   {errors.hotelCost.message as string}
                 </p>
               )}
             </div>
 
-            <div className='flex flex-col'>
-              <div className='text-sm font-semibold mb-2'>Saldo ristorante</div>
+            <div className="flex flex-col">
+              <div className="text-sm font-semibold mb-2">Saldo ristorante</div>
               <Input
-                {...register('restaurantCost', {
-                  setValueAs: (v) => (v === '' ? undefined : parseFloat(v)),
+                {...register("restaurantCost", {
+                  setValueAs: (v) => (v === "" ? undefined : parseFloat(v)),
                 })}
-                placeholder='Inserisci il saldo ristorante'
-                type='number'
+                placeholder="Inserisci il saldo ristorante"
+                type="number"
                 min={0}
                 step={0.01}
-                className={errors.restaurantCost ? 'border-destructive text-destructive' : ''}
+                className={
+                  errors.restaurantCost
+                    ? "border-destructive text-destructive"
+                    : ""
+                }
               />
               {errors.restaurantCost && (
-                <p className='text-xs text-destructive mt-2'>
+                <p className="text-xs text-destructive mt-2">
                   {errors.restaurantCost.message as string}
                 </p>
               )}
             </div>
           </div>
 
-          <div className='grid sm:grid-cols-2 gap-4'>
-            <div className='flex flex-col'>
-              <div className='text-sm font-semibold mb-2'>Saldo cachet</div>
+          <div className="grid sm:grid-cols-2 gap-4">
+            <div className="flex flex-col">
+              <div className="text-sm font-semibold mb-2">Saldo cachet</div>
               <Input
-                {...register('totalCost', {
-                  setValueAs: (v) => (v === '' ? undefined : parseFloat(v)),
+                {...register("totalCost", {
+                  setValueAs: (v) => (v === "" ? undefined : parseFloat(v)),
                 })}
-                placeholder='Inserisci il saldo cachet'
-                type='number'
+                placeholder="Inserisci il saldo cachet"
+                type="number"
                 min={0}
                 step={0.01}
-                className={errors.totalCost ? 'border-destructive text-destructive' : ''}
+                className={
+                  errors.totalCost ? "border-destructive text-destructive" : ""
+                }
               />
               {errors.totalCost && (
-                <p className='text-xs text-destructive mt-2'>
+                <p className="text-xs text-destructive mt-2">
                   {errors.totalCost.message as string}
                 </p>
               )}
             </div>
 
-            <div className='flex flex-col'>
-              <div className='text-sm font-semibold mb-2'>Spese di trasporto</div>
+            <div className="flex flex-col">
+              <div className="text-sm font-semibold mb-2">
+                Spese di trasporto
+              </div>
               <Input
-                {...register('transportationsCost', {
-                  setValueAs: (v) => (v === '' ? undefined : parseFloat(v)),
+                {...register("transportationsCost", {
+                  setValueAs: (v) => (v === "" ? undefined : parseFloat(v)),
                 })}
-                placeholder='Inserisci le spese di trasporto'
-                type='number'
+                placeholder="Inserisci le spese di trasporto"
+                type="number"
                 min={0}
                 step={0.01}
-                className={errors.transportationsCost ? 'border-destructive text-destructive' : ''}
+                className={
+                  errors.transportationsCost
+                    ? "border-destructive text-destructive"
+                    : ""
+                }
               />
               {errors.transportationsCost && (
-                <p className='text-xs text-destructive mt-2'>
+                <p className="text-xs text-destructive mt-2">
                   {errors.transportationsCost.message as string}
                 </p>
               )}
             </div>
           </div>
 
-          <div className='flex flex-col'>
-            <div className='text-sm font-semibold mb-2'>Saldo totale</div>
-            <div className='h-10 flex items-center text-sm'>
+          <div className="flex flex-col">
+            <div className="text-sm font-semibold mb-2">Saldo totale</div>
+            <div className="h-10 flex items-center text-sm">
               {cashBalanceCost !== undefined ? (
-                <span className='truncate'>{cashBalanceCost.toFixed(2)}</span>
+                <span className="truncate">{cashBalanceCost.toFixed(2)}</span>
               ) : (
-                <span className='text-zinc-400'>Inserisci i valori necessari</span>
+                <span className="text-zinc-400">
+                  Inserisci i valori necessari
+                </span>
               )}
             </div>
             {errors.cashBalanceCost && (
-              <p className='text-xs text-destructive mt-2'>
+              <p className="text-xs text-destructive mt-2">
                 {errors.cashBalanceCost.message as string}
               </p>
             )}
           </div>
 
-          <Separator className='bg-zinc-200' />
+          <Separator className="bg-zinc-200" />
 
-          <div className='grid sm:grid-cols-2 gap-4'>
-            <div className='grid grid-cols-2 gap-4'>
-              <div className='flex flex-col'>
-                <div className='text-sm font-semibold mb-2'>Inizio sound-check</div>
+          <div className="grid sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="flex flex-col">
+                <div className="text-sm font-semibold mb-2">
+                  Inizio sound-check
+                </div>
                 <Input
-                  {...register('soundCheckStart')}
-                  type='time'
+                  {...register("soundCheckStart")}
+                  type="time"
                   className={cn(
-                    'appearance-none [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none',
-                    errors.soundCheckStart ? 'border-destructive text-destructive' : '',
+                    "appearance-none [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none",
+                    errors.soundCheckStart
+                      ? "border-destructive text-destructive"
+                      : ""
                   )}
                 />
                 {errors.soundCheckStart && (
-                  <p className='text-xs text-destructive mt-2'>
+                  <p className="text-xs text-destructive mt-2">
                     {errors.soundCheckStart.message as string}
                   </p>
                 )}
               </div>
-              <div className='flex flex-col'>
-                <div className='text-sm font-semibold mb-2'>Fine sound-check</div>
+              <div className="flex flex-col">
+                <div className="text-sm font-semibold mb-2">
+                  Fine sound-check
+                </div>
                 <Input
-                  {...register('soundCheckEnd')}
-                  type='time'
+                  {...register("soundCheckEnd")}
+                  type="time"
                   className={cn(
-                    'appearance-none [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none',
-                    errors.soundCheckEnd ? 'border-destructive text-destructive' : '',
+                    "appearance-none [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none",
+                    errors.soundCheckEnd
+                      ? "border-destructive text-destructive"
+                      : ""
                   )}
                 />
                 {errors.soundCheckEnd && (
-                  <p className='text-xs text-destructive mt-2'>
+                  <p className="text-xs text-destructive mt-2">
                     {errors.soundCheckEnd.message as string}
                   </p>
                 )}
               </div>
             </div>
 
-            <div className='flex flex-col'>
-              <div className='text-sm font-semibold mb-2'>Rider tecnico</div>
+            <div className="flex flex-col">
+              <div className="text-sm font-semibold mb-2">Rider tecnico</div>
               <PdfUploadInput />
               {errors.tecnicalRiderDocument && (
-                <p className='text-xs text-destructive mt-2'>
+                <p className="text-xs text-destructive mt-2">
                   {errors.tecnicalRiderDocument.message as string}
                 </p>
               )}
@@ -720,329 +834,350 @@ export default function EventForm({ artists, venues, moCoordinators }: EventForm
           </div>
         </TabsContent>
 
-        <TabsContent
-          value='d'
-          className='flex flex-col gap-4 p-2'
-        >
-          <div className='text-sm font-semibold'>Trattativa pre-evento</div>
+        <TabsContent value="d" className="flex flex-col gap-4 p-2">
+          <div className="text-sm font-semibold">Trattativa pre-evento</div>
 
-          <div className='flex flex-col'>
+          <div className="flex flex-col">
             <Controller
               control={control}
-              name='contractSigning'
+              name="contractSigning"
               render={({ field }) => (
                 <label
-                  htmlFor='contractSigning'
+                  htmlFor="contractSigning"
                   className={cn(
-                    'flex items-center gap-2 text-sm cursor-pointer',
-                    field.value && 'text-zinc-400',
-                    errors.contractSigning && 'text-destructive',
+                    "flex items-center gap-2 text-sm cursor-pointer",
+                    field.value && "text-zinc-400",
+                    errors.contractSigning && "text-destructive"
                   )}
                 >
                   <Checkbox
-                    id='contractSigning'
+                    id="contractSigning"
                     checked={field.value}
-                    onCheckedChange={(checked) => field.onChange(checked === true)}
+                    onCheckedChange={(checked) =>
+                      field.onChange(checked === true)
+                    }
                   />
                   Firma del contratto
                 </label>
               )}
             />
             {errors.contractSigning && (
-              <p className='text-xs text-destructive'>{errors.contractSigning.message as string}</p>
+              <p className="text-xs text-destructive">
+                {errors.contractSigning.message as string}
+              </p>
             )}
           </div>
 
-          <div className='flex flex-col'>
+          <div className="flex flex-col">
             <Controller
               control={control}
-              name='depositInvoiceIssuing'
+              name="depositInvoiceIssuing"
               render={({ field }) => (
                 <label
-                  htmlFor='depositInvoiceIssuing'
+                  htmlFor="depositInvoiceIssuing"
                   className={cn(
-                    'flex items-center gap-2 text-sm cursor-pointer',
-                    field.value && 'text-zinc-400',
-                    errors.depositInvoiceIssuing && 'text-destructive',
+                    "flex items-center gap-2 text-sm cursor-pointer",
+                    field.value && "text-zinc-400",
+                    errors.depositInvoiceIssuing && "text-destructive"
                   )}
                 >
                   <Checkbox
-                    id='depositInvoiceIssuing'
+                    id="depositInvoiceIssuing"
                     checked={field.value}
-                    onCheckedChange={(checked) => field.onChange(checked === true)}
+                    onCheckedChange={(checked) =>
+                      field.onChange(checked === true)
+                    }
                   />
                   Emissione fattura acconto
                 </label>
               )}
             />
             {errors.depositInvoiceIssuing && (
-              <p className='text-xs text-destructive'>
+              <p className="text-xs text-destructive">
                 {errors.depositInvoiceIssuing.message as string}
               </p>
             )}
           </div>
 
-          <div className='flex flex-col'>
+          <div className="flex flex-col">
             <Controller
               control={control}
-              name='depositReceiptVerification'
+              name="depositReceiptVerification"
               render={({ field }) => (
                 <label
-                  htmlFor='depositReceiptVerification'
+                  htmlFor="depositReceiptVerification"
                   className={cn(
-                    'flex items-center gap-2 text-sm cursor-pointer',
-                    field.value && 'text-zinc-400',
-                    errors.depositReceiptVerification && 'text-destructive',
+                    "flex items-center gap-2 text-sm cursor-pointer",
+                    field.value && "text-zinc-400",
+                    errors.depositReceiptVerification && "text-destructive"
                   )}
                 >
                   <Checkbox
-                    id='depositReceiptVerification'
+                    id="depositReceiptVerification"
                     checked={field.value}
-                    onCheckedChange={(checked) => field.onChange(checked === true)}
+                    onCheckedChange={(checked) =>
+                      field.onChange(checked === true)
+                    }
                   />
                   Verifica ricezione acconto
                 </label>
               )}
             />
             {errors.depositReceiptVerification && (
-              <p className='text-xs text-destructive'>
+              <p className="text-xs text-destructive">
                 {errors.depositReceiptVerification.message as string}
               </p>
             )}
           </div>
 
-          <div className='flex flex-col'>
+          <div className="flex flex-col">
             <Controller
               control={control}
-              name='techSheetSubmission'
+              name="techSheetSubmission"
               render={({ field }) => (
                 <label
-                  htmlFor='techSheetSubmission'
+                  htmlFor="techSheetSubmission"
                   className={cn(
-                    'flex items-center gap-2 text-sm cursor-pointer',
-                    field.value && 'text-zinc-400',
-                    errors.techSheetSubmission && 'text-destructive',
+                    "flex items-center gap-2 text-sm cursor-pointer",
+                    field.value && "text-zinc-400",
+                    errors.techSheetSubmission && "text-destructive"
                   )}
                 >
                   <Checkbox
-                    id='techSheetSubmission'
+                    id="techSheetSubmission"
                     checked={field.value}
-                    onCheckedChange={(checked) => field.onChange(checked === true)}
+                    onCheckedChange={(checked) =>
+                      field.onChange(checked === true)
+                    }
                   />
                   Recupero e invio scheda tecnica
                 </label>
               )}
             />
             {errors.techSheetSubmission && (
-              <p className='text-xs text-destructive'>
+              <p className="text-xs text-destructive">
                 {errors.techSheetSubmission.message as string}
               </p>
             )}
           </div>
 
-          <div className='flex flex-col'>
+          <div className="flex flex-col">
             <Controller
               control={control}
-              name='artistEngagement'
+              name="artistEngagement"
               render={({ field }) => (
                 <label
-                  htmlFor='artistEngagement'
+                  htmlFor="artistEngagement"
                   className={cn(
-                    'flex items-center gap-2 text-sm cursor-pointer',
-                    field.value && 'text-zinc-400',
-                    errors.artistEngagement && 'text-destructive',
+                    "flex items-center gap-2 text-sm cursor-pointer",
+                    field.value && "text-zinc-400",
+                    errors.artistEngagement && "text-destructive"
                   )}
                 >
                   <Checkbox
-                    id='artistEngagement'
+                    id="artistEngagement"
                     checked={field.value}
-                    onCheckedChange={(checked) => field.onChange(checked === true)}
+                    onCheckedChange={(checked) =>
+                      field.onChange(checked === true)
+                    }
                   />
                   Incarico artista
                 </label>
               )}
             />
             {errors.artistEngagement && (
-              <p className='text-xs text-destructive'>
+              <p className="text-xs text-destructive">
                 {errors.artistEngagement.message as string}
               </p>
             )}
           </div>
 
-          <div className='flex flex-col'>
+          <div className="flex flex-col">
             <Controller
               control={control}
-              name='professionalsEngagement'
+              name="professionalsEngagement"
               render={({ field }) => (
                 <label
-                  htmlFor='professionalsEngagement'
+                  htmlFor="professionalsEngagement"
                   className={cn(
-                    'flex items-center gap-2 text-sm cursor-pointer',
-                    field.value && 'text-zinc-400',
-                    errors.professionalsEngagement && 'text-destructive',
+                    "flex items-center gap-2 text-sm cursor-pointer",
+                    field.value && "text-zinc-400",
+                    errors.professionalsEngagement && "text-destructive"
                   )}
                 >
                   <Checkbox
-                    id='professionalsEngagement'
+                    id="professionalsEngagement"
                     checked={field.value}
-                    onCheckedChange={(checked) => field.onChange(checked === true)}
+                    onCheckedChange={(checked) =>
+                      field.onChange(checked === true)
+                    }
                   />
                   Incarico professionisti
                 </label>
               )}
             />
             {errors.professionalsEngagement && (
-              <p className='text-xs text-destructive'>
+              <p className="text-xs text-destructive">
                 {errors.professionalsEngagement.message as string}
               </p>
             )}
           </div>
 
-          <div className='flex flex-col'>
+          <div className="flex flex-col">
             <Controller
               control={control}
-              name='accompanyingPersonsEngagement'
+              name="accompanyingPersonsEngagement"
               render={({ field }) => (
                 <label
-                  htmlFor='accompanyingPersonsEngagement'
+                  htmlFor="accompanyingPersonsEngagement"
                   className={cn(
-                    'flex items-center gap-2 text-sm cursor-pointer',
-                    field.value && 'text-zinc-400',
-                    errors.accompanyingPersonsEngagement && 'text-destructive',
+                    "flex items-center gap-2 text-sm cursor-pointer",
+                    field.value && "text-zinc-400",
+                    errors.accompanyingPersonsEngagement && "text-destructive"
                   )}
                 >
                   <Checkbox
-                    id='accompanyingPersonsEngagement'
+                    id="accompanyingPersonsEngagement"
                     checked={field.value}
-                    onCheckedChange={(checked) => field.onChange(checked === true)}
+                    onCheckedChange={(checked) =>
+                      field.onChange(checked === true)
+                    }
                   />
                   Ingaggio accompagnatori
                 </label>
               )}
             />
             {errors.accompanyingPersonsEngagement && (
-              <p className='text-xs text-destructive'>
+              <p className="text-xs text-destructive">
                 {errors.accompanyingPersonsEngagement.message as string}
               </p>
             )}
           </div>
 
-          <div className='text-sm font-semibold'>Giorno dell&apos;evento</div>
+          <div className="text-sm font-semibold">Giorno dell&apos;evento</div>
 
-          <div className='flex flex-col'>
+          <div className="flex flex-col">
             <Controller
               control={control}
-              name='performance'
+              name="performance"
               render={({ field }) => (
                 <label
-                  htmlFor='performance'
+                  htmlFor="performance"
                   className={cn(
-                    'flex items-center gap-2 text-sm cursor-pointer',
-                    field.value && 'text-zinc-400',
-                    errors.performance && 'text-destructive',
+                    "flex items-center gap-2 text-sm cursor-pointer",
+                    field.value && "text-zinc-400",
+                    errors.performance && "text-destructive"
                   )}
                 >
                   <Checkbox
-                    id='performance'
+                    id="performance"
                     checked={field.value}
-                    onCheckedChange={(checked) => field.onChange(checked === true)}
+                    onCheckedChange={(checked) =>
+                      field.onChange(checked === true)
+                    }
                   />
                   Performance
                 </label>
               )}
             />
             {errors.performance && (
-              <p className='text-xs text-destructive'>{errors.performance.message as string}</p>
+              <p className="text-xs text-destructive">
+                {errors.performance.message as string}
+              </p>
             )}
           </div>
 
-          <div className='text-sm font-semibold'>Post evento</div>
+          <div className="text-sm font-semibold">Post evento</div>
 
-          <div className='flex flex-col'>
+          <div className="flex flex-col">
             <Controller
               control={control}
-              name='postDateFeedback'
+              name="postDateFeedback"
               render={({ field }) => (
                 <label
-                  htmlFor='postDateFeedback'
+                  htmlFor="postDateFeedback"
                   className={cn(
-                    'flex items-center gap-2 text-sm cursor-pointer',
-                    field.value && 'text-zinc-400',
-                    errors.postDateFeedback && 'text-destructive',
+                    "flex items-center gap-2 text-sm cursor-pointer",
+                    field.value && "text-zinc-400",
+                    errors.postDateFeedback && "text-destructive"
                   )}
                 >
                   <Checkbox
-                    id='postDateFeedback'
+                    id="postDateFeedback"
                     checked={field.value}
-                    onCheckedChange={(checked) => field.onChange(checked === true)}
+                    onCheckedChange={(checked) =>
+                      field.onChange(checked === true)
+                    }
                   />
                   Feedback post-evento
                 </label>
               )}
             />
             {errors.postDateFeedback && (
-              <p className='text-xs text-destructive'>
+              <p className="text-xs text-destructive">
                 {errors.postDateFeedback.message as string}
               </p>
             )}
           </div>
 
-          <div className='flex flex-col'>
+          <div className="flex flex-col">
             <Controller
               control={control}
-              name='bordereau'
+              name="bordereau"
               render={({ field }) => (
                 <label
-                  htmlFor='bordereau'
+                  htmlFor="bordereau"
                   className={cn(
-                    'flex items-center gap-2 text-sm cursor-pointer',
-                    field.value && 'text-zinc-400',
-                    errors.bordereau && 'text-destructive',
+                    "flex items-center gap-2 text-sm cursor-pointer",
+                    field.value && "text-zinc-400",
+                    errors.bordereau && "text-destructive"
                   )}
                 >
                   <Checkbox
-                    id='bordereau'
+                    id="bordereau"
                     checked={field.value}
-                    onCheckedChange={(checked) => field.onChange(checked === true)}
+                    onCheckedChange={(checked) =>
+                      field.onChange(checked === true)
+                    }
                   />
                   Borderò a carico del locale
                 </label>
               )}
             />
             {errors.bordereau && (
-              <p className='text-xs text-destructive'>{errors.bordereau.message as string}</p>
+              <p className="text-xs text-destructive">
+                {errors.bordereau.message as string}
+              </p>
             )}
           </div>
         </TabsContent>
         <TabsContent value="e" className="flex flex-col gap-6 p-2">
-
           {/* STATUS BAR */}
           <div className="flex justify-between items-start">
-
             <div className="flex flex-col gap-1">
               <Controller
                 control={control}
                 name="contractStatus"
                 render={({ field }) => {
-                  const selected = contractStatusOptions.find(s => s.value === field.value);
+                  const selected = contractStatusOptions.find(
+                    (s) => s.value === field.value
+                  );
                   const isMissing = !selected;
 
                   return (
                     <Select value={field.value} onValueChange={field.onChange}>
                       <SelectTrigger
                         id="contractStatus"
-                        className=
-                        "h-8 w-40 rounded-xl flex items-center gap-2 px-3 text-xs font-medium"
-
-
+                        className="h-8 w-40 rounded-xl flex items-center gap-2 px-3 text-xs font-medium"
                         size="sm"
                       >
-
                         {/* Label (Missing data or selected label) */}
-                        <span className={cn(
-                          "truncate",
-                          !selected ? "text-[#D97706]" : ""
-                        )}>
+                        <span
+                          className={cn(
+                            "truncate",
+                            !selected ? "text-[#D97706]" : ""
+                          )}
+                        >
                           {selected?.label ?? "Missing data"}
                         </span>
 
@@ -1057,7 +1192,7 @@ export default function EventForm({ artists, venues, moCoordinators }: EventForm
                       </SelectTrigger>
 
                       <SelectContent>
-                        {contractStatusOptions.map(status => (
+                        {contractStatusOptions.map((status) => (
                           <SelectItem key={status.value} value={status.value}>
                             {status.label}
                           </SelectItem>
@@ -1067,8 +1202,6 @@ export default function EventForm({ artists, venues, moCoordinators }: EventForm
                   );
                 }}
               />
-
-
 
               <span className="text-xs text-zinc-500">
                 Status changed on 13/11/25 by Ann Carrot
@@ -1089,19 +1222,15 @@ export default function EventForm({ artists, venues, moCoordinators }: EventForm
                 Regenerate
               </button>
 
-              <Button
-                type='button'
-                size='sm'
-                className='max-w-max'
-              >      Send to DocuSign
+              <Button type="button" size="sm" className="max-w-max">
+                {" "}
+                Send to DocuSign
               </Button>
             </div>
           </div>
 
-
           {/* CONTRACT FILE BLOCK */}
           <div className="flex flex-col gap-2">
-
             <div className="text-sm font-semibold">Contract file</div>
 
             <Controller
@@ -1112,7 +1241,6 @@ export default function EventForm({ artists, venues, moCoordinators }: EventForm
                   {/* -------- CASE: FILE EXISTS -------- */}
                   {field.value?.name ? (
                     <div className="flex items-center gap-3 w-fit">
-
                       {/* FILE CHIP */}
                       <div
                         className="
@@ -1126,11 +1254,7 @@ export default function EventForm({ artists, venues, moCoordinators }: EventForm
               "
                       >
                         {/* File icon from assets */}
-                        <img
-                          src={FILE_ICON}
-                          alt="file"
-                          className="w-4 h-4"
-                        />
+                        <img src={FILE_ICON} alt="file" className="w-4 h-4" />
 
                         {/* File Name */}
                         <span className="text-sm text-zinc-800 font-medium">
@@ -1178,7 +1302,9 @@ export default function EventForm({ artists, venues, moCoordinators }: EventForm
               shadow-sm
               w-fit
             "
-                      onClick={() => document.getElementById("contract-upload")?.click()}
+                      onClick={() =>
+                        document.getElementById("contract-upload")?.click()
+                      }
                     >
                       <img src={UPLOAD_ICON} alt="upload" className="w-4 h-4" />
                       <span>Upload</span>
@@ -1214,28 +1340,280 @@ export default function EventForm({ artists, venues, moCoordinators }: EventForm
           </div>
 
           {/* ACCORDION: DETAILS, CCS, HISTORY */}
-          <Accordion type="single" collapsible className="w-full border-y border-zinc-100 rounded-none"
+          <Accordion
+            type="single"
+            collapsible
+            className="w-full border-y border-zinc-100 rounded-none"
           >
-
             {/* DETAILS */}
             <AccordionItem value="details">
-              <AccordionTrigger className="px-3 hover:no-underline">Details</AccordionTrigger>
-              <AccordionContent className="px-3 flex flex-col gap-2">
-                <div className="text-sm text-zinc-700">
-                  <strong>Artist:</strong> {contractData.event.artist.name}
-                </div>
-                <div className="text-sm text-zinc-700">
-                  <strong>Venue:</strong> {contractData.event.venue.name}
-                </div>
-                <div className="text-sm text-zinc-700">
-                  <strong>Artist Manager:</strong> {contractData.event.artistManager.name}
-                </div>
+              <AccordionTrigger className="px-3 hover:no-underline">
+                Details
+              </AccordionTrigger>
+
+              <AccordionContent className="px-0">
+                <Accordion type="multiple" className="border-none">
+                  {/* ---------------- ARTIST SECTION ---------------- */}
+                  <AccordionItem value="artist">
+                    <AccordionTrigger className="px-3 hover:no-underline bg-zinc-50">
+                      {/* Icon + Label group */}
+                      <div className="flex items-center gap-2">
+                        <img
+                          src={
+                            isSectionComplete(watch(), [
+                              "artistFullName",
+                              "artistStageName",
+                            ])
+                              ? GREEN_TICK_ICON
+                              : QUESTION_ICON
+                          }
+                          width={16}
+                          height={16}
+                          className="shrink-0"
+                        />
+
+                        <span className="text-sm font-medium">Artist</span>
+                      </div>
+                    </AccordionTrigger>
+
+                    <AccordionContent className="px-3">
+                      {/* Panel background box */}
+                      <div className="bg-zinc-50 rounded-xl p-4 flex flex-col gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          {/* Artist Full Name */}
+                          <div className="flex flex-col gap-1">
+                            <label className="text-sm text-zinc-600">
+                              Artist full name
+                            </label>
+                            <Input
+                              {...register("artistFullName")}
+                              placeholder="Enter full name"
+                              className="h-10"
+                            />
+                            {errors.artistFullName && (
+                              <p className="text-xs text-destructive">
+                                {errors.artistFullName.message as string}
+                              </p>
+                            )}
+                          </div>
+
+                          {/* Artist Stage Name */}
+                          <div className="flex flex-col gap-1">
+                            <label className="text-sm text-zinc-600">
+                              Artist stage name
+                            </label>
+                            <Input
+                              {...register("artistStageName")}
+                              placeholder="Enter stage name"
+                              className="h-10"
+                            />
+                            {errors.artistStageName && (
+                              <p className="text-xs text-destructive">
+                                {errors.artistStageName.message as string}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </AccordionContent>
+                  </AccordionItem>
+
+                  {/* ---------------- VENUE SECTION ---------------- */}
+                  <AccordionItem value="venue">
+                    <AccordionTrigger className="px-3 flex items-center gap-2 hover:no-underline">
+                      <div className="flex items-center gap-2">
+                        <img
+                          src={
+                            isSectionComplete(watch(), [
+                              "venueId",
+                              "venueName",
+                              "venueCompanyName",
+                              "venueVatNumber",
+                            ])
+                              ? GREEN_TICK_ICON
+                              : QUESTION_ICON
+                          }
+                          width={16}
+                          height={16}
+                        />
+
+                        <span className="text-sm font-medium">Venue</span>
+                      </div>
+                    </AccordionTrigger>
+
+                    <AccordionContent className="px-3 py-2 space-y-3">
+                      {/* Event type */}
+                      <Controller
+                        control={control}
+                        name="eventType"
+                        render={({ field }) => (
+                          <div className="flex flex-col">
+                            <Select
+                              value={field.value}
+                              onValueChange={field.onChange}
+                            >
+                              <SelectTrigger className="h-10 w-full">
+                                {field.value ?? "Select"}
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="concert">Concert</SelectItem>
+                                <SelectItem value="dj-set">DJ Set</SelectItem>
+                                <SelectItem value="private-event">
+                                  Private Event
+                                </SelectItem>
+                              </SelectContent>
+                            </Select>
+                            {errors.eventType && (
+                              <p className="text-xs text-destructive">
+                                {errors.eventType.message}
+                              </p>
+                            )}
+                          </div>
+                        )}
+                      />
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="flex flex-col gap-1">
+                          {/* Venue name */}
+                          <label className="text-sm text-zinc-600">
+                            Venue name
+                          </label>
+
+                          <Input
+                            {...register("venueName")}
+                            placeholder="Venue name"
+                            className="h-10"
+                          />
+                        </div>
+                        <div className="flex flex-col gap-1">
+                          {/* Venue company name */}
+                          <label className="text-sm text-zinc-600">
+                            Venue Company name
+                          </label>
+
+                          <Input
+                            {...register("venueCompanyName")}
+                            placeholder="Venue Company name"
+                            className="h-10"
+                          />
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="flex flex-col gap-1">
+                          {/* Venue VAT */}
+                          <label className="text-sm text-zinc-600">
+                            Venue VAT name
+                          </label>
+
+                          <Input
+                            {...register("venueVatNumber")}
+                            placeholder="Venue VAT number"
+                            className="h-10"
+                          />
+                        </div>
+                        <div className="flex flex-col gap-1">
+                          {/* Transport cost */}
+                          <label className="text-sm text-zinc-600">
+                            Transport costs (€)
+                          </label>
+
+                          <Input
+                            {...register("transportCost")}
+                            placeholder="Transport costs (€)"
+                            className="h-10"
+                          />
+                        </div>
+                      </div>
+                    </AccordionContent>
+                  </AccordionItem>
+
+                  {/* ---------------- EVENT SECTION ---------------- */}
+                  <AccordionItem value="event">
+                    <AccordionTrigger className="px-3 hover:no-underline">
+                      <div className="flex items-center gap-2">
+                        <img
+                          src={
+                            isSectionComplete(watch(), [
+                              "venueName",
+                              "venueCompanyName",
+                              "venueVatNumber",
+                              "venueAddress",
+                            ])
+                              ? GREEN_TICK_ICON
+                              : QUESTION_ICON
+                          }
+                          width={16}
+                          height={16}
+                        />
+
+                        <span className="text-sm font-medium">Event</span>
+                      </div>
+                    </AccordionTrigger>
+
+                    <AccordionContent className="px-3 py-2 space-y-3">
+                      {/* First Row */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {/* Venue name */}
+                        <div className="flex flex-col gap-1">
+                          <label className="text-sm text-zinc-600">
+                            Venue name
+                          </label>
+                          <Input
+                            {...register("venueName")}
+                            placeholder="Venue name"
+                            className="h-10"
+                          />
+                        </div>
+
+                        {/* Venue Company name */}
+                        <div className="flex flex-col gap-1">
+                          <label className="text-sm text-zinc-600">
+                            Venue Company name
+                          </label>
+                          <Input
+                            {...register("venueCompanyName")}
+                            placeholder="Venue Company name"
+                            className="h-10"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Second Row */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {/* Venue VAT number */}
+                        <div className="flex flex-col gap-1">
+                          <label className="text-sm text-zinc-600">
+                            Venue VAT number
+                          </label>
+                          <Input
+                            {...register("venueVatNumber")}
+                            placeholder="Venue VAT number"
+                            className="h-10"
+                          />
+                        </div>
+
+                        {/* Venue address */}
+                        <div className="flex flex-col gap-1">
+                          <label className="text-sm text-zinc-600">
+                            Venue address
+                          </label>
+                          <Input
+                            {...register("venueAddress")}
+                            placeholder="Venue address"
+                            className="h-10"
+                          />
+                        </div>
+                      </div>
+                    </AccordionContent>
+                  </AccordionItem>
+                </Accordion>
               </AccordionContent>
             </AccordionItem>
 
             {/* CCs */}
             <AccordionItem value="ccs">
-              <AccordionTrigger className="px-3 hover:no-underline">CCs of the email</AccordionTrigger>
+              <AccordionTrigger className="px-3 hover:no-underline">
+                CCs of the email
+              </AccordionTrigger>
 
               <AccordionContent className="px-3 flex flex-col gap-3">
                 {contractData.event.ccEmails.map((email, idx) => (
@@ -1244,16 +1622,12 @@ export default function EventForm({ artists, venues, moCoordinators }: EventForm
                       control={control}
                       name={`ccEmails.${idx}` as any}
                       render={({ field }) => (
-                        <label
-                          className=
-                          "flex items-center gap-2 text-sm cursor-pointer text-zinc-600"
-
-
-                        >
+                        <label className="flex items-center gap-2 text-sm cursor-pointer text-zinc-600">
                           <Checkbox
                             checked={field.value}
-                            onCheckedChange={(checked) => field.onChange(checked)}
-
+                            onCheckedChange={(checked) =>
+                              field.onChange(checked)
+                            }
                           />
                           {email}
                         </label>
@@ -1261,14 +1635,14 @@ export default function EventForm({ artists, venues, moCoordinators }: EventForm
                     />
                   </div>
                 ))}
-
               </AccordionContent>
             </AccordionItem>
 
-
             {/* HISTORY */}
             <AccordionItem value="history">
-              <AccordionTrigger className="px-3 hover:no-underline">History of changes</AccordionTrigger>
+              <AccordionTrigger className="px-3 hover:no-underline">
+                History of changes
+              </AccordionTrigger>
               <AccordionContent className="px3 flex flex-col gap-3">
                 {contractData.event.history.map((item, idx) => (
                   <div key={idx} className="text-sm text-zinc-700">
@@ -1281,12 +1655,8 @@ export default function EventForm({ artists, venues, moCoordinators }: EventForm
                 ))}
               </AccordionContent>
             </AccordionItem>
-
           </Accordion>
-
-
         </TabsContent>
-
       </Tabs>
     </>
   );

@@ -1,6 +1,7 @@
 import { TablePagination } from '../_components/form/TablePagination';
 import StatusFilterButton, { ContractFilterStatus } from './_components/filters/StatusFilterButton';
 import { hasRole, resolveNextPath } from '@/lib/utils';
+import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
 import getSession from '@/lib/data/auth/get-session';
 import { getUserProfileIdCached } from '@/lib/cache/users';
@@ -39,6 +40,7 @@ type ContractCard = {
   resend?: boolean;
   actionLabel: string;
   actionVariant: ActionVariant;
+  href: string;
 };
 
 const STATUS_STYLES: Record<
@@ -108,6 +110,7 @@ const MOCK_CONTRACTS: ContractCard[] = [
     time: '14:00 - 16:30',
     actionLabel: 'Modifica',
     actionVariant: 'outline',
+    href: '/contract-managment/c-1?stage=missing',
   },
   {
     id: 'c-2',
@@ -121,6 +124,7 @@ const MOCK_CONTRACTS: ContractCard[] = [
     time: '14:00 - 16:30',
     actionLabel: 'Modifica',
     actionVariant: 'outline',
+    href: '/contract-managment/c-2?stage=missing',
   },
   {
     id: 'c-3',
@@ -134,6 +138,7 @@ const MOCK_CONTRACTS: ContractCard[] = [
     time: '14:00 - 16:30',
     actionLabel: 'Modifica',
     actionVariant: 'outline',
+    href: '/contract-managment/c-3?stage=missing',
   },
   {
     id: 'c-4',
@@ -148,6 +153,7 @@ const MOCK_CONTRACTS: ContractCard[] = [
     resend: true,
     actionLabel: 'Modifica',
     actionVariant: 'outline',
+    href: '/contract-managment/c-4?stage=missing',
   },
   {
     id: 'c-5',
@@ -162,6 +168,7 @@ const MOCK_CONTRACTS: ContractCard[] = [
     resend: true,
     actionLabel: 'Modifica',
     actionVariant: 'outline',
+    href: '/contract-managment/c-5?stage=missing',
   },
   {
     id: 'c-6',
@@ -175,6 +182,7 @@ const MOCK_CONTRACTS: ContractCard[] = [
     time: '14:00 - 16:30',
     actionLabel: 'View',
     actionVariant: 'secondary',
+    href: '/contract-managment/c-6?stage=missing',
   },
   {
     id: 'c-7',
@@ -188,6 +196,7 @@ const MOCK_CONTRACTS: ContractCard[] = [
     time: '14:00 - 16:30',
     actionLabel: 'View',
     actionVariant: 'secondary',
+    href: '/contract-managment/c-7?stage=missing',
   },
 ];
 
@@ -344,12 +353,15 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
                     </Button>
                   )}
                   <Button
+                    asChild
                     variant={contract.actionVariant}
                     size='sm'
                     className='min-w-[110px]'
                   >
-                    {contract.actionLabel}
-                    <ChevronDown className='size-4' />
+                    <Link href={contract.href}>
+                      {contract.actionLabel}
+                      <ChevronDown className='size-4' />
+                    </Link>
                   </Button>
                 </div>
               </div>

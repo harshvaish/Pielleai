@@ -96,6 +96,7 @@ export const DOWNLOAD_ICON = '/images/download-icon.svg';
 export const DELETE_ICON = '/images/delete-icon.svg';
 export const FILE_ICON = '/images/file-icon.svg';
 export const CIRCLE_RIGHT_ICON = '/images/caret-circle-right-icon.svg';
+export const GREEN_TICK_ICON = '/images/green-tick-icon.svg';
 
 
 // pdf upload
