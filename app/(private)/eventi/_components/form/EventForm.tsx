@@ -20,6 +20,12 @@ import EventStatusBadge from '@/app/(private)/_components/Badges/EventStatusBadg
 import { useEffect, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { QUESTION_ICON, UPLOAD_ICON, FILE_ICON, DOWNLOAD_ICON, DELETE_ICON, CIRCLE_RIGHT_ICON } from '@/lib/constants';
+import {
+  Accordion,
+  AccordionItem,
+  AccordionTrigger,
+  AccordionContent,
+} from "@/components/ui/accordion"
 
 type EventForm = {
   artists: ArtistSelectData[];
@@ -114,6 +120,33 @@ export default function EventForm({ artists, venues, moCoordinators }: EventForm
     { value: "ready", label: "Ready" },
     { value: "sent", label: "Sent to DocuSign" },
   ];
+
+  // JSON DATA (local only)
+  const contractData = {
+    event: {
+      artist: { id: 1, name: "Ann Carrot" },
+      venue: { id: 12, name: "Milano Social Club" },
+      artistManager: { id: 5, name: "Luca Bianchi" },
+      ccEmails: [
+        "Tour Manager",
+        "Admin",
+        "team@agency.com",
+        "finance@agency.com",
+        "admin@agency.com",
+      ],
+      history: [
+        { action: "Contract uploaded", user: "Ann Carrot", date: "2025-11-12 14:32" },
+        { action: "Status changed to Ready", user: "Luca Bianchi", date: "2025-11-13 10:15" },
+        { action: "Sent to DocuSign", user: "Marco Rossi", date: "2025-11-14 09:48" }
+      ]
+    },
+
+    signedContractDocument: {
+      name: "Contract_Artist_AnnCarrot.pdf",
+      url: "https://dummyfiles.com/contracts/contract_123.pdf"
+    }
+  };
+
 
   return (
     <>
@@ -1179,6 +1212,77 @@ export default function EventForm({ artists, venues, moCoordinators }: EventForm
               )}
             />
           </div>
+
+          {/* ACCORDION: DETAILS, CCS, HISTORY */}
+          <Accordion type="single" collapsible className="w-full border-y border-zinc-100 rounded-none"
+          >
+
+            {/* DETAILS */}
+            <AccordionItem value="details">
+              <AccordionTrigger className="px-3 hover:no-underline">Details</AccordionTrigger>
+              <AccordionContent className="px-3 flex flex-col gap-2">
+                <div className="text-sm text-zinc-700">
+                  <strong>Artist:</strong> {contractData.event.artist.name}
+                </div>
+                <div className="text-sm text-zinc-700">
+                  <strong>Venue:</strong> {contractData.event.venue.name}
+                </div>
+                <div className="text-sm text-zinc-700">
+                  <strong>Artist Manager:</strong> {contractData.event.artistManager.name}
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+
+            {/* CCs */}
+            <AccordionItem value="ccs">
+              <AccordionTrigger className="px-3 hover:no-underline">CCs of the email</AccordionTrigger>
+
+              <AccordionContent className="px-3 flex flex-col gap-3">
+                {contractData.event.ccEmails.map((email, idx) => (
+                  <div key={idx} className="flex flex-col">
+                    <Controller
+                      control={control}
+                      name={`ccEmails.${idx}` as any}
+                      render={({ field }) => (
+                        <label
+                          className=
+                          "flex items-center gap-2 text-sm cursor-pointer text-zinc-600"
+
+
+                        >
+                          <Checkbox
+                            checked={field.value}
+                            onCheckedChange={(checked) => field.onChange(checked)}
+
+                          />
+                          {email}
+                        </label>
+                      )}
+                    />
+                  </div>
+                ))}
+
+              </AccordionContent>
+            </AccordionItem>
+
+
+            {/* HISTORY */}
+            <AccordionItem value="history">
+              <AccordionTrigger className="px-3 hover:no-underline">History of changes</AccordionTrigger>
+              <AccordionContent className="px3 flex flex-col gap-3">
+                {contractData.event.history.map((item, idx) => (
+                  <div key={idx} className="text-sm text-zinc-700">
+                    <strong>{item.action}</strong>
+                    <br />
+                    <span className="text-xs text-zinc-500">
+                      {item.date} — {item.user}
+                    </span>
+                  </div>
+                ))}
+              </AccordionContent>
+            </AccordionItem>
+
+          </Accordion>
 
 
         </TabsContent>
