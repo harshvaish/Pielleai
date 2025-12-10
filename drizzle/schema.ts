@@ -980,3 +980,106 @@ export const artistLanguages = pgTable(
     primaryKey({ columns: [table.artistId, table.languageId], name: 'artist_languages_pkey' }),
   ],
 );
+
+// 1) New enum for contract lifecycle
+// 1) New enum for contract lifecycle (keep your existing export if already present)
+export const contractStatus = pgEnum('contract_status', [
+  'draft',
+  'queued',
+  'sent',
+  'viewed',
+  'signed',
+  'voided',
+]);
+
+// ========== contracts ==========
+export const contracts = pgTable(
+  'contracts',
+  {
+    id: integer().default(sql`generated always as identity`).primaryKey().notNull(),
+    status: contractStatus().default('draft').notNull(),
+
+    artistId: integer('artist_id').notNull(),
+    venueId: integer('venue_id').notNull(),
+    eventId: integer('event_id').notNull(),
+
+    contractDate: date('contract_date').notNull(),
+
+    fileUrl: text('file_url').notNull(),
+    fileName: text('file_name').notNull(),
+    recipientEmail: text('recipient_email'),
+
+    createdAt: timestamp('created_at', { precision: 6, withTimezone: true, mode: 'string' })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp('updated_at', { precision: 6, withTimezone: true, mode: 'string' })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    // explicit FKs so relations can resolve at runtime
+    foreignKey({
+      columns: [table.artistId],
+      foreignColumns: [artists.id],
+      name: 'contracts_artist_id_fkey',
+    }).onDelete('restrict'),
+    foreignKey({
+      columns: [table.venueId],
+      foreignColumns: [venues.id],
+      name: 'contracts_venue_id_fkey',
+    }).onDelete('restrict'),
+    foreignKey({
+      columns: [table.eventId],
+      foreignColumns: [events.id],
+      name: 'contracts_event_id_fkey',
+    }).onDelete('cascade'),
+  ],
+);
+
+// ========== contract_email_ccs ==========
+export const contractEmailCcs = pgTable(
+  'contract_email_ccs',
+  {
+    contractId: integer('contract_id').notNull(),
+    email: text().notNull(),
+    createdAt: timestamp('created_at', { precision: 6, withTimezone: true, mode: 'string' })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.contractId, table.email], name: 'contract_email_ccs_pkey' }),
+    foreignKey({
+      columns: [table.contractId],
+      foreignColumns: [contracts.id],
+      name: 'contract_email_ccs_contract_id_fkey',
+    }).onDelete('cascade'),
+  ],
+);
+
+// ========== contract_history ==========
+export const contractHistory = pgTable(
+  'contract_history',
+  {
+    id: integer().default(sql`generated always as identity`).primaryKey().notNull(),
+    contractId: integer('contract_id').notNull(),
+
+    fromStatus: contractStatus('from_status'),
+    toStatus: contractStatus('to_status'),
+
+    fileUrl: text('file_url'),
+    fileName: text('file_name'),
+    changedByUserId: text('changed_by_user_id'),
+    note: text(),
+
+    createdAt: timestamp('created_at', { precision: 6, withTimezone: true, mode: 'string' })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    foreignKey({
+      columns: [table.contractId],
+      foreignColumns: [contracts.id],
+      name: 'contract_history_contract_id_fkey',
+    }).onDelete('cascade'),
+  ],
+);
