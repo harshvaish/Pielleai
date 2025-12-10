@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
-import { and, desc, eq, gte, inArray, lte } from 'drizzle-orm';
+import { and, desc, eq, gte, inArray, lte, count } from 'drizzle-orm';
 
 import { database } from '@/lib/database/connection';
 import {
@@ -38,6 +38,10 @@ const filtersSchema = z.object({
     })
     .optional(),
   sort: z.enum(['asc', 'desc']).optional(), // default: desc (newest first)
+
+  // pagination
+  page: z.number().int().positive().optional(),
+  pageSize: z.number().int().positive().max(100).optional(), // cap for safety
 });
 
 // ----- handler -----
@@ -62,10 +66,21 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       );
     }
 
-    const { status = [], dateRange, sort = 'desc' } = parsed.data;
+    const {
+      status = [],
+      dateRange,
+      sort = 'desc',
+      page: rawPage = 1,
+      pageSize: rawPageSize = 20,
+    } = parsed.data;
 
     // compute effective range (default = last 7 days)
     const { start, end } = dateRange ?? defaultLast7Days();
+
+    // normalized pagination
+    const page = Math.max(1, rawPage);
+    const pageSize = Math.min(Math.max(1, rawPageSize), 100);
+    const offset = (page - 1) * pageSize;
 
     // build filters
     const whereClauses = [
@@ -73,7 +88,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       lte(contracts.contractDate, end),
     ];
 
-    // normalize status: if includes "all" (or empty), we skip status filter
+    // normalize status: if includes "all" (or empty), skip status filter
     let statusValues: readonly ContractStatus[] | null = null;
     if (status.length > 0 && !status.includes('all')) {
       statusValues = status.filter(
@@ -84,7 +99,13 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       }
     }
 
-    // query
+    // total count (no joins to avoid duplication)
+    const [{ total }] = await database
+      .select({ total: count() })
+      .from(contracts)
+      .where(and(...whereClauses));
+
+    // data page
     const rows = await database
       .select({
         id: contracts.id,
@@ -122,14 +143,25 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       .innerJoin(venues, eq(contracts.venueId, venues.id))
       .innerJoin(events, eq(contracts.eventId, events.id))
       .where(and(...whereClauses))
-      .orderBy(sort === 'asc' ? contracts.createdAt : desc(contracts.createdAt));
+      .orderBy(sort === 'asc' ? contracts.createdAt : desc(contracts.createdAt))
+      .limit(pageSize)
+      .offset(offset);
+
+    const totalPages = Math.max(1, Math.ceil((total ?? 0) / pageSize));
+    const meta = {
+      page,
+      pageSize,
+      total,
+      totalPages,
+      hasPrev: page > 1,
+      hasNext: page < totalPages,
+      sort,
+      dateRange: { start, end },
+      status: status.length ? status : ['all'],
+    };
 
     return NextResponse.json(
-      {
-        success: true,
-        message: 'Contratti recuperati con successo.',
-        data: rows,
-      },
+      { success: true, message: 'Contratti recuperati con successo.', data: rows, meta },
       { status: 200 },
     );
   } catch (error) {
