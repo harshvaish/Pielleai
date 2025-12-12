@@ -22,22 +22,32 @@ type ContractStatus = (typeof CONTRACT_STATUS)[number];
 
 const StatusInput = z.union([z.literal('all'), z.enum(CONTRACT_STATUS)]);
 
-function defaultLast7Days(): { start: string; end: string } {
+// default to the last 1 month window
+function defaultLastMonth(): { start: string; end: string } {
   const end = new Date();
   const start = new Date(end);
-  start.setDate(end.getDate() - 6); // inclusive 7-day window
+  start.setMonth(end.getMonth() - 1);
   const toISO = (d: Date) => d.toISOString().slice(0, 10);
   return { start: toISO(start), end: toISO(end) };
 }
+
+// accept YYYY-MM-DD | '' | null and normalize '' → null
+const DateStr = z
+  .string()
+  .regex(/^\d{4}-\d{2}-\d{2}$/)
+  .or(z.literal(''))
+  .nullable()
+  .transform(v => (v && v.trim() !== '' ? v : null));
 
 // ----- validation -----
 const filtersSchema = z.object({
   status: z.array(StatusInput).optional(), // e.g. ["sent","signed"] or ["all"]
   dateRange: z
     .object({
-      start: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
-      end: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+      start: DateStr,
+      end: DateStr,
     })
+    .nullable()
     .optional(),
   sort: z.enum(['asc', 'desc']).optional(), // default: desc (newest first)
 
@@ -45,6 +55,19 @@ const filtersSchema = z.object({
   page: z.number().int().positive().optional(),
   pageSize: z.number().int().positive().max(100).optional(), // cap for safety
 });
+
+// normalize date range, fallback to last month if empty/missing
+function resolveDateRange(
+  dateRange?: { start: string | null; end: string | null } | null
+): { start: string; end: string } {
+  if (!dateRange || !dateRange.start || !dateRange.end) {
+    return defaultLastMonth();
+  }
+  const start = dateRange.start;
+  const end = dateRange.end;
+  // ensure start <= end (swap if needed)
+  return start > end ? { start: end, end: start } : { start, end };
+}
 
 // ----- handler -----
 export async function POST(request: NextRequest): Promise<NextResponse> {
@@ -76,8 +99,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       pageSize: rawPageSize = 20,
     } = parsed.data;
 
-    // effective date range (default = last 7 days)
-    const { start, end } = dateRange ?? defaultLast7Days();
+    // effective date range (defaults to last month if null/empty/"")
+    const { start, end } = resolveDateRange(dateRange ?? null);
 
     // normalized pagination
     const page = Math.max(1, rawPage);
@@ -85,10 +108,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const offset = (page - 1) * pageSize;
 
     // build filters
-    const whereClauses = [
-      gte(contracts.contractDate, start),
-      lte(contracts.contractDate, end),
-    ];
+    const whereClauses = [gte(contracts.contractDate, start), lte(contracts.contractDate, end)];
 
     // normalize status: if includes "all" (or empty), skip status filter
     let statusValues: readonly ContractStatus[] | null = null;
@@ -152,34 +172,48 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     // ---------- attach history & CCs without N+1 ----------
     const contractIds = rows.map(r => r.id);
 
-    // histories (ordered newest first)
-    let byHistory = new Map<number, Array<{
-      id: number;
-      fromStatus: ContractStatus;
-      toStatus: ContractStatus;
-      fileUrl: string | null;
-      fileName: string | null;
-      note: string | null;
-      changedByUserId: number;
-      createdAt: string;
-    }>>();
+    let byHistory = new Map<
+      number,
+      Array<{
+        id: number;
+        fromStatus: ContractStatus;
+        toStatus: ContractStatus;
+        fileUrl: string | null;
+        fileName: string | null;
+        note: string | null;
+        changedByUserId: number;
+        createdAt: string;
+      }>
+    >();
+
+    let byCcs = new Map<number, string[]>();
 
     if (contractIds.length) {
-      const historyRows = await database
-        .select({
-          contractId: contractHistory.contractId,
-          id: contractHistory.id,
-          fromStatus: contractHistory.fromStatus,
-          toStatus: contractHistory.toStatus,
-          fileUrl: contractHistory.fileUrl,
-          fileName: contractHistory.fileName,
-          note: contractHistory.note,
-          changedByUserId: contractHistory.changedByUserId,
-          createdAt: contractHistory.createdAt,
-        })
-        .from(contractHistory)
-        .where(inArray(contractHistory.contractId, contractIds))
-        .orderBy(desc(contractHistory.createdAt));
+      const [historyRows, ccsRows] = await Promise.all([
+        database
+          .select({
+            contractId: contractHistory.contractId,
+            id: contractHistory.id,
+            fromStatus: contractHistory.fromStatus,
+            toStatus: contractHistory.toStatus,
+            fileUrl: contractHistory.fileUrl,
+            fileName: contractHistory.fileName,
+            note: contractHistory.note,
+            changedByUserId: contractHistory.changedByUserId,
+            createdAt: contractHistory.createdAt,
+          })
+          .from(contractHistory)
+          .where(inArray(contractHistory.contractId, contractIds))
+          .orderBy(desc(contractHistory.createdAt)),
+
+        database
+          .select({
+            contractId: contractEmailCcs.contractId,
+            email: contractEmailCcs.email,
+          })
+          .from(contractEmailCcs)
+          .where(inArray(contractEmailCcs.contractId, contractIds)),
+      ]);
 
       byHistory = historyRows.reduce((map, h) => {
         const arr = map.get(h.contractId) ?? [];
@@ -196,18 +230,6 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         map.set(h.contractId, arr);
         return map;
       }, new Map<number, any[]>());
-    }
-
-    // CCs
-    let byCcs = new Map<number, string[]>();
-    if (contractIds.length) {
-      const ccsRows = await database
-        .select({
-          contractId: contractEmailCcs.contractId,
-          email: contractEmailCcs.email,
-        })
-        .from(contractEmailCcs)
-        .where(inArray(contractEmailCcs.contractId, contractIds));
 
       byCcs = ccsRows.reduce((map, c) => {
         const arr = map.get(c.contractId) ?? [];
