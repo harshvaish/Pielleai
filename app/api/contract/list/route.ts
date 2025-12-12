@@ -5,6 +5,8 @@ import { and, desc, eq, gte, inArray, lte, count } from 'drizzle-orm';
 import { database } from '@/lib/database/connection';
 import {
   contracts,
+  contractEmailCcs,
+  contractHistory,
   artists,
   venues,
   events,
@@ -16,7 +18,7 @@ export const runtime = 'nodejs';
 
 // ----- constants / helpers -----
 const CONTRACT_STATUS = ['draft', 'queued', 'sent', 'viewed', 'signed', 'voided'] as const;
-type ContractStatus = typeof CONTRACT_STATUS[number];
+type ContractStatus = (typeof CONTRACT_STATUS)[number];
 
 const StatusInput = z.union([z.literal('all'), z.enum(CONTRACT_STATUS)]);
 
@@ -74,7 +76,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       pageSize: rawPageSize = 20,
     } = parsed.data;
 
-    // compute effective range (default = last 7 days)
+    // effective date range (default = last 7 days)
     const { start, end } = dateRange ?? defaultLast7Days();
 
     // normalized pagination
@@ -105,7 +107,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       .from(contracts)
       .where(and(...whereClauses));
 
-    // data page
+    // data page (base rows)
     const rows = await database
       .select({
         id: contracts.id,
@@ -147,6 +149,80 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       .limit(pageSize)
       .offset(offset);
 
+    // ---------- attach history & CCs without N+1 ----------
+    const contractIds = rows.map(r => r.id);
+
+    // histories (ordered newest first)
+    let byHistory = new Map<number, Array<{
+      id: number;
+      fromStatus: ContractStatus;
+      toStatus: ContractStatus;
+      fileUrl: string | null;
+      fileName: string | null;
+      note: string | null;
+      changedByUserId: number;
+      createdAt: string;
+    }>>();
+
+    if (contractIds.length) {
+      const historyRows = await database
+        .select({
+          contractId: contractHistory.contractId,
+          id: contractHistory.id,
+          fromStatus: contractHistory.fromStatus,
+          toStatus: contractHistory.toStatus,
+          fileUrl: contractHistory.fileUrl,
+          fileName: contractHistory.fileName,
+          note: contractHistory.note,
+          changedByUserId: contractHistory.changedByUserId,
+          createdAt: contractHistory.createdAt,
+        })
+        .from(contractHistory)
+        .where(inArray(contractHistory.contractId, contractIds))
+        .orderBy(desc(contractHistory.createdAt));
+
+      byHistory = historyRows.reduce((map, h) => {
+        const arr = map.get(h.contractId) ?? [];
+        arr.push({
+          id: h.id,
+          fromStatus: h.fromStatus as ContractStatus,
+          toStatus: h.toStatus as ContractStatus,
+          fileUrl: h.fileUrl,
+          fileName: h.fileName,
+          note: h.note,
+          changedByUserId: h.changedByUserId,
+          createdAt: h.createdAt,
+        });
+        map.set(h.contractId, arr);
+        return map;
+      }, new Map<number, any[]>());
+    }
+
+    // CCs
+    let byCcs = new Map<number, string[]>();
+    if (contractIds.length) {
+      const ccsRows = await database
+        .select({
+          contractId: contractEmailCcs.contractId,
+          email: contractEmailCcs.email,
+        })
+        .from(contractEmailCcs)
+        .where(inArray(contractEmailCcs.contractId, contractIds));
+
+      byCcs = ccsRows.reduce((map, c) => {
+        const arr = map.get(c.contractId) ?? [];
+        arr.push(c.email);
+        map.set(c.contractId, arr);
+        return map;
+      }, new Map<number, string[]>());
+    }
+
+    const data = rows.map(r => ({
+      ...r,
+      ccs: byCcs.get(r.id) ?? [],
+      history: byHistory.get(r.id) ?? [],
+    }));
+
     const totalPages = Math.max(1, Math.ceil((total ?? 0) / pageSize));
     const meta = {
       page,
@@ -161,7 +237,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     };
 
     return NextResponse.json(
-      { success: true, message: 'Contratti recuperati con successo.', data: rows, meta },
+      { success: true, message: 'Contratti recuperati con successo.', data, meta },
       { status: 200 },
     );
   } catch (error) {
