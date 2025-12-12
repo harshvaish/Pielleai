@@ -79,16 +79,6 @@ export const NAVBAR_LINKS: NavbarLink[] = [
     visibleTo: ['admin', 'venue-manager', 'artist-manager'],
     separator: false,
   },
-  {
-    label: 'Test',
-    href: '/test',
-    iconSrc: '/images/navbar-icons/contract-management.svg',
-    iconAlt: 'icona Contract managment',
-    visibleTo: ['admin', 'venue-manager', 'artist-manager'],
-    separator: false,
-  },
-
-
 ];
 
 // avatar upload

@@ -1,12 +1,25 @@
 import { cookies } from "next/headers";
 
-export default async function getContracts() {
-  const payload = {
-    status: ["draft"],
-    dateRange: { start: "2025-11-10", end: "2025-12-09" },
-    sort: "asc",
-  };
+type GetContractsArgs = {
+  startDate?: string | "";
+  endDate?: string | "";
+  status?: string[];
+  sort?: 'asc' | 'desc';
+};
 
+
+export default async function getContracts({
+  startDate,
+  endDate,
+  status,
+  sort,
+}: GetContractsArgs) {
+  const payload = {
+    status:status ?? ["draft"],
+    // dateRange: { start: "2025-11-10", end: "2025-12-09" },
+     dateRange: { start: startDate, end: endDate },
+    sort: sort,
+  };
   // forward cookies
   const allCookies = await cookies();
   const cookieHeader = allCookies
