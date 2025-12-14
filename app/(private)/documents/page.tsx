@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import {
   CalendarDays,
   ChevronDown,
+  ChevronRight,
   Clock,
   Download,
   FileText,
@@ -147,7 +148,7 @@ function mapContract(c: any) {
 
     actionLabel: "Modifica",
     actionVariant: "outline",
-    href: `/contract-managment/${c.id}`,
+    href: `/documents/${c.id}`,
   };
 }
 
@@ -320,14 +321,9 @@ export default async function EventsPage({ searchParams }:EventsPageProps) {
                 </div>
 
                 {/* Actions */}
-                <div className="flex flex-col items-end gap-2">
-                  <Button asChild variant={contract.actionVariant} size="sm" className="min-w-[110px]">
                     <Link href={contract.href}>
-                      {contract.actionLabel}
-                      <ChevronDown className="size-4" />
+                      <ChevronRight className="size-4" />
                     </Link>
-                  </Button>
-                </div>
               </div>
             );
           })}

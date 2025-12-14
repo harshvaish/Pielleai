@@ -72,10 +72,10 @@ export const NAVBAR_LINKS: NavbarLink[] = [
     separator: false,
   },
   {
-    label: 'Contract Managment',
-    href: '/contract-managment',
+    label: 'Documents',
+    href: '/documents',
     iconSrc: '/images/navbar-icons/contract-management.svg',
-    iconAlt: 'icona Contract managment',
+    iconAlt: 'icona Documents',
     visibleTo: ['admin', 'venue-manager', 'artist-manager'],
     separator: false,
   },
