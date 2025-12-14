@@ -24,6 +24,27 @@ export const eventFormSchema = z.object({
 
   venueId: idValidation,
 
+  /* ================= CONTRACT ================= */
+
+contractStatus: z
+.enum(["draft", "pending", "ready", "sent"])
+.optional(),
+
+/* ================= EVENT UI DETAILS ================= */
+
+artistFullName: z.string().optional(),
+artistStageName: z.string().optional(),
+
+venueName: z.string().optional(),
+venueCompanyName: z.string().optional(),
+venueVatNumber: z.string().optional(),
+venueAddress: z.string().optional(),
+
+eventType: z.enum(["concert", "dj-set", "private-event"]).optional(),
+
+ccEmails: z.array(z.boolean()).optional(),
+
+
   tourManagerEmail: z.preprocess(
     (val) => (typeof val === 'string' && val.trim() !== '' ? val : undefined),
     emailValidation.optional(),

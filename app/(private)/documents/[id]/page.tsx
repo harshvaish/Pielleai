@@ -32,6 +32,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import BackButton from '@/app/_components/BackButton';
 
 type ContractDetailPageProps = {
   params?: Promise<{ id: string }>;
@@ -256,12 +257,9 @@ export default async function ContractDetailPage({ params, searchParams }: Contr
 
   return (
     <div className='h-full w-full bg-zinc-50 px-4 py-6 md:px-6 flex flex-col gap-6'>
-      <div className='flex items-center gap-2 text-sm text-zinc-500'>
-        <span className='cursor-pointer hover:text-zinc-700'>&lt; Indietro</span>
-      </div>
-
       <div className='flex flex-wrap justify-between items-center gap-3'>
-        <h1 className='text-2xl font-bold'>Contracts</h1>
+        {/* <h1 className='text-2xl font-bold'>Contracts</h1> */}
+        <BackButton />        
         <div className='flex items-center gap-2'>
           <Button
             variant='secondary'

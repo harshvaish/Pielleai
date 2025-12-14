@@ -8,6 +8,7 @@ import {
   SelectTrigger,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
+import { toast } from 'sonner';
 import { Separator } from "@/components/ui/separator";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -22,7 +23,7 @@ import { eventStatus } from "@/lib/database/schema";
 import { EventFormSchema } from "@/lib/validation/event-form-schema";
 import ArtistAvailabilitySelectWithCreate from "./ArtistAvailabilitySelectWithCreate";
 import EventStatusBadge from "@/app/(private)/_components/Badges/EventStatusBadge";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import {
   QUESTION_ICON,
@@ -39,6 +40,8 @@ import {
   AccordionTrigger,
   AccordionContent,
 } from "@/components/ui/accordion";
+import createContract from "@/lib/data/contracts/create-contracts";
+import { useRouter } from 'next/navigation';
 
 type EventForm = {
   artists: ArtistSelectData[];
@@ -56,11 +59,13 @@ export default function EventForm({
     register,
     control,
     setValue,
+    getValues,
     formState: { errors },
   } = useFormContext<EventFormSchema>();
 
   const selectedVenueId = watch("venueId");
   const selectedVenue = venues.find((venue) => venue.id == selectedVenueId);
+  const router = useRouter();
 
   // Watch the values needed for calculation
   const moCost = watch("moCost");
@@ -189,6 +194,7 @@ export default function EventForm({
       return val !== undefined && val !== null && val !== "" && val !== false;
     });
   }
+  const [isPending, startTransition] = useTransition();
 
   const historyData = [
     {
@@ -234,6 +240,25 @@ export default function EventForm({
       type: "success",
     },
   ];
+
+  const handleCreateContract = async () => {
+
+    startTransition(async () => {
+      const values = getValues();
+  console.log(values, "values");
+      const response = await createContract(values);
+      // closeDialog();
+
+      if (response.success) {
+        toast.success("Contract created!");
+        startTransition(async () => router.refresh());
+      } else {
+        toast.error(response.message);
+      }
+    });
+  };
+  
+  
 
   return (
     <>
@@ -1264,7 +1289,7 @@ export default function EventForm({
         text-sm cursor-not-allowed
       "
               >
-                Regenerate
+                Generate
               </button>
 
               <Button type="button" size="sm" className="max-w-max">
@@ -1465,120 +1490,12 @@ export default function EventForm({
 
                   {/* ---------------- VENUE SECTION ---------------- */}
                   <AccordionItem value="venue">
-                    <AccordionTrigger className="px-3 flex items-center gap-2 hover:no-underline">
-                      <div className="flex items-center gap-2">
-                        <img
-                          src={
-                            isSectionComplete(watch(), [
-                              "venueId",
-                              "venueName",
-                              "venueCompanyName",
-                              "venueVatNumber",
-                            ])
-                              ? GREEN_TICK_ICON
-                              : QUESTION_ICON
-                          }
-                          width={16}
-                          height={16}
-                        />
-
-                        <span className="text-sm font-medium">Venue</span>
-                      </div>
-                    </AccordionTrigger>
-
-                    <AccordionContent className="px-3 py-2 space-y-3">
-                      {/* Event type */}
-                      <Controller
-                        control={control}
-                        name="eventType"
-                        render={({ field }) => (
-                          <div className="flex flex-col">
-                            <Select
-                              value={field.value}
-                              onValueChange={field.onChange}
-                            >
-                              <SelectTrigger className="h-10 w-full">
-                                {field.value ?? "Select"}
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="concert">Concert</SelectItem>
-                                <SelectItem value="dj-set">DJ Set</SelectItem>
-                                <SelectItem value="private-event">
-                                  Private Event
-                                </SelectItem>
-                              </SelectContent>
-                            </Select>
-                            {errors.eventType && (
-                              <p className="text-xs text-destructive">
-                                {errors.eventType.message}
-                              </p>
-                            )}
-                          </div>
-                        )}
-                      />
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="flex flex-col gap-1">
-                          {/* Venue name */}
-                          <label className="text-sm text-zinc-600">
-                            Venue name
-                          </label>
-
-                          <Input
-                            {...register("venueName")}
-                            placeholder="Venue name"
-                            className="h-10"
-                          />
-                        </div>
-                        <div className="flex flex-col gap-1">
-                          {/* Venue company name */}
-                          <label className="text-sm text-zinc-600">
-                            Venue Company name
-                          </label>
-
-                          <Input
-                            {...register("venueCompanyName")}
-                            placeholder="Venue Company name"
-                            className="h-10"
-                          />
-                        </div>
-                      </div>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="flex flex-col gap-1">
-                          {/* Venue VAT */}
-                          <label className="text-sm text-zinc-600">
-                            Venue VAT name
-                          </label>
-
-                          <Input
-                            {...register("venueVatNumber")}
-                            placeholder="Venue VAT number"
-                            className="h-10"
-                          />
-                        </div>
-                        <div className="flex flex-col gap-1">
-                          {/* Transport cost */}
-                          <label className="text-sm text-zinc-600">
-                            Transport costs (€)
-                          </label>
-
-                          <Input
-                            {...register("transportCost")}
-                            placeholder="Transport costs (€)"
-                            className="h-10"
-                          />
-                        </div>
-                      </div>
-                    </AccordionContent>
-                  </AccordionItem>
-
-                  {/* ---------------- EVENT SECTION ---------------- */}
-                  <AccordionItem value="event">
                     <AccordionTrigger className="px-3 hover:no-underline">
                       <div className="flex items-center gap-2">
                         <img
                           src={
                             isSectionComplete(watch(), [
-                              "venueName",
+                              "eventName",
                               "venueCompanyName",
                               "venueVatNumber",
                               "venueAddress",
@@ -1590,7 +1507,7 @@ export default function EventForm({
                           height={16}
                         />
 
-                        <span className="text-sm font-medium">Event</span>
+                        <span className="text-sm font-medium">Venue</span>
                       </div>
                     </AccordionTrigger>
 
@@ -1650,6 +1567,168 @@ export default function EventForm({
                       </div>
                     </AccordionContent>
                   </AccordionItem>
+
+                                    {/* ---------------- EVENT SECTION ---------------- */}
+                                  {/* ---------------- EVENT SECTION ---------------- */}
+<AccordionItem value="event">
+  <AccordionTrigger className="px-3 hover:no-underline">
+    <div className="flex items-center gap-2">
+      <img
+        src={
+          isSectionComplete(watch(), [
+            "eventType",
+            "availability",
+            "moCost",
+            "transportationsCost",
+          ])
+            ? GREEN_TICK_ICON
+            : QUESTION_ICON
+        }
+        width={16}
+        height={16}
+      />
+      <span className="text-sm font-medium">Event</span>
+    </div>
+  </AccordionTrigger>
+
+  <AccordionContent className="px-3 py-4 space-y-4">
+    {/* EVENT TYPE */}
+    <div className="flex flex-col gap-1">
+      <label className="text-sm text-zinc-600">Event type</label>
+      <Controller
+        control={control}
+        name="eventType"
+        render={({ field }) => (
+          <Select value={field.value} onValueChange={field.onChange}>
+            <SelectTrigger className="h-10 w-full">
+              {field.value ?? "Select"}
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="concert">Live show</SelectItem>
+              <SelectItem value="dj-set">DJ Set</SelectItem>
+              <SelectItem value="private-event">Private Event</SelectItem>
+            </SelectContent>
+          </Select>
+        )}
+      />
+    </div>
+
+    {/* DATE + TIME */}
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="flex flex-col gap-1">
+        <label className="text-sm text-zinc-600">Event date</label>
+        <Input
+          type="date"
+          {...register("eventDate")}
+          className="h-10"
+        />
+      </div>
+
+      <div className="flex flex-col gap-1">
+        <label className="text-sm text-zinc-600">
+          Performance time
+        </label>
+        <div className="flex gap-2">
+          <Input
+            type="time"
+            {...register("soundCheckStart")}
+            className="h-10"
+          />
+          <Input
+            type="time"
+            {...register("soundCheckEnd")}
+            className="h-10"
+          />
+        </div>
+      </div>
+    </div>
+
+    {/* TRANSPORT COSTS */}
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="flex flex-col gap-1">
+        <label className="text-sm text-zinc-600">
+          Transport costs EUR
+        </label>
+        <Input
+          type="number"
+          min={0}
+          {...register("transportationsCost", {
+            setValueAs: (v) => (v === "" ? undefined : parseFloat(v)),
+          })}
+          className="h-10"
+        />
+      </div>
+
+      <div className="flex flex-col gap-1">
+        <label className="text-sm text-zinc-600">
+          Transport costs text
+        </label>
+        <Input
+          {...register("transportCostText")}
+          placeholder="three-hundred euros"
+          className="h-10"
+        />
+      </div>
+    </div>
+
+    {/* TOTAL CACHET */}
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="flex flex-col gap-1">
+        <label className="text-sm text-zinc-600">
+          Total cachet EUR
+        </label>
+        <Input
+          type="number"
+          min={0}
+          {...register("moCost", {
+            setValueAs: (v) => (v === "" ? undefined : parseFloat(v)),
+          })}
+          className="h-10"
+        />
+      </div>
+
+      <div className="flex flex-col gap-1">
+        <label className="text-sm text-zinc-600">
+          Total cachet text
+        </label>
+        <Input
+          {...register("moCostText")}
+          placeholder="three-hundred euros"
+          className="h-10"
+        />
+      </div>
+    </div>
+
+    {/* UPFRONT PAYMENT */}
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="flex flex-col gap-1">
+        <label className="text-sm text-zinc-600">
+          Upfront payment EUR
+        </label>
+        <Input
+          type="number"
+          min={0}
+          {...register("depositCost", {
+            setValueAs: (v) => (v === "" ? undefined : parseFloat(v)),
+          })}
+          className="h-10"
+        />
+      </div>
+
+      <div className="flex flex-col gap-1">
+        <label className="text-sm text-zinc-600">
+          Payment date
+        </label>
+        <Input
+          type="date"
+          {...register("depositPaymentDate")}
+          className="h-10"
+        />
+      </div>
+    </div>
+  </AccordionContent>
+</AccordionItem>
+
                 </Accordion>
               </AccordionContent>
             </AccordionItem>
@@ -1752,6 +1831,14 @@ export default function EventForm({
           </Accordion>
         </TabsContent>
       </Tabs>
+      <Button
+  type="button"
+  size="sm"
+  onClick={handleCreateContract}
+>
+  Create
+</Button>
+
     </>
   );
 }

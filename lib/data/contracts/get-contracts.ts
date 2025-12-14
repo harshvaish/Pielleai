@@ -17,9 +17,10 @@ export default async function getContracts({
   const payload = {
     status:status ?? ["draft"],
     // dateRange: { start: "2025-11-10", end: "2025-12-09" },
-     dateRange: { start: startDate, end: endDate },
+    dateRange: { start: startDate, end: endDate },
     sort: sort,
   };
+  console.log("payload", payload);
   // forward cookies
   const allCookies = await cookies();
   const cookieHeader = allCookies

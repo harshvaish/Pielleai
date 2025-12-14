@@ -1,13 +1,15 @@
-import { TablePagination } from '../_components/form/TablePagination';
-import StatusFilterButton, { ContractFilterStatus } from './_components/filters/StatusFilterButton';
-import { hasRole, resolveNextPath, splitCsv } from '@/lib/utils';
-import Link from 'next/link';
-import { notFound, redirect } from 'next/navigation';
-import getSession from '@/lib/data/auth/get-session';
-import { getUserProfileIdCached } from '@/lib/cache/users';
-import getContracts from '@/lib/data/contracts/get-contracts';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+import { TablePagination } from "../_components/form/TablePagination";
+import StatusFilterButton, {
+  ContractFilterStatus,
+} from "./_components/filters/StatusFilterButton";
+import { hasRole, resolveNextPath, splitCsv } from "@/lib/utils";
+import Link from "next/link";
+import { notFound, redirect } from "next/navigation";
+import getSession from "@/lib/data/auth/get-session";
+import { getUserProfileIdCached } from "@/lib/cache/users";
+import getContracts from "@/lib/data/contracts/get-contracts";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import {
   CalendarDays,
   ChevronDown,
@@ -17,8 +19,8 @@ import {
   FileText,
   MapPin,
   Repeat,
-} from 'lucide-react';
-import DatesFilterButton from './_components/filters/DatesFilterButton';
+} from "lucide-react";
+import DatesFilterButton from "./_components/filters/DatesFilterButton";
 
 type EventsPageProps = {
   searchParams?: Promise<{
@@ -26,10 +28,9 @@ type EventsPageProps = {
     status?: string;
     start?: string;
     end?: string;
-    sort?: 'asc' | 'desc';
+    sort?: "asc" | "desc";
   }>;
 };
-
 
 type ContractsTableFilters = {
   currentPage: number;
@@ -40,12 +41,11 @@ type ContractsTableFilters = {
   artistIds?: string[];
   artistManagerIds?: string[];
   venueIds?: string[];
-  sort: 'asc' | 'desc'; 
+  sort: "asc" | "desc";
 };
 
-
-type ContractCardStatus = ContractFilterStatus | 'missing-info' | 'cancelled';
-type ActionVariant = 'default' | 'secondary' | 'outline' | 'ghost';
+type ContractCardStatus = ContractFilterStatus | "missing-info" | "cancelled";
+type ActionVariant = "default" | "secondary" | "outline" | "ghost";
 
 type ContractCard = {
   id: string;
@@ -116,13 +116,20 @@ const STATUS_STYLES = {
 
 function mapStatus(status: string) {
   switch (status) {
-    case "draft": return "to-sign";
-    case "signed": return "signed";
-    case "refused": return "refused";
-    case "error": return "error";
-    case "cancelled": return "cancelled";
-    case "archived": return "archived";
-    default: return "all";
+    case "draft":
+      return "to-sign";
+    case "signed":
+      return "signed";
+    case "refused":
+      return "refused";
+    case "error":
+      return "error";
+    case "cancelled":
+      return "cancelled";
+    case "archived":
+      return "archived";
+    default:
+      return "all";
   }
 }
 
@@ -158,7 +165,7 @@ export const dynamic = "force-dynamic";
    PAGE COMPONENT
 --------------------------------------------------------*/
 
-export default async function EventsPage({ searchParams }:EventsPageProps) {
+export default async function EventsPage({ searchParams }: EventsPageProps) {
   const { session, user } = await getSession();
   if (!session || !user || user.banned) redirect("/logout");
 
@@ -172,45 +179,47 @@ export default async function EventsPage({ searchParams }:EventsPageProps) {
 
   const sp = await searchParams;
   const selectedStatus = (sp?.status as ContractFilterStatus) ?? "all";
-  const currentPage = Number(sp?.page ?? '1');
-  const sort = (sp?.sort as 'asc' | 'desc') ?? 'desc';
+  const currentPage = Number(sp?.page ?? "1");
+  const sort = (sp?.sort as "asc" | "desc") ?? "desc";
 
   const filters: ContractsTableFilters = {
     currentPage: currentPage,
     status: splitCsv(sp?.status) as ContractFilterStatus[],
     startDate: sp?.start ? new Date(sp.start) : null,
     endDate: sp?.end ? new Date(sp.end) : null,
-    sort: sort
+    sort: sort,
   };
 
-  function getApiStatusFromUi(
-    uiStatus: ContractFilterStatus
-  ): string[] {
+  function getApiStatusFromUi(uiStatus: ContractFilterStatus): string[] {
     switch (uiStatus) {
       case "to-sign":
         return ["queued"];
-  
+
       case "signed":
         return ["signed"];
-  
+
       case "refused":
       case "archived":
         return ["voided"];
-  
+
       case "all":
       default:
         return ["draft"];
     }
   }
+  function toYMD(date?: string) {
+    if (!date) return "";
+    return new Date(date).toISOString().split("T")[0];
+  }
   
   /* ---- Fetch backend data ---- */
   const api = await getContracts({
-    startDate: sp?.start ?? "",
-    endDate: sp?.end ?? "",
+    startDate: toYMD(sp?.start),
+    endDate: toYMD(sp?.end ),
     status: getApiStatusFromUi(selectedStatus),
     sort: sort,
   });
-
+console.log(api, "api contracts");
   /* ---- Convert backend → UI format ---- */
   let contracts: ContractCard[] = api.data.map(mapContract);
 
@@ -246,28 +255,26 @@ export default async function EventsPage({ searchParams }:EventsPageProps) {
         </div>
 
         <div className="flex items-center gap-2">
-        <Button
-  variant="ghost"
-  size="sm"
-  asChild
->
-  <Link
-    href={{
-      query: {
-        ...Object.fromEntries(
-          Object.entries(sp ?? {}).filter(([, v]) => v != null)
-        ),
-        sort: sort === 'desc' ? 'asc' : 'desc',
-        page: '1',
-      },
-    }}
-  >
-    Ordina: {sort === 'desc' ? 'Più recente' : 'Meno recente'}
-    <ChevronDown className="size-4 ml-1" />
-  </Link>
-</Button>
-          <Button variant="ghost" size="sm">Filtri <ChevronDown className="size-4" /></Button>
-          <DatesFilterButton filters ={filters} />
+          <Button variant="ghost" size="sm" asChild>
+            <Link
+              href={{
+                query: {
+                  ...Object.fromEntries(
+                    Object.entries(sp ?? {}).filter(([, v]) => v != null)
+                  ),
+                  sort: sort === "desc" ? "asc" : "desc",
+                  page: "1",
+                },
+              }}
+            >
+              Ordina <span className="text-zinc-400">{sort === "desc" ? "Più recente" : "Meno recente"}</span>
+              <ChevronDown className="size-4 ml-1" />
+            </Link>
+          </Button>
+          <Button variant="ghost" size="sm">
+            Filtri <ChevronDown className="size-4" />
+          </Button>
+          <DatesFilterButton filters={filters} />
         </div>
       </div>
 
@@ -278,8 +285,10 @@ export default async function EventsPage({ searchParams }:EventsPageProps) {
             const s = STATUS_STYLES[contract.status];
 
             return (
+              <Link href={contract.href}                 key={contract.id}
+>
+
               <div
-                key={contract.id}
                 className="grid grid-cols-[minmax(160px,200px)_1fr_auto] gap-4 md:gap-6 items-center bg-white border border-zinc-100 rounded-2xl p-4"
               >
                 {/* Status Badge */}
@@ -291,19 +300,25 @@ export default async function EventsPage({ searchParams }:EventsPageProps) {
                     <span className={`h-2 w-2 rounded-full ${s.dot}`} />
                     {contract.statusLabel}
                   </Badge>
-                  <div className="text-xs text-zinc-500">Status changed on {contract.statusDate}</div>
+                  <div className="text-xs text-zinc-500">
+                    Status changed on {contract.statusDate}
+                  </div>
                 </div>
 
                 {/* Info */}
                 <div className="flex flex-col gap-3">
                   <div className="flex flex-wrap items-center gap-3 text-sm text-zinc-700">
-                    <span className="font-semibold text-black">{contract.artistHandle}</span>
+                    <span className="font-semibold text-black">
+                      {contract.artistHandle}
+                    </span>
                     <span className="text-zinc-500">{contract.artistName}</span>
                     <span className="flex items-center gap-1 text-zinc-500">
-                      <MapPin className="size-4 text-zinc-400" /> {contract.venueName}
+                      <MapPin className="size-4 text-zinc-400" />{" "}
+                      {contract.venueName}
                     </span>
                     <span className="flex items-center gap-1 text-zinc-500">
-                      <CalendarDays className="size-4 text-zinc-400" /> {contract.date}
+                      <CalendarDays className="size-4 text-zinc-400" />{" "}
+                      {contract.date}
                     </span>
                     <span className="flex items-center gap-1 text-zinc-500">
                       <Clock className="size-4 text-zinc-400" /> {contract.time}
@@ -321,25 +336,29 @@ export default async function EventsPage({ searchParams }:EventsPageProps) {
                 </div>
 
                 {/* Actions */}
-                    <Link href={contract.href}>
-                      <ChevronRight className="size-4" />
-                    </Link>
+                  <ChevronRight className="size-4" />
               </div>
+              </Link>
+
             );
           })}
         </div>
       ) : (
         <section className="flex flex-col justify-center items-center bg-white rounded-2xl p-8">
           <h2 className="text-base font-bold">There is no contracts yet</h2>
-          <div className="text-sm text-zinc-400">As soon as contracts are generated, you will see them here.</div>
+          <div className="text-sm text-zinc-400">
+            As soon as contracts are generated, you will see them here.
+          </div>
         </section>
       )}
 
       {contracts.length > 0 && (
-        <TablePagination totalPages={totalPages} currentPage={1} searchParams={sp ?? {}} />
+        <TablePagination
+          totalPages={totalPages}
+          currentPage={1}
+          searchParams={sp ?? {}}
+        />
       )}
     </div>
   );
 }
-
-
