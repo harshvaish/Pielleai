@@ -33,6 +33,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import BackButton from '@/app/_components/BackButton';
+import createContract from '@/lib/data/contracts/create-contract';
 
 type ContractDetailPageProps = {
   params?: Promise<{ id: string }>;
@@ -41,22 +42,22 @@ type ContractDetailPageProps = {
 
 type ContractDetailStatus = 'missing' | 'to-sign' | 'signed' | 'refused' | 'error' | 'archived';
 
-const mockContract = {
-  id: 'c-123',
-  statusDate: '13/11/25',
-  artistHandle: '@bobjohnson',
-  artistName: 'Bob Johnson',
-  venueName: 'Club “Maestro”',
-  date: '27/05/2025',
-  time: '14:00 - 16:30',
-  tourManager: 'Anna Trevisan',
-  tourManagerEmail: 'trevisana@gmail.com',
-  consultantEmail: 'robert.fox.events@gmail.com',
-  adminEmail: 'brooklyn@gmail.com',
-  managerName: 'Anna Trevisan',
-  managerEmail: 'mail@wow.com',
-  downloadLabel: 'Contract.pdf',
-};
+// const mockContract = {
+//   id: 'c-123',
+//   statusDate: '13/11/25',
+//   artistHandle: '@bobjohnson',
+//   artistName: 'Bob Johnson',
+//   venueName: 'Club “Maestro”',
+//   date: '27/05/2025',
+//   time: '14:00 - 16:30',
+//   tourManager: 'Anna Trevisan',
+//   tourManagerEmail: 'trevisana@gmail.com',
+//   consultantEmail: 'robert.fox.events@gmail.com',
+//   adminEmail: 'brooklyn@gmail.com',
+//   managerName: 'Anna Trevisan',
+//   managerEmail: 'mail@wow.com',
+//   downloadLabel: 'Contract.pdf',
+// };
 
 const FLOW_STATES: Record<
   ContractDetailStatus,
@@ -238,11 +239,64 @@ export default async function ContractDetailPage({ params, searchParams }: Contr
   if (!hasRole(user, ['admin', 'artist-manager', 'venue-manager'])) {
     notFound();
   }
-
+  
   await params;
   const sp = await searchParams;
-  const stage = (sp?.stage as ContractDetailStatus | undefined) ?? 'missing';
-  const flow = FLOW_STATES[stage] ?? FLOW_STATES['missing'];
+  if (!sp?.data) notFound();
+  const payload = JSON.parse(decodeURIComponent(sp.data));
+  /* ---------- FIRE API ON PAGE LOAD ---------- */
+  const result = await createContract(payload);
+  const api = result.data?.data;
+  const mockContract = {
+    id: api.id,
+    statusDate: new Date(api.latestHistory.createdAt).toLocaleDateString('it-IT'),
+    artistHandle: `@${api.artist.stageName}`,
+    artistName: `${api.artist.name} ${api.artist.surname}`,
+    venueName: api.venue.name,
+    date: api.contractDate,
+    time: '—',
+    tourManager: api.ccs?.[0] ?? '—',
+    tourManagerEmail: api.ccs?.[0] ?? '—',
+    consultantEmail: api.ccs?.[1] ?? '—',
+    adminEmail: api.recipientEmail,
+    managerName: api.artist.name,
+    managerEmail: api.recipientEmail,
+    downloadLabel: api.fileName,
+  };
+  if (!result.success) {
+    // you can also show a friendly error UI instead
+    throw new Error(result.message ?? "Contract creation failed");
+  }
+  function mapHistory(api: any) {
+    const list = api?.latestHistory ? [api.latestHistory] : [];
+  
+    return list.map((h: any, index: number) => ({
+      id: String(h.id),
+      title: `Status changed to “${h.toStatus}”`,
+      description: h.note,
+      date: new Date(h.createdAt).toLocaleDateString('it-IT'),
+      time: new Date(h.createdAt).toLocaleTimeString('it-IT', {
+        hour: '2-digit',
+        minute: '2-digit',
+      }),
+      // link: h.fileUrl ? 'View file' : undefined,
+      active: index === 0,
+    }));
+  }
+  
+  const history = mapHistory(api);
+
+  const stage = api.status as ContractDetailStatus;
+const flowBase = FLOW_STATES[stage] ?? FLOW_STATES.missing;
+
+/* ---------- MERGE FLOW + HISTORY ---------- */
+const flow = {
+  ...flowBase,
+  history,
+};
+
+  // const stage = (sp?.stage as ContractDetailStatus | undefined) ?? 'missing';
+  // const flow = FLOW_STATES[stage] ?? FLOW_STATES['missing'];
   const statusLabel = flow.statusLabel;
   const statusColor = flow.badge;
 

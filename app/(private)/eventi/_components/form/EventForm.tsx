@@ -245,7 +245,7 @@ export default function EventForm({
 
     startTransition(async () => {
       const values = getValues();
-  console.log(values, "values");
+      console.log(values, "values");
       const response = await createContract(values);
       // closeDialog();
 

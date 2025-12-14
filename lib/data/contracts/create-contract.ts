@@ -16,20 +16,14 @@ export default async function createContract(
       artistId: data.artistId,
       venueId: data.venueId,
       eventId: data.eventId,
-      contractDate: data.availability?.startDate
-        ? data.availability.startDate.toISOString().split("T")[0]
-        : undefined,
-
-      fileUrl: data.signedContractDocument?.url,
-      fileName: data.signedContractDocument?.name,
-
-      recipientEmail: data.tourManagerEmail,
-      ccEmails: [],
-
+      contractDate: data?.contractDate,
+      fileUrl: data?.fileUrl,
+      fileName: data?.fileName,
+      recipientEmail: data.recipientEmail,
+      ccEmails: data.ccEmails ?? [],
       status: data.contractStatus ?? "draft",
       note: "Initial contract created by admin before artist signature.",
     };
-console.log(payload, "payload")
     // ---- Forward cookies (same as getContracts) ----
     const allCookies = await cookies();
     const cookieHeader = allCookies

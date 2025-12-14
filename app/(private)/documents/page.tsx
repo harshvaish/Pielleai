@@ -61,6 +61,19 @@ type ContractCard = {
   actionLabel: string;
   actionVariant: ActionVariant;
   href: string;
+  payload: {
+    artistId: number;
+    venueId: number;
+    eventId: number;
+    contractDate: string;
+    fileUrl: string;
+    fileName: string;
+    recipientEmail: string;
+    ccEmails: string[];
+    status: string;
+    note: string;
+  };
+
 };
 
 /* -------------------------------------------------------
@@ -156,6 +169,21 @@ function mapContract(c: any) {
     actionLabel: "Modifica",
     actionVariant: "outline",
     href: `/documents/${c.id}`,
+    payload: {
+      artistId: c.artist.id,
+      venueId: c.venue.id,
+      eventId: c.event.id,
+      contractDate: c.contractDate,
+      fileUrl: c.fileUrl,
+      fileName: c.fileName,
+      recipientEmail: c.recipientEmail,
+      ccEmails: c.ccs ?? [],
+      status: c.status,
+      note:
+        c.history?.[0]?.note ??
+        "Initial contract created by admin before artist signature.",
+    },
+
   };
 }
 
@@ -229,6 +257,7 @@ console.log(api, "api contracts");
   }
 
   const totalPages = api.meta.totalPages;
+  
   /* -------------------------------------------------------
      RENDER
   --------------------------------------------------------*/
@@ -283,9 +312,14 @@ console.log(api, "api contracts");
         <div className="max-h-full flex flex-col gap-3 overflow-auto">
           {contracts.map((contract) => {
             const s = STATUS_STYLES[contract.status];
-
+            
             return (
-              <Link href={contract.href}                 key={contract.id}
+              <Link href={{
+                pathname: `/documents/${contract.id}`,
+                query: {
+                  data: encodeURIComponent(JSON.stringify(contract.payload)),
+                },        
+              }}  key={contract.id}
 >
 
               <div
