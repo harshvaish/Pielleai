@@ -107,6 +107,7 @@ export default function CreateEventForm({
             artists={artists}
             venues={venues}
             moCoordinators={moCoordinators}
+            mode ="create"
           />
 
           <div className='flex justify-between'>

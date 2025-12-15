@@ -37,6 +37,8 @@ export default function UpdateEventForm({
     resolver: zodResolver(eventFormSchema),
     defaultValues: {
       artistId: event.artist.id,
+      artistFullName: event.artist.name || '',
+      artistStageName: event.artist.stageName || '',
       status: event.status,
       artistManagerProfileId: event.artistManager?.profileId || undefined,
       availability: {
@@ -45,7 +47,8 @@ export default function UpdateEventForm({
         endDate: event.availability.endDate || undefined,
       },
       venueId: event.venue.id,
-
+      venueName: event.venue.name || '',
+      venueAddress: event.venue.address || '',
       tourManagerEmail: event.tourManagerEmail || '',
       payrollConsultantEmail: event.payrollConsultantEmail || '',
       notes: event.notes.flatMap((note) => note.content) || [],
@@ -107,7 +110,7 @@ export default function UpdateEventForm({
       }
     });
   };
-
+console.log(event, "event in update form");
   return (
     <section className='max-h-full overflow-y-auto'>
       <FormProvider {...methods}>
@@ -122,6 +125,8 @@ export default function UpdateEventForm({
             artists={artists}
             venues={venues}
             moCoordinators={moCoordinators}
+            event={event}
+            mode="update"
           />
 
           <div className='flex justify-between'>
