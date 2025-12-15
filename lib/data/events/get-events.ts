@@ -12,10 +12,15 @@ import {
   eventNotes,
   profiles,
   users,
-  moCoordinators,
+  moCoordinators
 } from '@/lib/database/schema';
 import { Event, EventNote, EventsTableFilters } from '@/lib/types';
 import { and, count, desc, eq, inArray, sql } from 'drizzle-orm';
+import {
+  contracts,
+  contractEmailCcs,
+  contractHistory
+} from '../../../drizzle/schema';
 
 export async function getEvents(
   user: User,
@@ -202,7 +207,7 @@ export async function getEvents(
 
     const eventIds = eventsResult.map((e) => e.id);
 
-    const [notesResult, [{ eventCount }]] = await Promise.all([
+    const [notesResult, [{ eventCount }], contractsResult] = await Promise.all([
       eventIds.length
         ? database
             .select({
@@ -220,6 +225,22 @@ export async function getEvents(
         .from(events)
         .innerJoin(artistAvailabilities, eq(events.availabilityId, artistAvailabilities.id))
         .where(filters),
+      eventIds.length
+        ? database
+            .select({
+              eventId: contracts.eventId,
+              id: contracts.id,
+              status: contracts.status,
+              contractDate: contracts.contractDate,
+              fileUrl: contracts.fileUrl,
+              fileName: contracts.fileName,
+              recipientEmail: contracts.recipientEmail,
+              createdAt: contracts.createdAt,
+            })
+            .from(contracts)
+            .where(inArray(contracts.eventId, eventIds))
+            .orderBy(desc(contracts.createdAt)) // newest first
+        : Promise.resolve([] as Array<any>),
     ]);
 
     // Group notes by eventId
@@ -233,7 +254,23 @@ export async function getEvents(
       });
     }
 
-    // Merge and nullify missing relations
+    // Pick latest contract per eventId
+    const latestContractByEvent: Record<number, any> = {};
+    for (const c of contractsResult) {
+      if (!latestContractByEvent[c.eventId]) {
+        latestContractByEvent[c.eventId] = {
+          id: c.id,
+          status: c.status,
+          contractDate: c.contractDate,
+          fileUrl: c.fileUrl,
+          fileName: c.fileName,
+          recipientEmail: c.recipientEmail,
+          createdAt: c.createdAt,
+        };
+      }
+    }
+
+    // Merge and nullify missing relations; attach contract
     const mergedResult: Event[] = eventsResult.map((event) => {
       const newObj = {
         ...event,
@@ -243,11 +280,14 @@ export async function getEvents(
       if (!event.artistManager?.id) newObj.artistManager = null;
       if (!event.moCoordinator?.id) newObj.moCoordinator = null;
 
+      // ✅ attach latest contract, keep original types intact
+      (newObj as any).contract = latestContractByEvent[event.id] ?? null;
+
       return newObj;
     });
 
     const totalPages = isPaginated ? Math.max(1, Math.ceil(Number(eventCount) / limit)) : 1;
-
+    console.log(mergedResult)
     return {
       data: mergedResult,
       totalPages,
