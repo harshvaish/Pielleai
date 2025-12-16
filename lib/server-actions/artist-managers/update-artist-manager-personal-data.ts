@@ -103,8 +103,8 @@ export const updateArtistManagerPersonalData = async (
         .returning({ userId: profiles.userId });
 
       const uid = updateResult[0]?.userId;
-      if (uid) revalidateTag(`artist-manager:${uid}`);
-      revalidateTag('artist-managers');
+      if (uid) revalidateTag(`artist-manager:${uid}`, 'max');
+      revalidateTag('artist-managers', 'max');
 
       // First delete existing languages
       await tx.delete(profileLanguages).where(eq(profileLanguages.profileId, profileId));

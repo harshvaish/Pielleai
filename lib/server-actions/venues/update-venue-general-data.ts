@@ -92,8 +92,8 @@ export const updateVenueGeneralData = async (
       .returning({ slug: venues.slug });
 
     const slug = updateResult[0]?.slug;
-    if (slug) revalidateTag(`venue:${slug}`);
-    revalidateTag('venues');
+    if (slug) revalidateTag(`venue:${slug}`, 'max');
+    revalidateTag('venues', 'max');
 
     return {
       success: true,

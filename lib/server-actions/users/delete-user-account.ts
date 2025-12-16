@@ -48,16 +48,16 @@ export async function deleteUserAccount(): Promise<ServerActionResponse<null>> {
     const role = updateResult[0]?.role;
 
     if (uid) {
-      revalidateTag(`profile:${uid}`);
+      revalidateTag(`profile:${uid}`, 'max');
 
       if (role === 'artist-manager') {
-        revalidateTag(`artist-manager:${uid}`);
-        revalidateTag('artist-managers');
+        revalidateTag(`artist-manager:${uid}`, 'max');
+        revalidateTag('artist-managers', 'max');
       }
 
       if (role === 'venue-manager') {
-        revalidateTag(`venue-manager:${uid}`);
-        revalidateTag('venue-managers');
+        revalidateTag(`venue-manager:${uid}`, 'max');
+        revalidateTag('venue-managers', 'max');
       }
     }
 

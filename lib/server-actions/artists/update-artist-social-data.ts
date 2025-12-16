@@ -66,8 +66,8 @@ export const updateArtistSocialData = async (
       .returning({ slug: artists.slug });
 
     const slug = updateResult[0]?.slug;
-    if (slug) revalidateTag(`artist:${slug}`);
-    revalidateTag('artists');
+    if (slug) revalidateTag(`artist:${slug}`, 'max');
+    revalidateTag('artists', 'max');
 
     return {
       success: true,

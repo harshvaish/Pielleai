@@ -150,8 +150,8 @@ export const updateArtistPersonalData = async (
         .returning({ slug: artists.slug });
 
       const slug = updateResult[0]?.slug;
-      if (slug) revalidateTag(`artist:${slug}`);
-      revalidateTag('artists');
+      if (slug) revalidateTag(`artist:${slug}`, 'max');
+      revalidateTag('artists', 'max');
 
       if (!areSame(existingLanguageIds, validation.data.languages)) {
         await tx.delete(artistLanguages).where(eq(artistLanguages.artistId, artistId));
