@@ -1,6 +1,5 @@
 'use server';
 
-import { z } from 'zod';
 import { desc, eq } from 'drizzle-orm';
 
 import { ServerActionResponse } from '@/lib/types';
@@ -22,24 +21,22 @@ import {
 const CONTRACT_STATUS = ['draft', 'queued', 'sent', 'viewed', 'signed', 'voided'] as const;
 type ContractStatus = (typeof CONTRACT_STATUS)[number];
 
-// ----- validation -----
-export const contractCreateSchema = z.object({
-  artistId: z.number().int().positive(),
-  venueId: z.number().int().positive(),
-  eventId: z.number().int().positive(),
+// ----- types -----
+export type ContractCreateInput = {
+  artistId: number;
+  venueId: number;
+  eventId: number;
 
-  contractDate: z.coerce.date().transform((d) => d.toISOString().slice(0, 10)), // YYYY-MM-DD
-  fileUrl: z.string().url(),
-  fileName: z.string().min(1),
+  contractDate: string | number | Date; // accepts Date, ISO string, timestamp, etc.
+  fileUrl: string;
+  fileName: string;
 
-  recipientEmail: z.string().email().optional(),
-  ccEmails: z.array(z.string().email()).optional(),
+  recipientEmail?: string;
+  ccEmails?: string[];
 
-  status: z.enum(CONTRACT_STATUS).default('draft').optional(),
-  note: z.string().max(10_000).optional(),
-});
-
-export type ContractCreateInput = z.infer<typeof contractCreateSchema>;
+  status?: ContractStatus;
+  note?: string;
+};
 
 export type CreateContractResult = {
   id: number;
@@ -82,9 +79,78 @@ export type CreateContractResult = {
     fileUrl: string | null;
     fileName: string | null;
     note: string | null;
-    createdAt: string; // ✅ keep as string for serialization + matches your query result
+    createdAt: string; // keep as string for serialization
   };
 };
+
+// ----- helpers -----
+function isValidEmail(email: string): boolean {
+  // simple & safe regex for basic validation
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
+function normalizeToYyyyMmDd(input: string | number | Date): string {
+  const d = input instanceof Date ? input : new Date(input);
+  if (Number.isNaN(d.getTime())) throw new AppError('Data contratto non valida.');
+  return d.toISOString().slice(0, 10);
+}
+
+function parseContractInput(input: ContractCreateInput) {
+  const artistId = input?.artistId;
+  const venueId = input?.venueId;
+  const eventId = input?.eventId;
+
+  if (!Number.isInteger(artistId) || artistId <= 0) throw new AppError('Artista non valido.');
+  if (!Number.isInteger(venueId) || venueId <= 0) throw new AppError('Venue non valida.');
+  if (!Number.isInteger(eventId) || eventId <= 0) throw new AppError('Evento non valido.');
+
+  if (!input?.fileUrl || typeof input.fileUrl !== 'string') throw new AppError('File URL non valido.');
+  if (!input?.fileName || typeof input.fileName !== 'string' || !input.fileName.trim())
+    throw new AppError('Nome file non valido.');
+
+  const contractDate = normalizeToYyyyMmDd(input.contractDate);
+
+  const recipientEmail =
+    typeof input.recipientEmail === 'string' && input.recipientEmail.trim()
+      ? input.recipientEmail.trim()
+      : null;
+
+  if (recipientEmail && !isValidEmail(recipientEmail)) {
+    throw new AppError('Email destinatario non valida.');
+  }
+
+  const ccEmailsRaw = input.ccEmails;
+  if (ccEmailsRaw !== undefined && !Array.isArray(ccEmailsRaw)) {
+    throw new AppError('CC emails non validi.');
+  }
+
+  const finalCcs = Array.from(
+    new Set(
+      (ccEmailsRaw ?? [])
+        .filter((x): x is string => typeof x === 'string' && !!x.trim())
+        .map((e) => e.toLowerCase().trim())
+        .filter((e) => isValidEmail(e)),
+    ),
+  );
+
+  const statusCandidate = (input.status ?? 'draft') as ContractStatus;
+  const status: ContractStatus = CONTRACT_STATUS.includes(statusCandidate) ? statusCandidate : 'draft';
+
+  const note = typeof input.note === 'string' && input.note.length ? input.note.slice(0, 10_000) : undefined;
+
+  return {
+    artistId,
+    venueId,
+    eventId,
+    contractDate,
+    fileUrl: input.fileUrl,
+    fileName: input.fileName,
+    recipientEmail,
+    ccEmails: finalCcs,
+    status,
+    note,
+  };
+}
 
 // ----- action (createEvent-style) -----
 export const createContract = async (
@@ -103,13 +169,6 @@ export const createContract = async (
       throw new AppError('Non sei autorizzato.');
     }
 
-    const validation = contractCreateSchema.safeParse(data);
-
-    if (!validation.success) {
-      console.error('[createContract] - Error: validation failed', validation.error.issues[0]);
-      throw new AppError('I dati inviati non sono corretti.');
-    }
-
     const {
       artistId,
       venueId,
@@ -118,10 +177,10 @@ export const createContract = async (
       fileUrl,
       fileName,
       recipientEmail,
-      ccEmails = [],
-      status = 'draft',
+      ccEmails: finalCcs,
+      status,
       note,
-    } = validation.data;
+    } = parseContractInput(data);
 
     // Ensure referenced rows exist (same gate style as createEvent)
     const [artistRow, venueRow, eventRow] = await Promise.all([
@@ -143,29 +202,24 @@ export const createContract = async (
     if (!venueRow) throw new AppError('Venue non trovata.');
     if (!eventRow) throw new AppError('Evento non trovato.');
 
-    // Deduplicate CCs
-    const finalCcs = Array.from(new Set(ccEmails.map((e) => e.toLowerCase().trim()))).filter(Boolean);
-
     const created = await database.transaction(async (tx) => {
       // STEP 1: INSERT CONTRACT -------------------------------------------------
       const [contractRow] = await tx
         .insert(contracts)
         .values({
-          status: status as ContractStatus,
+          status,
           artistId,
           venueId,
           eventId,
           contractDate, // YYYY-MM-DD
           fileUrl,
           fileName,
-          recipientEmail: recipientEmail ?? null,
+          recipientEmail,
         })
         .returning({ id: contracts.id });
 
       const contractId = contractRow?.id;
-      if (!contractId) {
-        throw new AppError('Creazione contratto non riuscita.');
-      }
+      if (!contractId) throw new AppError('Creazione contratto non riuscita.');
 
       // STEP 2: INSERT CCs ------------------------------------------------------
       if (finalCcs.length) {
@@ -180,7 +234,7 @@ export const createContract = async (
       // STEP 3: INSERT HISTORY --------------------------------------------------
       await tx.insert(contractHistory).values({
         contractId,
-        toStatus: status as ContractStatus,
+        toStatus: status,
         note: note ?? 'Contratto creato',
         changedByUserId: user.id,
         fileUrl,
@@ -225,9 +279,7 @@ export const createContract = async (
         .innerJoin(events, eq(contracts.eventId, events.id))
         .where(eq(contracts.id, contractId));
 
-      if (!base) {
-        throw new AppError('Contratto creato ma non recuperabile.');
-      }
+      if (!base) throw new AppError('Contratto creato ma non recuperabile.');
 
       const ccsRows = await tx
         .select({ email: contractEmailCcs.email })
@@ -267,12 +319,7 @@ export const createContract = async (
       } satisfies CreateContractResult;
     });
 
-    // ✅ createEvent-style response: message must be null on success
-    return {
-      success: true,
-      message: null,
-      data: created,
-    };
+    return { success: true, message: null, data: created };
   } catch (error) {
     console.error('[createContract] transaction failed:', error);
 
@@ -284,10 +331,6 @@ export const createContract = async (
           ? 'Violazione vincolo di unicità (esiste già un contratto attivo per questo evento).'
           : 'Creazione contratto non riuscita.';
 
-    return {
-      success: false,
-      message: msg,
-      data: null,
-    };
+    return { success: false, message: msg, data: null };
   }
 };
