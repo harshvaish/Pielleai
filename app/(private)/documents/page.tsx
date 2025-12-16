@@ -7,7 +7,6 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import getSession from "@/lib/data/auth/get-session";
 import { getUserProfileIdCached } from "@/lib/cache/users";
-import getContracts from "@/lib/data/contracts/get-contracts";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -21,6 +20,7 @@ import {
   Repeat,
 } from "lucide-react";
 import DatesFilterButton from "./_components/filters/DatesFilterButton";
+import { getContracts } from "@/lib/data/contracts/get-contracts";
 
 type EventsPageProps = {
   searchParams?: Promise<{
@@ -226,6 +226,7 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
       case "signed":
         return ["signed"];
 
+      case "error":
       case "refused":
       case "archived":
         return ["voided"];
@@ -241,13 +242,13 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
   }
   
   /* ---- Fetch backend data ---- */
-  const api = await getContracts({
+  const api = await getContracts(user, {
+    currentPage,
     startDate: toYMD(sp?.start),
-    endDate: toYMD(sp?.end ),
+    endDate: toYMD(sp?.end),
     status: getApiStatusFromUi(selectedStatus),
-    sort: sort,
+    sort,
   });
-console.log(api, "api contracts");
   /* ---- Convert backend → UI format ---- */
   let contracts: ContractCard[] = api.data.map(mapContract);
 
@@ -256,7 +257,7 @@ console.log(api, "api contracts");
     contracts = contracts.filter((c) => c.status === selectedStatus);
   }
 
-  const totalPages = api.meta.totalPages;
+  const totalPages = api.totalPages;
   
   /* -------------------------------------------------------
      RENDER
@@ -332,7 +333,7 @@ console.log(api, "api contracts");
                     className={`w-max gap-2 px-3 py-1.5 text-xs font-semibold border ${s.badgeBorder} ${s.badgeBg}`}
                   >
                     <span className={`h-2 w-2 rounded-full ${s.dot}`} />
-                    {contract.statusLabel}
+                    {contract.status}
                   </Badge>
                   <div className="text-xs text-zinc-500">
                     Status changed on {contract.statusDate}
