@@ -41,6 +41,10 @@ venueVatNumber: z.string().optional(),
 venueAddress: z.string().optional(),
 
 eventType: z.enum(["concert", "dj-set", "private-event"]).optional(),
+eventDate: z.string().optional(),
+eventStartTime: z.string().optional(),
+eventEndTime: z.string().optional(),
+
 
 ccEmails: z.array(z.boolean()).optional(),
 

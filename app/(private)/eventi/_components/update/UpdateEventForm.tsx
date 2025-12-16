@@ -4,6 +4,8 @@ import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
 import { X } from 'lucide-react';
+import { it } from 'date-fns/locale';
+import { format } from 'date-fns';
 import { ArtistSelectData, Event, MoCoordinator, VenueSelectData } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
@@ -30,14 +32,14 @@ export default function UpdateEventForm({
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
-  event.availability.startDate = new Date(event.availability.startDate);
-  event.availability.endDate = new Date(event.availability.endDate);
-
+  // event.availability.startDate = new Date(event.availability.startDate);
+  // event.availability.endDate = new Date(event.availability.endDate);
+console.log(event, "event----------------------------");
   const methods = useForm({
     resolver: zodResolver(eventFormSchema),
     defaultValues: {
       artistId: event.artist.id,
-      artistFullName: event.artist.name || '',
+      artistFullName: `${event.artist.name} ${event.artist.surname}`,
       artistStageName: event.artist.stageName || '',
       status: event.status,
       artistManagerProfileId: event.artistManager?.profileId || undefined,
@@ -69,9 +71,6 @@ export default function UpdateEventForm({
       totalCost: parseFloat(event.totalCost || '') || undefined,
       transportationsCost: parseFloat(event.transportationsCost || '') || undefined,
       cashBalanceCost: parseFloat(event.cashBalanceCost || '') || undefined,
-      soundCheckStart: event.soundCheckStart || '',
-      soundCheckEnd: event.soundCheckEnd || '',
-
       tecnicalRiderDocument:
         event.tecnicalRiderUrl && event.tecnicalRiderName
           ? {
@@ -87,14 +86,15 @@ export default function UpdateEventForm({
       artistEngagement: event.artistEngagement ?? false,
       professionalsEngagement: event.professionalsEngagement ?? false,
       accompanyingPersonsEngagement: event.accompanyingPersonsEngagement ?? false,
-
       performance: event.performance ?? false,
-
       postDateFeedback: event.postDateFeedback ?? false,
       bordereau: event.bordereau ?? false,
+      eventDate: format(event.availability.startDate, 'yyyy-MM-dd'),
+      eventStartTime : format(event.availability.startDate, 'HH:mm', { locale: it }),
+      eventEndTime : format(event.availability.endDate, 'HH:mm', { locale: it }),
+      
     },
   });
-
   const { handleSubmit } = methods;
 
   const onSubmit = async (data: EventFormSchema) => {

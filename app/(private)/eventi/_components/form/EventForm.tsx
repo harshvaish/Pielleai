@@ -40,8 +40,8 @@ import {
   AccordionTrigger,
   AccordionContent,
 } from "@/components/ui/accordion";
-import createContract from "@/lib/data/contracts/create-contracts";
 import { useRouter } from 'next/navigation';
+import { createContract } from "@/lib/server-actions/contracts/create-contract";
 
 type EventForm = {
   artists: ArtistSelectData[];
@@ -1577,11 +1577,11 @@ export default function EventForm({
         src={
           isSectionComplete(watch(), [
             "eventDate",
-            "performanceTimeStart",
-            "performanceTimeEnd",
+            "eventStartTime",
+            "eventEndTime",
             "transportationsCost",
             "transportCostText",
-            "totalCachet",
+            "totalCost",
             "totalCachetText",
             "upfrontPayment",
             "depositPaymentDate",
@@ -1636,12 +1636,12 @@ export default function EventForm({
         <div className="flex gap-2">
           <Input
             type="time"
-            {...register("performanceTimeEnd")}
+            {...register("eventStartTime")}
             className="h-10"
           />
           <Input
             type="time"
-            {...register("soundCheckEnd")}
+            {...register("eventEndTime")}
             className="h-10"
           />
         </div>
@@ -1685,7 +1685,7 @@ export default function EventForm({
         <Input
           type="number"
           min={0}
-          {...register("totalCachet", {
+          {...register("totalCost", {
             setValueAs: (v) => (v === "" ? undefined : parseFloat(v)),
           })}
           className="h-10"
