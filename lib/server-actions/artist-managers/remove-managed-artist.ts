@@ -61,8 +61,8 @@ export const removeManagedArtist = async (
       throw new AppError('Artista non trovato.');
     }
 
-    revalidateTag(`profile:${user.id}`);
-    revalidateTag(`artist-manager:${user.id}`);
+    revalidateTag(`profile:${user.id}`, 'max');
+    revalidateTag(`artist-manager:${user.id}`, 'max');
 
     return {
       success: true,
