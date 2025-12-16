@@ -34,7 +34,6 @@ export default function UpdateEventForm({
 
   // event.availability.startDate = new Date(event.availability.startDate);
   // event.availability.endDate = new Date(event.availability.endDate);
-console.log(event, "event----------------------------");
   const methods = useForm({
     resolver: zodResolver(eventFormSchema),
     defaultValues: {
@@ -89,6 +88,7 @@ console.log(event, "event----------------------------");
       performance: event.performance ?? false,
       postDateFeedback: event.postDateFeedback ?? false,
       bordereau: event.bordereau ?? false,
+      eventId: event.id,
       eventDate: format(event.availability.startDate, 'yyyy-MM-dd'),
       eventStartTime : format(event.availability.startDate, 'HH:mm', { locale: it }),
       eventEndTime : format(event.availability.endDate, 'HH:mm', { locale: it }),

@@ -256,7 +256,7 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
   if (selectedStatus !== "all") {
     contracts = contracts.filter((c) => c.status === selectedStatus);
   }
-
+console.log(api,"contracts");
   const totalPages = api.totalPages;
   
   /* -------------------------------------------------------

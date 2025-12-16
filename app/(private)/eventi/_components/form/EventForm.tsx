@@ -80,6 +80,8 @@ export default function EventForm({
   const transportationsCost = watch("transportationsCost");
   const hotelCost = watch("hotelCost");
   const restaurantCost = watch("restaurantCost");
+  const formValues = watch();
+
   // Calculate artistNetCost
   const artistNetCost = useMemo(() => {
     if (moCost && bookingPercentage !== undefined) {
@@ -197,6 +199,42 @@ export default function EventForm({
       return val !== undefined && val !== null && val !== "" && val !== false;
     });
   }
+  const isArtistComplete = isSectionComplete(formValues, [
+    "artistFullName",
+    "artistStageName",
+  ]);
+  
+  const isVenueComplete = isSectionComplete(formValues, [
+    "venueName",
+    "venueCompanyName",
+    "venueVatNumber",
+    "venueAddress",
+  ]);
+  
+  const isEventComplete = isSectionComplete(formValues, [
+    "eventDate",
+    "eventStartTime",
+    "eventEndTime",
+    "transportationsCost",
+    "transportCostText",
+    "totalCost",
+    "totalCachetText",
+    "upfrontPayment",
+    "depositPaymentDate",
+  ]);
+  
+  const isDetailsComplete =
+    isArtistComplete && isVenueComplete && isEventComplete;
+  
+    useEffect(() => {
+      if (isDetailsComplete && !contractStatus) {
+        setValue("contractStatus", "draft", {
+          shouldDirty: true,
+          shouldValidate: true,
+        });
+      }
+    }, [isDetailsComplete, contractStatus, setValue]);
+    
   const [isPending, startTransition] = useTransition();
 
   const historyData = [
@@ -244,22 +282,55 @@ export default function EventForm({
     },
   ];  
 
-  const handleGenerateContract = async () => {
+  // const handleGenerateContract = async () => {
 
+  //   startTransition(async () => {
+  //     const values = getValues();
+  //     const response = await createContract(values);
+  //     // closeDialog();
+
+  //     if (response.success) {
+  //       toast.success("Contract created!");
+  //       startTransition(async () => router.refresh());
+  //     } else {
+  //       toast.error(response.message);
+  //     }
+  //   });
+  // };
+  const handleGenerateContract = async () => {
     startTransition(async () => {
       const values = getValues();
-      const response = await createContract(values);
-      // closeDialog();
+      const selectedCcEmails =
+      values.ccEmails
+        ?.map((checked, index) =>
+          checked ? contractData.event.ccEmails[index] : null
+        )
+        .filter((email): email is string => Boolean(email)) ?? [];
 
+  
+      const payload = {
+        artistId: values.artistId,
+        venueId: values.venueId,
+        eventId: values.eventId,
+  
+        contractDate: values.eventDate, // YYYY-MM-DD
+       // fileUrl: values?.signedContractDocument?.url || "",
+       // fileName: values?.signedContractDocument?.name || "",
+  
+        status: values.contractStatus ?? "draft",
+        ccEmails: selectedCcEmails,
+      };
+  console.log(payload, "payload");
+      const response = await createContract(payload);
+  console.log(response, "response");
       if (response.success) {
         toast.success("Contract created!");
-        startTransition(async () => router.refresh());
+        router.refresh();
       } else {
         toast.error(response.message);
       }
     });
   };
-  
   
 
   return (
@@ -1240,14 +1311,14 @@ export default function EventForm({
                     <Select value={field.value} onValueChange={field.onChange}>
                       <SelectTrigger
                         id="contractStatus"
-                        className="h-8 w-40 rounded-xl flex items-center gap-2 px-3 text-xs font-medium"
+                        className="h-8 rounded-xl flex items-center gap-2 px-3 text-xs font-medium"
                         size="sm"
                       >
                         {/* Label (Missing data or selected label) */}
                         <span
                           className={cn(
                             "truncate",
-                            !selected ? "text-[#D97706]" : ""
+                            !selected ? "text-[#D97706]" : "text-[#2563EB]"
                           )}
                         >
                           {selected?.label ?? "Missing data"}
