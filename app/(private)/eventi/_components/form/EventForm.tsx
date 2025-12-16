@@ -66,7 +66,7 @@ export default function EventForm({
     formState: { errors },
   } = useFormContext<EventFormSchema>();
   const contractStatus = watch("contractStatus");
-  const isContractStatusMissing = !contractStatus;
+  // const isContractStatusMissing = !contractStatus;
 
   const selectedVenueId = watch("venueId");
   const selectedVenue = venues.find((venue) => venue.id == selectedVenueId);
@@ -1285,7 +1285,7 @@ export default function EventForm({
               <Button
                type="button"
                size="sm"
-               disabled={isContractStatusMissing}
+              //  disabled={isContractStatusMissing}
                variant="outline"
                onClick={handleGenerateContract}
               >
@@ -1495,7 +1495,7 @@ export default function EventForm({
                         <img
                           src={
                             isSectionComplete(watch(), [
-                              "eventName",
+                              "venueName",
                               "venueCompanyName",
                               "venueVatNumber",
                               "venueAddress",
@@ -1576,10 +1576,15 @@ export default function EventForm({
       <img
         src={
           isSectionComplete(watch(), [
-            "eventType",
-            "availability",
-            "moCost",
+            "eventDate",
+            "performanceTimeStart",
+            "performanceTimeEnd",
             "transportationsCost",
+            "transportCostText",
+            "totalCachet",
+            "totalCachetText",
+            "upfrontPayment",
+            "depositPaymentDate",
           ])
             ? GREEN_TICK_ICON
             : QUESTION_ICON
@@ -1631,7 +1636,7 @@ export default function EventForm({
         <div className="flex gap-2">
           <Input
             type="time"
-            {...register("soundCheckStart")}
+            {...register("performanceTimeEnd")}
             className="h-10"
           />
           <Input
@@ -1680,7 +1685,7 @@ export default function EventForm({
         <Input
           type="number"
           min={0}
-          {...register("moCost", {
+          {...register("totalCachet", {
             setValueAs: (v) => (v === "" ? undefined : parseFloat(v)),
           })}
           className="h-10"
@@ -1692,7 +1697,7 @@ export default function EventForm({
           Total cachet text
         </label>
         <Input
-          {...register("moCostText")}
+          {...register("totalCachetText")}
           placeholder="three-hundred euros"
           className="h-10"
         />
@@ -1708,7 +1713,7 @@ export default function EventForm({
         <Input
           type="number"
           min={0}
-          {...register("depositCost", {
+          {...register("upfrontPayment", {
             setValueAs: (v) => (v === "" ? undefined : parseFloat(v)),
           })}
           className="h-10"
