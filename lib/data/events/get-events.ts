@@ -247,7 +247,7 @@ export async function getEvents(
     });
 
     const totalPages = isPaginated ? Math.max(1, Math.ceil(Number(eventCount) / limit)) : 1;
-
+    
     return {
       data: mergedResult,
       totalPages,
