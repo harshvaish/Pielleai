@@ -18,7 +18,7 @@ import {
 } from '../../../drizzle/schema';
 
 // ----- constants -----
-const CONTRACT_STATUS = ['draft', 'queued', 'sent', 'viewed', 'signed', 'voided'] as const;
+const CONTRACT_STATUS = ['draft', 'queued', 'sent', 'viewed', 'signed', 'voided','declined'] as const;
 type ContractStatus = (typeof CONTRACT_STATUS)[number];
 
 // ---- Validation ----
@@ -33,8 +33,8 @@ export type ArchiveContractResult = {
   id: number;
   status: ContractStatus;
   contractDate: string;
-  fileUrl: string;
-  fileName: string;
+  fileUrl: string | null;
+  fileName: string | null;
   recipientEmail: string | null;
   createdAt: string | null;
   updatedAt: string | null;

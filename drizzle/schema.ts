@@ -990,6 +990,7 @@ export const contractStatus = pgEnum('contract_status', [
   'viewed',
   'signed',
   'voided',
+  'declined'
 ]);
 
 // ========== contracts ==========

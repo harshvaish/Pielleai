@@ -3,7 +3,7 @@
 import { User } from '@/lib/auth';
 import { PAGINATED_TABLE_ROWS_X_PAGE } from '@/lib/constants';
 import { database } from '@/lib/database/connection';
-import { and, count, desc, eq, gte, inArray, lte } from 'drizzle-orm';
+import { and, count, desc, eq, gte, inArray, lte, sql } from 'drizzle-orm';
 
 import {
   contracts,
@@ -15,28 +15,28 @@ import {
 } from '../../../drizzle/schema';
 
 // ----- constants -----
-export const CONTRACT_STATUS = ['draft', 'queued', 'sent', 'viewed', 'signed', 'voided'] as const;
+export const CONTRACT_STATUS = ['draft', 'queued', 'sent', 'viewed', 'signed', 'voided','declined'] as const;
 export type ContractStatus = (typeof CONTRACT_STATUS)[number];
 
 export type ContractListFilters = {
-  currentPage?: number | null;   // ✅ allow null (matches EventsTableFilters)
+  currentPage?: number | null;
   status?: Array<ContractStatus | 'all'>;
-  startDate?: string | null;
-  endDate?: string | null;
+  startDate?: string | null; // YYYY-MM-DD
+  endDate?: string | null;   // YYYY-MM-DD
   sort?: 'asc' | 'desc';
 };
 
-// default last month (same logic you had)
-function defaultLastMonth(): { start: string; end: string } {
-  const end = new Date();
-  const start = new Date(end);
-  start.setMonth(end.getMonth() - 1);
+// ✅ current month range (1st day → last day)
+function defaultCurrentMonth(): { start: string; end: string } {
+  const now = new Date();
+  const start = new Date(now.getFullYear(), now.getMonth(), 1);
+  const end = new Date(now.getFullYear(), now.getMonth() + 1, 0);
   const toISO = (d: Date) => d.toISOString().slice(0, 10);
   return { start: toISO(start), end: toISO(end) };
 }
 
 function resolveDateRange(input?: { start?: string | null; end?: string | null }) {
-  const fallback = defaultLastMonth();
+  const fallback = defaultCurrentMonth();
   const start = input?.start ?? null;
   const end = input?.end ?? null;
 
@@ -54,73 +54,22 @@ function normalizeStatus(status?: Array<ContractStatus | 'all'>): ContractStatus
   return filtered.length ? filtered : null;
 }
 
-// ----- main function (getEvents structure) -----
 export async function getContracts(
   user: User,
-  {
-    currentPage,
-    status,
-    startDate,
-    endDate,
-    sort = 'desc',
-  }: ContractListFilters,
+  { currentPage, status, startDate, endDate, sort = 'desc' }: ContractListFilters,
 ): Promise<{
-  data: Array<{
-    id: number;
-    status: ContractStatus;
-    contractDate: string;
-    fileUrl: string | null;
-    fileName: string | null;
-    recipientEmail: string;
-    createdAt: string;
-
-    artist: {
-      id: number;
-      name: string | null;
-      surname: string | null;
-      stageName: string | null;
-      avatarUrl: string | null;
-      status: string;
-      slug: string | null;
-    };
-
-    venue: {
-      id: number;
-      name: string;
-      address: string | null;
-      status: string;
-      slug: string | null;
-      avatarUrl: string | null;
-    };
-
-    event: {
-      id: number;
-      status: string;
-    };
-
-    ccs: string[];
-    history: Array<{
-      id: number;
-      fromStatus: ContractStatus;
-      toStatus: ContractStatus;
-      fileUrl: string | null;
-      fileName: string | null;
-      note: string | null;
-      changedByUserId: number;
-      createdAt: string;
-    }>;
-  }>;
+  data: any[];
   totalPages: number;
   currentPage: number;
 }> {
   const limit = PAGINATED_TABLE_ROWS_X_PAGE;
+
   const isPaginated =
-  typeof currentPage === 'number' && Number.isInteger(currentPage) && currentPage > 0;
+    typeof currentPage === 'number' && Number.isInteger(currentPage) && currentPage > 0;
   const safePage = isPaginated ? currentPage : 1;
   const offset = (safePage - 1) * limit;
 
   try {
-    // 🔒 auth (mirror your contract route: admin-only)
     if (!user || user.role !== 'admin') {
       throw new Error('Non sei autorizzato.');
     }
@@ -128,14 +77,15 @@ export async function getContracts(
     const { start, end } = resolveDateRange({ start: startDate ?? null, end: endDate ?? null });
     const statusValues = normalizeStatus(status);
 
-    // Reusable filters (same idea as getEvents)
+    // ✅ NULL-safe effective date: contractDate if present, else createdAt::date
+    const effectiveDate = sql`coalesce(${contracts.contractDate}, ${contracts.createdAt}::date)`;
+
     const filters = and(
-      gte(contracts.contractDate, start),
-      lte(contracts.contractDate, end),
+      gte(effectiveDate, start),
+      lte(effectiveDate, end),
       statusValues ? inArray(contracts.status, statusValues) : undefined,
     );
 
-    // Base query
     let baseQuery = database
       .select({
         id: contracts.id,
@@ -155,7 +105,6 @@ export async function getContracts(
           status: artists.status,
           slug: artists.slug,
         },
-
         venue: {
           id: venues.id,
           name: venues.name,
@@ -164,7 +113,6 @@ export async function getContracts(
           slug: venues.slug,
           avatarUrl: venues.avatarUrl,
         },
-
         event: {
           id: events.id,
           status: events.status,
@@ -177,7 +125,6 @@ export async function getContracts(
       .where(filters)
       .orderBy(sort === 'asc' ? contracts.createdAt : desc(contracts.createdAt));
 
-    // Apply pagination only if requested (same as getEvents)
     if (isPaginated) {
       // @ts-expect-error drizzle typing allows chaining here at runtime
       baseQuery = baseQuery.limit(limit).offset(offset);
@@ -186,7 +133,6 @@ export async function getContracts(
     const rows = await baseQuery;
     const contractIds = rows.map((r) => r.id);
 
-    // Enrich + count (same Promise.all pattern as getEvents)
     const [historyRows, ccsRows, [{ total }]] = await Promise.all([
       contractIds.length
         ? database
@@ -216,13 +162,9 @@ export async function getContracts(
             .where(inArray(contractEmailCcs.contractId, contractIds))
         : Promise.resolve([]),
 
-      database
-        .select({ total: count() })
-        .from(contracts)
-        .where(filters),
+      database.select({ total: count() }).from(contracts).where(filters),
     ]);
 
-    // Group history by contractId
     const historyByContract = new Map<number, any[]>();
     for (const h of historyRows as any[]) {
       const arr = historyByContract.get(h.contractId) ?? [];
@@ -239,7 +181,6 @@ export async function getContracts(
       historyByContract.set(h.contractId, arr);
     }
 
-    // Group CCs by contractId
     const ccsByContract = new Map<number, string[]>();
     for (const c of ccsRows as any[]) {
       const arr = ccsByContract.get(c.contractId) ?? [];
@@ -247,7 +188,6 @@ export async function getContracts(
       ccsByContract.set(c.contractId, arr);
     }
 
-    // Merge (same as getEvents)
     const data = rows.map((r: any) => ({
       ...r,
       ccs: ccsByContract.get(r.id) ?? [],
@@ -255,6 +195,7 @@ export async function getContracts(
     }));
 
     const totalPages = isPaginated ? Math.max(1, Math.ceil(Number(total ?? 0) / limit)) : 1;
+
     return {
       data,
       totalPages,
