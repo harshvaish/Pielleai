@@ -110,6 +110,7 @@ export async function getEvents(
 
         availability: {
           id: artistAvailabilities.id,
+          artistId: artistAvailabilities.artistId,
           startDate: artistAvailabilities.startDate,
           endDate: artistAvailabilities.endDate,
           status: artistAvailabilities.status,
@@ -122,6 +123,8 @@ export async function getEvents(
           avatarUrl: venues.avatarUrl,
           name: venues.name,
           address: venues.address,
+          company:venues.company,
+          vatCode:venues.vatCode
         },
 
         status: events.status,
@@ -343,6 +346,7 @@ export async function getEvents(
     });
 
     const totalPages = isPaginated ? Math.max(1, Math.ceil(Number(eventCount) / limit)) : 1;
+    console.log(mergedResult)
     return {
       data: mergedResult,
       totalPages,
