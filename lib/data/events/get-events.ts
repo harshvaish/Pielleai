@@ -128,7 +128,6 @@ export async function getEvents(
           name: venues.name,
           address: venues.address,
 
-          // keep your extra fields (doesn't break types; TS allows extra properties at runtime)
           company: venues.company,
           vatCode: venues.vatCode,
         },
@@ -235,11 +234,13 @@ export async function getEvents(
             .where(inArray(eventNotes.eventId, eventIds))
             .orderBy(eventNotes.createdAt)
         : Promise.resolve([]),
+
       database
         .select({ eventCount: count() })
         .from(events)
         .innerJoin(artistAvailabilities, eq(events.availabilityId, artistAvailabilities.id))
         .where(filters),
+
       eventIds.length
         ? database
             .select({
@@ -276,7 +277,6 @@ export async function getEvents(
             })
             .from(contractHistory)
             .where(inArray(contractHistory.contractId, contractIds))
-            // newest first per contract
             .orderBy(contractHistory.contractId, desc(contractHistory.createdAt))
         : Promise.resolve([] as Array<any>),
 
@@ -325,7 +325,7 @@ export async function getEvents(
       ccsByContract[row.contractId].push(row.email);
     }
 
-    // Pick latest contract per eventId (contractsResult is already newest-first by createdAt)
+    // Pick latest contract per eventId (contractsResult is newest-first)
     const latestContractByEvent: Record<number, any> = {};
     for (const c of contractsResult) {
       if (!latestContractByEvent[c.eventId]) {
@@ -338,14 +338,14 @@ export async function getEvents(
           recipientEmail: c.recipientEmail,
           createdAt: c.createdAt,
 
-          // ✅ attach
+          // ✅ attach CC + latest history
           ccs: ccsByContract[c.id] ?? [],
           latestHistory: latestHistoryByContract[c.id] ?? null,
         };
       }
     }
 
-    // Merge + compose venue.manager + nullify missing relations
+    // Merge + compose venue.manager + attach latest contract + nullify missing relations
     const mergedResult: Event[] = eventsResult.map((event) => {
       const {
         venueManagerUserId,
@@ -376,6 +376,9 @@ export async function getEvents(
           manager: venueManager,
         },
         notes: notesByEvent[rest.id] || [],
+
+        // ✅ THIS is what you needed (contract response includes ccs)
+        contract: latestContractByEvent[rest.id] ?? null,
       } as Event;
 
       if (!newObj.artistManager?.id) newObj.artistManager = null;
@@ -385,7 +388,7 @@ export async function getEvents(
     });
 
     const totalPages = isPaginated ? Math.max(1, Math.ceil(Number(eventCount) / limit)) : 1;
-
+    console.log(mergedResult)
     return {
       data: mergedResult,
       totalPages,
