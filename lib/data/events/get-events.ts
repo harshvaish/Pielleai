@@ -12,15 +12,11 @@ import {
   eventNotes,
   profiles,
   users,
-  moCoordinators
+  moCoordinators,
 } from '@/lib/database/schema';
 import { Event, EventNote, EventsTableFilters } from '@/lib/types';
 import { and, count, desc, eq, inArray, sql } from 'drizzle-orm';
-import {
-  contracts,
-  contractEmailCcs,
-  contractHistory
-} from '../../../drizzle/schema';
+import { contracts, contractEmailCcs, contractHistory } from '../../../drizzle/schema';
 
 export async function getEvents(
   user: User,
@@ -204,9 +200,9 @@ export async function getEvents(
     }
 
     const eventsResult = await baseQuery;
-
     const eventIds = eventsResult.map((e) => e.id);
 
+    // --- fetch notes, count, contracts ---
     const [notesResult, [{ eventCount }], contractsResult] = await Promise.all([
       eventIds.length
         ? database
@@ -243,6 +239,39 @@ export async function getEvents(
         : Promise.resolve([] as Array<any>),
     ]);
 
+    const contractIds = contractsResult.map((c) => c.id);
+
+    // --- fetch contract latest history + contract CCs ---
+    const [contractHistoryResult, contractCcsResult] = await Promise.all([
+      contractIds.length
+        ? database
+            .select({
+              contractId: contractHistory.contractId,
+              id: contractHistory.id,
+              fromStatus: contractHistory.fromStatus,
+              toStatus: contractHistory.toStatus,
+              fileUrl: contractHistory.fileUrl,
+              fileName: contractHistory.fileName,
+              note: contractHistory.note,
+              createdAt: contractHistory.createdAt,
+            })
+            .from(contractHistory)
+            .where(inArray(contractHistory.contractId, contractIds))
+            // newest first per contract
+            .orderBy(contractHistory.contractId, desc(contractHistory.createdAt))
+        : Promise.resolve([] as Array<any>),
+
+      contractIds.length
+        ? database
+            .select({
+              contractId: contractEmailCcs.contractId,
+              email: contractEmailCcs.email,
+            })
+            .from(contractEmailCcs)
+            .where(inArray(contractEmailCcs.contractId, contractIds))
+        : Promise.resolve([] as Array<any>),
+    ]);
+
     // Group notes by eventId
     const notesByEvent: Record<number, EventNote[]> = {};
     for (const row of notesResult) {
@@ -254,7 +283,30 @@ export async function getEvents(
       });
     }
 
-    // Pick latest contract per eventId
+    // latest history per contractId
+    const latestHistoryByContract: Record<number, any> = {};
+    for (const h of contractHistoryResult) {
+      if (!latestHistoryByContract[h.contractId]) {
+        latestHistoryByContract[h.contractId] = {
+          id: h.id,
+          fromStatus: h.fromStatus ?? null,
+          toStatus: h.toStatus ?? null,
+          fileUrl: h.fileUrl ?? null,
+          fileName: h.fileName ?? null,
+          note: h.note ?? null,
+          createdAt: String(h.createdAt),
+        };
+      }
+    }
+
+    // ccs per contractId
+    const ccsByContract: Record<number, string[]> = {};
+    for (const row of contractCcsResult) {
+      if (!ccsByContract[row.contractId]) ccsByContract[row.contractId] = [];
+      ccsByContract[row.contractId].push(row.email);
+    }
+
+    // Pick latest contract per eventId (contractsResult is already newest-first by createdAt)
     const latestContractByEvent: Record<number, any> = {};
     for (const c of contractsResult) {
       if (!latestContractByEvent[c.eventId]) {
@@ -266,6 +318,10 @@ export async function getEvents(
           fileName: c.fileName,
           recipientEmail: c.recipientEmail,
           createdAt: c.createdAt,
+
+          // ✅ attach
+          ccs: ccsByContract[c.id] ?? [],
+          latestHistory: latestHistoryByContract[c.id] ?? null,
         };
       }
     }
@@ -280,7 +336,7 @@ export async function getEvents(
       if (!event.artistManager?.id) newObj.artistManager = null;
       if (!event.moCoordinator?.id) newObj.moCoordinator = null;
 
-      // ✅ attach latest contract, keep original types intact
+      // ✅ attach latest contract with latestHistory + ccs
       (newObj as any).contract = latestContractByEvent[event.id] ?? null;
 
       return newObj;
