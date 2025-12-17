@@ -6,7 +6,7 @@ import { toast } from 'sonner';
 import { X } from 'lucide-react';
 import { it } from 'date-fns/locale';
 import { format } from 'date-fns';
-import { ArtistSelectData, Event, MoCoordinator, VenueSelectData } from '@/lib/types';
+import { ArtistSelectData,   Event as DomainEvent, MoCoordinator, VenueSelectData } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
 import { EventFormSchema, eventFormSchema } from '@/lib/validation/event-form-schema';
@@ -15,7 +15,7 @@ import EventForm from '../form/EventForm';
 import { useTransition } from 'react';
 
 type UpdateEventFormProps = {
-  event: Event;
+  event: DomainEvent;
   artists: ArtistSelectData[];
   venues: VenueSelectData[];
   moCoordinators: MoCoordinator[];
@@ -92,7 +92,7 @@ export default function UpdateEventForm({
       eventDate: format(event.availability.startDate, 'yyyy-MM-dd'),
       eventStartTime : format(event.availability.startDate, 'HH:mm', { locale: it }),
       eventEndTime : format(event.availability.endDate, 'HH:mm', { locale: it }),
-      
+      depositPaymentDate: ""
     },
   });
   const { handleSubmit } = methods;

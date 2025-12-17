@@ -68,25 +68,25 @@ export default function ButtonResendEmail() {
 
   const onClickHandler = async () => {
     startTransition(async () => {
-      await forgetPassword({
-        email: email!,
-        redirectTo: '/reset-password',
-        fetchOptions: {
-          onSuccess: () => {
-            const now = Date.now();
-            const expiresAt = now + RPE_BLOCK_DURATION;
-            localStorage.setItem(RPE_BLOCK_STORAGE_NAME, now.toString());
-            setBlockedUntil(expiresAt);
-            setTimeLeft(Math.ceil(RPE_BLOCK_DURATION / 1000));
-            toast.success('Email inviata con successo!');
-          },
-          onError: (ctx) => {
-            const code = ctx?.error?.code ?? 'UNKNOWN_ERROR';
-            const message = getBetterAuthErrorMessage(code);
-            toast.error(message);
-          },
-        },
-      });
+      // await forgetPassword({
+      //   email: email!,
+      //   redirectTo: '/reset-password',
+      //   fetchOptions: {
+      //     onSuccess: () => {
+      //       const now = Date.now();
+      //       const expiresAt = now + RPE_BLOCK_DURATION;
+      //       localStorage.setItem(RPE_BLOCK_STORAGE_NAME, now.toString());
+      //       setBlockedUntil(expiresAt);
+      //       setTimeLeft(Math.ceil(RPE_BLOCK_DURATION / 1000));
+      //       toast.success('Email inviata con successo!');
+      //     },
+      //     onError: (ctx) => {
+      //       const code = ctx?.error?.code ?? 'UNKNOWN_ERROR';
+      //       const message = getBetterAuthErrorMessage(code);
+      //       toast.error(message);
+      //     },
+      //   },
+      // });
     });
   };
 
