@@ -50,6 +50,8 @@ export default function UpdateEventForm({
       venueId: event.venue.id,
       venueName: event.venue.name || '',
       venueAddress: event.venue.address || '',
+      venueVatNumber: event.venue.vatCode || '',
+      venueCompanyName: event.venue.company || '',
       tourManagerEmail: event.tourManagerEmail || '',
       payrollConsultantEmail: event.payrollConsultantEmail || '',
       notes: event.notes.flatMap((note) => note.content) || [],
@@ -92,7 +94,9 @@ export default function UpdateEventForm({
       eventDate: format(event.availability.startDate, 'yyyy-MM-dd'),
       eventStartTime : format(event.availability.startDate, 'HH:mm', { locale: it }),
       eventEndTime : format(event.availability.endDate, 'HH:mm', { locale: it }),
-      depositPaymentDate: ""
+      depositPaymentDate: "",
+      upfrontPayment: parseFloat(event.depositCost || '') || undefined,
+
     },
   });
   const { handleSubmit } = methods;

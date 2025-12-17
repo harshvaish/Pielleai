@@ -322,7 +322,7 @@ function mapUiStatusToBackend(
         artistId: values.artistId,
         venueId: values.venueId,
         eventId: values.eventId,
-        contractDate: "2025-12-26" as string, // YYYY-MM-DD
+        contractDate: new Date().toISOString().split("T")[0], // YYYY-MM-DD
        // fileUrl: values?.signedContractDocument?.url || "",
        // fileName: values?.signedContractDocument?.name || "",
   

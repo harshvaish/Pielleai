@@ -443,7 +443,7 @@ export type VenueTableData = Pick<
 
 export type VenueSelectData = Pick<
   VenueData,
-  'id' | 'slug' | 'status' | 'avatarUrl' | 'name' | 'address' | 'manager'
+  'id' | 'slug' | 'status' | 'avatarUrl' | 'name' | 'address' | 'manager' | 'company' | 'vatCode'
 >;
 
 export type VenueListData = Pick<

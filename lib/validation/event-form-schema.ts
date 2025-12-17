@@ -45,8 +45,10 @@ eventDate: z.string().optional(),
 eventStartTime: z.string().optional(),
 eventEndTime: z.string().optional(),
 depositPaymentDate:z.string().optional(),
-upfrontPayment: z.string().optional(),
-totalCachetText: z.string().optional(), 
+upfrontPayment: z
+.number('Campo malformato.')
+.positive('Può contenere solo numeri positivi.')
+.optional(), totalCachetText: z.string().optional(), 
 transportCostText: z.string().optional(),
 ccEmails: z.array(z.boolean()).optional(),
 
@@ -74,7 +76,7 @@ ccEmails: z.array(z.boolean()).optional(),
     .number('Campo malformato.')
     .positive('Può contenere solo numeri positivi.')
     .optional(),
-
+    
   depositInvoiceNumber: z.preprocess(
     (val) => (typeof val === 'string' && val.trim() !== '' ? val : undefined),
     z
