@@ -4,13 +4,14 @@ import { AppError } from '@/lib/classes/AppError';
 import getSession from '@/lib/data/auth/get-session';
 import { recomputeConflicts } from '@/lib/data/events/recompute-conflicts';
 import { database } from '@/lib/database/connection';
-import { artistAvailabilities, events } from '@/lib/database/schema';
+import { artistAvailabilities, events, artists, venues } from '@/lib/database/schema';
 import { EventStatus, ServerActionResponse } from '@/lib/types';
 import { hasRole } from '@/lib/utils';
 import { eventStatusEnumValidation, idValidation } from '@/lib/validation/_general';
 import { isBefore } from 'date-fns';
 import { and, eq, ne, count, inArray } from 'drizzle-orm';
 import { z } from 'zod/v4';
+import { sendEventConfirmedEmail } from '../send-event-confirmed-email';
 
 export async function updateEventStatus(
   eventId: number,
@@ -43,11 +44,22 @@ export async function updateEventStatus(
 
     const now = new Date();
 
-    // Fetch event + availability
+    // Fetch event + availability + artist + venue for email notification
     const [oldEvent] = await database
       .select({
         id: events.id,
         status: events.status,
+
+        artist: {
+          name: artists.name,
+          surname: artists.surname,
+          stageName: artists.stageName,
+        },
+
+        venue: {
+          name: venues.name,
+          address: venues.address,
+        },
 
         availability: {
           id: artistAvailabilities.id,
@@ -58,6 +70,8 @@ export async function updateEventStatus(
       })
       .from(events)
       .innerJoin(artistAvailabilities, eq(events.availabilityId, artistAvailabilities.id))
+      .innerJoin(artists, eq(events.artistId, artists.id))
+      .innerJoin(venues, eq(events.venueId, venues.id))
       .where(eq(events.id, eventId))
       .limit(1);
 
@@ -127,6 +141,25 @@ export async function updateEventStatus(
       // Always recompute conflicts after any status change
       await recomputeConflicts(tx, oldEvent.availability.id);
     });
+
+    // STEP 4: SEND EMAIL NOTIFICATION IF STATUS IS NOW CONFIRMED --------------------------------
+    if (newStatus === 'confirmed' && oldEvent.status !== 'confirmed') {
+      const artistName =
+        oldEvent.artist.stageName || `${oldEvent.artist.name} ${oldEvent.artist.surname}`.trim();
+
+      // Send email notification asynchronously (don't block the response)
+      sendEventConfirmedEmail({
+        eventId: oldEvent.id,
+        artistName,
+        venueName: oldEvent.venue.name,
+        venueAddress: oldEvent.venue.address || 'Non specificato',
+        startDate: oldEvent.availability.startDate,
+        endDate: oldEvent.availability.endDate,
+      }).catch((error) => {
+        // Log error but don't fail the entire operation
+        console.error('[updateEventStatus] - Failed to send notification email:', error);
+      });
+    }
 
     return { success: true, message: null, data: null };
   } catch (error) {

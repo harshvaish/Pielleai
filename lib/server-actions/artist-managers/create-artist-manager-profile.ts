@@ -174,10 +174,10 @@ export const createArtistManagerProfile = async (
       }
 
       if (uid) {
-        revalidateTag(`profile:${uid}`);
-        revalidateTag(`artist-manager:${uid}`);
+        revalidateTag(`profile:${uid}`, 'max');
+        revalidateTag(`artist-manager:${uid}`, 'max');
       }
-      revalidateTag('artist-managers');
+      revalidateTag('artist-managers','max');
 
       const languageInserts = (data.languages || []).map((languageId: number) => ({
         profileId,

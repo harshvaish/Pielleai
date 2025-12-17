@@ -151,8 +151,8 @@ export const createVenue = async (data: VenueFormSchema): Promise<ServerActionRe
       .returning({ slug: venues.slug });
 
     const slug = venueResult[0]?.slug;
-    if (slug) revalidateTag(`venue:${slug}`);
-    revalidateTag('venues');
+    if (slug) revalidateTag(`venue:${slug}`, 'max');
+    revalidateTag('venues', 'max');
 
     return {
       success: true,

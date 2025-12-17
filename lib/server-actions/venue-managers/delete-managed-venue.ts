@@ -51,8 +51,9 @@ export const deleteManagedVenue = async (
       throw new AppError('Locale non trovato.');
     }
 
-    revalidateTag(`profile:${user.id}`);
-    revalidateTag(`venue-manager:${user.id}`);
+    revalidateTag(`profile:${user.id}`,'max');
+    revalidateTag(`venue-manager:${user.id}`,'max');
+
 
     return {
       success: true,

@@ -127,10 +127,10 @@ export const createVenueManagerProfile = async (
       }
 
       if (uid) {
-        revalidateTag(`profile:${uid}`);
-        revalidateTag(`venue-manager:${uid}`);
+        revalidateTag(`profile:${uid}`, 'max');
+        revalidateTag(`venue-manager:${uid}`, 'max');
       }
-      revalidateTag('venue-managers');
+      revalidateTag('venue-managers', 'max');
 
       const languageInserts = (data.languages || []).map((languageId: number) => ({
         profileId,

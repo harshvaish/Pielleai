@@ -218,8 +218,8 @@ export const createArtist = async (data: ArtistFormSchema): Promise<ServerAction
       }
 
       const slug = artistResult[0]?.slug;
-      if (slug) revalidateTag(`artist:${slug}`);
-      revalidateTag('artists');
+      if (slug) revalidateTag(`artist:${slug}`, 'max');
+      revalidateTag('artists', 'max');
 
       const languageInserts = (data.languages || []).map((languageId: number) => ({
         artistId: newArtistId,

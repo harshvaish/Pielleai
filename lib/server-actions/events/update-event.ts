@@ -17,6 +17,7 @@ import { AppError } from '@/lib/classes/AppError';
 import getSession from '@/lib/data/auth/get-session';
 import { isBefore } from 'date-fns';
 import { recomputeConflicts } from '@/lib/data/events/recompute-conflicts';
+import { sendEventConfirmedEmail } from '../send-event-confirmed-email';
 
 export const updateEvent = async (
   eventId: number,
@@ -53,6 +54,15 @@ export const updateEvent = async (
       .select({
         id: events.id,
         status: events.status,
+        artist: {
+          name: artists.name,
+          surname: artists.surname,
+          stageName: artists.stageName,
+        },
+        venue: {
+          name: venues.name,
+          address: venues.address,
+        },
         availability: {
           id: artistAvailabilities.id,
           status: artistAvailabilities.status,
@@ -62,6 +72,8 @@ export const updateEvent = async (
       })
       .from(events)
       .innerJoin(artistAvailabilities, eq(events.availabilityId, artistAvailabilities.id))
+      .innerJoin(artists, eq(events.artistId, artists.id))
+      .innerJoin(venues, eq(events.venueId, venues.id))
       .where(eq(events.id, eventId))
       .limit(1);
 
@@ -273,6 +285,25 @@ export const updateEvent = async (
         await recomputeConflicts(tx, oldEvent.availability.id);
       }
     });
+
+    // STEP 4: SEND EMAIL NOTIFICATION IF STATUS CHANGED TO CONFIRMED ----------------
+    if (newStatus === 'confirmed' && oldEvent.status !== 'confirmed') {
+      const artistName =
+        oldEvent.artist.stageName || `${oldEvent.artist.name} ${oldEvent.artist.surname}`.trim();
+
+      // Send email notification asynchronously (don't block the response)
+      sendEventConfirmedEmail({
+        eventId: oldEvent.id,
+        artistName,
+        venueName: oldEvent.venue.name,
+        venueAddress: oldEvent.venue.address || 'Non specificato',
+        startDate: newAvailability.startDate,
+        endDate: newAvailability.endDate,
+      }).catch((error) => {
+        // Log error but don't fail the entire operation
+        console.error('[updateEvent] - Failed to send notification email:', error);
+      });
+    }
 
     return { success: true, message: null, data: null };
   } catch (error) {

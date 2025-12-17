@@ -103,8 +103,8 @@ export const updateVenueManagerPersonalData = async (
         .returning({ userId: profiles.userId });
 
       const uid = updateResult[0]?.userId;
-      if (uid) revalidateTag(`venue-manager:${uid}`);
-      revalidateTag('venue-managers');
+      if (uid) revalidateTag(`venue-manager:${uid}`, 'max');
+      revalidateTag('venue-managers', 'max');
 
       // First delete existing languages
       await tx.delete(profileLanguages).where(eq(profileLanguages.profileId, profileId));
