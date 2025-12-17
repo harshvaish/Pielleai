@@ -297,7 +297,7 @@ export const createContract = async (
           : null,
       } satisfies CreateContractResult;
     });
-
+    console.log(created,'created')
     return { success: true, message: null, data: created };
   } catch (error) {
     console.error('[createContract] transaction failed:', error);
