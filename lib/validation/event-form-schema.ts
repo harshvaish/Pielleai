@@ -8,7 +8,7 @@ import {
 
 export const eventFormSchema = z.object({
   artistId: idValidation,
-  eventId: idValidation,
+  eventId: idValidation.optional(),
   status: eventStatusEnumValidation,
 
   artistManagerProfileId: idValidation.optional(),
