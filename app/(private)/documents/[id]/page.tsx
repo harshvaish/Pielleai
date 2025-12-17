@@ -17,7 +17,6 @@ import {
   CalendarDays,
   Download,
   FileText,
-  Link as LinkIcon,
   Mail,
   MapPin,
   Phone,
@@ -246,7 +245,17 @@ export default async function ContractDetailPage({ params, searchParams }: Contr
   const payload = JSON.parse(decodeURIComponent(sp.data));
   /* ---------- FIRE API ON PAGE LOAD ---------- */
   const result = await createContract(payload);
+  if (!result.success) {
+    // you can also show a friendly error UI instead
+    throw new Error(result.message ?? 'Contract creation failed');
+  }
   const api = result.data?.data;
+  if (!api) {
+    throw new Error('Contract creation failed');
+  }
+  const statusDate = api.latestHistory?.createdAt
+    ? new Date(api.latestHistory.createdAt).toLocaleDateString('it-IT')
+    : new Date().toLocaleDateString('it-IT');
   const mockContract = {
     id: api.id,
     statusDate: new Date(api.latestHistory.createdAt).toLocaleDateString('it-IT'),
@@ -263,10 +272,6 @@ export default async function ContractDetailPage({ params, searchParams }: Contr
     managerEmail: api.recipientEmail,
     downloadLabel: api.fileName,
   };
-  if (!result.success) {
-    // you can also show a friendly error UI instead
-    throw new Error(result.message ?? "Contract creation failed");
-  }
   function mapHistory(api: any) {
     const list = api?.latestHistory ? [api.latestHistory] : [];
   
@@ -626,57 +631,6 @@ const flow = {
                   <CalendarDays className='size-4 text-zinc-400' />
                   {mockContract.date} — {mockContract.time}
                 </div>
-              </AccordionContent>
-            </AccordionItem>
-
-            <AccordionItem value='cachet'>
-              <AccordionTrigger className='px-4'>
-                <div className='flex items-center gap-2'>
-                  <span className='size-3 rounded-full bg-emerald-500' />
-                  Cachet and economic condition
-                </div>
-              </AccordionTrigger>
-              <AccordionContent className='px-4 text-sm text-zinc-600'>
-                Add cachet and economic details here.
-              </AccordionContent>
-            </AccordionItem>
-
-            <AccordionItem value='special'>
-              <AccordionTrigger className='px-4'>
-                <div className='flex items-center gap-2'>
-                  <span className='size-3 rounded-full bg-emerald-500' />
-                  Special conditions/clauses
-                </div>
-              </AccordionTrigger>
-              <AccordionContent className='px-4 text-sm text-zinc-600'>
-                Add clauses and special conditions here.
-              </AccordionContent>
-            </AccordionItem>
-
-            <AccordionItem value='technical'>
-              <AccordionTrigger className='px-4'>
-                <div className='flex items-center gap-2'>
-                  <span className='size-3 rounded-full bg-emerald-500' />
-                  Technical constraints
-                </div>
-              </AccordionTrigger>
-              <AccordionContent className='px-4 text-sm text-zinc-600'>
-                Add technical constraints here.
-              </AccordionContent>
-            </AccordionItem>
-
-            <AccordionItem value='location'>
-              <AccordionTrigger className='px-4'>
-                <div className='flex items-center gap-2'>
-                  <span className='size-3 rounded-full bg-emerald-500' />
-                  Location
-                </div>
-              </AccordionTrigger>
-              <AccordionContent className='px-4 text-sm text-zinc-600 flex flex-col gap-2'>
-                <span className='flex items-center gap-2'>
-                  <LinkIcon className='size-4 text-zinc-400' />
-                  Venue link or address here.
-                </span>
               </AccordionContent>
             </AccordionItem>
           </Accordion>
