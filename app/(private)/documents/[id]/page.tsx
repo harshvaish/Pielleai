@@ -224,462 +224,462 @@ const FLOW_STATES: Record<
 export const dynamic = 'force-dynamic';
 
 export default async function ContractDetailPage({ params, searchParams }: ContractDetailPageProps) {
-//   const { session, user } = await getSession();
+  const { session, user } = await getSession();
 
-//   if (!session || !user || user.banned) {
-//     redirect('/logout');
-//   }
+  if (!session || !user || user.banned) {
+    redirect('/logout');
+  }
 
-//   const profileId = await getUserProfileIdCached(user.id);
-//   const target = resolveNextPath({ user, hasProfile: Boolean(profileId) });
-//   if (target) redirect(target);
+  const profileId = await getUserProfileIdCached(user.id);
+  const target = resolveNextPath({ user, hasProfile: Boolean(profileId) });
+  if (target) redirect(target);
 
-//   if (!hasRole(user, ['admin', 'artist-manager', 'venue-manager'])) {
-//     notFound();
-//   }
+  if (!hasRole(user, ['admin', 'artist-manager', 'venue-manager'])) {
+    notFound();
+  }
   
-//   await params;
-//   const sp = await searchParams;
-//   if (!sp?.data) notFound();
-//   const payload = JSON.parse(decodeURIComponent(sp.data));
-//   /* ---------- FIRE API ON PAGE LOAD ---------- */
-//   const result = await createContract(payload);
-//   const api = result.data?.data;
-//   const mockContract = {
-//     id: api.id,
-//     statusDate: new Date(api.latestHistory.createdAt).toLocaleDateString('it-IT'),
-//     artistHandle: `@${api.artist.stageName}`,
-//     artistName: `${api.artist.name} ${api.artist.surname}`,
-//     venueName: api.venue.name,
-//     date: api.contractDate,
-//     time: '—',
-//     tourManager: api.ccs?.[0] ?? '—',
-//     tourManagerEmail: api.ccs?.[0] ?? '—',
-//     consultantEmail: api.ccs?.[1] ?? '—',
-//     adminEmail: api.recipientEmail,
-//     managerName: api.artist.name,
-//     managerEmail: api.recipientEmail,
-//     downloadLabel: api.fileName,
-//   };
-//   if (!result.success) {
-//     // you can also show a friendly error UI instead
-//     throw new Error(result.message ?? "Contract creation failed");
-//   }
-//   function mapHistory(api: any) {
-//     const list = api?.latestHistory ? [api.latestHistory] : [];
+  await params;
+  const sp = await searchParams;
+  if (!sp?.data) notFound();
+  const payload = JSON.parse(decodeURIComponent(sp.data));
+  /* ---------- FIRE API ON PAGE LOAD ---------- */
+  const result = await createContract(payload);
+  const api = result.data?.data;
+  const mockContract = {
+    id: api.id,
+    statusDate: new Date(api.latestHistory.createdAt).toLocaleDateString('it-IT'),
+    artistHandle: `@${api.artist.stageName}`,
+    artistName: `${api.artist.name} ${api.artist.surname}`,
+    venueName: api.venue.name,
+    date: api.contractDate,
+    time: '—',
+    tourManager: api.ccs?.[0] ?? '—',
+    tourManagerEmail: api.ccs?.[0] ?? '—',
+    consultantEmail: api.ccs?.[1] ?? '—',
+    adminEmail: api.recipientEmail,
+    managerName: api.artist.name,
+    managerEmail: api.recipientEmail,
+    downloadLabel: api.fileName,
+  };
+  if (!result.success) {
+    // you can also show a friendly error UI instead
+    throw new Error(result.message ?? "Contract creation failed");
+  }
+  function mapHistory(api: any) {
+    const list = api?.latestHistory ? [api.latestHistory] : [];
   
-//     return list.map((h: any, index: number) => ({
-//       id: String(h.id),
-//       title: `Status changed to “${h.toStatus}”`,
-//       description: h.note,
-//       date: new Date(h.createdAt).toLocaleDateString('it-IT'),
-//       time: new Date(h.createdAt).toLocaleTimeString('it-IT', {
-//         hour: '2-digit',
-//         minute: '2-digit',
-//       }),
-//       // link: h.fileUrl ? 'View file' : undefined,
-//       active: index === 0,
-//     }));
-//   }
+    return list.map((h: any, index: number) => ({
+      id: String(h.id),
+      title: `Status changed to “${h.toStatus}”`,
+      description: h.note,
+      date: new Date(h.createdAt).toLocaleDateString('it-IT'),
+      time: new Date(h.createdAt).toLocaleTimeString('it-IT', {
+        hour: '2-digit',
+        minute: '2-digit',
+      }),
+      // link: h.fileUrl ? 'View file' : undefined,
+      active: index === 0,
+    }));
+  }
   
-//   const history = mapHistory(api);
+  const history = mapHistory(api);
 
-//   const stage = api.status as ContractDetailStatus;
-// const flowBase = FLOW_STATES[stage] ?? FLOW_STATES.missing;
+  const stage = api.status as ContractDetailStatus;
+const flowBase = FLOW_STATES[stage] ?? FLOW_STATES.missing;
 
-// /* ---------- MERGE FLOW + HISTORY ---------- */
-// const flow = {
-//   ...flowBase,
-//   history,
-// };
+/* ---------- MERGE FLOW + HISTORY ---------- */
+const flow = {
+  ...flowBase,
+  history,
+};
 
-//   // const stage = (sp?.stage as ContractDetailStatus | undefined) ?? 'missing';
-//   // const flow = FLOW_STATES[stage] ?? FLOW_STATES['missing'];
-//   const statusLabel = flow.statusLabel;
-//   const statusColor = flow.badge;
+  // const stage = (sp?.stage as ContractDetailStatus | undefined) ?? 'missing';
+  // const flow = FLOW_STATES[stage] ?? FLOW_STATES['missing'];
+  const statusLabel = flow.statusLabel;
+  const statusColor = flow.badge;
 
-//   const statusOptions: { value: ContractDetailStatus; label: string }[] = [
-//     { value: 'missing', label: 'Missing data' },
-//     { value: 'to-sign', label: 'To sign' },
-//     { value: 'signed', label: 'Signed' },
-//     { value: 'refused', label: 'Refused' },
-//     { value: 'error', label: 'Error' },
-//     { value: 'archived', label: 'Archived' },
-//   ];
+  const statusOptions: { value: ContractDetailStatus; label: string }[] = [
+    { value: 'missing', label: 'Missing data' },
+    { value: 'to-sign', label: 'To sign' },
+    { value: 'signed', label: 'Signed' },
+    { value: 'refused', label: 'Refused' },
+    { value: 'error', label: 'Error' },
+    { value: 'archived', label: 'Archived' },
+  ];
 
-//   return (
-//     <div className='h-full w-full bg-zinc-50 px-4 py-6 md:px-6 flex flex-col gap-6'>
-//       <div className='flex flex-wrap justify-between items-center gap-3'>
-//         {/* <h1 className='text-2xl font-bold'>Contracts</h1> */}
-//         <BackButton />        
-//         <div className='flex items-center gap-2'>
-//           <Button
-//             variant='secondary'
-//             size='sm'
-//             disabled={flow.actionsDisabled}
-//           >
-//             {stage === 'missing' ? 'Generate' : 'Regenerate'}
-//           </Button>
-//           <Button
-//             variant='default'
-//             size='sm'
-//             disabled={flow.actionsDisabled}
-//           >
-//             Send to DocuSign
-//           </Button>
-//         </div>
-//       </div>
+  return (
+    <div className='h-full w-full bg-zinc-50 px-4 py-6 md:px-6 flex flex-col gap-6'>
+      <div className='flex flex-wrap justify-between items-center gap-3'>
+        {/* <h1 className='text-2xl font-bold'>Contracts</h1> */}
+        <BackButton />        
+        <div className='flex items-center gap-2'>
+          <Button
+            variant='secondary'
+            size='sm'
+            disabled={flow.actionsDisabled}
+          >
+            {stage === 'missing' ? 'Generate' : 'Regenerate'}
+          </Button>
+          <Button
+            variant='default'
+            size='sm'
+            disabled={flow.actionsDisabled}
+          >
+            Send to DocuSign
+          </Button>
+        </div>
+      </div>
 
-//       <div className='grid grid-cols-1 xl:grid-cols-[2fr_1fr] gap-4'>
-//         <Card className='bg-white shadow-sm border-zinc-200'>
-//           <CardContent className='flex flex-col gap-4'>
-//             <div className='flex flex-wrap justify-between gap-4'>
-//               <div className='flex flex-col gap-2'>
-//                 <div className='flex items-center gap-3'>
-//                   <div className='size-11 rounded-full bg-zinc-200' />
-//                   <div className='flex flex-col'>
-//                     <div className='font-semibold text-lg'>{mockContract.artistName}</div>
-//                     <div className='text-sm text-zinc-500'>{mockContract.artistHandle}</div>
-//                   </div>
-//                 </div>
+      <div className='grid grid-cols-1 xl:grid-cols-[2fr_1fr] gap-4'>
+        <Card className='bg-white shadow-sm border-zinc-200'>
+          <CardContent className='flex flex-col gap-4'>
+            <div className='flex flex-wrap justify-between gap-4'>
+              <div className='flex flex-col gap-2'>
+                <div className='flex items-center gap-3'>
+                  <div className='size-11 rounded-full bg-zinc-200' />
+                  <div className='flex flex-col'>
+                    <div className='font-semibold text-lg'>{mockContract.artistName}</div>
+                    <div className='text-sm text-zinc-500'>{mockContract.artistHandle}</div>
+                  </div>
+                </div>
 
-//                 <div className='flex items-center gap-3 text-sm text-zinc-600'>
-//                   <span className='flex items-center gap-1'>
-//                     <MapPin className='size-4 text-zinc-400' />
-//                     {mockContract.venueName}
-//                   </span>
-//                   <span className='flex items-center gap-1'>
-//                     <CalendarDays className='size-4 text-zinc-400' />
-//                     {mockContract.date}
-//                   </span>
-//                   <span className='flex items-center gap-1'>
-//                     <Users className='size-4 text-zinc-400' />
-//                     {mockContract.time}
-//                   </span>
-//                 </div>
-//               </div>
+                <div className='flex items-center gap-3 text-sm text-zinc-600'>
+                  <span className='flex items-center gap-1'>
+                    <MapPin className='size-4 text-zinc-400' />
+                    {mockContract.venueName}
+                  </span>
+                  <span className='flex items-center gap-1'>
+                    <CalendarDays className='size-4 text-zinc-400' />
+                    {mockContract.date}
+                  </span>
+                  <span className='flex items-center gap-1'>
+                    <Users className='size-4 text-zinc-400' />
+                    {mockContract.time}
+                  </span>
+                </div>
+              </div>
 
-//               <div className='flex flex-col items-end gap-2 min-w-[220px]'>
-//                 <DropdownMenu>
-//                   <DropdownMenuTrigger asChild>
-//                     <Button
-//                       variant='outline'
-//                       size='sm'
-//                       className={`gap-2 px-5 h-11 rounded-full font-semibold text-base border-amber-200 bg-white shadow-[0_1px_2px_rgba(16,24,40,0.05)] ${statusColor.bg}`}
-//                     >
-//                       <span className={`size-3 rounded-full ${statusColor.dot}`} />
-//                       {statusLabel}
-//                       <BadgeInfo className='size-4 text-amber-600' />
-//                     </Button>
-//                   </DropdownMenuTrigger>
-//                   <DropdownMenuContent align='end' className='min-w-[200px]'>
-//                     {statusOptions.map((opt) => (
-//                       <DropdownMenuItem
-//                         key={opt.value}
-//                         className={opt.value === stage ? 'font-semibold text-amber-700' : ''}
-//                       >
-//                         {opt.label}
-//                       </DropdownMenuItem>
-//                     ))}
-//                   </DropdownMenuContent>
-//                 </DropdownMenu>
-//                 <div className='text-xs text-zinc-500'>
-//                   Status changed on {mockContract.statusDate}
-//                 </div>
-//               </div>
-//             </div>
+              <div className='flex flex-col items-end gap-2 min-w-[220px]'>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant='outline'
+                      size='sm'
+                      className={`gap-2 px-5 h-11 rounded-full font-semibold text-base border-amber-200 bg-white shadow-[0_1px_2px_rgba(16,24,40,0.05)] ${statusColor.bg}`}
+                    >
+                      <span className={`size-3 rounded-full ${statusColor.dot}`} />
+                      {statusLabel}
+                      <BadgeInfo className='size-4 text-amber-600' />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align='end' className='min-w-[200px]'>
+                    {statusOptions.map((opt) => (
+                      <DropdownMenuItem
+                        key={opt.value}
+                        className={opt.value === stage ? 'font-semibold text-amber-700' : ''}
+                      >
+                        {opt.label}
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+                <div className='text-xs text-zinc-500'>
+                  Status changed on {mockContract.statusDate}
+                </div>
+              </div>
+            </div>
 
-//             <Separator />
+            <Separator />
 
-//             <div className='flex flex-col gap-3'>
-//               <div className='text-sm font-semibold text-zinc-800'>Contract file</div>
-//               {flow.warning && (
-//                 <div className='text-sm font-medium text-amber-600 bg-amber-50 border border-amber-100 rounded-xl px-3 py-2'>
-//                   {flow.warning}
-//                 </div>
-//               )}
-//               <div className='flex flex-wrap items-center gap-3'>
-//                 {flow.hasFile && (
-//                   <Button
-//                     variant='outline'
-//                     size='sm'
-//                     disabled={!flow.showDownload}
-//                   >
-//                     <FileText className='size-4 text-zinc-500' />
-//                     {mockContract.downloadLabel}
-//                   </Button>
-//                 )}
-//                 {flow.showDownload && (
-//                   <Button
-//                     variant='ghost'
-//                     size='sm'
-//                     className='text-zinc-600'
-//                   >
-//                     <Download className='size-4' />
-//                   </Button>
-//                 )}
-//                 {flow.showDelete && (
-//                   <Button
-//                     variant='ghost'
-//                     size='sm'
-//                     className='text-zinc-600'
-//                   >
-//                     <Trash className='size-4' />
-//                   </Button>
-//                 )}
-//                 <Button
-//                   variant='outline'
-//                   size='sm'
-//                   className='h-12 rounded-full border-zinc-300 px-5 text-base font-semibold text-zinc-800 bg-white shadow-[0_1px_2px_rgba(16,24,40,0.05)]'
-//                 >
-//                   <Upload className='size-5 text-zinc-700' />
-//                   Upload
-//                 </Button>
-//               </div>
-//             </div>
+            <div className='flex flex-col gap-3'>
+              <div className='text-sm font-semibold text-zinc-800'>Contract file</div>
+              {flow.warning && (
+                <div className='text-sm font-medium text-amber-600 bg-amber-50 border border-amber-100 rounded-xl px-3 py-2'>
+                  {flow.warning}
+                </div>
+              )}
+              <div className='flex flex-wrap items-center gap-3'>
+                {flow.hasFile && (
+                  <Button
+                    variant='outline'
+                    size='sm'
+                    disabled={!flow.showDownload}
+                  >
+                    <FileText className='size-4 text-zinc-500' />
+                    {mockContract.downloadLabel}
+                  </Button>
+                )}
+                {flow.showDownload && (
+                  <Button
+                    variant='ghost'
+                    size='sm'
+                    className='text-zinc-600'
+                  >
+                    <Download className='size-4' />
+                  </Button>
+                )}
+                {flow.showDelete && (
+                  <Button
+                    variant='ghost'
+                    size='sm'
+                    className='text-zinc-600'
+                  >
+                    <Trash className='size-4' />
+                  </Button>
+                )}
+                <Button
+                  variant='outline'
+                  size='sm'
+                  className='h-12 rounded-full border-zinc-300 px-5 text-base font-semibold text-zinc-800 bg-white shadow-[0_1px_2px_rgba(16,24,40,0.05)]'
+                >
+                  <Upload className='size-5 text-zinc-700' />
+                  Upload
+                </Button>
+              </div>
+            </div>
 
-//             <Separator />
+            <Separator />
 
-//             <div className='flex flex-wrap items-center gap-3 text-sm text-zinc-600'>
-//               <span className='text-zinc-800 font-semibold'>Event details</span>
-//               <Button
-//                 variant='link'
-//                 size='sm'
-//                 className='p-0 h-auto text-sm'
-//               >
-//                 View event details
-//               </Button>
-//             </div>
+            <div className='flex flex-wrap items-center gap-3 text-sm text-zinc-600'>
+              <span className='text-zinc-800 font-semibold'>Event details</span>
+              <Button
+                variant='link'
+                size='sm'
+                className='p-0 h-auto text-sm'
+              >
+                View event details
+              </Button>
+            </div>
 
-//             <div className='flex flex-wrap gap-3 text-xs md:text-sm text-zinc-600'>
-//               <span className='flex items-center gap-1'>
-//                 <MapPin className='size-4 text-zinc-400' />
-//                 Locale
-//               </span>
-//               <Badge variant='secondary'>{mockContract.venueName}</Badge>
-//               <Badge variant='secondary'>{mockContract.managerName}</Badge>
-//               <Badge variant='secondary'>{mockContract.tourManager}</Badge>
-//               <span className='flex items-center gap-1'>
-//                 <Mail className='size-4 text-zinc-400' />
-//                 {mockContract.managerEmail}
-//               </span>
-//             </div>
+            <div className='flex flex-wrap gap-3 text-xs md:text-sm text-zinc-600'>
+              <span className='flex items-center gap-1'>
+                <MapPin className='size-4 text-zinc-400' />
+                Locale
+              </span>
+              <Badge variant='secondary'>{mockContract.venueName}</Badge>
+              <Badge variant='secondary'>{mockContract.managerName}</Badge>
+              <Badge variant='secondary'>{mockContract.tourManager}</Badge>
+              <span className='flex items-center gap-1'>
+                <Mail className='size-4 text-zinc-400' />
+                {mockContract.managerEmail}
+              </span>
+            </div>
 
-//             <div className='flex flex-wrap gap-2 text-xs text-zinc-500'>
-//               <span className='flex items-center gap-1'>
-//                 <Users className='size-4 text-zinc-400' />
-//                 Tour manager
-//               </span>
-//               <Badge variant='outline'>{mockContract.tourManager}</Badge>
-//               <span className='flex items-center gap-1'>
-//                 <Phone className='size-4 text-zinc-400' />
-//                 +39 333 123 4567
-//               </span>
-//               <span className='flex items-center gap-1'>
-//                 <Mail className='size-4 text-zinc-400' />
-//                 {mockContract.tourManagerEmail}
-//               </span>
-//               <Badge variant='outline'>Administration</Badge>
-//               <span className='flex items-center gap-1'>
-//                 <Mail className='size-4 text-zinc-400' />
-//                 {mockContract.adminEmail}
-//               </span>
-//             </div>
-//           </CardContent>
-//         </Card>
+            <div className='flex flex-wrap gap-2 text-xs text-zinc-500'>
+              <span className='flex items-center gap-1'>
+                <Users className='size-4 text-zinc-400' />
+                Tour manager
+              </span>
+              <Badge variant='outline'>{mockContract.tourManager}</Badge>
+              <span className='flex items-center gap-1'>
+                <Phone className='size-4 text-zinc-400' />
+                +39 333 123 4567
+              </span>
+              <span className='flex items-center gap-1'>
+                <Mail className='size-4 text-zinc-400' />
+                {mockContract.tourManagerEmail}
+              </span>
+              <Badge variant='outline'>Administration</Badge>
+              <span className='flex items-center gap-1'>
+                <Mail className='size-4 text-zinc-400' />
+                {mockContract.adminEmail}
+              </span>
+            </div>
+          </CardContent>
+        </Card>
 
-//         <Card className='bg-white shadow-sm border-zinc-200'>
-//           <CardContent className='flex flex-col gap-4'>
-//             <div className='flex items-center justify-between'>
-//               <div className='text-lg font-semibold'>History of changes</div>
-//             </div>
+        <Card className='bg-white shadow-sm border-zinc-200'>
+          <CardContent className='flex flex-col gap-4'>
+            <div className='flex items-center justify-between'>
+              <div className='text-lg font-semibold'>History of changes</div>
+            </div>
 
-//             <div className='flex flex-col gap-4'>
-//               {flow.history.map((item) => (
-//                 <div
-//                   key={item.id}
-//                   className='flex gap-3 relative'
-//                 >
-//                   <div className='w-16 text-xs text-zinc-500 flex flex-col'>
-//                     <div>{item.date}</div>
-//                     <div>{item.time}</div>
-//                   </div>
-//                   <div className='flex flex-col items-center pt-1'>
-//                     <div
-//                       className={`h-3 w-3 rounded-full border-2 ${
-//                         item.active
-//                           ? 'border-zinc-900 bg-white shadow-[0_0_0_3px_rgba(0,0,0,0.04)]'
-//                           : 'border-zinc-300 bg-white'
-//                       }`}
-//                     />
-//                     <div className='flex-1 w-px bg-zinc-200 mt-2' />
-//                   </div>
-//                   <div className='flex-1'>
-//                     <div className='text-sm font-semibold text-zinc-800'>{item.title}</div>
-//                     {item.description && (
-//                       <div className='text-sm text-slate-500 mt-1'>{item.description}</div>
-//                     )}
-//                     {item.link && (
-//                       <Button
-//                         variant='link'
-//                         size='sm'
-//                         className='p-0 h-auto text-sm'
-//                       >
-//                         {item.link}
-//                       </Button>
-//                     )}
-//                   </div>
-//                 </div>
-//               ))}
-//             </div>
-//           </CardContent>
-//         </Card>
-//       </div>
+            <div className='flex flex-col gap-4'>
+              {flow.history.map((item) => (
+                <div
+                  key={item.id}
+                  className='flex gap-3 relative'
+                >
+                  <div className='w-16 text-xs text-zinc-500 flex flex-col'>
+                    <div>{item.date}</div>
+                    <div>{item.time}</div>
+                  </div>
+                  <div className='flex flex-col items-center pt-1'>
+                    <div
+                      className={`h-3 w-3 rounded-full border-2 ${
+                        item.active
+                          ? 'border-zinc-900 bg-white shadow-[0_0_0_3px_rgba(0,0,0,0.04)]'
+                          : 'border-zinc-300 bg-white'
+                      }`}
+                    />
+                    <div className='flex-1 w-px bg-zinc-200 mt-2' />
+                  </div>
+                  <div className='flex-1'>
+                    <div className='text-sm font-semibold text-zinc-800'>{item.title}</div>
+                    {item.description && (
+                      <div className='text-sm text-slate-500 mt-1'>{item.description}</div>
+                    )}
+                    {item.link && (
+                      <Button
+                        variant='link'
+                        size='sm'
+                        className='p-0 h-auto text-sm'
+                      >
+                        {item.link}
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
 
-//       <Card className='bg-white shadow-sm border-zinc-200'>
-//         <CardContent className='flex flex-col gap-6'>
-//           <div className='flex items-center justify-between'>
-//             <div className='text-lg font-semibold'>Details</div>
-//           </div>
+      <Card className='bg-white shadow-sm border-zinc-200'>
+        <CardContent className='flex flex-col gap-6'>
+          <div className='flex items-center justify-between'>
+            <div className='text-lg font-semibold'>Details</div>
+          </div>
 
-//           <Accordion
-//             type='multiple'
-//             defaultValue={['artist', 'venue', 'event-date', 'cachet', 'special', 'technical', 'location']}
-//             className='divide-y divide-zinc-100 rounded-xl border border-zinc-100'
-//           >
-//             <AccordionItem value='artist'>
-//               <AccordionTrigger className='px-4'>
-//                 <div className='flex items-center gap-2'>
-//                   <span className='size-3 rounded-full bg-emerald-500' />
-//                   Artist
-//                 </div>
-//               </AccordionTrigger>
-//               <AccordionContent className='px-4'>
-//                 <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-//                   <div className='flex flex-col gap-2'>
-//                     <label className='text-sm text-zinc-600'>Artista</label>
-//                     <Input defaultValue={mockContract.artistName} />
-//                   </div>
-//                   <div className='flex flex-col gap-2'>
-//                     <label className='text-sm text-zinc-600'>Email</label>
-//                     <Input defaultValue='bob.johnson@gmail.com' />
-//                   </div>
-//                   <div className='flex flex-col gap-2'>
-//                     <label className='text-sm text-zinc-600'>Tour Manager</label>
-//                     <Input
-//                       defaultValue={flow.requireTourManager ? '' : mockContract.tourManager}
-//                       aria-invalid={flow.requireTourManager}
-//                       className={
-//                         flow.requireTourManager ? 'border-red-300 focus-visible:ring-destructive/30' : ''
-//                       }
-//                       placeholder='Email'
-//                     />
-//                     {flow.requireTourManager && (
-//                       <span className='text-xs text-red-500'>Campo obbligatorio</span>
-//                     )}
-//                   </div>
-//                   <div className='flex flex-col gap-2'>
-//                     <label className='text-sm text-zinc-600'>Consulente paghe e contributi</label>
-//                     <Input
-//                       defaultValue={flow.requireTourManager ? '' : mockContract.consultantEmail}
-//                       aria-invalid={flow.requireTourManager}
-//                       className={
-//                         flow.requireTourManager ? 'border-red-300 focus-visible:ring-destructive/30' : ''
-//                       }
-//                       placeholder='Email'
-//                     />
-//                   </div>
-//                   <div className='flex flex-col gap-2 md:col-span-2'>
-//                     <label className='text-sm text-zinc-600'>Amministrazione</label>
-//                     <Input defaultValue={mockContract.adminEmail} />
-//                   </div>
-//                 </div>
-//               </AccordionContent>
-//             </AccordionItem>
+          <Accordion
+            type='multiple'
+            defaultValue={['artist', 'venue', 'event-date', 'cachet', 'special', 'technical', 'location']}
+            className='divide-y divide-zinc-100 rounded-xl border border-zinc-100'
+          >
+            <AccordionItem value='artist'>
+              <AccordionTrigger className='px-4'>
+                <div className='flex items-center gap-2'>
+                  <span className='size-3 rounded-full bg-emerald-500' />
+                  Artist
+                </div>
+              </AccordionTrigger>
+              <AccordionContent className='px-4'>
+                <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+                  <div className='flex flex-col gap-2'>
+                    <label className='text-sm text-zinc-600'>Artista</label>
+                    <Input defaultValue={mockContract.artistName} />
+                  </div>
+                  <div className='flex flex-col gap-2'>
+                    <label className='text-sm text-zinc-600'>Email</label>
+                    <Input defaultValue='bob.johnson@gmail.com' />
+                  </div>
+                  <div className='flex flex-col gap-2'>
+                    <label className='text-sm text-zinc-600'>Tour Manager</label>
+                    <Input
+                      defaultValue={flow.requireTourManager ? '' : mockContract.tourManager}
+                      aria-invalid={flow.requireTourManager}
+                      className={
+                        flow.requireTourManager ? 'border-red-300 focus-visible:ring-destructive/30' : ''
+                      }
+                      placeholder='Email'
+                    />
+                    {flow.requireTourManager && (
+                      <span className='text-xs text-red-500'>Campo obbligatorio</span>
+                    )}
+                  </div>
+                  <div className='flex flex-col gap-2'>
+                    <label className='text-sm text-zinc-600'>Consulente paghe e contributi</label>
+                    <Input
+                      defaultValue={flow.requireTourManager ? '' : mockContract.consultantEmail}
+                      aria-invalid={flow.requireTourManager}
+                      className={
+                        flow.requireTourManager ? 'border-red-300 focus-visible:ring-destructive/30' : ''
+                      }
+                      placeholder='Email'
+                    />
+                  </div>
+                  <div className='flex flex-col gap-2 md:col-span-2'>
+                    <label className='text-sm text-zinc-600'>Amministrazione</label>
+                    <Input defaultValue={mockContract.adminEmail} />
+                  </div>
+                </div>
+              </AccordionContent>
+            </AccordionItem>
 
-//             <AccordionItem value='venue'>
-//               <AccordionTrigger className='px-4'>
-//                 <div className='flex items-center gap-2'>
-//                   <span className='size-3 rounded-full bg-emerald-500' />
-//                   Venue
-//                 </div>
-//               </AccordionTrigger>
-//               <AccordionContent className='px-4 text-sm text-zinc-600'>
-//                 <div className='flex items-center gap-2 text-zinc-700'>
-//                   <MapPin className='size-4 text-zinc-400' />
-//                   {mockContract.venueName}
-//                 </div>
-//               </AccordionContent>
-//             </AccordionItem>
+            <AccordionItem value='venue'>
+              <AccordionTrigger className='px-4'>
+                <div className='flex items-center gap-2'>
+                  <span className='size-3 rounded-full bg-emerald-500' />
+                  Venue
+                </div>
+              </AccordionTrigger>
+              <AccordionContent className='px-4 text-sm text-zinc-600'>
+                <div className='flex items-center gap-2 text-zinc-700'>
+                  <MapPin className='size-4 text-zinc-400' />
+                  {mockContract.venueName}
+                </div>
+              </AccordionContent>
+            </AccordionItem>
 
-//             <AccordionItem value='event-date'>
-//               <AccordionTrigger className='px-4'>
-//                 <div className='flex items-center gap-2'>
-//                   <span className='size-3 rounded-full bg-emerald-500' />
-//                   Event date
-//                 </div>
-//               </AccordionTrigger>
-//               <AccordionContent className='px-4 text-sm text-zinc-600'>
-//                 <div className='flex flex-wrap items-center gap-3'>
-//                   <CalendarDays className='size-4 text-zinc-400' />
-//                   {mockContract.date} — {mockContract.time}
-//                 </div>
-//               </AccordionContent>
-//             </AccordionItem>
+            <AccordionItem value='event-date'>
+              <AccordionTrigger className='px-4'>
+                <div className='flex items-center gap-2'>
+                  <span className='size-3 rounded-full bg-emerald-500' />
+                  Event date
+                </div>
+              </AccordionTrigger>
+              <AccordionContent className='px-4 text-sm text-zinc-600'>
+                <div className='flex flex-wrap items-center gap-3'>
+                  <CalendarDays className='size-4 text-zinc-400' />
+                  {mockContract.date} — {mockContract.time}
+                </div>
+              </AccordionContent>
+            </AccordionItem>
 
-//             <AccordionItem value='cachet'>
-//               <AccordionTrigger className='px-4'>
-//                 <div className='flex items-center gap-2'>
-//                   <span className='size-3 rounded-full bg-emerald-500' />
-//                   Cachet and economic condition
-//                 </div>
-//               </AccordionTrigger>
-//               <AccordionContent className='px-4 text-sm text-zinc-600'>
-//                 Add cachet and economic details here.
-//               </AccordionContent>
-//             </AccordionItem>
+            <AccordionItem value='cachet'>
+              <AccordionTrigger className='px-4'>
+                <div className='flex items-center gap-2'>
+                  <span className='size-3 rounded-full bg-emerald-500' />
+                  Cachet and economic condition
+                </div>
+              </AccordionTrigger>
+              <AccordionContent className='px-4 text-sm text-zinc-600'>
+                Add cachet and economic details here.
+              </AccordionContent>
+            </AccordionItem>
 
-//             <AccordionItem value='special'>
-//               <AccordionTrigger className='px-4'>
-//                 <div className='flex items-center gap-2'>
-//                   <span className='size-3 rounded-full bg-emerald-500' />
-//                   Special conditions/clauses
-//                 </div>
-//               </AccordionTrigger>
-//               <AccordionContent className='px-4 text-sm text-zinc-600'>
-//                 Add clauses and special conditions here.
-//               </AccordionContent>
-//             </AccordionItem>
+            <AccordionItem value='special'>
+              <AccordionTrigger className='px-4'>
+                <div className='flex items-center gap-2'>
+                  <span className='size-3 rounded-full bg-emerald-500' />
+                  Special conditions/clauses
+                </div>
+              </AccordionTrigger>
+              <AccordionContent className='px-4 text-sm text-zinc-600'>
+                Add clauses and special conditions here.
+              </AccordionContent>
+            </AccordionItem>
 
-//             <AccordionItem value='technical'>
-//               <AccordionTrigger className='px-4'>
-//                 <div className='flex items-center gap-2'>
-//                   <span className='size-3 rounded-full bg-emerald-500' />
-//                   Technical constraints
-//                 </div>
-//               </AccordionTrigger>
-//               <AccordionContent className='px-4 text-sm text-zinc-600'>
-//                 Add technical constraints here.
-//               </AccordionContent>
-//             </AccordionItem>
+            <AccordionItem value='technical'>
+              <AccordionTrigger className='px-4'>
+                <div className='flex items-center gap-2'>
+                  <span className='size-3 rounded-full bg-emerald-500' />
+                  Technical constraints
+                </div>
+              </AccordionTrigger>
+              <AccordionContent className='px-4 text-sm text-zinc-600'>
+                Add technical constraints here.
+              </AccordionContent>
+            </AccordionItem>
 
-//             <AccordionItem value='location'>
-//               <AccordionTrigger className='px-4'>
-//                 <div className='flex items-center gap-2'>
-//                   <span className='size-3 rounded-full bg-emerald-500' />
-//                   Location
-//                 </div>
-//               </AccordionTrigger>
-//               <AccordionContent className='px-4 text-sm text-zinc-600 flex flex-col gap-2'>
-//                 <span className='flex items-center gap-2'>
-//                   <LinkIcon className='size-4 text-zinc-400' />
-//                   Venue link or address here.
-//                 </span>
-//               </AccordionContent>
-//             </AccordionItem>
-//           </Accordion>
-//         </CardContent>
-//       </Card>
-//     </div>
-//   );
+            <AccordionItem value='location'>
+              <AccordionTrigger className='px-4'>
+                <div className='flex items-center gap-2'>
+                  <span className='size-3 rounded-full bg-emerald-500' />
+                  Location
+                </div>
+              </AccordionTrigger>
+              <AccordionContent className='px-4 text-sm text-zinc-600 flex flex-col gap-2'>
+                <span className='flex items-center gap-2'>
+                  <LinkIcon className='size-4 text-zinc-400' />
+                  Venue link or address here.
+                </span>
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
+        </CardContent>
+      </Card>
+    </div>
+  );
 }

@@ -313,16 +313,14 @@ export default function EventForm({
         venueId: values.venueId,
         eventId: values.eventId,
   
-        contractDate: values.eventDate, // YYYY-MM-DD
+        // contractDate: values.eventDate, // YYYY-MM-DD
        // fileUrl: values?.signedContractDocument?.url || "",
        // fileName: values?.signedContractDocument?.name || "",
   
         status: values.contractStatus ?? "draft",
         ccEmails: selectedCcEmails,
       };
-  console.log(payload, "payload");
       const response = await createContract(payload);
-  console.log(response, "response");
       if (response.success) {
         toast.success("Contract created!");
         router.refresh();
