@@ -15,7 +15,7 @@ export default async function NotFoundPage() {
       />
       <Card className='w-full max-w-xl items-center p-6 xl:p-12 rounded-2xl'>
         <CardHeader className='w-full gap-0 text-center p-0'>
-          <CardTitle className='text-2xl font-semibold mb-4'>404 | Pagina non trovata</CardTitle>
+          <CardTitle className='text-2xl font-semibold mb-4'>404 | Pagina non trovata.</CardTitle>
           <CardDescription>Per favore controlla la url ricercata e riprova.</CardDescription>
         </CardHeader>
         <CardContent className='flex justify-center items-center'>
