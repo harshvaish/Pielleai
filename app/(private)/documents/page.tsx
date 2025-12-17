@@ -70,17 +70,33 @@ type ContractCard = {
     fileName: string;
     recipientEmail: string;
     ccEmails: string[];
-    status: string;
+    status: ContractCardStatus;
     note: string;
   };
-
 };
 
 /* -------------------------------------------------------
-   Status Style Map
+   BACKEND STATUS UNION (IMPORTANT)
 --------------------------------------------------------*/
 
-const STATUS_STYLES = {
+type BackendContractStatus =
+  | "draft"
+  | "queued"
+  | "sent"
+  | "viewed"
+  | "signed"
+  | "voided"
+  | "declined"
+  | "all";
+
+/* -------------------------------------------------------
+   STATUS STYLE MAP
+--------------------------------------------------------*/
+
+const STATUS_STYLES: Record<
+  ContractCardStatus,
+  { dot: string; badgeBorder: string; badgeBg: string }
+> = {
   "missing-info": {
     dot: "bg-amber-500",
     badgeBorder: "border-amber-200",
@@ -124,22 +140,18 @@ const STATUS_STYLES = {
 };
 
 /* -------------------------------------------------------
-   Backend → UI Status Mapping
+   BACKEND → UI STATUS MAPPER (FIX #1)
 --------------------------------------------------------*/
 
-function mapStatus(status: string) {
+function mapStatus(status: BackendContractStatus): ContractCardStatus {
   switch (status) {
     case "draft":
       return "to-sign";
     case "signed":
       return "signed";
-    case "refused":
+    case "declined":
       return "refused";
-    case "error":
-      return "error";
-    case "cancelled":
-      return "cancelled";
-    case "archived":
+    case "voided":
       return "archived";
     default:
       return "all";
@@ -147,11 +159,11 @@ function mapStatus(status: string) {
 }
 
 /* -------------------------------------------------------
-   Backend → UI Card Mapper
+   BACKEND → UI CARD MAPPER (FIX #2)
 --------------------------------------------------------*/
 
-function mapContract(c: any) {
-  const uiStatus = mapStatus(c.status);
+function mapContract(c: any): ContractCard {
+  const uiStatus = mapStatus(c.status as BackendContractStatus);
 
   return {
     id: String(c.id),
@@ -169,6 +181,7 @@ function mapContract(c: any) {
     actionLabel: "Modifica",
     actionVariant: "outline",
     href: `/documents/${c.id}`,
+
     payload: {
       artistId: c.artist.id,
       venueId: c.venue.id,
@@ -178,20 +191,19 @@ function mapContract(c: any) {
       fileName: c.fileName,
       recipientEmail: c.recipientEmail,
       ccEmails: c.ccs ?? [],
-      status: c.status,
+      status: uiStatus, // ✅ FIX: UI status, not backend status
       note:
         c.history?.[0]?.note ??
         "Initial contract created by admin before artist signature.",
     },
-
   };
 }
 
-export const dynamic = "force-dynamic";
-
 /* -------------------------------------------------------
-   PAGE COMPONENT
+   PAGE
 --------------------------------------------------------*/
+
+export const dynamic = "force-dynamic";
 
 export default async function EventsPage({ searchParams }: EventsPageProps) {
   const { session, user } = await getSession();
@@ -218,45 +230,38 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
     sort: sort,
   };
 
-  function getApiStatusFromUi(uiStatus: ContractFilterStatus): string[] {
+  function getApiStatusFromUi(
+    uiStatus: ContractFilterStatus
+  ): BackendContractStatus[] {
     switch (uiStatus) {
       case "to-sign":
-        return ["queued"];
-
+        return ["draft"];
       case "signed":
         return ["signed"];
-
-      case "error":
       case "refused":
+        return["declined"]
+      case "error":
       case "archived":
         return ["voided"];
-
       case "all":
       default:
-        return ["draft"];
+        return ["all"];
     }
   }
-  function toYMD(date?: string) {
-    if (!date) return "";
-    return new Date(date).toISOString().split("T")[0];
-  }
-  
-  /* ---- Fetch backend data ---- */
   const api = await getContracts(user, {
     currentPage,
-    startDate: toYMD(sp?.start),
-    endDate: toYMD(sp?.end),
+    startDate: sp?.start ?? "",
+    endDate: sp?.end ?? "",
     status: getApiStatusFromUi(selectedStatus),
     sort,
   });
-  /* ---- Convert backend → UI format ---- */
+
   let contracts: ContractCard[] = api.data.map(mapContract);
 
-  /* ---- Apply UI status filter ---- */
   if (selectedStatus !== "all") {
     contracts = contracts.filter((c) => c.status === selectedStatus);
   }
-console.log(api,"contracts");
+
   const totalPages = api.totalPages;
   
   /* -------------------------------------------------------

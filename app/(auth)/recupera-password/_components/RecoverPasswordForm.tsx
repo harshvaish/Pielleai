@@ -38,22 +38,22 @@ export default function RecoverPasswordForm() {
     const { email } = data;
 
     startTransition(async () => {
-      await forgetPassword({
-        email,
-        redirectTo: '/reset-password',
-        fetchOptions: {
-          onSuccess: () => {
-            localStorage.setItem(RPE_EMAIL_STORAGE_NAME, email);
-            localStorage.setItem(RPE_BLOCK_STORAGE_NAME, Date.now().toString());
-            startTransition(async () => router.push(`recupera-password/conferma-invio`));
-          },
-          onError: (ctx) => {
-            const code = ctx?.error?.code ?? 'UNKNOWN_ERROR';
-            const message = getBetterAuthErrorMessage(code);
-            toast.error(message);
-          },
-        },
-      });
+      // await forgetPassword({
+      //   email,
+      //   redirectTo: '/reset-password',
+      //   fetchOptions: {
+      //     onSuccess: () => {
+      //       localStorage.setItem(RPE_EMAIL_STORAGE_NAME, email);
+      //       localStorage.setItem(RPE_BLOCK_STORAGE_NAME, Date.now().toString());
+      //       startTransition(async () => router.push(`recupera-password/conferma-invio`));
+      //     },
+      //     onError: (ctx) => {
+      //       const code = ctx?.error?.code ?? 'UNKNOWN_ERROR';
+      //       const message = getBetterAuthErrorMessage(code);
+      //       toast.error(message);
+      //     },
+      //   },
+      // });
     });
   };
 
