@@ -17,7 +17,6 @@ import {
   CalendarDays,
   Download,
   FileText,
-  Link as LinkIcon,
   Mail,
   MapPin,
   Phone,
@@ -25,6 +24,8 @@ import {
   Upload,
   Users,
 } from 'lucide-react';
+import { format } from 'date-fns';
+import { it } from 'date-fns/locale';
 import { notFound, redirect } from 'next/navigation';
 import {
   DropdownMenu,
@@ -34,10 +35,11 @@ import {
 } from '@/components/ui/dropdown-menu';
 import BackButton from '@/app/_components/BackButton';
 import createContract from '@/lib/data/contracts/create-contract';
+import { getEventById } from '@/lib/data/events/get-event';
 
 type ContractDetailPageProps = {
   params?: Promise<{ id: string }>;
-  searchParams?: Promise<{ stage?: string }>;
+  searchParams?: Promise<{ stage?: string; data?: string }>;
 };
 
 type ContractDetailStatus = 'missing' | 'to-sign' | 'signed' | 'refused' | 'error' | 'archived';
@@ -244,17 +246,31 @@ export default async function ContractDetailPage({ params, searchParams }: Contr
   const sp = await searchParams;
   if (!sp?.data) notFound();
   const payload = JSON.parse(decodeURIComponent(sp.data));
+  const event = await getEventById(user, Number(payload.eventId));
+  const eventDate = format(event.availability.startDate, 'dd MMM yyyy', { locale: it });
+  const eventStartTime = format(event.availability.startDate, 'HH:mm', { locale: it });
+  const eventEndTime = format(event.availability.endDate, 'HH:mm', { locale: it });
   /* ---------- FIRE API ON PAGE LOAD ---------- */
   const result = await createContract(payload);
+  if (!result.success) {
+    // you can also show a friendly error UI instead
+    throw new Error(result.message ?? 'Contract creation failed');
+  }
   const api = result.data?.data;
+  if (!api) {
+    throw new Error('Contract creation failed');
+  }
+  const statusDate = api.latestHistory?.createdAt
+    ? new Date(api.latestHistory.createdAt).toLocaleDateString('it-IT')
+    : new Date().toLocaleDateString('it-IT');
   const mockContract = {
     id: api.id,
-    statusDate: new Date(api.latestHistory.createdAt).toLocaleDateString('it-IT'),
-    artistHandle: `@${api.artist.stageName}`,
-    artistName: `${api.artist.name} ${api.artist.surname}`,
-    venueName: api.venue.name,
-    date: api.contractDate,
-    time: '—',
+    statusDate,
+    artistHandle: event.artist.stageName ? `@${event.artist.stageName}` : '—',
+    artistName: [event.artist.name, event.artist.surname].filter(Boolean).join(' ') || '—',
+    venueName: event.venue.name ?? '—',
+    date: eventDate,
+    time: `${eventStartTime} - ${eventEndTime}`,
     tourManager: api.ccs?.[0] ?? '—',
     tourManagerEmail: api.ccs?.[0] ?? '—',
     consultantEmail: api.ccs?.[1] ?? '—',
@@ -263,10 +279,6 @@ export default async function ContractDetailPage({ params, searchParams }: Contr
     managerEmail: api.recipientEmail,
     downloadLabel: api.fileName,
   };
-  if (!result.success) {
-    // you can also show a friendly error UI instead
-    throw new Error(result.message ?? "Contract creation failed");
-  }
   function mapHistory(api: any) {
     const list = api?.latestHistory ? [api.latestHistory] : [];
   
@@ -626,57 +638,6 @@ const flow = {
                   <CalendarDays className='size-4 text-zinc-400' />
                   {mockContract.date} — {mockContract.time}
                 </div>
-              </AccordionContent>
-            </AccordionItem>
-
-            <AccordionItem value='cachet'>
-              <AccordionTrigger className='px-4'>
-                <div className='flex items-center gap-2'>
-                  <span className='size-3 rounded-full bg-emerald-500' />
-                  Cachet and economic condition
-                </div>
-              </AccordionTrigger>
-              <AccordionContent className='px-4 text-sm text-zinc-600'>
-                Add cachet and economic details here.
-              </AccordionContent>
-            </AccordionItem>
-
-            <AccordionItem value='special'>
-              <AccordionTrigger className='px-4'>
-                <div className='flex items-center gap-2'>
-                  <span className='size-3 rounded-full bg-emerald-500' />
-                  Special conditions/clauses
-                </div>
-              </AccordionTrigger>
-              <AccordionContent className='px-4 text-sm text-zinc-600'>
-                Add clauses and special conditions here.
-              </AccordionContent>
-            </AccordionItem>
-
-            <AccordionItem value='technical'>
-              <AccordionTrigger className='px-4'>
-                <div className='flex items-center gap-2'>
-                  <span className='size-3 rounded-full bg-emerald-500' />
-                  Technical constraints
-                </div>
-              </AccordionTrigger>
-              <AccordionContent className='px-4 text-sm text-zinc-600'>
-                Add technical constraints here.
-              </AccordionContent>
-            </AccordionItem>
-
-            <AccordionItem value='location'>
-              <AccordionTrigger className='px-4'>
-                <div className='flex items-center gap-2'>
-                  <span className='size-3 rounded-full bg-emerald-500' />
-                  Location
-                </div>
-              </AccordionTrigger>
-              <AccordionContent className='px-4 text-sm text-zinc-600 flex flex-col gap-2'>
-                <span className='flex items-center gap-2'>
-                  <LinkIcon className='size-4 text-zinc-400' />
-                  Venue link or address here.
-                </span>
               </AccordionContent>
             </AccordionItem>
           </Accordion>
