@@ -1005,8 +1005,8 @@ export const contracts = pgTable(
 
     contractDate: date('contract_date').notNull(),
 
-    fileUrl: text('file_url').notNull(),
-    fileName: text('file_name').notNull(),
+    fileUrl: text('file_url'),
+    fileName: text('file_name'),
     recipientEmail: text('recipient_email'),
 
     createdAt: timestamp('created_at', { precision: 6, withTimezone: true, mode: 'string' })
