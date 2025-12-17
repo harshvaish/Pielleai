@@ -24,8 +24,6 @@ import {
   Upload,
   Users,
 } from 'lucide-react';
-import { format } from 'date-fns';
-import { it } from 'date-fns/locale';
 import { notFound, redirect } from 'next/navigation';
 import {
   DropdownMenu,
@@ -35,11 +33,10 @@ import {
 } from '@/components/ui/dropdown-menu';
 import BackButton from '@/app/_components/BackButton';
 import createContract from '@/lib/data/contracts/create-contract';
-import { getEventById } from '@/lib/data/events/get-event';
 
 type ContractDetailPageProps = {
   params?: Promise<{ id: string }>;
-  searchParams?: Promise<{ stage?: string; data?: string }>;
+  searchParams?: Promise<{ stage?: string }>;
 };
 
 type ContractDetailStatus = 'missing' | 'to-sign' | 'signed' | 'refused' | 'error' | 'archived';
@@ -246,10 +243,6 @@ export default async function ContractDetailPage({ params, searchParams }: Contr
   const sp = await searchParams;
   if (!sp?.data) notFound();
   const payload = JSON.parse(decodeURIComponent(sp.data));
-  const event = await getEventById(user, Number(payload.eventId));
-  const eventDate = format(event.availability.startDate, 'dd MMM yyyy', { locale: it });
-  const eventStartTime = format(event.availability.startDate, 'HH:mm', { locale: it });
-  const eventEndTime = format(event.availability.endDate, 'HH:mm', { locale: it });
   /* ---------- FIRE API ON PAGE LOAD ---------- */
   const result = await createContract(payload);
   if (!result.success) {
@@ -265,12 +258,12 @@ export default async function ContractDetailPage({ params, searchParams }: Contr
     : new Date().toLocaleDateString('it-IT');
   const mockContract = {
     id: api.id,
-    statusDate,
-    artistHandle: event.artist.stageName ? `@${event.artist.stageName}` : '—',
-    artistName: [event.artist.name, event.artist.surname].filter(Boolean).join(' ') || '—',
-    venueName: event.venue.name ?? '—',
-    date: eventDate,
-    time: `${eventStartTime} - ${eventEndTime}`,
+    statusDate: new Date(api.latestHistory.createdAt).toLocaleDateString('it-IT'),
+    artistHandle: `@${api.artist.stageName}`,
+    artistName: `${api.artist.name} ${api.artist.surname}`,
+    venueName: api.venue.name,
+    date: api.contractDate,
+    time: '—',
     tourManager: api.ccs?.[0] ?? '—',
     tourManagerEmail: api.ccs?.[0] ?? '—',
     consultantEmail: api.ccs?.[1] ?? '—',
