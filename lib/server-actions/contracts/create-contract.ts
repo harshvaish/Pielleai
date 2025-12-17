@@ -17,7 +17,7 @@ import {
 } from '../../../drizzle/schema';
 
 // ----- constants -----
-const CONTRACT_STATUS = ['draft', 'queued', 'sent', 'viewed', 'signed', 'voided'] as const;
+const CONTRACT_STATUS = ['draft', 'queued', 'sent', 'viewed', 'signed', 'voided','declined'] as const;
 type ContractStatus = (typeof CONTRACT_STATUS)[number];
 
 // ----- types -----
