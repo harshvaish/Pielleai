@@ -344,10 +344,15 @@ export default function EventForm({
           )
           .filter((email): email is string => Boolean(email)) ?? [];
 
+      if (values.eventId === undefined) {
+        toast.error("Event ID is required.");
+        return;
+      }
+
       const payload = {
         artistId: values.artistId,
         venueId: values.venueId,
-        eventId: values.eventId,
+        eventId: values.eventId, // Now guaranteed to be a number
         contractDate: new Date().toISOString().split("T")[0], // YYYY-MM-DD
         // fileUrl: values?.signedContractDocument?.url || "",
         // fileName: values?.signedContractDocument?.name || "",
