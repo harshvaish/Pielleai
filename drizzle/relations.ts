@@ -1,6 +1,5 @@
 import { relations } from "drizzle-orm/relations";
-import { artists, artistAvailabilities, users, accounts, countries, subdivisions, events, profiles, moCoordinators, venues, eventNotes, profileNotes, artistNotes, sessions, artistZones, zones, managerArtists, languages, profileLanguages, artistLanguages } from "./schema";
-
+import { artists, artistAvailabilities, users, accounts, countries, subdivisions, events, profiles, moCoordinators, venues, eventNotes, profileNotes, artistNotes, sessions, artistZones, zones, managerArtists, languages, profileLanguages, artistLanguages,contracts, contractEmailCcs, contractHistory } from "./schema";
 export const artistAvailabilitiesRelations = relations(artistAvailabilities, ({one, many}) => ({
 	artist: one(artists, {
 		fields: [artistAvailabilities.artistId],
@@ -280,4 +279,38 @@ export const artistLanguagesRelations = relations(artistLanguages, ({one}) => ({
 		fields: [artistLanguages.languageId],
 		references: [languages.id]
 	}),
+}));
+
+
+// contracts ↔ core entities
+
+export const contractsRelations = relations(contracts, ({ one, many }) => ({
+  artist: one(artists, {
+    fields: [contracts.artistId],
+    references: [artists.id],
+  }),
+  venue: one(venues, {
+    fields: [contracts.venueId],
+    references: [venues.id],
+  }),
+  event: one(events, {
+    fields: [contracts.eventId],
+    references: [events.id],
+  }),
+  ccs: many(contractEmailCcs),
+  history: many(contractHistory),
+}));
+
+export const contractEmailCcsRelations = relations(contractEmailCcs, ({ one }) => ({
+  contract: one(contracts, {
+    fields: [contractEmailCcs.contractId],
+    references: [contracts.id],
+  }),
+}));
+
+export const contractHistoryRelations = relations(contractHistory, ({ one }) => ({
+  contract: one(contracts, {
+    fields: [contractHistory.contractId],
+    references: [contracts.id],
+  }),
 }));

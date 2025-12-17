@@ -65,7 +65,6 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
     startDate: sp?.start ? new Date(sp.start) : null,
     endDate: sp?.end ? new Date(sp.end) : null,
   };
-
   const validation = eventsFiltersSchema.safeParse(filters);
 
   if (!validation.success) {
@@ -80,7 +79,6 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
       getVenuesCached(isVenueManager ? profileId! : undefined),
       getMoCoordinatorsCached(),
     ]);
-
   return (
     <div className='h-full grid grid-rows-[min-content_min-content_1fr_min-content] gap-4'>
       <div className='flex justify-between items-center'>
@@ -160,6 +158,7 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
         <TablePagination
           totalPages={totalPages}
           currentPage={currentPage}
+          searchParams={sp ?? {}}
         />
       )}
     </div>

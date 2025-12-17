@@ -154,6 +154,7 @@ export default async function VenueManagersPage({ searchParams }: VenueManagersP
         <TablePagination
           totalPages={totalPages}
           currentPage={currentPage}
+          searchParams={sp ?? {}}
         />
       )}
     </div>

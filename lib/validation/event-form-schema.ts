@@ -8,7 +8,7 @@ import {
 
 export const eventFormSchema = z.object({
   artistId: idValidation,
-
+  eventId: idValidation,
   status: eventStatusEnumValidation,
 
   artistManagerProfileId: idValidation.optional(),
@@ -23,6 +23,31 @@ export const eventFormSchema = z.object({
   ),
 
   venueId: idValidation,
+
+  /* ================= CONTRACT ================= */
+
+contractStatus: z
+.enum(["draft", "pending", "ready", "sent"])
+.optional(),
+
+/* ================= EVENT UI DETAILS ================= */
+
+artistFullName: z.string().optional(),
+artistStageName: z.string().optional(),
+
+venueName: z.string().optional(),
+venueCompanyName: z.string().optional(),
+venueVatNumber: z.string().optional(),
+venueAddress: z.string().optional(),
+
+eventType: z.enum(["concert", "dj-set", "private-event"]).optional(),
+eventDate: z.string().optional(),
+eventStartTime: z.string().optional(),
+eventEndTime: z.string().optional(),
+
+
+ccEmails: z.array(z.boolean()).optional(),
+
 
   tourManagerEmail: z.preprocess(
     (val) => (typeof val === 'string' && val.trim() !== '' ? val : undefined),
@@ -160,6 +185,29 @@ export const eventFormSchema = z.object({
       "Seleziona un'opzione valida.",
     )
     .optional(),
+    contractNumber: z
+    .string('Campo malformato.')
+    .min(1, 'Minimo 1 carattere.')
+    .max(200, 'Massimo 200 caratteri.')
+    .optional(),
+  
+  contractDate: z
+    .string('Campo malformato.')
+    .optional(), // stored as 'yyyy-mm-dd'
+  
+  signedContractDocument: z.any().optional(),
+  
+  contractInvoiceNumber: z
+    .string('Campo malformato.')
+    .min(1, 'Minimo 1 carattere.')
+    .max(200, 'Massimo 200 caratteri.')
+    .optional(),
+  
+  contractInvoiceAmount: z
+    .number('Campo malformato.')
+    .positive('Deve essere un valore positivo.')
+    .optional(),
+    
   contractSigning: z.boolean("Seleziona un'opzione valida."),
   depositInvoiceIssuing: z.boolean("Seleziona un'opzione valida."),
   depositReceiptVerification: z.boolean("Seleziona un'opzione valida."),

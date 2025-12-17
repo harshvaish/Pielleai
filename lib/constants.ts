@@ -1,5 +1,5 @@
 import { View } from 'react-big-calendar';
-import { EventStatus, Gender, NavbarLink, VenueType } from './types';
+import { ContractStatus, EventStatus, Gender, NavbarLink, VenueType } from './types';
 
 export const TIME_ZONE = 'Europe/Rome';
 
@@ -71,6 +71,14 @@ export const NAVBAR_LINKS: NavbarLink[] = [
     visibleTo: ['admin', 'venue-manager', 'artist-manager'],
     separator: false,
   },
+  {
+    label: 'Documents',
+    href: '/documents',
+    iconSrc: '/images/navbar-icons/contract-management.svg',
+    iconAlt: 'icona Documents',
+    visibleTo: ['admin', 'venue-manager', 'artist-manager'],
+    separator: false,
+  },
 ];
 
 // avatar upload
@@ -79,6 +87,16 @@ export const AU_ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 
 // avatar fallback
 export const AVATAR_FALLBACK = '/images/icon-black.svg';
+
+// icon
+export const QUESTION_ICON = '/images/question-icon.svg';
+export const UPLOAD_ICON = '/images/upload-icon.svg';
+export const DOWNLOAD_ICON = '/images/download-icon.svg';
+export const DELETE_ICON = '/images/delete-icon.svg';
+export const FILE_ICON = '/images/file-icon.svg';
+export const CIRCLE_RIGHT_ICON = '/images/caret-circle-right-icon.svg';
+export const GREEN_TICK_ICON = '/images/green-tick-icon.svg';
+
 
 // pdf upload
 export const PDFU_MAX_SIZE_MB = 10;
@@ -112,4 +130,15 @@ export const VENUE_TYPE_LABELS: Record<VenueType, string> = {
   small: 'Piccola < 3.000',
   medium: 'Media > 3.000',
   big: 'Grande > 10.000',
+};
+
+//events
+export const CONTRACT_STATUS_LABELS: Record<ContractStatus, string> = {
+  'all': 'All',
+  'to-sign': 'To sign',
+  'signed': 'Signed',
+  'refused': 'Refused',
+  'error': 'Error',
+  'archived': 'Archived',
+
 };
