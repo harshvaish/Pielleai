@@ -47,7 +47,7 @@ type EventForm = {
   artists: ArtistSelectData[];
   venues: VenueSelectData[];
   moCoordinators: MoCoordinator[];
-  event?: Event;
+  event?: any; // Replace 'any' with the correct type or import the 'DomainEvent' type if available
   mode: "create" | "update";
 };
 
@@ -281,22 +281,32 @@ export default function EventForm({
       type: "success",
     },
   ];  
+  type BackendContractStatus =
+  | "draft"
+  | "queued"
+  | "sent"
+  | "viewed"
+  | "signed"
+  | "voided"
+  | "declined";
 
-  // const handleGenerateContract = async () => {
+function mapUiStatusToBackend(
+  status?: EventFormSchema["contractStatus"]
+): BackendContractStatus {
+  switch (status) {
+    case "draft":
+      return "draft";
+    case "pending":
+      return "queued";
+    case "ready":
+      return "sent";
+    case "sent":
+      return "sent";
+    default:
+      return "draft"; // safe fallback
+  }
+}
 
-  //   startTransition(async () => {
-  //     const values = getValues();
-  //     const response = await createContract(values);
-  //     // closeDialog();
-
-  //     if (response.success) {
-  //       toast.success("Contract created!");
-  //       startTransition(async () => router.refresh());
-  //     } else {
-  //       toast.error(response.message);
-  //     }
-  //   });
-  // };
   const handleGenerateContract = async () => {
     startTransition(async () => {
       const values = getValues();
@@ -312,13 +322,12 @@ export default function EventForm({
         artistId: values.artistId,
         venueId: values.venueId,
         eventId: values.eventId,
-  
-        // contractDate: values.eventDate, // YYYY-MM-DD
+        contractDate: "2025-12-26" as string, // YYYY-MM-DD
        // fileUrl: values?.signedContractDocument?.url || "",
        // fileName: values?.signedContractDocument?.name || "",
   
-        status: values.contractStatus ?? "draft",
-        ccEmails: selectedCcEmails,
+       status: mapUiStatusToBackend(values.contractStatus),
+       ccEmails: selectedCcEmails,
       };
       const response = await createContract(payload);
       if (response.success) {
@@ -1678,9 +1687,9 @@ export default function EventForm({
               {field.value ?? "Select"}
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="concert">Live show</SelectItem>
               <SelectItem value="dj-set">DJ Set</SelectItem>
-              <SelectItem value="private-event">Private Event</SelectItem>
+              <SelectItem value="live">Live</SelectItem>
+              <SelectItem value="festival">Festival</SelectItem>
             </SelectContent>
           </Select>
         )}

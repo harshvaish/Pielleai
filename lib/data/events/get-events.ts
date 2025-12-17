@@ -4,6 +4,7 @@ import { User } from '@/lib/auth';
 import { getUserProfileIdCached } from '@/lib/cache/users';
 import { PAGINATED_TABLE_ROWS_X_PAGE } from '@/lib/constants';
 import { database } from '@/lib/database/connection';
+import { alias } from 'drizzle-orm/pg-core';
 import {
   artists,
   events,
@@ -17,6 +18,9 @@ import {
 import { Event, EventNote, EventsTableFilters } from '@/lib/types';
 import { and, count, desc, eq, inArray, sql } from 'drizzle-orm';
 import { contracts, contractEmailCcs, contractHistory } from '../../../drizzle/schema';
+
+const venueManagerProfile = alias(profiles, 'venueManagerProfile');
+const venueManagerUser = alias(users, 'venueManagerUser');
 
 export async function getEvents(
   user: User,
@@ -110,6 +114,7 @@ export async function getEvents(
 
         availability: {
           id: artistAvailabilities.id,
+          artistId: artistAvailabilities.artistId,
           startDate: artistAvailabilities.startDate,
           endDate: artistAvailabilities.endDate,
           status: artistAvailabilities.status,
@@ -122,7 +127,19 @@ export async function getEvents(
           avatarUrl: venues.avatarUrl,
           name: venues.name,
           address: venues.address,
+
+          // keep your extra fields (doesn't break types; TS allows extra properties at runtime)
+          company: venues.company,
+          vatCode: venues.vatCode,
         },
+
+        // ---- flat venue manager fields (we'll compose venue.manager in JS) ----
+        venueManagerUserId: venueManagerUser.id,
+        venueManagerUserStatus: venueManagerUser.status,
+        venueManagerProfileId: venueManagerProfile.id,
+        venueManagerProfileAvatarUrl: venueManagerProfile.avatarUrl,
+        venueManagerProfileName: venueManagerProfile.name,
+        venueManagerProfileSurname: venueManagerProfile.surname,
 
         status: events.status,
         hasConflict: events.hasConflict,
@@ -190,6 +207,8 @@ export async function getEvents(
       .leftJoin(profiles, eq(events.artistManagerProfileId, profiles.id))
       .leftJoin(users, eq(profiles.userId, users.id))
       .leftJoin(moCoordinators, eq(events.moCoordinatorId, moCoordinators.id))
+      .leftJoin(venueManagerProfile, eq(venues.managerProfileId, venueManagerProfile.id))
+      .leftJoin(venueManagerUser, eq(venueManagerProfile.userId, venueManagerUser.id))
       .where(filters)
       .orderBy(desc(events.createdAt));
 
@@ -326,23 +345,47 @@ export async function getEvents(
       }
     }
 
-    // Merge and nullify missing relations; attach contract
+    // Merge + compose venue.manager + nullify missing relations
     const mergedResult: Event[] = eventsResult.map((event) => {
+      const {
+        venueManagerUserId,
+        venueManagerUserStatus,
+        venueManagerProfileId,
+        venueManagerProfileAvatarUrl,
+        venueManagerProfileName,
+        venueManagerProfileSurname,
+        ...rest
+      } = event as any;
+
+      const venueManager =
+        venueManagerUserId
+          ? {
+              id: venueManagerUserId,
+              profileId: venueManagerProfileId,
+              status: venueManagerUserStatus,
+              avatarUrl: venueManagerProfileAvatarUrl ?? null,
+              name: venueManagerProfileName,
+              surname: venueManagerProfileSurname,
+            }
+          : null;
+
       const newObj = {
-        ...event,
-        notes: notesByEvent[event.id] || [],
+        ...rest,
+        venue: {
+          ...rest.venue,
+          manager: venueManager,
+        },
+        notes: notesByEvent[rest.id] || [],
       } as Event;
 
-      if (!event.artistManager?.id) newObj.artistManager = null;
-      if (!event.moCoordinator?.id) newObj.moCoordinator = null;
-
-      // ✅ attach latest contract with latestHistory + ccs
-      (newObj as any).contract = latestContractByEvent[event.id] ?? null;
+      if (!newObj.artistManager?.id) newObj.artistManager = null;
+      if (!newObj.moCoordinator?.id) newObj.moCoordinator = null;
 
       return newObj;
     });
 
     const totalPages = isPaginated ? Math.max(1, Math.ceil(Number(eventCount) / limit)) : 1;
+
     return {
       data: mergedResult,
       totalPages,

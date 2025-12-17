@@ -44,8 +44,10 @@ eventType: z.enum(["concert", "dj-set", "private-event"]).optional(),
 eventDate: z.string().optional(),
 eventStartTime: z.string().optional(),
 eventEndTime: z.string().optional(),
-
-
+depositPaymentDate:z.string().optional(),
+upfrontPayment: z.string().optional(),
+totalCachetText: z.string().optional(), 
+transportCostText: z.string().optional(),
 ccEmails: z.array(z.boolean()).optional(),
 
 
