@@ -9,6 +9,7 @@ import {
 export const eventFormSchema = z.object({
   artistId: idValidation,
   eventId: idValidation.optional(),
+  contractId:idValidation.optional(),
   status: eventStatusEnumValidation,
 
   artistManagerProfileId: idValidation.optional(),
@@ -40,11 +41,11 @@ venueCompanyName: z.string().optional(),
 venueVatNumber: z.string().optional(),
 venueAddress: z.string().optional(),
 
-eventType: z.enum(["concert", "dj-set", "private-event"]).optional(),
+eventType: z.enum(["live", "dj-set", "festival"]).optional(),
 eventDate: z.string().optional(),
 eventStartTime: z.string().optional(),
 eventEndTime: z.string().optional(),
-depositPaymentDate:z.string().optional(),
+paymentDate:z.string().optional(),
 upfrontPayment: z
 .number('Campo malformato.')
 .positive('Può contenere solo numeri positivi.')

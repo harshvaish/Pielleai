@@ -64,12 +64,12 @@ export default function UpdateEventForm({
       moArtistAdvancedExpenses: parseFloat(event.moArtistAdvancedExpenses || '') || undefined,
       artistNetCost: parseFloat(event.artistNetCost || '') || undefined,
       artistUpfrontCost: parseFloat(event.artistUpfrontCost || '') || undefined,
-
       hotel: event.hotel || '',
       restaurant: event.restaurant || '',
       eveningContact: event.eveningContact || '',
       moCoordinatorId: event.moCoordinator?.id || undefined,
       totalCost: parseFloat(event.totalCost || '') || undefined,
+      contractId: event.contract?.id || undefined,
       transportationsCost: parseFloat(event.transportationsCost || '') || undefined,
       cashBalanceCost: parseFloat(event.cashBalanceCost || '') || undefined,
       tecnicalRiderDocument:
@@ -91,16 +91,18 @@ export default function UpdateEventForm({
       postDateFeedback: event.postDateFeedback ?? false,
       bordereau: event.bordereau ?? false,
       eventId: event.id,
+      eventType: event.eventType,
       eventDate: format(event.availability.startDate, 'yyyy-MM-dd'),
       eventStartTime : format(event.availability.startDate, 'HH:mm', { locale: it }),
       eventEndTime : format(event.availability.endDate, 'HH:mm', { locale: it }),
-      depositPaymentDate: "",
-      upfrontPayment: parseFloat(event.depositCost || '') || undefined,
+      paymentDate: event.paymentDate
+      ? format(event.paymentDate, "yyyy-MM-dd")
+      : "",
+          upfrontPayment: parseFloat(event.depositCost || '') || undefined,
 
     },
   });
   const { handleSubmit } = methods;
-
   const onSubmit = async (data: EventFormSchema) => {
     startTransition(async () => {
       const response = await updateEvent(event.id, data);
@@ -114,7 +116,6 @@ export default function UpdateEventForm({
       }
     });
   };
-console.log(event, "event in update form");
   return (
     <section className='max-h-full overflow-y-auto'>
       <FormProvider {...methods}>

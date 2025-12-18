@@ -212,7 +212,7 @@ export default function EventForm({
     "transportationsCost",
     "totalCost",
     "upfrontPayment",
-    "depositPaymentDate",
+    "paymentDate",
   ]);
 
   const isDetailsComplete =
@@ -290,7 +290,7 @@ export default function EventForm({
     const endTime = values.eventEndTime;
 
     const performanceTime =
-      startTime && endTime ? `${startTime} - ${endTime}` : '';
+      startTime && endTime ? `${startTime} - ${endTime}` : "";
 
     const payload = {
       artistId: values.artistId,
@@ -308,8 +308,8 @@ export default function EventForm({
       upfrontPayment: values.upfrontPayment,
       eventDate: values.eventDate,
       perfomanceTime: performanceTime,
-      paymentDate: values.eventDate,
-      depositPaymentDate: values.depositPaymentDate,
+      // paymentDate: values.eventDate,
+      paymentDate: values.paymentDate,
       contractDate: new Date().toISOString().split("T")[0],
       status: mapUiStatusToBackend(values.contractStatus),
       ccEmails: selectedCcEmails,
@@ -336,7 +336,6 @@ export default function EventForm({
 
     startTransition(async () => {
       const values = getValues();
-
       const selectedCcEmails =
         values.ccEmails
           ?.map((checked, index) =>
@@ -344,47 +343,46 @@ export default function EventForm({
           )
           .filter((email): email is string => Boolean(email)) ?? [];
 
-          const startTime = values.eventStartTime;
-          const endTime = values.eventEndTime;
-      
-          const performanceTime =
-            startTime && endTime ? `${startTime} - ${endTime}` : null;
-      
-          const payload = {
-            artistId: values.artistId,
-            venueId: values.venueId,
-            eventId: values.eventId,
-            eventType: values.eventType,
-            artistName: values.artistFullName,
-            artistStageName: values.artistStageName,
-            venueName: values.venueName,
-            venueCompanyName: values.venueCompanyName,
-            venueVatNumber: values.venueVatNumber,
-            venueAddress: values.venueAddress,
-            transfortCost: values.transportationsCost,
-            totalCost: values.totalCost,
-            upfrontPayment: values.upfrontPayment,
-            eventDate: values.eventDate,
-            perfomanceTime: performanceTime,
-            paymentDate: values.eventDate,
-            depositPaymentDate: values.depositPaymentDate,
-            contractDate: new Date().toISOString().split("T")[0],
-            status: mapUiStatusToBackend(values.contractStatus),
-            ccEmails: selectedCcEmails,
-          };
+      const startTime = values.eventStartTime;
+      const endTime = values.eventEndTime;
 
-      // const response = await editContract(payload);
+      const performanceTime =
+        startTime && endTime ? `${startTime} - ${endTime}` : undefined;
 
-      // if (response.success) {
-      //   toast.success("Contract regenerated!");
-      //   closeDialog?.();
-      //   router.refresh();
-      // } else {
-      //   toast.error(response.message);
-      // }
+      const payload = {
+        artistId: values.artistId,
+        venueId: values.venueId,
+        eventId: values.eventId,
+        eventType: values.eventType,
+        artistName: values.artistFullName,
+        artistStageName: values.artistStageName,
+        venueName: values.venueName,
+        venueCompanyName: values.venueCompanyName,
+        venueVatNumber: values.venueVatNumber,
+        venueAddress: values.venueAddress,
+        transfortCost: values.transportationsCost,
+        totalCost: values.totalCost,
+        upfrontPayment: values.upfrontPayment,
+        eventDate: values.eventDate,
+        perfomanceTime: performanceTime,
+        contractId: event.contract.id, // ✅ now guaranteed
+        paymentDate: values.paymentDate,
+        contractDate: new Date().toISOString().split("T")[0],
+        status: mapUiStatusToBackend(values.contractStatus),
+        ccEmails: selectedCcEmails,
+      };
+
+      const response = await editContract(payload);
+
+      if (response.success) {
+        toast.success("Contract regenerated!");
+        closeDialog?.();
+        router.refresh();
+      } else {
+        toast.error(response.message);
+      }
     });
   };
-
   return (
     <>
       <div className="flex justify-between items-center gap-2">
@@ -1709,7 +1707,7 @@ export default function EventForm({
                               "transportationsCost",
                               "totalCost",
                               "upfrontPayment",
-                              "depositPaymentDate",
+                              "paymentDate",
                             ])
                               ? GREEN_TICK_ICON
                               : QUESTION_ICON
@@ -1838,7 +1836,7 @@ export default function EventForm({
                           </label>
                           <Input
                             type="date"
-                            {...register("depositPaymentDate")}
+                            {...register("paymentDate")}
                             className="h-10"
                           />
                         </div>

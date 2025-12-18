@@ -490,28 +490,29 @@ export interface CalendarAvailability extends RbcEvent {
   start: Date;
   end: Date;
 }
+export type EventType = "dj-set" | "live" | "festival";
 
 // event
 export type Event = {
   id: number;
-
   artist: ArtistSelectData;
   availability: ArtistAvailability;
   venue: VenueSelectData;
   status: EventStatus;
   hasConflict: boolean;
-
   artistManager: ArtistManagerSelectData | null;
-
   tourManagerEmail: string | null;
   payrollConsultantEmail: string | null;
-
   moCost: string | null;
-
   venueManagerCost: string | null;
-
+  eventType: EventType;
+  paymentDate: Date;
   depositCost: string | null;
-
+  contract?: {
+    id: number;
+    status?: string;
+    latestHistory?: any;
+  } | null;  
   depositInvoiceNumber: string | null;
 
   bookingPercentage: string | null;
