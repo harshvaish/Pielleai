@@ -304,6 +304,8 @@ export const events = pgTable(
     status: eventStatus().default('proposed').notNull(),
     hotelCost: numeric('hotel_cost'),
     restaurantCost: numeric('restaurant_cost'),
+    eventType:text('event_type'),
+    paymentDate:timestamp('payment_date', { precision: 6, withTimezone: true, mode: 'string' })
   },
   (table) => [
     index('idx_events_artist_id').using('btree', table.artistId.asc().nullsLast().op('int4_ops')),
