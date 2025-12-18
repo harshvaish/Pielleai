@@ -429,18 +429,15 @@ export default async function ContractDetailPage({
                 {payload?.artist?.tourManagerName || ""}{" "}
                 {payload?.artist?.tourManagerSurname || ""}
               </Badge>
-              <span className="flex items-center gap-1">
+              {/* <span className="flex items-center gap-1">
                 <Phone className="size-4 text-zinc-400" />
                 {payload?.artist?.tourManagerPhone}{" "}
-              </span>
-              <span className="flex items-center gap-1">
-                <Mail className="size-4 text-zinc-400" />
-                {payload?.artist?.tourManagerEmail}
-              </span>
+              </span> */}
+        
               <Badge variant="outline">Administration</Badge>
               <span className="flex items-center gap-1">
                 <Mail className="size-4 text-zinc-400" />
-                {mockContract.adminEmail}
+                {payload?.artist?.tourManagerEmail}
               </span>
             </div>
           </CardContent>
