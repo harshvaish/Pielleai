@@ -198,6 +198,8 @@ export async function getEvents(
 
         postDateFeedback: events.postDateFeedback,
         bordereau: events.bordereau,
+        eventType:events.eventType,
+        paymentDate:events.paymentDate
       })
       .from(events)
       .innerJoin(artistAvailabilities, eq(events.availabilityId, artistAvailabilities.id))
@@ -388,7 +390,7 @@ export async function getEvents(
     });
 
     const totalPages = isPaginated ? Math.max(1, Math.ceil(Number(eventCount) / limit)) : 1;
-    console.log(mergedResult)
+    console.log(mergedResult,'mergedresults')
     return {
       data: mergedResult,
       totalPages,
