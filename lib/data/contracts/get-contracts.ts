@@ -104,6 +104,10 @@ export async function getContracts(
           avatarUrl: artists.avatarUrl,
           status: artists.status,
           slug: artists.slug,
+          tourManagerPhone:artists.tourManagerPhone,
+          tourManagerName:artists.tourManagerName,
+          tourManagerEmail:artists.tourManagerEmail,
+          tourManagerSurname:artists.tourManagerSurname
         },
         venue: {
           id: venues.id,
@@ -112,10 +116,21 @@ export async function getContracts(
           status: venues.status,
           slug: venues.slug,
           avatarUrl: venues.avatarUrl,
+          vatCode:venues.vatCode,
+          company:venues.company
         },
         event: {
           id: events.id,
           status: events.status,
+          availabilityId:events.availabilityId,
+          depositCost:events.depositCost,
+          tourManagerEmail:events.tourManagerEmail,
+          eventStatus:events.status,
+          transportCost:events.transportationsCost,
+          totalFee:events.totalCost,
+          payrollConsultantEmail:events.payrollConsultantEmail,
+          eventType:events.eventType,
+          paymentDate:events.paymentDate
         },
       })
       .from(contracts)

@@ -580,6 +580,8 @@ export const events = pgTable(
     tourManagerEmail: text('tour_manager_email'),
     hasConflict: boolean('has_conflict').default(false).notNull(),
     status: eventStatus().default('proposed').notNull(),
+    eventType:text('event_type'),
+    paymentDate:timestamp('payment_date', { precision: 6, withTimezone: true, mode: 'string' })
   },
   (table) => [
     index('idx_events_artist_id').using('btree', table.artistId.asc().nullsLast().op('int4_ops')),
