@@ -48,8 +48,7 @@ depositPaymentDate:z.string().optional(),
 upfrontPayment: z
 .number('Campo malformato.')
 .positive('Può contenere solo numeri positivi.')
-.optional(), totalCachetText: z.string().optional(), 
-transportCostText: z.string().optional(),
+.optional(), 
 ccEmails: z.array(z.boolean()).optional(),
 
 
