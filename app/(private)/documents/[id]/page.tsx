@@ -3,15 +3,15 @@ import {
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from '@/components/ui/accordion';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Separator } from '@/components/ui/separator';
-import getSession from '@/lib/data/auth/get-session';
-import { getUserProfileIdCached } from '@/lib/cache/users';
-import { hasRole, resolveNextPath } from '@/lib/utils';
+} from "@/components/ui/accordion";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Separator } from "@/components/ui/separator";
+import getSession from "@/lib/data/auth/get-session";
+import { getUserProfileIdCached } from "@/lib/cache/users";
+import { hasRole, resolveNextPath } from "@/lib/utils";
 import {
   BadgeInfo,
   CalendarDays,
@@ -24,15 +24,15 @@ import {
   Trash,
   Upload,
   Users,
-} from 'lucide-react';
-import { notFound, redirect } from 'next/navigation';
+} from "lucide-react";
+import { notFound, redirect } from "next/navigation";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import BackButton from '@/app/_components/BackButton';
+} from "@/components/ui/dropdown-menu";
+import BackButton from "@/app/_components/BackButton";
 
 type ContractDetailPageProps = {
   params?: Promise<{ id: string }>;
@@ -51,24 +51,29 @@ type ContractHistoryItem = {
   link?: string; // ✅ OPTIONAL
 };
 
-
-type ContractDetailStatus = 'missing' | 'to-sign' | 'signed' | 'refused' | 'error' | 'archived';
+type ContractDetailStatus =
+  | "missing"
+  | "to-sign"
+  | "signed"
+  | "refused"
+  | "error"
+  | "archived";
 
 const mockContract = {
-  id: 'c-123',
-  statusDate: '13/11/25',
-  artistHandle: '@bobjohnson',
-  artistName: 'Bob Johnson',
-  venueName: 'Club “Maestro”',
-  date: '27/05/2025',
-  time: '14:00 - 16:30',
-  tourManager: 'Anna Trevisan',
-  tourManagerEmail: 'trevisana@gmail.com',
-  consultantEmail: 'robert.fox.events@gmail.com',
-  adminEmail: 'brooklyn@gmail.com',
-  managerName: 'Anna Trevisan',
-  managerEmail: 'mail@wow.com',
-  downloadLabel: 'Contract.pdf',
+  id: "c-123",
+  statusDate: "13/11/25",
+  artistHandle: "@bobjohnson",
+  artistName: "Bob Johnson",
+  venueName: "Club “Maestro”",
+  date: "27/05/2025",
+  time: "14:00 - 16:30",
+  tourManager: "Anna Trevisan",
+  tourManagerEmail: "trevisana@gmail.com",
+  consultantEmail: "robert.fox.events@gmail.com",
+  adminEmail: "brooklyn@gmail.com",
+  managerName: "Anna Trevisan",
+  managerEmail: "mail@wow.com",
+  downloadLabel: "Contract.pdf",
 };
 
 const FLOW_STATES: Record<
@@ -82,40 +87,43 @@ const FLOW_STATES: Record<
     showDownload: boolean;
     warning?: string;
     requireTourManager: boolean;
-  history: {
-    id: string;
-    title: string;
-    description?: string;
-    date: string;
+    history: {
+      id: string;
+      title: string;
+      description?: string;
+      date: string;
       time: string;
       link?: string;
     }[];
   }
 > = {
   missing: {
-    statusLabel: 'Missing data',
-    badge: { dot: 'bg-amber-500', bg: 'bg-amber-50 text-amber-700 border-amber-200' },
+    statusLabel: "Missing data",
+    badge: {
+      dot: "bg-amber-500",
+      bg: "bg-amber-50 text-amber-700 border-amber-200",
+    },
     actionsDisabled: true,
     hasFile: false,
     showDelete: false,
     showDownload: false,
     warning:
-      'The contract cannot be generated because the event data is incomplete.',
+      "The contract cannot be generated because the event data is incomplete.",
     requireTourManager: true,
     history: [
       {
-        id: 'h1',
-        title: 'Status changed to “Missing data”',
-        description: 'Auto status change',
-        date: '13/11/25',
-        time: '9:31 AM',
+        id: "h1",
+        title: "Status changed to “Missing data”",
+        description: "Auto status change",
+        date: "13/11/25",
+        time: "9:31 AM",
       },
     ],
   },
 
-  'to-sign': {
-    statusLabel: 'To sign',
-    badge: { dot: 'bg-sky-500', bg: 'bg-sky-50 text-sky-700 border-sky-100' },
+  "to-sign": {
+    statusLabel: "To sign",
+    badge: { dot: "bg-sky-500", bg: "bg-sky-50 text-sky-700 border-sky-100" },
     actionsDisabled: false,
     hasFile: true,
     showDelete: true,
@@ -123,25 +131,28 @@ const FLOW_STATES: Record<
     requireTourManager: false,
     history: [
       {
-        id: 'h2',
-        title: 'Status changed to “To Sign”',
-        description: 'Sent to DocuSign',
-        date: '13/11/25',
-        time: '9:31 AM',
-        link: 'View',
+        id: "h2",
+        title: "Status changed to “To Sign”",
+        description: "Sent to DocuSign",
+        date: "13/11/25",
+        time: "9:31 AM",
+        link: "View",
       },
       {
-        id: 'h3',
-        title: 'Contract autogenerated',
-        date: '13/11/25',
-        time: '9:30 AM',
+        id: "h3",
+        title: "Contract autogenerated",
+        date: "13/11/25",
+        time: "9:30 AM",
       },
     ],
   },
 
   signed: {
-    statusLabel: 'Signed',
-    badge: { dot: 'bg-emerald-500', bg: 'bg-emerald-50 text-emerald-700 border-emerald-100' },
+    statusLabel: "Signed",
+    badge: {
+      dot: "bg-emerald-500",
+      bg: "bg-emerald-50 text-emerald-700 border-emerald-100",
+    },
     actionsDisabled: false,
     hasFile: true,
     showDelete: false,
@@ -149,18 +160,21 @@ const FLOW_STATES: Record<
     requireTourManager: false,
     history: [
       {
-        id: 'h4',
-        title: 'Contract signed',
-        description: 'Signed via DocuSign',
-        date: '14/11/25',
-        time: '3:15 PM',
+        id: "h4",
+        title: "Contract signed",
+        description: "Signed via DocuSign",
+        date: "14/11/25",
+        time: "3:15 PM",
       },
     ],
   },
 
   refused: {
-    statusLabel: 'Refused',
-    badge: { dot: 'bg-rose-500', bg: 'bg-rose-50 text-rose-700 border-rose-100' },
+    statusLabel: "Refused",
+    badge: {
+      dot: "bg-rose-500",
+      bg: "bg-rose-50 text-rose-700 border-rose-100",
+    },
     actionsDisabled: false,
     hasFile: true,
     showDelete: true,
@@ -168,18 +182,18 @@ const FLOW_STATES: Record<
     requireTourManager: false,
     history: [
       {
-        id: 'h5',
-        title: 'Contract refused',
-        description: 'Signer refused the contract',
-        date: '14/11/25',
-        time: '10:00 AM',
+        id: "h5",
+        title: "Contract refused",
+        description: "Signer refused the contract",
+        date: "14/11/25",
+        time: "10:00 AM",
       },
     ],
   },
 
   error: {
-    statusLabel: 'Error',
-    badge: { dot: 'bg-red-500', bg: 'bg-red-50 text-red-700 border-red-100' },
+    statusLabel: "Error",
+    badge: { dot: "bg-red-500", bg: "bg-red-50 text-red-700 border-red-100" },
     actionsDisabled: false,
     hasFile: true,
     showDelete: true,
@@ -187,18 +201,21 @@ const FLOW_STATES: Record<
     requireTourManager: false,
     history: [
       {
-        id: 'h6',
-        title: 'DocuSign error',
-        description: 'Delivery failed',
-        date: '14/11/25',
-        time: '11:20 AM',
+        id: "h6",
+        title: "DocuSign error",
+        description: "Delivery failed",
+        date: "14/11/25",
+        time: "11:20 AM",
       },
     ],
   },
 
   archived: {
-    statusLabel: 'Archived',
-    badge: { dot: 'bg-zinc-400', bg: 'bg-zinc-50 text-zinc-600 border-zinc-200' },
+    statusLabel: "Archived",
+    badge: {
+      dot: "bg-zinc-400",
+      bg: "bg-zinc-50 text-zinc-600 border-zinc-200",
+    },
     actionsDisabled: true,
     hasFile: true,
     showDelete: false,
@@ -206,125 +223,131 @@ const FLOW_STATES: Record<
     requireTourManager: false,
     history: [
       {
-        id: 'h7',
-        title: 'Contract archived',
-        description: 'Completed and archived',
-        date: '15/11/25',
-        time: '9:00 AM',      },
+        id: "h7",
+        title: "Contract archived",
+        description: "Completed and archived",
+        date: "15/11/25",
+        time: "9:00 AM",
+      },
     ],
   },
 };
 
-export default async function ContractDetailPage({ params, searchParams }: ContractDetailPageProps) {
+export default async function ContractDetailPage({
+  params,
+  searchParams,
+}: ContractDetailPageProps) {
   const { session, user } = await getSession();
 
   if (!session || !user || user.banned) {
-    redirect('/logout');
+    redirect("/logout");
   }
 
   const profileId = await getUserProfileIdCached(user.id);
   const target = resolveNextPath({ user, hasProfile: Boolean(profileId) });
   if (target) redirect(target);
 
-  if (!hasRole(user, ['admin', 'artist-manager', 'venue-manager'])) {
+  if (!hasRole(user, ["admin", "artist-manager", "venue-manager"])) {
     notFound();
   }
-  
+
   await params;
   const sp = await searchParams;
   if (!sp?.data) notFound();
   const payload = JSON.parse(decodeURIComponent(sp.data));
-
-  const stage = (sp?.stage as ContractDetailStatus | undefined) ?? 'missing';
-  const flow = FLOW_STATES[stage] ?? FLOW_STATES['missing'];
+  console.log(payload, "payload--------------");
+  const stage = (sp?.stage as ContractDetailStatus | undefined) ?? "missing";
+  const flow = FLOW_STATES[stage] ?? FLOW_STATES["missing"];
   const statusLabel = flow.statusLabel;
   const statusColor = flow.badge;
 
   const statusOptions: { value: ContractDetailStatus; label: string }[] = [
-    { value: 'to-sign', label: 'To sign' },
-    { value: 'signed', label: 'Signed' },
-    { value: 'refused', label: 'Refused' },
-    { value: 'error', label: 'Error' },
-    { value: 'archived', label: 'Archived' },
+    { value: "to-sign", label: "To sign" },
+    { value: "signed", label: "Signed" },
+    { value: "refused", label: "Refused" },
+    { value: "error", label: "Error" },
+    { value: "archived", label: "Archived" },
   ];
-
+  console.log(payload, "payload-------------------------");
   return (
-    <div className='h-full w-full bg-zinc-50 px-4 py-6 md:p-6 flex flex-col gap-6'>
-      <div className='flex flex-wrap justify-between items-center gap-3'>
+    <div className="h-full w-full bg-zinc-50 px-4 py-6 md:p-6 flex flex-col gap-6">
+      <div className="flex flex-wrap justify-between items-center gap-3">
         {/* <h1 className='text-2xl font-bold'>Contracts</h1> */}
-        <BackButton />        
-        <div className='flex items-center gap-2'>
-          <Button
-            variant='secondary'
-            size='sm'
-            disabled={flow.actionsDisabled}
-          >
-            {stage === 'missing' ? 'Generate' : 'Regenerate'}
+        <BackButton />
+        <div className="flex items-center gap-2">
+          <Button variant="secondary" size="sm" disabled={flow.actionsDisabled}>
+            {stage === "missing" ? "Generate" : "Regenerate"}
           </Button>
-          <Button
-            variant='default'
-            size='sm'
-            disabled={flow.actionsDisabled}
-          >
+          <Button variant="default" size="sm" disabled={flow.actionsDisabled}>
             Send to DocuSign
           </Button>
         </div>
       </div>
 
-      <div className='grid grid-cols-1 xl:grid-cols-[2fr_1fr] gap-4'>
-        <Card className='bg-white shadow-sm border-zinc-200'>
-          <CardContent className='flex flex-col gap-4'>
-            <div className='flex flex-wrap justify-between gap-4'>
-              <div className='flex flex-col gap-2'>
-                <div className='flex items-center gap-3'>
-                  <div className='size-11 rounded-full bg-zinc-200' />
-                  <div className='flex flex-col'>
-                    <div className='font-semibold text-lg'>{mockContract.artistName}</div>
-                    <div className='text-sm text-zinc-500'>{mockContract.artistHandle}</div>
+      <div className="grid grid-cols-1 xl:grid-cols-[2fr_1fr] gap-4">
+        <Card className="bg-white shadow-sm border-zinc-200">
+          <CardContent className="flex flex-col gap-4">
+            <div className="flex flex-wrap justify-between gap-4">
+              <div className="flex flex-col gap-2">
+                <div className="flex items-center gap-3">
+                  <div className="size-11 rounded-full bg-zinc-200" />
+                  <div className="flex flex-col">
+                    <div className="font-semibold text-lg">
+                      {payload.stageName}
+                    </div>
+                    <div className="text-sm text-zinc-500">
+                      {payload.artistName}
+                    </div>
                   </div>
                 </div>
 
-                <div className='flex items-center gap-3 text-sm text-zinc-600'>
-                  <span className='flex items-center gap-1'>
-                    <MapPin className='size-4 text-zinc-400' />
-                    {mockContract.venueName}
+                <div className="flex items-center gap-3 text-sm text-zinc-600">
+                  <span className="flex items-center gap-1">
+                    <MapPin className="size-4 text-zinc-400" />
+                    {payload?.venue?.name}
                   </span>
-                  <span className='flex items-center gap-1'>
-                    <CalendarDays className='size-4 text-zinc-400' />
+                  <span className="flex items-center gap-1">
+                    <CalendarDays className="size-4 text-zinc-400" />
                     {mockContract.date}
                   </span>
-                  <span className='flex items-center gap-1'>
-                    <Users className='size-4 text-zinc-400' />
+                  <span className="flex items-center gap-1">
+                    <Users className="size-4 text-zinc-400" />
                     {mockContract.time}
                   </span>
                 </div>
               </div>
 
-              <div className='flex flex-col items-end gap-2 min-w-[220px]'>
+              <div className="flex flex-col items-end gap-2 min-w-[220px]">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button
-                      variant='outline'
-                      size='sm'
+                      variant="outline"
+                      size="sm"
                       className={`gap-2 px-5 h-11 rounded-full font-semibold text-base border-amber-200 bg-white shadow-[0_1px_2px_rgba(16,24,40,0.05)] ${statusColor.bg}`}
                     >
-                      <span className={`size-3 rounded-full ${statusColor.dot}`} />
+                      <span
+                        className={`size-3 rounded-full ${statusColor.dot}`}
+                      />
                       {statusLabel}
-                      <BadgeInfo className='size-4 text-amber-600' />
+                      <BadgeInfo className="size-4 text-amber-600" />
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align='end' className='min-w-[200px]'>
+                  <DropdownMenuContent align="end" className="min-w-[200px]">
                     {statusOptions.map((opt) => (
                       <DropdownMenuItem
                         key={opt.value}
-                        className={opt.value === stage ? 'font-semibold text-amber-700' : ''}
+                        className={
+                          opt.value === stage
+                            ? "font-semibold text-amber-700"
+                            : ""
+                        }
                       >
                         {opt.label}
                       </DropdownMenuItem>
                     ))}
                   </DropdownMenuContent>
                 </DropdownMenu>
-                <div className='text-xs text-zinc-500'>
+                <div className="text-xs text-zinc-500">
                   Status changed on {mockContract.statusDate}
                 </div>
               </div>
@@ -332,48 +355,42 @@ export default async function ContractDetailPage({ params, searchParams }: Contr
 
             <Separator />
 
-            <div className='flex flex-col gap-3'>
-              <div className='text-sm font-semibold text-zinc-800'>Contract file</div>
+            <div className="flex flex-col gap-3">
+              <div className="text-sm font-semibold text-zinc-800">
+                Contract file
+              </div>
               {flow.warning && (
-                <div className='text-sm font-medium text-amber-600 bg-amber-50 border border-amber-100 rounded-xl px-3 py-2'>
+                <div className="text-sm font-medium text-amber-600 bg-amber-50 border border-amber-100 rounded-xl px-3 py-2">
                   {flow.warning}
                 </div>
               )}
-              <div className='flex flex-wrap items-center gap-3'>
+              <div className="flex flex-wrap items-center gap-3">
                 {flow.hasFile && (
                   <Button
-                    variant='outline'
-                    size='sm'
+                    variant="outline"
+                    size="sm"
                     disabled={!flow.showDownload}
                   >
-                    <FileText className='size-4 text-zinc-500' />
+                    <FileText className="size-4 text-zinc-500" />
                     {mockContract.downloadLabel}
                   </Button>
                 )}
                 {flow.showDownload && (
-                  <Button
-                    variant='ghost'
-                    size='sm'
-                    className='text-zinc-600'
-                  >
-                    <Download className='size-4' />
+                  <Button variant="ghost" size="sm" className="text-zinc-600">
+                    <Download className="size-4" />
                   </Button>
                 )}
                 {flow.showDelete && (
-                  <Button
-                    variant='ghost'
-                    size='sm'
-                    className='text-zinc-600'
-                  >
-                    <Trash className='size-4' />
+                  <Button variant="ghost" size="sm" className="text-zinc-600">
+                    <Trash className="size-4" />
                   </Button>
                 )}
                 <Button
-                  variant='outline'
-                  size='sm'
-                  className='h-12 rounded-full border-zinc-300 px-5 text-base font-semibold text-zinc-800 bg-white shadow-[0_1px_2px_rgba(16,24,40,0.05)]'
+                  variant="outline"
+                  size="sm"
+                  className="h-12 rounded-full border-zinc-300 px-5 text-base font-semibold text-zinc-800 bg-white shadow-[0_1px_2px_rgba(16,24,40,0.05)]"
                 >
-                  <Upload className='size-5 text-zinc-700' />
+                  <Upload className="size-5 text-zinc-700" />
                   Upload
                 </Button>
               </div>
@@ -381,90 +398,66 @@ export default async function ContractDetailPage({ params, searchParams }: Contr
 
             <Separator />
 
-            <div className='flex flex-wrap items-center gap-3 text-sm text-zinc-600'>
-              <span className='text-zinc-800 font-semibold'>Event details</span>
-              <Button
-                variant='link'
-                size='sm'
-                className='p-0 h-auto text-sm'
-              >
+            <div className="flex flex-wrap items-center gap-3 text-sm text-zinc-600">
+              <span className="text-zinc-800 font-semibold">Event details</span>
+              <Button variant="link" size="sm" className="p-0 h-auto text-sm">
                 View event details
               </Button>
             </div>
 
-            <div className='flex flex-wrap gap-3 text-xs md:text-sm text-zinc-600'>
-              <span className='flex items-center gap-1'>
-                <MapPin className='size-4 text-zinc-400' />
+            <div className="flex flex-wrap gap-3 text-xs md:text-sm text-zinc-600">
+              <span className="flex items-center gap-1">
+                <MapPin className="size-4 text-zinc-400" />
                 Locale
               </span>
-              <Badge variant='secondary'>{mockContract.venueName}</Badge>
-              <Badge variant='secondary'>{mockContract.managerName}</Badge>
-              <Badge variant='secondary'>{mockContract.tourManager}</Badge>
-              <span className='flex items-center gap-1'>
-                <Mail className='size-4 text-zinc-400' />
+              <Badge variant="secondary">{mockContract.venueName}</Badge>
+              <Badge variant="secondary">{mockContract.managerName}</Badge>
+              <Badge variant="secondary">{mockContract.tourManager}</Badge>
+              <span className="flex items-center gap-1">
+                <Mail className="size-4 text-zinc-400" />
                 {mockContract.managerEmail}
               </span>
             </div>
 
-            <div className='flex flex-wrap gap-2 text-xs text-zinc-500'>
-              <span className='flex items-center gap-1'>
-                <Users className='size-4 text-zinc-400' />
+            <div className="flex flex-wrap gap-2 text-xs text-zinc-500">
+              <span className="flex items-center gap-1">
+                <Users className="size-4 text-zinc-400" />
                 Tour manager
               </span>
-              <Badge variant='outline'>{mockContract.tourManager}</Badge>
-              <span className='flex items-center gap-1'>
-                <Phone className='size-4 text-zinc-400' />
-                +39 333 123 4567
+              <Badge variant="outline">
+                {" "}
+                {payload?.artist?.tourManagerName || ""}{" "}
+                {payload?.artist?.tourManagerSurname || ""}
+              </Badge>
+              <span className="flex items-center gap-1">
+                <Phone className="size-4 text-zinc-400" />
+                {payload?.artist?.tourManagerPhone}{" "}
               </span>
-              <span className='flex items-center gap-1'>
-                <Mail className='size-4 text-zinc-400' />
-                {mockContract.tourManagerEmail}
+              <span className="flex items-center gap-1">
+                <Mail className="size-4 text-zinc-400" />
+                {payload?.artist?.tourManagerEmail}
               </span>
-              <Badge variant='outline'>Administration</Badge>
-              <span className='flex items-center gap-1'>
-                <Mail className='size-4 text-zinc-400' />
+              <Badge variant="outline">Administration</Badge>
+              <span className="flex items-center gap-1">
+                <Mail className="size-4 text-zinc-400" />
                 {mockContract.adminEmail}
               </span>
             </div>
           </CardContent>
         </Card>
 
-        <Card className='bg-white shadow-sm border-zinc-200'>
-          <CardContent className='flex flex-col gap-4'>
-            <div className='flex items-center justify-between'>
-              <div className='text-lg font-semibold'>History of changes</div>
+        <Card className="bg-white shadow-sm border-zinc-200">
+          <CardContent className="flex flex-col gap-4">
+            <div className="flex items-center justify-between">
+              <div className="text-lg font-semibold">History of changes</div>
             </div>
 
-            <div className='flex flex-col gap-4'>
-              {flow.history.map((item) => (
-                <div
-                  key={item.id}
-                  className='flex gap-3 relative'
-                >
-                  <div className='w-16 text-xs text-zinc-500 flex flex-col'>
-                    <div>{item.date}</div>
-                    <div>{item.time}</div>
-                  </div>
-                  <div className='flex flex-col items-center pt-1'>
-                    <div
-                      className='h-3 w-3 rounded-full border-2'
-                    />
-                    <div className='flex-1 w-px bg-zinc-200 mt-2' />
-                  </div>
-                  <div className='flex-1'>
-                    <div className='text-sm font-semibold text-zinc-800'>{item.title}</div>
-                    {item.description && (
-                      <div className='text-sm text-slate-500 mt-1'>{item.description}</div>
-                    )}
-                    {item.link && (
-                      <Button
-                        variant='link'
-                        size='sm'
-                        className='p-0 h-auto text-sm'
-                      >
-                        {item.link}
-                      </Button>
-                    )}
+            <div className="flex flex-col gap-4">
+              {payload.history.map((h) => (
+                <div key={h.id} className="text-sm">
+                  <div className="font-medium">{h.note ?? "Status change"}</div>
+                  <div className="text-xs text-zinc-500">
+                    {new Date(h.createdAt).toLocaleString("it-IT")}
                   </div>
                 </div>
               ))}
@@ -473,143 +466,132 @@ export default async function ContractDetailPage({ params, searchParams }: Contr
         </Card>
       </div>
 
-      <Card className='bg-white shadow-sm border-zinc-200'>
-        <CardContent className='flex flex-col gap-6'>
-          <div className='flex items-center justify-between'>
-            <div className='text-lg font-semibold'>Details</div>
+      <Card className="bg-white shadow-sm border-zinc-200">
+        <CardContent className="flex flex-col gap-6">
+          <div className="flex items-center justify-between">
+            <div className="text-lg font-semibold">Details</div>
           </div>
 
           <Accordion
-            type='multiple'
-            defaultValue={['artist', 'venue', 'event-date', 'cachet', 'special', 'technical', 'location']}
-            className='divide-y divide-zinc-100 rounded-xl border border-zinc-100'
+            type="multiple"
+            defaultValue={[
+              "artist",
+              "venue",
+              "event-date",
+              "cachet",
+              "special",
+              "technical",
+              "location",
+            ]}
+            className="divide-y divide-zinc-100 rounded-xl border border-zinc-100"
           >
-            <AccordionItem value='artist'>
-              <AccordionTrigger className='px-4'>
-                <div className='flex items-center gap-2'>
-                  <span className='size-3 rounded-full bg-emerald-500' />
+            <AccordionItem value="artist">
+              <AccordionTrigger className="px-4">
+                <div className="flex items-center gap-2">
+                  <span className="size-3 rounded-full bg-emerald-500" />
                   Artist
                 </div>
               </AccordionTrigger>
-              <AccordionContent className='px-4'>
-                <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-                  <div className='flex flex-col gap-2'>
-                    <label className='text-sm text-zinc-600'>Artista</label>
+              <AccordionContent className="px-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="flex flex-col gap-2">
+                    <label className="text-sm text-zinc-600">Artista</label>
                     <Input defaultValue={mockContract.artistName} />
                   </div>
-                  <div className='flex flex-col gap-2'>
-                    <label className='text-sm text-zinc-600'>Email</label>
-                    <Input defaultValue='bob.johnson@gmail.com' />
+                  <div className="flex flex-col gap-2">
+                    <label className="text-sm text-zinc-600">Email</label>
+                    <Input defaultValue="bob.johnson@gmail.com" />
                   </div>
-                  <div className='flex flex-col gap-2'>
-                    <label className='text-sm text-zinc-600'>Tour Manager</label>
+                  <div className="flex flex-col gap-2">
+                    <label className="text-sm text-zinc-600">
+                      Tour Manager
+                    </label>
                     <Input
-                      defaultValue={flow.requireTourManager ? '' : mockContract.tourManager}
+                      defaultValue={
+                        flow.requireTourManager ? "" : mockContract.tourManager
+                      }
                       aria-invalid={flow.requireTourManager}
                       className={
-                        flow.requireTourManager ? 'border-red-300 focus-visible:ring-destructive/30' : ''
+                        flow.requireTourManager
+                          ? "border-red-300 focus-visible:ring-destructive/30"
+                          : ""
                       }
-                      placeholder='Email'
+                      placeholder="Email"
                     />
                     {flow.requireTourManager && (
-                      <span className='text-xs text-red-500'>Campo obbligatorio</span>
+                      <span className="text-xs text-red-500">
+                        Campo obbligatorio
+                      </span>
                     )}
                   </div>
-                  <div className='flex flex-col gap-2'>
-                    <label className='text-sm text-zinc-600'>Consulente paghe e contributi</label>
+                  <div className="flex flex-col gap-2">
+                    <label className="text-sm text-zinc-600">
+                      Consulente paghe e contributi
+                    </label>
                     <Input
-                      defaultValue={flow.requireTourManager ? '' : mockContract.consultantEmail}
+                      defaultValue={
+                        flow.requireTourManager
+                          ? ""
+                          : mockContract.consultantEmail
+                      }
                       aria-invalid={flow.requireTourManager}
                       className={
-                        flow.requireTourManager ? 'border-red-300 focus-visible:ring-destructive/30' : ''
+                        flow.requireTourManager
+                          ? "border-red-300 focus-visible:ring-destructive/30"
+                          : ""
                       }
-                      placeholder='Email'
+                      placeholder="Email"
                     />
                   </div>
-                  <div className='flex flex-col gap-2 md:col-span-2'>
-                    <label className='text-sm text-zinc-600'>Amministrazione</label>
+                  <div className="flex flex-col gap-2 md:col-span-2">
+                    <label className="text-sm text-zinc-600">
+                      Amministrazione
+                    </label>
                     <Input defaultValue={mockContract.adminEmail} />
                   </div>
                 </div>
               </AccordionContent>
             </AccordionItem>
 
-            <AccordionItem value='venue'>
-              <AccordionTrigger className='px-4'>
-                <div className='flex items-center gap-2'>
-                  <span className='size-3 rounded-full bg-emerald-500' />
+            <AccordionItem value="venue">
+              <AccordionTrigger className="px-4">
+                <div className="flex items-center gap-2">
+                  <span className="size-3 rounded-full bg-emerald-500" />
                   Venue
                 </div>
               </AccordionTrigger>
-              <AccordionContent className='px-4 text-sm text-zinc-600'>
-                <div className='flex items-center gap-2 text-zinc-700'>
-                  <MapPin className='size-4 text-zinc-400' />
+              <AccordionContent className="px-4 text-sm text-zinc-600">
+                <div className="flex items-center gap-2 text-zinc-700">
+                  <MapPin className="size-4 text-zinc-400" />
                   {mockContract.venueName}
                 </div>
               </AccordionContent>
             </AccordionItem>
 
-            <AccordionItem value='event-date'>
-              <AccordionTrigger className='px-4'>
-                <div className='flex items-center gap-2'>
-                  <span className='size-3 rounded-full bg-emerald-500' />
+            <AccordionItem value="event-date">
+              <AccordionTrigger className="px-4">
+                <div className="flex items-center gap-2">
+                  <span className="size-3 rounded-full bg-emerald-500" />
                   Event date
                 </div>
               </AccordionTrigger>
-              <AccordionContent className='px-4 text-sm text-zinc-600'>
-                <div className='flex flex-wrap items-center gap-3'>
-                  <CalendarDays className='size-4 text-zinc-400' />
+              <AccordionContent className="px-4 text-sm text-zinc-600">
+                <div className="flex flex-wrap items-center gap-3">
+                  <CalendarDays className="size-4 text-zinc-400" />
                   {mockContract.date} — {mockContract.time}
                 </div>
               </AccordionContent>
             </AccordionItem>
-
-            <AccordionItem value='cachet'>
-              <AccordionTrigger className='px-4'>
-                <div className='flex items-center gap-2'>
-                  <span className='size-3 rounded-full bg-emerald-500' />
-                  Cachet and economic condition
-                </div>
-              </AccordionTrigger>
-              <AccordionContent className='px-4 text-sm text-zinc-600'>
-                Add cachet and economic details here.
-              </AccordionContent>
-            </AccordionItem>
-
-            <AccordionItem value='special'>
-              <AccordionTrigger className='px-4'>
-                <div className='flex items-center gap-2'>
-                  <span className='size-3 rounded-full bg-emerald-500' />
-                  Special conditions/clauses
-                </div>
-              </AccordionTrigger>
-              <AccordionContent className='px-4 text-sm text-zinc-600'>
-                Add clauses and special conditions here.
-              </AccordionContent>
-            </AccordionItem>
-
-            <AccordionItem value='technical'>
-              <AccordionTrigger className='px-4'>
-                <div className='flex items-center gap-2'>
-                  <span className='size-3 rounded-full bg-emerald-500' />
-                  Technical constraints
-                </div>
-              </AccordionTrigger>
-              <AccordionContent className='px-4 text-sm text-zinc-600'>
-                Add technical constraints here.
-              </AccordionContent>
-            </AccordionItem>
-
-            <AccordionItem value='location'>
-              <AccordionTrigger className='px-4'>
-                <div className='flex items-center gap-2'>
-                  <span className='size-3 rounded-full bg-emerald-500' />
+            <AccordionItem value="location">
+              <AccordionTrigger className="px-4">
+                <div className="flex items-center gap-2">
+                  <span className="size-3 rounded-full bg-emerald-500" />
                   Location
                 </div>
               </AccordionTrigger>
-              <AccordionContent className='px-4 text-sm text-zinc-600 flex flex-col gap-2'>
-                <span className='flex items-center gap-2'>
-                  <LinkIcon className='size-4 text-zinc-400' />
+              <AccordionContent className="px-4 text-sm text-zinc-600 flex flex-col gap-2">
+                <span className="flex items-center gap-2">
+                  <LinkIcon className="size-4 text-zinc-400" />
                   Venue link or address here.
                 </span>
               </AccordionContent>

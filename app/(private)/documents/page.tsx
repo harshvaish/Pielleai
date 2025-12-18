@@ -47,32 +47,97 @@ type ContractsTableFilters = {
 type ContractCardStatus = ContractFilterStatus | "missing-info" | "cancelled";
 type ActionVariant = "default" | "secondary" | "outline" | "ghost";
 
-type ContractCard = {
-  id: string;
+// type ContractCard = {
+//   id: string;
+//   status: ContractCardStatus;
+//   statusLabel: string;
+//   statusDate: string;
+//   stageName: string;
+//   artistName: string;
+//   venueName: string;
+//   date: string;
+//   time: string;
+//   resend?: boolean;
+//   actionLabel: string;
+//   actionVariant: ActionVariant;
+//   href: string;
+//     artistId: number;
+//     venueId: number;
+//     eventId: number;
+//     contractDate: string;
+//     fileUrl: string;
+//     fileName: string;
+//     recipientEmail: string;
+//     ccEmails: string[];
+//     note: string;
+// };
+
+export type ContractCard = {
+  id: number;
   status: ContractCardStatus;
   statusLabel: string;
-  statusDate: string;
-  artistHandle: string;
-  artistName: string;
   venueName: string;
+  artistName: string;
   date: string;
-  time: string;
-  resend?: boolean;
-  actionLabel: string;
+  statusDate: string;
+  stageName: string;
+  contractDate: string;
+  createdAt: string;
+  fileUrl: string | null;
+  fileName: string | null;
+  recipientEmail: string | null;
   actionVariant: ActionVariant;
-  href: string;
-  payload: {
-    artistId: number;
-    venueId: number;
-    eventId: number;
-    contractDate: string;
-    fileUrl: string;
-    fileName: string;
-    recipientEmail: string;
-    ccEmails: string[];
-    status: ContractCardStatus;
-    note: string;
+  time: string;
+  artist: {
+    id: number;
+    name: string;
+    surname: string;
+    stageName: string;
+    avatarUrl: string | null;
+    slug: string;
+    status: string;
+    tourManagerEmail: string | null;
+    tourManagerName: string | null;
+    tourManagerSurname: string | null;
+    tourManagerPhone: string | null;
   };
+
+  venue: {
+    id: number;
+    name: string;
+    address: string;
+    company: string | null;
+    vatCode: string | null;
+    avatarUrl: string | null;
+    slug: string;
+    status: string;
+  };
+
+  event: {
+    id: number;
+    availabilityId: number;
+    status: string;
+    eventType: string | null;
+    paymentDate: string | null;
+    depositCost: string | null;
+    transportCost: string | null;
+    totalFee: string | null;
+    tourManagerEmail: string | null;
+    payrollConsultantEmail: string | null;
+  };
+
+  ccs: string[];
+
+  history: {
+    id: number;
+    fromStatus: BackendContractStatus | null;
+    toStatus: BackendContractStatus | null;
+    fileUrl: string | null;
+    fileName: string | null;
+    note: string | null;
+    changedByUserId: string | null;
+    createdAt: string;
+  }[];
 };
 
 /* -------------------------------------------------------
@@ -161,43 +226,85 @@ function mapStatus(status: BackendContractStatus): ContractCardStatus {
 /* -------------------------------------------------------
    BACKEND → UI CARD MAPPER (FIX #2)
 --------------------------------------------------------*/
-
 function mapContract(c: any): ContractCard {
   const uiStatus = mapStatus(c.status as BackendContractStatus);
-
+console.log(c, "ccccccccccccccccccccccccccc")
   return {
-    id: String(c.id),
+    id: c.id,
+
     status: uiStatus,
     statusLabel: uiStatus,
-    statusDate: new Date(c.createdAt).toLocaleDateString("it-IT"),
 
-    artistHandle: `@${c.artist.stageName}`,
-    artistName: `${c.artist.name} ${c.artist.surname}`,
     venueName: c.venue.name,
+    artistName: `${c.artist.name} ${c.artist.surname}`,
+    stageName: `@${c.artist.stageName}`,
 
     date: new Date(c.contractDate).toLocaleDateString("it-IT"),
     time: "—",
 
-    actionLabel: "Modifica",
-    actionVariant: "outline",
-    href: `/documents/${c.id}`,
+    statusDate: new Date(c.createdAt).toLocaleDateString("it-IT"),
+    contractDate: c.contractDate,
+    createdAt: c.createdAt,
 
-    payload: {
-      artistId: c.artist.id,
-      venueId: c.venue.id,
-      eventId: c.event.id,
-      contractDate: c.contractDate,
-      fileUrl: c.fileUrl,
-      fileName: c.fileName,
-      recipientEmail: c.recipientEmail,
-      ccEmails: c.ccs ?? [],
-      status: uiStatus, // ✅ FIX: UI status, not backend status
-      note:
-        c.history?.[0]?.note ??
-        "Initial contract created by admin before artist signature.",
+    fileUrl: c.fileUrl ?? null,
+    fileName: c.fileName ?? null,
+    recipientEmail: c.recipientEmail ?? null,
+
+    actionVariant: "outline",
+
+    artist: {
+      id: c.artist.id,
+      name: c.artist.name,
+      surname: c.artist.surname,
+      stageName: c.artist.stageName,
+      avatarUrl: c.artist.avatarUrl ?? null,
+      slug: c.artist.slug,
+      status: c.artist.status,
+      tourManagerEmail: c.artist.tourManagerEmail ?? null,
+      tourManagerName: c.artist.tourManagerName ?? null,
+      tourManagerSurname: c.artist.tourManagerSurname ?? null,
+      tourManagerPhone: c.artist.tourManagerPhone ?? null,
     },
+
+    venue: {
+      id: c.venue.id,
+      name: c.venue.name,
+      address: c.venue.address,
+      company: c.venue.company ?? null,
+      vatCode: c.venue.vatCode ?? null,
+      avatarUrl: c.venue.avatarUrl ?? null,
+      slug: c.venue.slug,
+      status: c.venue.status,
+    },
+
+    event: {
+      id: c.event.id,
+      availabilityId: c.event.availabilityId,
+      status: c.event.status,
+      eventType: c.event.eventType ?? null,
+      paymentDate: c.event.paymentDate ?? null,
+      depositCost: c.event.depositCost ?? null,
+      transportCost: c.event.transportCost ?? null,
+      totalFee: c.event.totalFee ?? null,
+      tourManagerEmail: c.event.tourManagerEmail ?? null,
+      payrollConsultantEmail: c.event.payrollConsultantEmail ?? null,
+    },
+
+    ccs: c.ccs ?? [],
+
+    history: (c.history ?? []).map((h: any) => ({
+      id: h.id,
+      fromStatus: h.fromStatus ?? null,
+      toStatus: h.toStatus ?? null,
+      fileUrl: h.fileUrl ?? null,
+      fileName: h.fileName ?? null,
+      note: h.note ?? null,
+      changedByUserId: h.changedByUserId ?? null,
+      createdAt: h.createdAt,
+    })),
   };
 }
+
 
 /* -------------------------------------------------------
    PAGE
@@ -239,7 +346,7 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
       case "signed":
         return ["signed"];
       case "refused":
-        return["declined"]
+        return ["declined"];
       case "error":
       case "archived":
         return ["voided"];
@@ -257,13 +364,13 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
   });
 
   let contracts: ContractCard[] = api.data.map(mapContract);
-
+console.log(contracts, "contracts--------")
   if (selectedStatus !== "all") {
     contracts = contracts.filter((c) => c.status === selectedStatus);
   }
 
   const totalPages = api.totalPages;
-  
+
   /* -------------------------------------------------------
      RENDER
   --------------------------------------------------------*/
@@ -302,7 +409,10 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
                 },
               }}
             >
-              Ordina <span className="text-zinc-400">{sort === "desc" ? "Più recente" : "Meno recente"}</span>
+              Ordina{" "}
+              <span className="text-zinc-400">
+                {sort === "desc" ? "Più recente" : "Meno recente"}
+              </span>
               <ChevronDown className="size-4 ml-1" />
             </Link>
           </Button>
@@ -318,68 +428,69 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
         <div className="max-h-full flex flex-col gap-3 overflow-auto">
           {contracts.map((contract) => {
             const s = STATUS_STYLES[contract.status];
-            
+
             return (
-              <Link href={{
-                pathname: `/documents/${contract.id}`,
-                query: {
-                  data: encodeURIComponent(JSON.stringify(contract.payload)),
-                },        
-              }}  key={contract.id}
->
-
-              <div
-                className="grid grid-cols-[minmax(160px,200px)_1fr_auto] gap-4 md:gap-6 items-center bg-white border border-zinc-100 rounded-2xl p-4"
+              <Link
+                href={{
+                  pathname: `/documents/${contract.id}`,
+                  query: {
+                    data: encodeURIComponent(JSON.stringify(contract)),
+                  },
+                }}
+                key={contract.id}
               >
-                {/* Status Badge */}
-                <div className="flex flex-col gap-3">
-                  <Badge
-                    variant="outline"
-                    className={`w-max gap-2 px-3 py-1.5 text-xs font-semibold border ${s.badgeBorder} ${s.badgeBg}`}
-                  >
-                    <span className={`h-2 w-2 rounded-full ${s.dot}`} />
-                    {contract.status}
-                  </Badge>
-                  <div className="text-xs text-zinc-500">
-                    Status changed on {contract.statusDate}
-                  </div>
-                </div>
-
-                {/* Info */}
-                <div className="flex flex-col gap-3">
-                  <div className="flex flex-wrap items-center gap-3 text-sm text-zinc-700">
-                    <span className="font-semibold text-black">
-                      {contract.artistHandle}
-                    </span>
-                    <span className="text-zinc-500">{contract.artistName}</span>
-                    <span className="flex items-center gap-1 text-zinc-500">
-                      <MapPin className="size-4 text-zinc-400" />{" "}
-                      {contract.venueName}
-                    </span>
-                    <span className="flex items-center gap-1 text-zinc-500">
-                      <CalendarDays className="size-4 text-zinc-400" />{" "}
-                      {contract.date}
-                    </span>
-                    <span className="flex items-center gap-1 text-zinc-500">
-                      <Clock className="size-4 text-zinc-400" /> {contract.time}
-                    </span>
+                <div className="grid grid-cols-[minmax(160px,200px)_1fr_auto] gap-4 md:gap-6 items-center bg-white border border-zinc-100 rounded-2xl p-4">
+                  {/* Status Badge */}
+                  <div className="flex flex-col gap-3">
+                    <Badge
+                      variant="outline"
+                      className={`w-max gap-2 px-3 py-1.5 text-xs font-semibold border ${s.badgeBorder} ${s.badgeBg}`}
+                    >
+                      <span className={`h-2 w-2 rounded-full ${s.dot}`} />
+                      {contract.status}
+                    </Badge>
+                    <div className="text-xs text-zinc-500">
+                      Status changed on {contract.statusDate}
+                    </div>
                   </div>
 
-                  <div className="flex items-center gap-4 text-xs font-semibold text-zinc-600">
-                    <span className="flex items-center gap-2">
-                      <FileText className="size-4 text-zinc-400" /> Contract
-                    </span>
-                    <span className="flex items-center gap-1 text-emerald-700 underline">
-                      Contract.pdf
-                    </span>
-                  </div>
-                </div>
+                  {/* Info */}
+                  <div className="flex flex-col gap-3">
+                    <div className="flex flex-wrap items-center gap-3 text-sm text-zinc-700">
+                      <span className="font-semibold text-black">
+                        {contract.stageName}
+                      </span>
+                      <span className="text-zinc-500">
+                        {contract.artistName}
+                      </span>
+                      <span className="flex items-center gap-1 text-zinc-500">
+                        <MapPin className="size-4 text-zinc-400" />{" "}
+                        {contract.venueName}
+                      </span>
+                      <span className="flex items-center gap-1 text-zinc-500">
+                        <CalendarDays className="size-4 text-zinc-400" />{" "}
+                        {contract.date}
+                      </span>
+                      <span className="flex items-center gap-1 text-zinc-500">
+                        <Clock className="size-4 text-zinc-400" />{" "}
+                        {contract.time}
+                      </span>
+                    </div>
 
-                {/* Actions */}
+                    <div className="flex items-center gap-4 text-xs font-semibold text-zinc-600">
+                      <span className="flex items-center gap-2">
+                        <FileText className="size-4 text-zinc-400" /> Contract
+                      </span>
+                      <span className="flex items-center gap-1 text-emerald-700 underline">
+                        Contract.pdf
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Actions */}
                   <ChevronRight className="size-4" />
-              </div>
+                </div>
               </Link>
-
             );
           })}
         </div>

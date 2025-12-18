@@ -1633,7 +1633,7 @@ export default function EventForm({
                           height={16}
                         />
 
-                        <span className="text-sm font-medium">Venue</span>
+                        <span className="text-sm font-medium">Locale</span>
                       </div>
                     </AccordionTrigger>
 
