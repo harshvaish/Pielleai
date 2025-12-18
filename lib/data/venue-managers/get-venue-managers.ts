@@ -14,7 +14,8 @@ export async function getVenueManagers(): Promise<VenueManagerSelectData[]> {
         profileId: profiles.id,
         avatarUrl: profiles.avatarUrl,
         name: profiles.name,
-        surname: profiles.surname,
+        surname: profiles.surname
+
       })
       .from(users)
       .innerJoin(profiles, eq(users.id, profiles.userId))
