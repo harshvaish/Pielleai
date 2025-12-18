@@ -14,15 +14,17 @@ import {
   events,
 } from '../../../drizzle/schema';
 
+import { artistAvailabilities } from '@/lib/database/schema';
+
 // ----- constants -----
-export const CONTRACT_STATUS = ['draft', 'queued', 'sent', 'viewed', 'signed', 'voided','declined'] as const;
+export const CONTRACT_STATUS = ['draft', 'queued', 'sent', 'viewed', 'signed', 'voided', 'declined'] as const;
 export type ContractStatus = (typeof CONTRACT_STATUS)[number];
 
 export type ContractListFilters = {
   currentPage?: number | null;
   status?: Array<ContractStatus | 'all'>;
   startDate?: string | null; // YYYY-MM-DD
-  endDate?: string | null;   // YYYY-MM-DD
+  endDate?: string | null; // YYYY-MM-DD
   sort?: 'asc' | 'desc';
 };
 
@@ -104,11 +106,12 @@ export async function getContracts(
           avatarUrl: artists.avatarUrl,
           status: artists.status,
           slug: artists.slug,
-          tourManagerPhone:artists.tourManagerPhone,
-          tourManagerName:artists.tourManagerName,
-          tourManagerEmail:artists.tourManagerEmail,
-          tourManagerSurname:artists.tourManagerSurname
+          tourManagerPhone: artists.tourManagerPhone,
+          tourManagerName: artists.tourManagerName,
+          tourManagerEmail: artists.tourManagerEmail,
+          tourManagerSurname: artists.tourManagerSurname,
         },
+
         venue: {
           id: venues.id,
           name: venues.name,
@@ -116,27 +119,41 @@ export async function getContracts(
           status: venues.status,
           slug: venues.slug,
           avatarUrl: venues.avatarUrl,
-          vatCode:venues.vatCode,
-          company:venues.company
+          vatCode: venues.vatCode,
+          company: venues.company,
         },
+
         event: {
           id: events.id,
           status: events.status,
-          availabilityId:events.availabilityId,
-          depositCost:events.depositCost,
-          tourManagerEmail:events.tourManagerEmail,
-          eventStatus:events.status,
-          transportCost:events.transportationsCost,
-          totalFee:events.totalCost,
-          payrollConsultantEmail:events.payrollConsultantEmail,
-          eventType:events.eventType,
-          paymentDate:events.paymentDate
+          availabilityId: events.availabilityId,
+          depositCost: events.depositCost,
+          tourManagerEmail: events.tourManagerEmail,
+          eventStatus: events.status,
+          transportCost: events.transportationsCost,
+          totalFee: events.totalCost,
+          payrollConsultantEmail: events.payrollConsultantEmail,
+          eventType: events.eventType,
+          paymentDate: events.paymentDate,
+        },
+
+        // ✅ populated availability like getEvents
+        availability: {
+          id: artistAvailabilities.id,
+          artistId: artistAvailabilities.artistId,
+          startDate: artistAvailabilities.startDate,
+          endDate: artistAvailabilities.endDate,
+          status: artistAvailabilities.status,
         },
       })
       .from(contracts)
       .innerJoin(artists, eq(contracts.artistId, artists.id))
       .innerJoin(venues, eq(contracts.venueId, venues.id))
       .innerJoin(events, eq(contracts.eventId, events.id))
+
+      // ✅ LEFT JOIN so contracts still return even if availabilityId is null
+      .leftJoin(artistAvailabilities, eq(events.availabilityId, artistAvailabilities.id))
+
       .where(filters)
       .orderBy(sort === 'asc' ? contracts.createdAt : desc(contracts.createdAt));
 
@@ -146,7 +163,7 @@ export async function getContracts(
     }
 
     const rows = await baseQuery;
-    const contractIds = rows.map((r) => r.id);
+    const contractIds = rows.map((r: any) => r.id);
 
     const [historyRows, ccsRows, [{ total }]] = await Promise.all([
       contractIds.length
@@ -185,12 +202,12 @@ export async function getContracts(
       const arr = historyByContract.get(h.contractId) ?? [];
       arr.push({
         id: h.id,
-        fromStatus: h.fromStatus as ContractStatus,
-        toStatus: h.toStatus as ContractStatus,
-        fileUrl: h.fileUrl,
-        fileName: h.fileName,
-        note: h.note,
-        changedByUserId: h.changedByUserId,
+        fromStatus: (h.fromStatus ?? null) as ContractStatus | null,
+        toStatus: (h.toStatus ?? null) as ContractStatus | null,
+        fileUrl: h.fileUrl ?? null,
+        fileName: h.fileName ?? null,
+        note: h.note ?? null,
+        changedByUserId: h.changedByUserId ?? null,
         createdAt: h.createdAt,
       });
       historyByContract.set(h.contractId, arr);
@@ -210,7 +227,7 @@ export async function getContracts(
     }));
 
     const totalPages = isPaginated ? Math.max(1, Math.ceil(Number(total ?? 0) / limit)) : 1;
-
+    console.log(data,'sssssssss')
     return {
       data,
       totalPages,

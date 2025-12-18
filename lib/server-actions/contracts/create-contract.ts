@@ -278,7 +278,7 @@ export const createContract = async (
       if (totalCost !== null) eventPatch.totalCost = totalCost;
 
       const upfrontPayment = toNumericString(data.upfrontPayment);
-      if (upfrontPayment !== null) eventPatch.artistUpfrontCost = upfrontPayment;
+      if (upfrontPayment !== null) eventPatch.depositCost = upfrontPayment;
 
       if (data.paymentDate) {
         eventPatch.paymentDate = toISOStringOrThrow(data.paymentDate, 'Data pagamento non valida.');
