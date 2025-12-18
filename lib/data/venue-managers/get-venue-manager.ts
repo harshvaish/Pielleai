@@ -72,6 +72,7 @@ export async function getVenueManager(uid: string): Promise<VenueManagerData<Ven
           company: venues.company,
           taxCode: venues.taxCode,
           capacity: venues.capacity,
+          vatCode: venues.vatCode
         })
         .from(venues)
         .where(eq(venues.managerProfileId, user.profileId)),
