@@ -1397,10 +1397,10 @@ export default function EventForm({
                 variant="outline"
                 onClick={handleGenerateContract}
               >
-                Generate
+                {event.contract ? "Regenerate" : "Generate"}
               </Button>
 
-              <Button type="button" size="sm" className="max-w-max">
+              <Button type="button" size="sm" className="max-w-max" disabled={!event.contract}>
                 {" "}
                 Send to DocuSign
               </Button>
