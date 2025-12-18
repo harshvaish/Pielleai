@@ -42,7 +42,7 @@ import {
 } from "@/components/ui/accordion";
 import { useRouter } from "next/navigation";
 import { createContract } from "@/lib/server-actions/contracts/create-contract";
-import { editContract } from "@/lib/server-actions/contracts/update-event";
+import { editContract } from "@/lib/server-actions/contracts/update-contract";
 
 type EventForm = {
   artists: ArtistSelectData[];

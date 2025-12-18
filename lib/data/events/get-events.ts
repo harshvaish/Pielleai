@@ -198,6 +198,8 @@ export async function getEvents(
 
         postDateFeedback: events.postDateFeedback,
         bordereau: events.bordereau,
+        eventType:events.eventType,
+        paymentDate:events.paymentDate
       })
       .from(events)
       .innerJoin(artistAvailabilities, eq(events.availabilityId, artistAvailabilities.id))
