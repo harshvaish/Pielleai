@@ -131,6 +131,7 @@ console.log(event, "event in update form");
             moCoordinators={moCoordinators}
             event={event}
             mode="update"
+            closeDialog={closeDialog}
           />
 
           <div className='flex justify-between'>
