@@ -27,7 +27,8 @@ export async function getVenues(managerProfileId?: number): Promise<VenueSelectD
         avatarUrl: venues.avatarUrl,
         name: venues.name,
         address: venues.address,
-
+        company:venues.company,
+        vatCode:venues.vatCode,
         manager: {
           id: users.id,
           profileId: profiles.id,

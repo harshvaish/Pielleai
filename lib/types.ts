@@ -349,7 +349,7 @@ export type VenueManagerTableData = Pick<
 
 export type VenueManagerSelectData = Pick<
   VenueManagerData,
-  'id' | 'profileId' | 'avatarUrl' | 'name' | 'surname' | 'status'
+  'id' | 'profileId' | 'avatarUrl' | 'name' | 'surname' | 'status' 
 >;
 
 // venue
