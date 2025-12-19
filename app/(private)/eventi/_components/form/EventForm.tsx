@@ -1610,6 +1610,7 @@ export default function EventForm({
                             )}
                           </div>
                         </div>
+                        
                       </div>
                     </AccordionContent>
                   </AccordionItem>

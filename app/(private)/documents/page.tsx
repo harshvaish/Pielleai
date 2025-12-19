@@ -88,6 +88,14 @@ export type ContractCard = {
   recipientEmail: string | null;
   actionVariant: ActionVariant;
   time: string;
+  availability: {
+    id: number;
+    artistId: number;
+    startDate: string;
+    endDate: string;
+    status: string;
+  } | null;
+  
   artist: {
     id: number;
     name: string;
@@ -228,7 +236,6 @@ function mapStatus(status: BackendContractStatus): ContractCardStatus {
 --------------------------------------------------------*/
 function mapContract(c: any): ContractCard {
   const uiStatus = mapStatus(c.status as BackendContractStatus);
-console.log(c, "ccccccccccccccccccccccccccc")
   return {
     id: c.id,
 
@@ -265,6 +272,15 @@ console.log(c, "ccccccccccccccccccccccccccc")
       tourManagerSurname: c.artist.tourManagerSurname ?? null,
       tourManagerPhone: c.artist.tourManagerPhone ?? null,
     },
+    availability: c.availability
+    ? {
+        id: c.availability.id,
+        artistId: c.availability.artistId,
+        startDate: c.availability.startDate,
+        endDate: c.availability.endDate,
+        status: c.availability.status,
+      }
+    : null,
 
     venue: {
       id: c.venue.id,

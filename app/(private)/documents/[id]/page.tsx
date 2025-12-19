@@ -1,9 +1,3 @@
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -33,6 +27,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import BackButton from "@/app/_components/BackButton";
+import ContractDetailClient from "./ContractDetailClient";
+import { useMemo } from "react";
+import { GREEN_TICK_ICON } from "@/lib/constants";
 
 type ContractDetailPageProps = {
   params?: Promise<{ id: string }>;
@@ -41,15 +38,15 @@ type ContractDetailPageProps = {
     data?: string; // 👈 ADD THIS
   }>;
 };
-type ContractHistoryItem = {
-  id: string;
-  title: string;
-  description?: string;
+
+type HistoryItem = {
   date: string;
   time: string;
-  active: boolean;
-  link?: string; // ✅ OPTIONAL
+  title: string;
+  description?: string;
+  type: "archived" | "success";
 };
+
 
 type ContractDetailStatus =
   | "missing"
@@ -255,7 +252,6 @@ export default async function ContractDetailPage({
   const sp = await searchParams;
   if (!sp?.data) notFound();
   const payload = JSON.parse(decodeURIComponent(sp.data));
-  console.log(payload, "payload--------------");
   const stage = (sp?.stage as ContractDetailStatus | undefined) ?? "missing";
   const flow = FLOW_STATES[stage] ?? FLOW_STATES["missing"];
   const statusLabel = flow.statusLabel;
@@ -268,6 +264,27 @@ export default async function ContractDetailPage({
     { value: "error", label: "Error" },
     { value: "archived", label: "Archived" },
   ];
+
+  const historyData: HistoryItem[] = Array.isArray(payload.history)
+  ? payload.history.map((h: any) => {
+      const createdAt = new Date(h.createdAt);
+
+      return {
+        date: createdAt.toLocaleDateString("it-IT"),
+        time: createdAt.toLocaleTimeString("en-US", {
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: true,
+        }),
+        title: h.fromStatus
+          ? `Status changed from "${h.fromStatus}" to "${h.toStatus}"`
+          : "Contract created",
+        description: h.note ?? "No description available",
+        type: h.toStatus === "voided" ? "archived" : "success",
+      };
+    })
+  : [];
+
   console.log(payload, "payload-------------------------");
   return (
     <div className="h-full w-full bg-zinc-50 px-4 py-6 md:p-6 flex flex-col gap-6">
@@ -450,14 +467,61 @@ export default async function ContractDetailPage({
             </div>
 
             <div className="flex flex-col gap-4">
-              {payload.history.map((h) => (
-                <div key={h.id} className="text-sm">
-                  <div className="font-medium">{h.note ?? "Status change"}</div>
-                  <div className="text-xs text-zinc-500">
-                    {new Date(h.createdAt).toLocaleString("it-IT")}
-                  </div>
-                </div>
-              ))}
+                {historyData.map((item, index) => {
+                                    const isLast = index === historyData.length - 1;
+              
+                                    return (
+                                      <div
+                                        key={index}
+                                        className="grid grid-cols-[60px_1fr] gap-4 relative"
+                                      >
+                                        {/* LEFT: DATE + TIME */}
+                                        <div className="flex flex-col items-center text-center leading-tight">
+                                          <span className="text-xs font-medium text-zinc-600">
+                                            {item.date}
+                                          </span>
+                                          <span className="text-xs text-zinc-500">
+                                            {item.time}
+                                          </span>
+                                        </div>
+              
+                                        {/* RIGHT SIDE BLOCK */}
+                                        <div className="relative pl-6">
+                                          {/* Timeline vertical line */}
+                                          {!isLast && (
+                                            <div className="absolute left-[6px] top-4 bottom-[-2px] w-[0.5px] bg-green-600/70"></div>
+                                          )}
+              
+                                          {/* Status dot */}
+                                          <div className="absolute left-0 top-1">
+                                            {item.type === "archived" ? (
+                                              // Black outlined circle (same as screenshot)
+                                              <div className="w-3 h-3 border border-zinc-700 rounded-full bg-white"></div>
+                                            ) : (
+                                              // Green Tick Icon
+                                              <img
+                                                src={GREEN_TICK_ICON}
+                                                width={12}
+                                                height={12}
+                                                alt="Success"
+                                                className="object-contain"
+                                              />
+                                            )}
+                                          </div>
+              
+                                          {/* Title */}
+                                          <div className="text-sm font-medium text-zinc-800">
+                                            {item.title}
+                                          </div>
+              
+                                          {/* Description */}
+                                          <div className="text-xs text-zinc-500 leading-relaxed mt-1">
+                                            {item.description}
+                                          </div>
+                                        </div>
+                                      </div>
+                                    );
+                                  })}
             </div>
           </CardContent>
         </Card>
@@ -469,131 +533,7 @@ export default async function ContractDetailPage({
             <div className="text-lg font-semibold">Details</div>
           </div>
 
-          <Accordion
-            type="multiple"
-            defaultValue={[
-              "artist",
-              "venue",
-              "event-date",
-              "cachet",
-              "special",
-              "technical",
-              "location",
-            ]}
-            className="divide-y divide-zinc-100 rounded-xl border border-zinc-100"
-          >
-            <AccordionItem value="artist">
-              <AccordionTrigger className="px-4">
-                <div className="flex items-center gap-2">
-                  <span className="size-3 rounded-full bg-emerald-500" />
-                  Artist
-                </div>
-              </AccordionTrigger>
-              <AccordionContent className="px-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="flex flex-col gap-2">
-                    <label className="text-sm text-zinc-600">Artista</label>
-                    <Input defaultValue={mockContract.artistName} />
-                  </div>
-                  <div className="flex flex-col gap-2">
-                    <label className="text-sm text-zinc-600">Email</label>
-                    <Input defaultValue="bob.johnson@gmail.com" />
-                  </div>
-                  <div className="flex flex-col gap-2">
-                    <label className="text-sm text-zinc-600">
-                      Tour Manager
-                    </label>
-                    <Input
-                      defaultValue={
-                        flow.requireTourManager ? "" : mockContract.tourManager
-                      }
-                      aria-invalid={flow.requireTourManager}
-                      className={
-                        flow.requireTourManager
-                          ? "border-red-300 focus-visible:ring-destructive/30"
-                          : ""
-                      }
-                      placeholder="Email"
-                    />
-                    {flow.requireTourManager && (
-                      <span className="text-xs text-red-500">
-                        Campo obbligatorio
-                      </span>
-                    )}
-                  </div>
-                  <div className="flex flex-col gap-2">
-                    <label className="text-sm text-zinc-600">
-                      Consulente paghe e contributi
-                    </label>
-                    <Input
-                      defaultValue={
-                        flow.requireTourManager
-                          ? ""
-                          : mockContract.consultantEmail
-                      }
-                      aria-invalid={flow.requireTourManager}
-                      className={
-                        flow.requireTourManager
-                          ? "border-red-300 focus-visible:ring-destructive/30"
-                          : ""
-                      }
-                      placeholder="Email"
-                    />
-                  </div>
-                  <div className="flex flex-col gap-2 md:col-span-2">
-                    <label className="text-sm text-zinc-600">
-                      Amministrazione
-                    </label>
-                    <Input defaultValue={mockContract.adminEmail} />
-                  </div>
-                </div>
-              </AccordionContent>
-            </AccordionItem>
-
-            <AccordionItem value="venue">
-              <AccordionTrigger className="px-4">
-                <div className="flex items-center gap-2">
-                  <span className="size-3 rounded-full bg-emerald-500" />
-                  Venue
-                </div>
-              </AccordionTrigger>
-              <AccordionContent className="px-4 text-sm text-zinc-600">
-                <div className="flex items-center gap-2 text-zinc-700">
-                  <MapPin className="size-4 text-zinc-400" />
-                  {mockContract.venueName}
-                </div>
-              </AccordionContent>
-            </AccordionItem>
-
-            <AccordionItem value="event-date">
-              <AccordionTrigger className="px-4">
-                <div className="flex items-center gap-2">
-                  <span className="size-3 rounded-full bg-emerald-500" />
-                  Event date
-                </div>
-              </AccordionTrigger>
-              <AccordionContent className="px-4 text-sm text-zinc-600">
-                <div className="flex flex-wrap items-center gap-3">
-                  <CalendarDays className="size-4 text-zinc-400" />
-                  {mockContract.date} — {mockContract.time}
-                </div>
-              </AccordionContent>
-            </AccordionItem>
-            <AccordionItem value="location">
-              <AccordionTrigger className="px-4">
-                <div className="flex items-center gap-2">
-                  <span className="size-3 rounded-full bg-emerald-500" />
-                  Location
-                </div>
-              </AccordionTrigger>
-              <AccordionContent className="px-4 text-sm text-zinc-600 flex flex-col gap-2">
-                <span className="flex items-center gap-2">
-                  <LinkIcon className="size-4 text-zinc-400" />
-                  Venue link or address here.
-                </span>
-              </AccordionContent>
-            </AccordionItem>
-          </Accordion>
+          <ContractDetailClient payload={payload} />
         </CardContent>
       </Card>
     </div>
