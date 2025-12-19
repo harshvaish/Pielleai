@@ -1,7 +1,8 @@
 // /docusign/docusignClient.js
-const docusign = require("docusign-esign");
-const fs = require("fs");
-const path = require("path");
+require('server-only');
+
+const fs = require('fs');
+const path = require('path');
 
 let cache = {
   token: null,
@@ -11,20 +12,33 @@ let cache = {
 };
 
 const now = () => Date.now();
-const env = (name, fallback) => process.env[name] || (fallback ? process.env[fallback] : undefined);
+const env = (name, fallback) =>
+  process.env[name] || (fallback ? process.env[fallback] : undefined);
+
+/**
+ * ✅ CRITICAL: runtime require so Next bundler doesn't crawl docusign-esign during build
+ * This avoids "Can't resolve 'ApiClient'" errors.
+ */
+function getDocusign() {
+  // eslint-disable-next-line no-eval
+  const req = eval('require');
+  return req('docusign-esign');
+}
 
 /** Load private key from env (B64) or from project root: ./private.key */
 function loadPrivateKeyBuffer() {
   if (process.env.DOCUSIGN_PRIVATE_KEY_B64) {
-    return Buffer.from(process.env.DOCUSIGN_PRIVATE_KEY_B64, "base64");
+    return Buffer.from(process.env.DOCUSIGN_PRIVATE_KEY_B64, 'base64');
   }
-  const keyPath = path.resolve(process.cwd(), "private.key");
+
+  const keyPath = path.resolve(process.cwd(), 'private.key');
   if (!fs.existsSync(keyPath)) {
     throw new Error(
-      `DocuSign private key not found. Expected at ${keyPath} or set DOCUSIGN_PRIVATE_KEY_B64.`
+      `DocuSign private key not found. Expected at ${keyPath} or set DOCUSIGN_PRIVATE_KEY_B64.`,
     );
   }
-  return Buffer.from(fs.readFileSync(keyPath, "utf8"), "utf8");
+
+  return Buffer.from(fs.readFileSync(keyPath, 'utf8'), 'utf8');
 }
 
 /** Get JWT access token and discover correct account baseUri (naX/euX/etc) */
@@ -33,15 +47,19 @@ async function getAccessTokenAndBaseUri() {
     return { accessToken: cache.token, baseUri: cache.baseUri };
   }
 
+  const docusign = getDocusign();
+
   const oauthClient = new docusign.ApiClient();
-  oauthClient.setBasePath(env("DOCUSIGN_BASE_PATH", "BASE_PATH") || "https://demo.docusign.net/restapi");
+  oauthClient.setBasePath(
+    env('DOCUSIGN_BASE_PATH', 'BASE_PATH') || 'https://demo.docusign.net/restapi',
+  );
 
   const jwt = await oauthClient.requestJWTUserToken(
-    env("DOCUSIGN_INTEGRATION_KEY", "INTEGRATION_KEY"),
-    env("DOCUSIGN_USER_ID", "USER_ID"),
-    ["signature"],
+    env('DOCUSIGN_INTEGRATION_KEY', 'INTEGRATION_KEY'),
+    env('DOCUSIGN_USER_ID', 'USER_ID'),
+    ['signature'],
     loadPrivateKeyBuffer(),
-    3600
+    3600,
   );
 
   const accessToken = jwt.body.access_token;
@@ -50,11 +68,12 @@ async function getAccessTokenAndBaseUri() {
   const userInfo = await oauthClient.getUserInfo(accessToken);
   const accounts = Array.isArray(userInfo.accounts) ? userInfo.accounts : [];
   const pickDefault =
-    accounts.find(a => a.isDefault === "true" || a.isDefault === true) || accounts[0];
+    accounts.find((a) => a.isDefault === 'true' || a.isDefault === true) || accounts[0];
 
   if (!pickDefault || !pickDefault.baseUri) {
-    throw new Error("Unable to resolve DocuSign account baseUri from getUserInfo().");
+    throw new Error('Unable to resolve DocuSign account baseUri from getUserInfo().');
   }
+
   const baseUri = pickDefault.baseUri; // e.g., https://na3.docusign.net
 
   cache.token = accessToken;
@@ -66,15 +85,16 @@ async function getAccessTokenAndBaseUri() {
 
 /** Build an EnvelopesApi client with proper Authorization + baseUri */
 async function getEnvelopesApi() {
+  const docusign = getDocusign();
   const { accessToken, baseUri } = await getAccessTokenAndBaseUri();
 
   const apiClient = new docusign.ApiClient();
   apiClient.setBasePath(`${baseUri}/restapi`);
-  apiClient.addDefaultHeader("Authorization", `Bearer ${accessToken}`);
+  apiClient.addDefaultHeader('Authorization', `Bearer ${accessToken}`);
 
   if (!cache.loggedOnce) {
     cache.loggedOnce = true;
-    console.log("[DocuSign] Using baseUri:", `${baseUri}/restapi`);
+    console.log('[DocuSign] Using baseUri:', `${baseUri}/restapi`);
   }
 
   return new docusign.EnvelopesApi(apiClient);
@@ -83,49 +103,59 @@ async function getEnvelopesApi() {
 /* ===================== TEMPLATE-BASED SENDING ===================== */
 
 function makeEnvelope({ name, email, company }) {
+  const docusign = getDocusign();
+
   const envDef = new docusign.EnvelopeDefinition();
-  envDef.templateId = env("DOCUSIGN_TEMPLATE_ID", "TEMPLATE_ID");
-  envDef.emailSubject = "Please sign your application";
+  envDef.templateId = env('DOCUSIGN_TEMPLATE_ID', 'TEMPLATE_ID');
+  envDef.emailSubject = 'Please sign your application';
 
   const textTab = docusign.Text.constructFromObject({
-    tabLabel: "company_name", // must match your template tab label
-    value: company || "",
+    tabLabel: 'company_name', // must match your template tab label
+    value: company || '',
   });
+
   const tabs = docusign.Tabs.constructFromObject({ textTabs: [textTab] });
 
   const signer = docusign.TemplateRole.constructFromObject({
     email,
     name,
-    roleName: "Applicant", // must match your template role
+    roleName: 'Applicant', // must match your template role
     tabs,
     // Do NOT set clientUserId for remote signing
   });
 
   envDef.templateRoles = [signer];
-  envDef.status = "sent"; // send immediately
+  envDef.status = 'sent'; // send immediately
   return envDef;
 }
 
 async function sendEnvelope({ name, email, company }) {
   const envelopesApi = await getEnvelopesApi();
   const envDef = makeEnvelope({ name, email, company });
-  const accountId = env("DOCUSIGN_ACCOUNT_ID", "ACCOUNT_ID");
-  const res = await envelopesApi.createEnvelope(accountId, { envelopeDefinition: envDef });
+  const accountId = env('DOCUSIGN_ACCOUNT_ID', 'ACCOUNT_ID');
+
+  const res = await envelopesApi.createEnvelope(accountId, {
+    envelopeDefinition: envDef,
+  });
+
   return { envelopeId: res.envelopeId };
 }
 
 /* ===================== RAW PDF UPLOAD SENDING ===================== */
 
-function makeSignHere({ documentId = "1", pageNumber = 1, x = 450, y = 650, anchorString }) {
+function makeSignHere({ documentId = '1', pageNumber = 1, x = 450, y = 650, anchorString }) {
+  const docusign = getDocusign();
+
   if (anchorString) {
     // Anchor-based placement (put {{SIGN_HERE}} or similar in the PDF text)
     return docusign.SignHere.constructFromObject({
       anchorString,
-      anchorUnits: "pixels",
-      anchorXOffset: "0",
-      anchorYOffset: "0",
+      anchorUnits: 'pixels',
+      anchorXOffset: '0',
+      anchorYOffset: '0',
     });
   }
+
   // Absolute placement (pixels) on a specific page
   return docusign.SignHere.constructFromObject({
     documentId,
@@ -145,43 +175,47 @@ function makeSignHere({ documentId = "1", pageNumber = 1, x = 450, y = 650, anch
  */
 async function sendPdfForSignature({
   pdfBuffer,
-  fileName = "document.pdf",
-  signer = { name: "", email: "" },
+  fileName = 'document.pdf',
+  signer = { name: '', email: '' },
   placement = { pageNumber: 1, x: 450, y: 650 },
 }) {
+  const docusign = getDocusign();
   const envelopesApi = await getEnvelopesApi();
 
   const document = new docusign.Document();
-  document.documentBase64 = pdfBuffer.toString("base64");
+  document.documentBase64 = pdfBuffer.toString('base64');
   document.name = fileName;
-  document.fileExtension = "pdf";
-  document.documentId = "1";
+  document.fileExtension = 'pdf';
+  document.documentId = '1';
 
-  const signHere = makeSignHere({ documentId: "1", ...placement });
+  const signHere = makeSignHere({ documentId: '1', ...placement });
   const tabs = docusign.Tabs.constructFromObject({ signHereTabs: [signHere] });
 
   const signerRole = new docusign.Signer();
   signerRole.email = signer.email;
   signerRole.name = signer.name;
-  signerRole.recipientId = "1";
-  signerRole.routingOrder = "1";
+  signerRole.recipientId = '1';
+  signerRole.routingOrder = '1';
   signerRole.tabs = tabs;
 
   const recipients = new docusign.Recipients();
   recipients.signers = [signerRole];
 
   const envDef = new docusign.EnvelopeDefinition();
-  envDef.emailSubject = "Please sign this document";
+  envDef.emailSubject = 'Please sign this document';
   envDef.documents = [document];
   envDef.recipients = recipients;
-  envDef.status = "sent";
+  envDef.status = 'sent';
 
-  const accountId = env("DOCUSIGN_ACCOUNT_ID", "ACCOUNT_ID");
-  const result = await envelopesApi.createEnvelope(accountId, { envelopeDefinition: envDef });
+  const accountId = env('DOCUSIGN_ACCOUNT_ID', 'ACCOUNT_ID');
+  const result = await envelopesApi.createEnvelope(accountId, {
+    envelopeDefinition: envDef,
+  });
+
   return { envelopeId: result.envelopeId };
 }
 
 module.exports = {
-  sendEnvelope,        // template-based
+  sendEnvelope, // template-based
   sendPdfForSignature, // raw PDF upload
 };
