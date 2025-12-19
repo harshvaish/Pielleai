@@ -4,6 +4,10 @@ const nextConfig: NextConfig = {
   // eslint: {
   //   ignoreDuringBuilds: true,
   // },
+  serverExternalPackages: ['docusign-esign'],
+  experimental: {
+    serverComponentsExternalPackages: ['docusign-esign'],
+  },
   images: {
     remotePatterns: [
       {
