@@ -227,7 +227,6 @@ export async function getContracts(
     }));
 
     const totalPages = isPaginated ? Math.max(1, Math.ceil(Number(total ?? 0) / limit)) : 1;
-    console.log(data,'sssssssss')
     return {
       data,
       totalPages,
