@@ -522,7 +522,7 @@ console.log(contracts, "contracts--------")
       {contracts.length > 0 && (
         <TablePagination
           totalPages={totalPages}
-          currentPage={1}
+          currentPage={currentPage}
           searchParams={sp ?? {}}
         />
       )}
