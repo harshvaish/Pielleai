@@ -1,7 +1,6 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import getSession from "@/lib/data/auth/get-session";
 import { getUserProfileIdCached } from "@/lib/cache/users";
@@ -9,14 +8,9 @@ import { hasRole, resolveNextPath } from "@/lib/utils";
 import {
   BadgeInfo,
   CalendarDays,
-  Download,
-  FileText,
   Mail,
   MapPin,
   Link as LinkIcon,
-  Phone,
-  Trash,
-  Upload,
   Users,
 } from "lucide-react";
 import { notFound, redirect } from "next/navigation";
@@ -30,6 +24,7 @@ import BackButton from "@/app/_components/BackButton";
 import ContractDetailClient from "./ContractDetailClient";
 import { useMemo } from "react";
 import { GREEN_TICK_ICON } from "@/lib/constants";
+import UplodPdf from "../_components/UploadPdf";
 
 type ContractDetailPageProps = {
   params?: Promise<{ id: string }>;
@@ -46,7 +41,6 @@ type HistoryItem = {
   description?: string;
   type: "archived" | "success";
 };
-
 
 type ContractDetailStatus =
   | "missing"
@@ -266,24 +260,24 @@ export default async function ContractDetailPage({
   ];
 
   const historyData: HistoryItem[] = Array.isArray(payload.history)
-  ? payload.history.map((h: any) => {
-      const createdAt = new Date(h.createdAt);
+    ? payload.history.map((h: any) => {
+        const createdAt = new Date(h.createdAt);
 
-      return {
-        date: createdAt.toLocaleDateString("it-IT"),
-        time: createdAt.toLocaleTimeString("en-US", {
-          hour: "2-digit",
-          minute: "2-digit",
-          hour12: true,
-        }),
-        title: h.fromStatus
-          ? `Status changed from "${h.fromStatus}" to "${h.toStatus}"`
-          : "Contract created",
-        description: h.note ?? "No description available",
-        type: h.toStatus === "voided" ? "archived" : "success",
-      };
-    })
-  : [];
+        return {
+          date: createdAt.toLocaleDateString("it-IT"),
+          time: createdAt.toLocaleTimeString("en-US", {
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: true,
+          }),
+          title: h.fromStatus
+            ? `Status changed from "${h.fromStatus}" to "${h.toStatus}"`
+            : "Contract created",
+          description: h.note ?? "No description available",
+          type: h.toStatus === "voided" ? "archived" : "success",
+        };
+      })
+    : [];
 
   console.log(payload, "payload-------------------------");
   return (
@@ -376,41 +370,7 @@ export default async function ContractDetailPage({
               <div className="text-sm font-semibold text-zinc-800">
                 Contract file
               </div>
-              {flow.warning && (
-                <div className="text-sm font-medium text-amber-600 bg-amber-50 border border-amber-100 rounded-xl px-3 py-2">
-                  {flow.warning}
-                </div>
-              )}
-              <div className="flex flex-wrap items-center gap-3">
-                {flow.hasFile && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    disabled={!flow.showDownload}
-                  >
-                    <FileText className="size-4 text-zinc-500" />
-                    {mockContract.downloadLabel}
-                  </Button>
-                )}
-                {flow.showDownload && (
-                  <Button variant="ghost" size="sm" className="text-zinc-600">
-                    <Download className="size-4" />
-                  </Button>
-                )}
-                {flow.showDelete && (
-                  <Button variant="ghost" size="sm" className="text-zinc-600">
-                    <Trash className="size-4" />
-                  </Button>
-                )}
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="h-12 rounded-full border-zinc-300 px-5 text-base font-semibold text-zinc-800 bg-white shadow-[0_1px_2px_rgba(16,24,40,0.05)]"
-                >
-                  <Upload className="size-5 text-zinc-700" />
-                  Upload
-                </Button>
-              </div>
+              <UplodPdf />
             </div>
 
             <Separator />
@@ -446,11 +406,6 @@ export default async function ContractDetailPage({
                 {payload?.artist?.tourManagerName || ""}{" "}
                 {payload?.artist?.tourManagerSurname || ""}
               </Badge>
-              {/* <span className="flex items-center gap-1">
-                <Phone className="size-4 text-zinc-400" />
-                {payload?.artist?.tourManagerPhone}{" "}
-              </span> */}
-        
               <Badge variant="outline">Administration</Badge>
               <span className="flex items-center gap-1">
                 <Mail className="size-4 text-zinc-400" />
@@ -467,61 +422,55 @@ export default async function ContractDetailPage({
             </div>
 
             <div className="flex flex-col gap-4">
-                {historyData.map((item, index) => {
-                                    const isLast = index === historyData.length - 1;
-              
-                                    return (
-                                      <div
-                                        key={index}
-                                        className="grid grid-cols-[60px_1fr] gap-4 relative"
-                                      >
-                                        {/* LEFT: DATE + TIME */}
-                                        <div className="flex flex-col items-center text-center leading-tight">
-                                          <span className="text-xs font-medium text-zinc-600">
-                                            {item.date}
-                                          </span>
-                                          <span className="text-xs text-zinc-500">
-                                            {item.time}
-                                          </span>
-                                        </div>
-              
-                                        {/* RIGHT SIDE BLOCK */}
-                                        <div className="relative pl-6">
-                                          {/* Timeline vertical line */}
-                                          {!isLast && (
-                                            <div className="absolute left-[6px] top-4 bottom-[-2px] w-[0.5px] bg-green-600/70"></div>
-                                          )}
-              
-                                          {/* Status dot */}
-                                          <div className="absolute left-0 top-1">
-                                            {item.type === "archived" ? (
-                                              // Black outlined circle (same as screenshot)
-                                              <div className="w-3 h-3 border border-zinc-700 rounded-full bg-white"></div>
-                                            ) : (
-                                              // Green Tick Icon
-                                              <img
-                                                src={GREEN_TICK_ICON}
-                                                width={12}
-                                                height={12}
-                                                alt="Success"
-                                                className="object-contain"
-                                              />
-                                            )}
-                                          </div>
-              
-                                          {/* Title */}
-                                          <div className="text-sm font-medium text-zinc-800">
-                                            {item.title}
-                                          </div>
-              
-                                          {/* Description */}
-                                          <div className="text-xs text-zinc-500 leading-relaxed mt-1">
-                                            {item.description}
-                                          </div>
-                                        </div>
-                                      </div>
-                                    );
-                                  })}
+              {historyData.map((item, index) => {
+                const isLast = index === historyData.length - 1;
+
+                return (
+                  <div
+                    key={index}
+                    className="grid grid-cols-[60px_1fr] gap-4 relative"
+                  >
+                    {/* LEFT: DATE + TIME */}
+                    <div className="flex flex-col items-center text-center leading-tight">
+                      <span className="text-xs font-medium text-zinc-600">
+                        {item.date}
+                      </span>
+                      <span className="text-xs text-zinc-500">{item.time}</span>
+                    </div>
+
+                    {/* RIGHT SIDE BLOCK */}
+                    <div className="relative pl-6">
+                      {!isLast && (
+                        <div className="absolute left-[6px] top-4 bottom-[-2px] w-[0.5px] bg-green-600/70"></div>
+                      )}
+
+                      <div className="absolute left-0 top-1">
+                        {item.type === "archived" ? (
+                          <div className="w-3 h-3 border border-zinc-700 rounded-full bg-white"></div>
+                        ) : (
+                          <img
+                            src={GREEN_TICK_ICON}
+                            width={12}
+                            height={12}
+                            alt="Success"
+                            className="object-contain"
+                          />
+                        )}
+                      </div>
+
+                      {/* Title */}
+                      <div className="text-sm font-medium text-zinc-800">
+                        {item.title}
+                      </div>
+
+                      {/* Description */}
+                      <div className="text-xs text-zinc-500 leading-relaxed mt-1">
+                        {item.description}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </CardContent>
         </Card>

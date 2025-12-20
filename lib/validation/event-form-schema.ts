@@ -222,6 +222,20 @@ ccEmails: z.array(z.boolean()).optional(),
   performance: z.boolean("Seleziona un'opzione valida."),
   postDateFeedback: z.boolean("Seleziona un'opzione valida."),
   bordereau: z.boolean("Seleziona un'opzione valida."),
+  contractDocument: z
+    .object(
+      {
+        url: z
+          .url('Inserisci un file valido.')
+          .refine(
+            (url) => url.startsWith(`${process.env.NEXT_PUBLIC_SUPABASE_URL}`),
+            'Campo non valido.',
+          ),
+        name: z.string("Seleziona un'opzione valida."),
+      },
+      "Seleziona un'opzione valida.",
+    )
+    .optional(),
 });
 
 export type EventFormSchema = z.infer<typeof eventFormSchema>;
