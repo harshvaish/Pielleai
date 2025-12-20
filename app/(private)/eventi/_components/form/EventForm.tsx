@@ -23,7 +23,7 @@ import { eventStatus } from "@/lib/database/schema";
 import { EventFormSchema } from "@/lib/validation/event-form-schema";
 import ArtistAvailabilitySelectWithCreate from "./ArtistAvailabilitySelectWithCreate";
 import EventStatusBadge from "@/app/(private)/_components/Badges/EventStatusBadge";
-import { useEffect, useMemo, useTransition } from "react";
+import { useEffect, useMemo, useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import {
   QUESTION_ICON,
@@ -52,6 +52,13 @@ type EventForm = {
   mode: "create" | "update";
   closeDialog?: () => void;
 };
+
+type UploadedFile = {
+  name: string;
+  file: File;
+};
+
+
 
 export default function EventForm({
   artists,
@@ -83,6 +90,8 @@ export default function EventForm({
   const hotelCost = watch("hotelCost");
   const restaurantCost = watch("restaurantCost");
   const formValues = watch();
+
+  const [uploadedFile, setUploadedFile] = useState<UploadedFile | null>(null);
 
   // Calculate artistNetCost
   const artistNetCost = useMemo(() => {
@@ -383,6 +392,7 @@ export default function EventForm({
       }
     });
   };
+
   return (
     <>
       <div className="flex justify-between items-center gap-2">
@@ -1427,113 +1437,77 @@ export default function EventForm({
 
           {/* CONTRACT FILE BLOCK */}
           <div className="flex flex-col gap-2">
-            <div className="text-sm font-semibold">Contract file</div>
+      <div className="text-sm font-semibold">Contract file</div>
 
-            <Controller
-              control={control}
-              name="signedContractDocument"
-              render={({ field }) => (
-                <>
-                  {/* -------- CASE: FILE EXISTS -------- */}
-                  {field.value?.name ? (
-                    <div className="flex items-center gap-3 w-fit">
-                      {/* FILE CHIP */}
-                      <div
-                        className="
-                flex items-center gap-2
-                bg-white 
-                border border-zinc-300 
-                rounded-full 
-                px-4 py-1.5 
-                shadow-sm
-                w-fit
-              "
-                      >
-                        {/* File icon from assets */}
-                        <img src={FILE_ICON} alt="file" className="w-4 h-4" />
-
-                        {/* File Name */}
-                        <span className="text-sm text-zinc-800 font-medium">
-                          {field.value.name}
-                        </span>
-                      </div>
-
-                      {/* DOWNLOAD */}
-                      <button
-                        type="button"
-                        onClick={() => window.open(field.value.url, "_blank")}
-                        className="text-zinc-600 hover:text-zinc-900"
-                      >
-                        <img
-                          src={DOWNLOAD_ICON}
-                          alt="download"
-                          className="w-4 h-4 opacity-80 hover:opacity-100"
-                        />
-                      </button>
-
-                      {/* DELETE */}
-                      <button
-                        type="button"
-                        onClick={() => field.onChange(undefined)}
-                        className="text-red-500 hover:text-red-700"
-                      >
-                        <img
-                          src={DELETE_ICON}
-                          alt="delete"
-                          className="w-4 h-4 opacity-80 hover:opacity-100"
-                        />
-                      </button>
-                    </div>
-                  ) : (
-                    /* -------- CASE: NO FILE YET -------- */
-                    <button
-                      type="button"
-                      className="
-              flex items-center gap-2 
-              bg-white 
-              border border-zinc-300 
-              rounded-xl 
-              px-4 py-2 
-              text-sm text-zinc-700 
-              shadow-sm
-              w-fit
-            "
-                      onClick={() =>
-                        document.getElementById("contract-upload")?.click()
-                      }
-                    >
-                      <img src={UPLOAD_ICON} alt="upload" className="w-4 h-4" />
-                      <span>Upload</span>
-
-                      {/* Hidden input */}
-                      <input
-                        id="contract-upload"
-                        type="file"
-                        accept="application/pdf"
-                        className="hidden"
-                        onChange={(e) => {
-                          const file = e.target.files?.[0];
-                          if (!file) return;
-
-                          field.onChange({
-                            name: file.name,
-                            url: URL.createObjectURL(file),
-                          });
-                        }}
-                      />
-                    </button>
-                  )}
-
-                  {/* ERROR MESSAGE */}
-                  {errors.signedContractDocument && (
-                    <p className="text-xs text-destructive mt-1">
-                      {errors.signedContractDocument.message as string}
-                    </p>
-                  )}
-                </>
-              )}
-            />
+      {/* FILE EXISTS */}
+      {uploadedFile ? (
+        <div className="flex items-center gap-3 w-fit">
+          {/* FILE CHIP */}
+          <div className="flex items-center gap-2 bg-white border border-zinc-300 rounded-full px-4 py-1.5 shadow-sm">
+            <img src={FILE_ICON} alt="file" className="w-4 h-4" />
+            <span className="text-sm font-medium">
+              {uploadedFile.name}
+            </span>
           </div>
+
+          {/* DOWNLOAD */}
+          <button
+            type="button"
+            onClick={() => {
+              const url = URL.createObjectURL(uploadedFile.file);
+              const a = document.createElement("a");
+              a.href = url;
+              a.download = uploadedFile.name;
+              document.body.appendChild(a);
+              a.click();
+              document.body.removeChild(a);
+              URL.revokeObjectURL(url);
+            }}
+            className="text-zinc-600 hover:text-zinc-900"
+          >
+            <img src={DOWNLOAD_ICON} alt="download" className="w-4 h-4" />
+          </button>
+
+          {/* DELETE */}
+          <button
+            type="button"
+            onClick={() => setUploadedFile(null)}
+            className="text-red-500 hover:text-red-700"
+          >
+            <img src={DELETE_ICON} alt="delete" className="w-4 h-4" />
+          </button>
+        </div>
+      ) : (
+        /* NO FILE */
+        <label
+          htmlFor="contract-upload"
+          className="flex items-center gap-2 bg-white border border-zinc-300 rounded-xl px-4 py-2 text-sm cursor-pointer shadow-sm w-fit"
+        >
+          <img src={UPLOAD_ICON} alt="upload" className="w-4 h-4" />
+          Upload
+
+          <input
+            id="contract-upload"
+            type="file"
+            accept="application/pdf"
+            className="hidden"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (!file) return;
+
+              setUploadedFile({
+                name: file.name,
+                file,
+              });
+
+              e.currentTarget.value = "";
+            }}
+          />
+        </label>
+      )}
+    </div>
+  
+
 
           {/* ACCORDION: DETAILS, CCS, HISTORY */}
           <Accordion
