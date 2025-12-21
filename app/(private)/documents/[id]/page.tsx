@@ -25,6 +25,7 @@ import ContractDetailClient from "./ContractDetailClient";
 import { useMemo } from "react";
 import { GREEN_TICK_ICON } from "@/lib/constants";
 import UplodPdf from "../_components/UploadPdf";
+import Image from "next/image";
 
 type ContractDetailPageProps = {
   params?: Promise<{ id: string }>;
@@ -246,6 +247,7 @@ export default async function ContractDetailPage({
   const sp = await searchParams;
   if (!sp?.data) notFound();
   const payload = JSON.parse(decodeURIComponent(sp.data));
+  console.log(payload?.artist?.avatarUrl, "payload-------------")
   const stage = (sp?.stage as ContractDetailStatus | undefined) ?? "missing";
   const flow = FLOW_STATES[stage] ?? FLOW_STATES["missing"];
   const statusLabel = flow.statusLabel;
@@ -301,7 +303,12 @@ export default async function ContractDetailPage({
             <div className="flex flex-wrap justify-between gap-4">
               <div className="flex flex-col gap-2">
                 <div className="flex items-center gap-3">
-                  <div className="size-11 rounded-full bg-zinc-200" />
+                <img
+  src={
+    payload?.artist?.avatarUrl}
+  alt="Avatar"
+  className="size-11 rounded-full object-cover bg-zinc-200"
+/>
                   <div className="flex flex-col">
                     <div className="font-semibold text-lg">
                       {payload.stageName}

@@ -3,17 +3,30 @@
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import html2pdf from "html2pdf.js";
+import { it } from 'date-fns/locale';
+import { format } from 'date-fns';
 
-
-// docusignDummyData.ts
 type ContractData = {
   artistName: string;
   artistStageName?: string;
+
+  venueCompanyName?: string;
+  venueAddress?: string;
+  venueVatNumber?: string;
   venueName: string;
+  venueCity: string;
+
+  eventType?: string;
   eventDate: string;
+  eventTime: string;
+
   totalFee: string;
   paymentDate: string;
+
+  signerName: string;
+  signerEmail: string;
 };
+
 
 export async function generateFilledContractHtml(
   data: ContractData
@@ -26,13 +39,27 @@ export async function generateFilledContractHtml(
   let html = await res.text();
 
   const replacements: Record<string, string> = {
+    // Artist
     ARTIST_NAME: data.artistName,
     ARTIST_STAGE_NAME: data.artistStageName ?? "",
+  
+    // Venue / Organizer
     VENUE_NAME: data.venueName,
+    VENUE_COMPANY_NAME: data.venueCompanyName ?? "",
+    VENUE_ADDRESS: data.venueAddress ?? "",
+    VENUE_VAT: data.venueVatNumber ?? "",
+    VENUE_CITY: data.venueCity ?? "",
+  
+    // Event
+    EVENT_TYPE: data.eventType ?? "",
     EVENT_DATE: data.eventDate,
+    EVENT_TIME: data.eventTime,
+  
+    // Financial (if later used in other pages)
     TOTAL_FEE: data.totalFee,
     PAYMENT_DATE: data.paymentDate,
   };
+  
 
   for (const [key, value] of Object.entries(replacements)) {
     html = html.replaceAll(`{{${key}}}`, value);
@@ -45,93 +72,83 @@ export async function generateFilledContractHtml(
   
 type EventType = {
   id: string;
+
   artist: {
     name: string;
     surname: string;
     stageName?: string;
   };
+
+  venue?: {
+    name: string;
+    company?: string;
+    address?: string;
+    vatCode?: string;
+  };
+
+  availability?: {
+    startDate?: Date | string;
+    endDate?: Date | string;
+  };
+
+  eventType?: string;
+
   contract: {
     id: string;
   };
 };
 
+
 export default function DocuSignButton({ event }: { event: EventType }) {
   const [loading, setLoading] = useState(false);
 console.log(event, "event-----------------------------");
-const CONTRACT_DATA = {
-  eventId: event?.id,
-  artistName: event?.artist?.name + " " + event?.artist?.surname,
-  artistStageName: event?.artist?.stageName,
-  venueName: "Milano Social Club",
-  eventDate: "18/12/2025",
+
+const getTime = (
+  start?: Date | string,
+  end?: Date | string
+): string => {
+  if (start) {
+    return format(new Date(start), "HH:mm", { locale: it });
+  }
+  if (end) {
+    return format(new Date(end), "HH:mm", { locale: it });
+  }
+  return "";
+};
+
+const CONTRACT_DATA: ContractData = {
+  artistName: `${event.artist.name} ${event.artist.surname}`,
+  artistStageName: event.artist.stageName,
+
+  venueCompanyName: event.venue?.company,
+  venueAddress: event.venue?.address,
+  venueVatNumber: event.venue?.vatCode,
+
+  venueName: event.venue?.name ?? "",
+  venueCity: event.venue?.address ?? "",
+
+  eventType: event.eventType,
+
+  eventDate: event.availability?.startDate
+    ? format(new Date(event.availability.startDate), "yyyy-MM-dd")
+    : "",
+
+  eventTime: getTime(
+    event.availability?.startDate,
+    event.availability?.endDate
+  ),
+
   totalFee: "€5,000",
   paymentDate: "25/12/2025",
+
   signerName: "Luca Bianchi",
   signerEmail: "luca.bianchi@example.com",
 };
+
 // const handleClick = () => {
 //     const encoded = encodeURIComponent(JSON.stringify(DUMMY_CONTRACT_DATA));
 //     window.open(`/contract/contract-template.html?data=${encoded}`, '_blank');
 //   };
-
-// const handleClick = async () => {
-//   try {
-//     setLoading(true);
-
-//     /* ───── 1. Open HTML preview ───── */
-//     const encoded = encodeURIComponent(JSON.stringify(CONTRACT_DATA));
-//     const previewWindow = window.open(
-//       `/contract/contract-template.html?data=${encoded}`,
-//       "_blank"
-//     );
-
-//     if (!previewWindow) throw new Error("Popup blocked");
-
-//     /* ───── 2. Wait for HTML to render ───── */
-//     await new Promise((r) => setTimeout(r, 1500));
-
-//     const htmlEl =
-//       previewWindow.document.getElementById("contract-root") ??
-//       previewWindow.document.body;
-
-//     /* ───── 3. Convert HTML → PDF Blob ───── */
-//     const pdfBlob = await html2pdf()
-//       .set({
-//         margin: 10,
-//         filename: "contract.pdf",
-//         html2canvas: { scale: 2 },
-//         jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
-//       })
-//       .from(htmlEl)
-//       .outputPdf("blob");
-
-//     /* ───── 4. Prepare FormData ───── */
-//     const formData = new FormData();
-//     formData.append("file", pdfBlob, "contract.pdf");
-//     formData.append("contractId", String(event.contract.id));
-//     formData.append("name", CONTRACT_DATA.signerName);
-//     formData.append("email", CONTRACT_DATA.signerEmail);
-//     // ✅ BEST: anchor-based signing
-
-//     /* ───── 5. Call YOUR API ───── */
-//     const res = await fetch("/api/contracts/docusign", {
-//       method: "POST",
-//       body: formData,
-//     });
-//     alert(formData, "formData-----------------");
-
-//     if (!res.ok) throw new Error("DocuSign API failed");
-
-//     const json = await res.json();
-//     console.log("DocuSign response:", json);
-
-//   } catch (err) {
-//     console.error(err);
-//     alert("Errore durante invio a DocuSign");
-//   } finally {
-//     setLoading(false);
-//   }
-// };
 
 const handleClick = async () => {
   console.log("👉 DocuSign click started");
@@ -219,7 +236,7 @@ const handleClick = async () => {
 
   } catch (err) {
     console.error("❌ FINAL ERROR:", err);
-    alert("Errore durante invio a DocuSign");
+    //alert("Errore durante invio a DocuSign");
   } finally {
     setLoading(false);
     console.log("🏁 DocuSign flow finished");
