@@ -1420,7 +1420,7 @@ export default function EventForm({
                     ? "Regenerate"
                     : "Generate"}
               </Button>
-              <DocuSignButton hasContract={Boolean(!event?.contract)} />
+              <DocuSignButton  event={event} />
             </div>
           </div>
 

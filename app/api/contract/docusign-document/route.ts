@@ -38,7 +38,7 @@ export async function POST(req: NextRequest): Promise<NextResponse<ApiResponse<R
 
     // ---- Parse multipart/form-data ----
     const form = await req.formData();
-
+console.log(form, "form----------------------------");
     const file = form.get('file') as File | null;
     const contractId = form.get('contractId') ? Number(form.get('contractId')) : NaN;
 
