@@ -44,6 +44,7 @@ import { useRouter } from "next/navigation";
 import { createContract } from "@/lib/server-actions/contracts/create-contract";
 import { editContract } from "@/lib/server-actions/contracts/update-contract";
 import UploadPdf from "../create/UploadPdf";
+import DocuSignButton from "../create/DocuSignButton";
 
 type EventForm = {
   artists: ArtistSelectData[];
@@ -1419,16 +1420,7 @@ export default function EventForm({
                     ? "Regenerate"
                     : "Generate"}
               </Button>
-
-              <Button
-                type="button"
-                size="sm"
-                className="max-w-max"
-                disabled={!event?.contract}
-              >
-                {" "}
-                Send to DocuSign
-              </Button>
+              <DocuSignButton hasContract={Boolean(!event?.contract)} />
             </div>
           </div>
 

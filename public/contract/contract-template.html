@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <title>Contratto di Prestazione Artistica</title>
+
+  <style>
+    body {
+      margin: 0;
+      background: #f4f4f4;
+      font-family: "Times New Roman", serif;
+      color: #000;
+    }
+
+    .page {
+      width: 210mm;
+      min-height: 297mm;
+      padding: 25mm 22mm;
+      background: white;
+      margin: 24px auto;
+      box-sizing: border-box;
+      page-break-after: always;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 18pt;
+      margin-bottom: 32px;
+      text-transform: uppercase;
+    }
+
+    h2 {
+      font-size: 14pt;
+      margin-top: 28px;
+    }
+
+    h3 {
+      font-size: 12pt;
+      margin-top: 24px;
+    }
+
+    p, li {
+      font-size: 11pt;
+      line-height: 1.6;
+      text-align: justify;
+    }
+
+    .right {
+      text-align: right;
+      margin-top: 12px;
+    }
+
+    .signature-block {
+      margin-top: 80px;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .signature {
+      width: 40%;
+      text-align: center;
+    }
+
+    .signature-line {
+      margin-top: 48px;
+      border-top: 1px solid #000;
+    }
+
+    @media print {
+      body {
+        background: white;
+      }
+
+      .page {
+        margin: 0;
+      }
+    }
+  </style>
+</head>
+
+<body>
+<div id="contract-root">
+<!-- ================= PAGE 1 ================= -->
+<section class="page">
+    <img 
+    src={https://mzmigzmqxpmypbmvklfh.supabase.co/storage/v1/object/public/milano-ovest-admin/general/og-image.png},
+    alt="Milano Ovest Logo" style="width: 150px; display: block; margin-bottom: 20px;" />
+  <h3 class="left">Contratto di Prestazione Artistica</h3>
+
+  <p><strong>Tra</strong></p>
+
+  <p>
+    <strong>Milano Ovest S.r.l.</strong>, con sede legale in viale Bianca Maria 28,
+    20129 – Milano, P. IVA 11045500961, in persona del legale rappresentante pro tempore
+    (di seguito denominata la “SOCIETÀ”)
+  </p>
+
+  <p class="right">– da una parte –</p>
+
+  <p><strong>E</strong></p>
+
+  <p>
+    <strong>{{VENUE_NAME}}</strong>, con sede legale in {{VENUE_ADDRESS}},
+    P. IVA {{VENUE_VAT}}
+  </p>
+
+  <p>(di seguito denominata l’“ORGANIZZATORE”)</p>
+
+  <p class="right">– dall’altra parte –</p>
+
+  <h3>PREMESSO CHE</h3>
+
+  <p>
+    a) la Società è titolare dei diritti di rappresentanza dell’artista
+    <strong>{{ARTIST_NAME}}</strong>, in arte <strong>{{ARTIST_STAGE_NAME}}</strong>;
+  </p>
+
+  <p>
+    b) l’Organizzatore ha richiesto la realizzazione di uno spettacolo musicale;
+  </p>
+
+  <p>
+    c) le Parti intendono disciplinare i loro rapporti con il presente contratto.
+  </p>
+
+  <p>
+    Tutto ciò premesso, si conviene e stipula quanto segue.
+  </p>
+
+  <h2>Art. 1 – Oggetto</h2>
+
+  <p>
+    La SOCIETÀ concede all’ORGANIZZATORE il diritto di rappresentare uno spettacolo musicale
+    dell’ARTISTA.
+  </p>
+
+  <ul>
+    <li>a) Data: <strong>{{EVENT_DATE}}</strong></li>
+    <li>b) Luogo: <strong>{{VENUE_NAME}}</strong></li>
+    <li>c) Orario di inizio: <strong>{{EVENT_TIME}}</strong></li>
+  </ul>
+
+  <p>
+    Lo spettacolo si svolgerà secondo i termini e le condizioni del presente accordo.
+  </p>
+
+</section>
+
+<!-- ================= PAGE 2 ================= -->
+<section class="page">
+  <h2>Art. 1 – Oggetto</h2>
+
+  <p>
+    La SOCIETÀ concede all’ORGANIZZATORE il diritto di rappresentare uno spettacolo musicale
+    dell’ARTISTA.
+  </p>
+
+  <ul>
+    <li>a) Data: <strong>{{EVENT_DATE}}</strong></li>
+    <li>b) Luogo: <strong>{{VENUE_NAME}}</strong></li>
+    <li>c) Orario di inizio: <strong>{{EVENT_TIME}}</strong></li>
+  </ul>
+
+  <p>
+    Lo spettacolo si svolgerà secondo i termini e le condizioni del presente accordo.
+  </p>
+</section>
+
+<!-- ================= PAGE 3 ================= -->
+<section class="page">
+  <h2>Art. 2 – Corrispettivo</h2>
+
+  <p>
+    Il compenso pattuito per la prestazione artistica è fissato in
+    <strong>{{TOTAL_FEE}}</strong>.
+  </p>
+
+  <p>
+    Il pagamento dovrà essere effettuato entro il <strong>{{PAYMENT_DATE}}</strong>.
+  </p>
+
+  <p>
+    Tutti i pagamenti dovranno essere effettuati tramite bonifico bancario.
+  </p>
+</section>
+
+<!-- ================= PAGE 4 ================= -->
+<section class="page">
+  <h2>Art. 3 – Obblighi dell’Organizzatore</h2>
+
+  <p>
+    L’Organizzatore si impegna a fornire:
+  </p>
+
+  <ul>
+    <li>impianto audio adeguato</li>
+    <li>sicurezza del pubblico</li>
+    <li>permessi amministrativi</li>
+  </ul>
+
+  <p>
+    L’Organizzatore è responsabile del rispetto delle normative vigenti.
+  </p>
+</section>
+
+<!-- ================= PAGE 5 ================= -->
+<section class="page">
+  <h2>Art. 4 – Obblighi dell’Artista</h2>
+
+  <p>
+    L’Artista si impegna a presentarsi puntualmente e a svolgere la prestazione
+    concordata in modo professionale.
+  </p>
+
+  <p>
+    L’Artista mantiene piena autonomia artistica.
+  </p>
+</section>
+
+<!-- ================= PAGE 6 ================= -->
+<section class="page">
+  <h2>Art. 5 – Risoluzione e Forza Maggiore</h2>
+
+  <p>
+    In caso di forza maggiore, nessuna delle Parti potrà essere ritenuta responsabile.
+  </p>
+
+  <p>
+    Il contratto potrà essere risolto in caso di grave inadempimento.
+  </p>
+</section>
+
+<!-- ================= PAGE 7 ================= -->
+<section class="page">
+  <h2>Art. 6 – Foro competente</h2>
+
+  <p>
+    Per ogni controversia è competente in via esclusiva il Foro di Milano.
+  </p>
+
+  <div class="signature-block">
+    <div class="signature">
+      <p>Per la SOCIETÀ</p>
+      <div class="signature-line"></div>
+    </div>
+
+    <div class="signature">
+      <p>Per l’ORGANIZZATORE</p>
+      <div class="signature-line"></div>
+    </div>
+  </div>
+</section>
+</div>
+<script>
+    const params = new URLSearchParams(window.location.search);
+    const raw = params.get("data");
+  
+    if (raw) {
+      const DATA = JSON.parse(decodeURIComponent(raw));
+  
+      const map = {
+        ARTIST_NAME: DATA.artistName,
+        ARTIST_STAGE_NAME: DATA.artistStageName,
+        VENUE_NAME: DATA.venueName,
+        VENUE_ADDRESS: DATA.venueAddress || "—",
+        VENUE_VAT: DATA.venueVat || "—",
+        EVENT_DATE: DATA.eventDate,
+        EVENT_TIME: DATA.eventTime || "22:00",
+        TOTAL_FEE: DATA.totalFee,
+        PAYMENT_DATE: DATA.paymentDate,
+      };
+  
+      document.body.innerHTML = document.body.innerHTML.replace(
+        /{{(.*?)}}/g,
+        (_, key) => map[key] ?? ""
+      );
+    }
+  </script>
+
+</body>
+</html>
