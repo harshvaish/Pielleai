@@ -156,6 +156,10 @@ export async function POST(req: NextRequest): Promise<NextResponse<ApiResponse<R
       placement,
     });
 
+    if (!envelopeId) {
+      throw new Error('DocuSign did not return envelopeId');
+    }
+
     return NextResponse.json(
       {
         success: true,

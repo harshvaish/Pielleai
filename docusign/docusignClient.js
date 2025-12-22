@@ -3,166 +3,176 @@ require('server-only');
 
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
 
 let cache = {
-  token: null,
-  exp: 0,
+  accessToken: null,
+  expMs: 0,
   baseUri: null,
+  accountId: null,
   loggedOnce: false,
 };
 
-const now = () => Date.now();
-const env = (name, fallback) =>
-  process.env[name] || (fallback ? process.env[fallback] : undefined);
+const nowMs = () => Date.now();
 
-/**
- * ✅ CRITICAL: runtime require so Next bundler doesn't crawl docusign-esign during build
- * This avoids "Can't resolve 'ApiClient'" errors.
- */
-function getDocusign() {
-  // eslint-disable-next-line no-eval
-  const req = eval('require');
-  return req('docusign-esign');
+function env(name, fallback) {
+  return process.env[name] || (fallback ? process.env[fallback] : undefined);
 }
 
-/** Load private key from env (B64) or from project root: ./private.key */
-function loadPrivateKeyBuffer() {
-  if (process.env.DOCUSIGN_PRIVATE_KEY_B64) {
-    return Buffer.from(process.env.DOCUSIGN_PRIVATE_KEY_B64, 'base64');
-  }
+function base64Url(input) {
+  const buf = Buffer.isBuffer(input) ? input : Buffer.from(String(input));
+  return buf
+    .toString('base64')
+    .replace(/=/g, '')
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_');
+}
 
+/**
+ * Load RSA private key from ./private.key (project root)
+ * Works locally. On Vercel you generally should use env instead of a file.
+ */
+function loadPrivateKeyPem() {
   const keyPath = path.resolve(process.cwd(), 'private.key');
+
   if (!fs.existsSync(keyPath)) {
     throw new Error(
-      `DocuSign private key not found. Expected at ${keyPath} or set DOCUSIGN_PRIVATE_KEY_B64.`,
+      `DocuSign private key not found at ${keyPath}. Add private.key locally or use env in production.`,
     );
   }
 
-  return Buffer.from(fs.readFileSync(keyPath, 'utf8'), 'utf8');
-}
+  const pem = fs.readFileSync(keyPath, 'utf8').trim();
+  const keyObj = crypto.createPrivateKey(pem);
 
-/** Get JWT access token and discover correct account baseUri (naX/euX/etc) */
-async function getAccessTokenAndBaseUri() {
-  if (cache.token && now() < cache.exp && cache.baseUri) {
-    return { accessToken: cache.token, baseUri: cache.baseUri };
+  if (keyObj.asymmetricKeyType !== 'rsa') {
+    throw new Error(`private.key must be RSA (got: ${keyObj.asymmetricKeyType})`);
   }
 
-  const docusign = getDocusign();
+  return { pem, keyObj };
+}
 
-  const oauthClient = new docusign.ApiClient();
-  oauthClient.setBasePath(
-    env('DOCUSIGN_BASE_PATH', 'BASE_PATH') || 'https://demo.docusign.net/restapi',
-  );
+/**
+ * Build JWT assertion for DocuSign JWT Grant (Demo)
+ * IMPORTANT: aud must be hostname only (no https://)
+ */
+function buildJwtAssertion() {
+  const integrationKey = env('DOCUSIGN_INTEGRATION_KEY', 'INTEGRATION_KEY');
+  const userId = env('DOCUSIGN_USER_ID', 'USER_ID');
+  const authServer = env('DOCUSIGN_AUTH_SERVER') || 'account-d.docusign.com';
 
-  const jwt = await oauthClient.requestJWTUserToken(
-    env('DOCUSIGN_INTEGRATION_KEY', 'INTEGRATION_KEY'),
-    env('DOCUSIGN_USER_ID', 'USER_ID'),
-    ['signature'],
-    loadPrivateKeyBuffer(),
-    3600,
-  );
+  if (!integrationKey) throw new Error('Missing DOCUSIGN_INTEGRATION_KEY');
+  if (!userId) throw new Error('Missing DOCUSIGN_USER_ID');
 
-  const accessToken = jwt.body.access_token;
+  const iat = Math.floor(Date.now() / 1000);
+  const exp = iat + 3600;
 
-  // Discover account baseUri for REST calls
-  const userInfo = await oauthClient.getUserInfo(accessToken);
+  const header = { alg: 'RS256', typ: 'JWT' };
+  const payload = {
+    iss: integrationKey,
+    sub: userId,
+    aud: authServer, // ✅ hostname only
+    iat,
+    exp,
+    scope: 'signature impersonation',
+    // If you still get 400 no_valid_keys_or_signatures, try:
+    // scope: 'signature',
+  };
+
+  const signingInput = `${base64Url(JSON.stringify(header))}.${base64Url(
+    JSON.stringify(payload),
+  )}`;
+
+  const { keyObj } = loadPrivateKeyPem();
+
+  const signature = crypto.sign('sha256', Buffer.from(signingInput), {
+    key: keyObj,
+    padding: crypto.constants.RSA_PKCS1_PADDING,
+  });
+
+  return `${signingInput}.${base64Url(signature)}`;
+}
+
+async function fetchAccessToken() {
+  const authServer = env('DOCUSIGN_AUTH_SERVER') || 'account-d.docusign.com';
+  const assertion = buildJwtAssertion();
+
+  const body = new URLSearchParams();
+  body.set('grant_type', 'urn:ietf:params:oauth:grant-type:jwt-bearer');
+  body.set('assertion', assertion);
+
+  const res = await fetch(`https://${authServer}/oauth/token`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body,
+  });
+
+  const json = await res.json().catch(() => null);
+
+  if (!res.ok) {
+    const msg = json?.error_description || json?.error || res.statusText;
+    throw new Error(`DocuSign token error (${res.status}): ${msg}`);
+  }
+
+  return json; // { access_token, expires_in, token_type }
+}
+
+async function fetchUserInfo(accessToken) {
+  const authServer = env('DOCUSIGN_AUTH_SERVER') || 'account-d.docusign.com';
+
+  const res = await fetch(`https://${authServer}/oauth/userinfo`, {
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
+
+  const json = await res.json().catch(() => null);
+
+  if (!res.ok) {
+    const msg = json?.message || res.statusText;
+    throw new Error(`DocuSign userinfo error (${res.status}): ${msg}`);
+  }
+
+  return json;
+}
+
+async function getAuthContext() {
+  if (
+    cache.accessToken &&
+    nowMs() < cache.expMs &&
+    cache.baseUri &&
+    cache.accountId
+  ) {
+    return cache;
+  }
+
+  const token = await fetchAccessToken();
+  const accessToken = token.access_token;
+  const expiresInSec = Number(token.expires_in || 3600);
+
+  const userInfo = await fetchUserInfo(accessToken);
   const accounts = Array.isArray(userInfo.accounts) ? userInfo.accounts : [];
-  const pickDefault =
-    accounts.find((a) => a.isDefault === 'true' || a.isDefault === true) || accounts[0];
 
-  if (!pickDefault || !pickDefault.baseUri) {
-    throw new Error('Unable to resolve DocuSign account baseUri from getUserInfo().');
+  const preferredAccountId = env('DOCUSIGN_ACCOUNT_ID', 'ACCOUNT_ID');
+
+  const picked =
+    (preferredAccountId &&
+      accounts.find((a) => String(a.account_id) === String(preferredAccountId))) ||
+    accounts.find((a) => a.is_default === true || a.is_default === 'true') ||
+    accounts[0];
+
+  if (!picked?.base_uri || !picked?.account_id) {
+    throw new Error('Unable to resolve DocuSign base_uri/account_id from userinfo.');
   }
 
-  const baseUri = pickDefault.baseUri; // e.g., https://na3.docusign.net
-
-  cache.token = accessToken;
-  cache.baseUri = baseUri;
-  cache.exp = now() + (jwt.body.expires_in - 60) * 1000;
-
-  return { accessToken, baseUri };
-}
-
-/** Build an EnvelopesApi client with proper Authorization + baseUri */
-async function getEnvelopesApi() {
-  const docusign = getDocusign();
-  const { accessToken, baseUri } = await getAccessTokenAndBaseUri();
-
-  const apiClient = new docusign.ApiClient();
-  apiClient.setBasePath(`${baseUri}/restapi`);
-  apiClient.addDefaultHeader('Authorization', `Bearer ${accessToken}`);
+  cache.accessToken = accessToken;
+  cache.baseUri = picked.base_uri; // e.g. https://na3.docusign.net
+  cache.accountId = String(picked.account_id);
+  cache.expMs = nowMs() + (expiresInSec - 60) * 1000;
 
   if (!cache.loggedOnce) {
     cache.loggedOnce = true;
-    console.log('[DocuSign] Using baseUri:', `${baseUri}/restapi`);
+    console.log('[DocuSign] baseUri:', cache.baseUri, 'accountId:', cache.accountId);
   }
 
-  return new docusign.EnvelopesApi(apiClient);
-}
-
-/* ===================== TEMPLATE-BASED SENDING ===================== */
-
-function makeEnvelope({ name, email, company }) {
-  const docusign = getDocusign();
-
-  const envDef = new docusign.EnvelopeDefinition();
-  envDef.templateId = env('DOCUSIGN_TEMPLATE_ID', 'TEMPLATE_ID');
-  envDef.emailSubject = 'Please sign your application';
-
-  const textTab = docusign.Text.constructFromObject({
-    tabLabel: 'company_name', // must match your template tab label
-    value: company || '',
-  });
-
-  const tabs = docusign.Tabs.constructFromObject({ textTabs: [textTab] });
-
-  const signer = docusign.TemplateRole.constructFromObject({
-    email,
-    name,
-    roleName: 'Applicant', // must match your template role
-    tabs,
-    // Do NOT set clientUserId for remote signing
-  });
-
-  envDef.templateRoles = [signer];
-  envDef.status = 'sent'; // send immediately
-  return envDef;
-}
-
-async function sendEnvelope({ name, email, company }) {
-  const envelopesApi = await getEnvelopesApi();
-  const envDef = makeEnvelope({ name, email, company });
-  const accountId = env('DOCUSIGN_ACCOUNT_ID', 'ACCOUNT_ID');
-
-  const res = await envelopesApi.createEnvelope(accountId, {
-    envelopeDefinition: envDef,
-  });
-
-  return { envelopeId: res.envelopeId };
-}
-
-/* ===================== RAW PDF UPLOAD SENDING ===================== */
-
-function makeSignHere({ documentId = '1', pageNumber = 1, x = 450, y = 650, anchorString }) {
-  const docusign = getDocusign();
-
-  if (anchorString) {
-    // Anchor-based placement (put {{SIGN_HERE}} or similar in the PDF text)
-    return docusign.SignHere.constructFromObject({
-      anchorString,
-      anchorUnits: 'pixels',
-      anchorXOffset: '0',
-      anchorYOffset: '0',
-    });
-  }
-
-  // Absolute placement (pixels) on a specific page
-  return docusign.SignHere.constructFromObject({
-    documentId,
-    pageNumber: String(pageNumber),
-    xPosition: String(x),
-    yPosition: String(y),
-  });
+  return cache;
 }
 
 /**
@@ -179,43 +189,75 @@ async function sendPdfForSignature({
   signer = { name: '', email: '' },
   placement = { pageNumber: 1, x: 450, y: 650 },
 }) {
-  const docusign = getDocusign();
-  const envelopesApi = await getEnvelopesApi();
+  const { accessToken, baseUri, accountId } = await getAuthContext();
 
-  const document = new docusign.Document();
-  document.documentBase64 = pdfBuffer.toString('base64');
-  document.name = fileName;
-  document.fileExtension = 'pdf';
-  document.documentId = '1';
+  if (!signer?.name || !signer?.email) {
+    throw new Error('Missing signer name/email');
+  }
 
-  const signHere = makeSignHere({ documentId: '1', ...placement });
-  const tabs = docusign.Tabs.constructFromObject({ signHereTabs: [signHere] });
+  const documentBase64 = Buffer.from(pdfBuffer).toString('base64');
 
-  const signerRole = new docusign.Signer();
-  signerRole.email = signer.email;
-  signerRole.name = signer.name;
-  signerRole.recipientId = '1';
-  signerRole.routingOrder = '1';
-  signerRole.tabs = tabs;
+  const signHereTab = placement?.anchorString
+    ? {
+        anchorString: placement.anchorString,
+        anchorUnits: 'pixels',
+        anchorXOffset: '0',
+        anchorYOffset: '0',
+      }
+    : {
+        documentId: '1',
+        pageNumber: String(placement?.pageNumber ?? 1),
+        xPosition: String(placement?.x ?? 450),
+        yPosition: String(placement?.y ?? 650),
+      };
 
-  const recipients = new docusign.Recipients();
-  recipients.signers = [signerRole];
+  const envelopeDefinition = {
+    emailSubject: 'Please sign this document',
+    status: 'sent',
+    documents: [
+      {
+        documentBase64,
+        name: fileName,
+        fileExtension: 'pdf',
+        documentId: '1',
+      },
+    ],
+    recipients: {
+      signers: [
+        {
+          email: signer.email,
+          name: signer.name,
+          recipientId: '1',
+          routingOrder: '1',
+          tabs: { signHereTabs: [signHereTab] },
+        },
+      ],
+    },
+  };
 
-  const envDef = new docusign.EnvelopeDefinition();
-  envDef.emailSubject = 'Please sign this document';
-  envDef.documents = [document];
-  envDef.recipients = recipients;
-  envDef.status = 'sent';
-
-  const accountId = env('DOCUSIGN_ACCOUNT_ID', 'ACCOUNT_ID');
-  const result = await envelopesApi.createEnvelope(accountId, {
-    envelopeDefinition: envDef,
+  const res = await fetch(`${baseUri}/restapi/v2.1/accounts/${accountId}/envelopes`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(envelopeDefinition),
   });
 
-  return { envelopeId: result.envelopeId };
+  const json = await res.json().catch(() => null);
+
+  if (!res.ok) {
+    const msg = json?.message || JSON.stringify(json) || res.statusText;
+    throw new Error(`DocuSign createEnvelope error (${res.status}): ${msg}`);
+  }
+
+  if (!json?.envelopeId) {
+    throw new Error('DocuSign createEnvelope did not return envelopeId');
+  }
+
+  return { envelopeId: json.envelopeId };
 }
 
 module.exports = {
-  sendEnvelope, // template-based
-  sendPdfForSignature, // raw PDF upload
+  sendPdfForSignature,
 };
