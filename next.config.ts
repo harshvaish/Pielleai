@@ -4,24 +4,44 @@ const nextConfig: NextConfig = {
   // eslint: {
   //   ignoreDuringBuilds: true,
   // },
-  serverExternalPackages: ['docusign-esign','axios', '@devhigley/parse-proxy',
+  serverExternalPackages: [
+    'docusign-esign',
+    'axios',
+    '@devhigley/parse-proxy',
     'jsonwebtoken',
+    'jws',
+    'jwa',
     'passport-oauth2',
     'safe-buffer',
-    'csv-stringify'],
+    'csv-stringify',
+  ],
+
   experimental: {
-    serverComponentsExternalPackages: ['docusign-esign','axios','@devhigley/parse-proxy',
+    serverComponentsExternalPackages: [
+      'docusign-esign',
+      'axios',
+      '@devhigley/parse-proxy',
       'jsonwebtoken',
+      'jws',
+      'jwa',
       'passport-oauth2',
       'safe-buffer',
-      'csv-stringify'],
+      'csv-stringify',
+    ],
   },
-   outputFileTracingIncludes: {
-    '*': ['node_modules/docusign-esign/**','node_modules/axios/**','node_modules/@devhigley/parse-proxy/**',
+
+  outputFileTracingIncludes: {
+    '*': [
+      'node_modules/docusign-esign/**',
+      'node_modules/axios/**',
+      'node_modules/@devhigley/parse-proxy/**',
       'node_modules/jsonwebtoken/**',
+      'node_modules/jws/**',
+      'node_modules/jwa/**',
       'node_modules/passport-oauth2/**',
       'node_modules/safe-buffer/**',
-      'node_modules/csv-stringify/**'],
+      'node_modules/csv-stringify/**',
+    ],
   },
   images: {
     remotePatterns: [
