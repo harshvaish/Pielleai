@@ -26,6 +26,7 @@ import { useMemo } from "react";
 import { GREEN_TICK_ICON } from "@/lib/constants";
 import UplodPdf from "../_components/UploadPdf";
 import Image from "next/image";
+import DocuSignButton from "../../eventi/_components/create/DocuSignButton";
 
 type ContractDetailPageProps = {
   params?: Promise<{ id: string }>;
@@ -247,7 +248,7 @@ export default async function ContractDetailPage({
   const sp = await searchParams;
   if (!sp?.data) notFound();
   const payload = JSON.parse(decodeURIComponent(sp.data));
-  console.log(payload?.artist?.avatarUrl, "payload-------------")
+  console.log(payload?.artist?.avatarUrl, "payload-------------");
   const stage = (sp?.stage as ContractDetailStatus | undefined) ?? "missing";
   const flow = FLOW_STATES[stage] ?? FLOW_STATES["missing"];
   const statusLabel = flow.statusLabel;
@@ -260,6 +261,37 @@ export default async function ContractDetailPage({
     { value: "error", label: "Error" },
     { value: "archived", label: "Archived" },
   ];
+
+  function formatDateAndTime(
+  availability: {
+    startDate: string;
+    endDate: string;
+  } | null
+): { date: string; time: string } {
+  if (!availability) {
+    return { date: "—", time: "—" };
+  }
+
+  const start = new Date(availability.startDate);
+  const end = new Date(availability.endDate);
+
+  const date = start.toLocaleDateString("it-IT", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
+
+  const time = `${start.toLocaleTimeString("it-IT", {
+    hour: "2-digit",
+    minute: "2-digit",
+  })} – ${end.toLocaleTimeString("it-IT", {
+    hour: "2-digit",
+    minute: "2-digit",
+  })}`;
+
+  return { date, time };
+}
+const { date, time } = formatDateAndTime(payload?.availability ?? null);
 
   const historyData: HistoryItem[] = Array.isArray(payload.history)
     ? payload.history.map((h: any) => {
@@ -291,6 +323,8 @@ export default async function ContractDetailPage({
           <Button variant="secondary" size="sm" disabled={flow.actionsDisabled}>
             {stage === "missing" ? "Generate" : "Regenerate"}
           </Button>
+          {/* <DocuSignButton  event={event} /> */}
+          
           <Button variant="default" size="sm" disabled={flow.actionsDisabled}>
             Send to DocuSign
           </Button>
@@ -303,12 +337,11 @@ export default async function ContractDetailPage({
             <div className="flex flex-wrap justify-between gap-4">
               <div className="flex flex-col gap-2">
                 <div className="flex items-center gap-3">
-                <img
-  src={
-    payload?.artist?.avatarUrl}
-  alt="Avatar"
-  className="size-11 rounded-full object-cover bg-zinc-200"
-/>
+                  <img
+                    src={payload?.artist?.avatarUrl}
+                    alt="Avatar"
+                    className="size-11 rounded-full object-cover bg-zinc-200"
+                  />
                   <div className="flex flex-col">
                     <div className="font-semibold text-lg">
                       {payload.stageName}
@@ -326,12 +359,12 @@ export default async function ContractDetailPage({
                   </span>
                   <span className="flex items-center gap-1">
                     <CalendarDays className="size-4 text-zinc-400" />
-                    {mockContract.date}
-                  </span>
+                    {date}
+                    </span>
                   <span className="flex items-center gap-1">
                     <Users className="size-4 text-zinc-400" />
-                    {mockContract.time}
-                  </span>
+                    {time}
+                    </span>
                 </div>
               </div>
 
@@ -384,7 +417,7 @@ export default async function ContractDetailPage({
 
             <div className="flex flex-wrap items-center gap-3 text-sm text-zinc-600">
               <span className="text-zinc-800 font-semibold">Event details</span>
-              <Button variant="link" size="sm" className="p-0 h-auto text-sm">
+              <Button variant="link" size="sm"  className="p-0 h-auto text-sm text-sky-700">
                 View event details
               </Button>
             </div>
@@ -394,13 +427,9 @@ export default async function ContractDetailPage({
                 <MapPin className="size-4 text-zinc-400" />
                 Locale
               </span>
-              <Badge variant="secondary">{mockContract.venueName}</Badge>
-              <Badge variant="secondary">{mockContract.managerName}</Badge>
-              <Badge variant="secondary">{mockContract.tourManager}</Badge>
-              <span className="flex items-center gap-1">
-                <Mail className="size-4 text-zinc-400" />
-                {mockContract.managerEmail}
-              </span>
+              <Badge variant="secondary">{payload?.venue?.name}</Badge>
+              <Badge variant="secondary">manager</Badge>
+              <Badge variant="secondary">{payload?.artist.tourManagerName}</Badge>
             </div>
 
             <div className="flex flex-wrap gap-2 text-xs text-zinc-500">

@@ -67,8 +67,6 @@ export async function generateFilledContractHtml(
 
   return html;
 }
-
-
   
 type EventType = {
   id: string;
@@ -128,11 +126,9 @@ const CONTRACT_DATA: ContractData = {
   venueCity: event.venue?.address ?? "",
 
   eventType: event.eventType,
-
   eventDate: event.availability?.startDate
     ? format(new Date(event.availability.startDate), "yyyy-MM-dd")
     : "",
-
   eventTime: getTime(
     event.availability?.startDate,
     event.availability?.endDate
