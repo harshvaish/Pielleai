@@ -21,8 +21,7 @@ const env = (name, fallback) =>
  */
 function getDocusign() {
   // eslint-disable-next-line no-eval
-  const req = eval('require');
-  return req('docusign-esign');
+  return require('docusign-esign');
 }
 
 /** Load private key from env (B64) or from project root: ./private.key */
