@@ -8,6 +8,9 @@ const nextConfig: NextConfig = {
   experimental: {
     serverComponentsExternalPackages: ['docusign-esign'],
   },
+   outputFileTracingIncludes: {
+    '*': ['node_modules/docusign-esign/**'],
+  },
   images: {
     remotePatterns: [
       {
