@@ -47,31 +47,6 @@ type ContractsTableFilters = {
 type ContractCardStatus = ContractFilterStatus | "missing-info" | "cancelled";
 type ActionVariant = "default" | "secondary" | "outline" | "ghost";
 
-// type ContractCard = {
-//   id: string;
-//   status: ContractCardStatus;
-//   statusLabel: string;
-//   statusDate: string;
-//   stageName: string;
-//   artistName: string;
-//   venueName: string;
-//   date: string;
-//   time: string;
-//   resend?: boolean;
-//   actionLabel: string;
-//   actionVariant: ActionVariant;
-//   href: string;
-//     artistId: number;
-//     venueId: number;
-//     eventId: number;
-//     contractDate: string;
-//     fileUrl: string;
-//     fileName: string;
-//     recipientEmail: string;
-//     ccEmails: string[];
-//     note: string;
-// };
-
 export type ContractCard = {
   id: number;
   status: ContractCardStatus;
@@ -95,7 +70,7 @@ export type ContractCard = {
     endDate: string;
     status: string;
   } | null;
-  
+
   artist: {
     id: number;
     name: string;
@@ -231,11 +206,44 @@ function mapStatus(status: BackendContractStatus): ContractCardStatus {
   }
 }
 
+function formatDateAndTime(
+  availability: {
+    startDate: string;
+    endDate: string;
+  } | null
+): { date: string; time: string } {
+  if (!availability) {
+    return { date: "—", time: "—" };
+  }
+
+  const start = new Date(availability.startDate);
+  const end = new Date(availability.endDate);
+
+  const date = start.toLocaleDateString("it-IT", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
+
+  const time = `${start.toLocaleTimeString("it-IT", {
+    hour: "2-digit",
+    minute: "2-digit",
+  })} – ${end.toLocaleTimeString("it-IT", {
+    hour: "2-digit",
+    minute: "2-digit",
+  })}`;
+
+  return { date, time };
+}
+
+
 /* -------------------------------------------------------
    BACKEND → UI CARD MAPPER (FIX #2)
 --------------------------------------------------------*/
 function mapContract(c: any): ContractCard {
   const uiStatus = mapStatus(c.status as BackendContractStatus);
+  const { date, time } = formatDateAndTime(c.availability);
+
   return {
     id: c.id,
 
@@ -246,8 +254,8 @@ function mapContract(c: any): ContractCard {
     artistName: `${c.artist.name} ${c.artist.surname}`,
     stageName: `@${c.artist.stageName}`,
 
-    date: new Date(c.contractDate).toLocaleDateString("it-IT"),
-    time: "—",
+    date,    
+    time,
 
     statusDate: new Date(c.createdAt).toLocaleDateString("it-IT"),
     contractDate: c.contractDate,
@@ -273,14 +281,14 @@ function mapContract(c: any): ContractCard {
       tourManagerPhone: c.artist.tourManagerPhone ?? null,
     },
     availability: c.availability
-    ? {
-        id: c.availability.id,
-        artistId: c.availability.artistId,
-        startDate: c.availability.startDate,
-        endDate: c.availability.endDate,
-        status: c.availability.status,
-      }
-    : null,
+      ? {
+          id: c.availability.id,
+          artistId: c.availability.artistId,
+          startDate: c.availability.startDate,
+          endDate: c.availability.endDate,
+          status: c.availability.status,
+        }
+      : null,
 
     venue: {
       id: c.venue.id,
@@ -320,11 +328,6 @@ function mapContract(c: any): ContractCard {
     })),
   };
 }
-
-
-/* -------------------------------------------------------
-   PAGE
---------------------------------------------------------*/
 
 export const dynamic = "force-dynamic";
 
@@ -380,16 +383,11 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
   });
 
   let contracts: ContractCard[] = api.data.map(mapContract);
-console.log(contracts, "contracts--------")
   if (selectedStatus !== "all") {
     contracts = contracts.filter((c) => c.status === selectedStatus);
   }
 
   const totalPages = api.totalPages;
-
-  /* -------------------------------------------------------
-     RENDER
-  --------------------------------------------------------*/
 
   return (
     <div className="h-full grid grid-rows-[min-content_min-content_1fr_min-content] gap-4">
@@ -444,18 +442,17 @@ console.log(contracts, "contracts--------")
         <div className="max-h-full flex flex-col gap-3 overflow-auto">
           {contracts.map((contract) => {
             const s = STATUS_STYLES[contract.status];
+            const cardHref = `/documents/${contract.id}?data=${encodeURIComponent(
+              JSON.stringify(contract)
+            )}`;
 
             return (
-              <Link
-                href={{
-                  pathname: `/documents/${contract.id}`,
-                  query: {
-                    data: encodeURIComponent(JSON.stringify(contract)),
-                  },
-                }}
+              <div
                 key={contract.id}
+                className="relative bg-white border border-zinc-100 rounded-2xl"
               >
-                <div className="grid grid-cols-[minmax(160px,200px)_1fr_auto] gap-4 md:gap-6 items-center bg-white border border-zinc-100 rounded-2xl p-4">
+                {/* CARD CONTENT */}
+                <div className="grid grid-cols-[minmax(160px,200px)_1fr_auto] gap-4 md:gap-6 items-center p-4">
                   {/* Status Badge */}
                   <div className="flex flex-col gap-3">
                     <Badge
@@ -479,34 +476,54 @@ console.log(contracts, "contracts--------")
                       <span className="text-zinc-500">
                         {contract.artistName}
                       </span>
+
                       <span className="flex items-center gap-1 text-zinc-500">
-                        <MapPin className="size-4 text-zinc-400" />{" "}
+                        <MapPin className="size-4 text-zinc-400" />
                         {contract.venueName}
                       </span>
+
                       <span className="flex items-center gap-1 text-zinc-500">
-                        <CalendarDays className="size-4 text-zinc-400" />{" "}
+                        <CalendarDays className="size-4 text-zinc-400" />
                         {contract.date}
                       </span>
+
                       <span className="flex items-center gap-1 text-zinc-500">
-                        <Clock className="size-4 text-zinc-400" />{" "}
+                        <Clock className="size-4 text-zinc-400" />
                         {contract.time}
                       </span>
                     </div>
 
-                    <div className="flex items-center gap-4 text-xs font-semibold text-zinc-600">
+                    {/* FILE LINK (opens new tab, no JS) */}
+                    <div className="flex items-center gap-4 text-xs font-semibold text-zinc-600 relative z-10">
                       <span className="flex items-center gap-2">
-                        <FileText className="size-4 text-zinc-400" /> Contract
+                        <FileText className="size-4 text-zinc-400" />
+                        Contract
                       </span>
-                      <span className="flex items-center gap-1 text-emerald-700 underline">
-                        Contract.pdf
-                      </span>
+
+                      {contract.fileUrl && (
+                        <a
+                          href={contract.fileUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-1 text-emerald-700 underline"
+                        >
+                          {contract.fileName}
+                        </a>
+                      )}
                     </div>
                   </div>
 
-                  {/* Actions */}
+                  {/* Arrow */}
                   <ChevronRight className="size-4" />
                 </div>
-              </Link>
+
+                {/* FULL CARD CLICK AREA */}
+                <a
+                  href={cardHref}
+                  className="absolute inset-0"
+                  aria-label="Open contract details"
+                />
+              </div>
             );
           })}
         </div>
