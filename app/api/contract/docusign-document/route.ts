@@ -51,7 +51,7 @@ export async function POST(req: NextRequest): Promise<NextResponse<ApiResponse<R
     const contractId = form.get('contractId') ? Number(form.get('contractId')) : NaN;
 
     const name = String(form.get('name') || '');
-    const email = 'l.singh@mokkastudios.com';
+    const email = String(form.get('email') || '');
 
     const pageNumber = form.get('pageNumber') ? Number(form.get('pageNumber')) : 1;
     const x = form.get('x') ? Number(form.get('x')) : 450;
