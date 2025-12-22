@@ -4,9 +4,12 @@ const nextConfig: NextConfig = {
   // eslint: {
   //   ignoreDuringBuilds: true,
   // },
-  serverExternalPackages: ['docusign-esign'],
+  serverExternalPackages: ['docusign-esign','axios'],
   experimental: {
-    serverComponentsExternalPackages: ['docusign-esign'],
+    serverComponentsExternalPackages: ['docusign-esign','axios'],
+  },
+   outputFileTracingIncludes: {
+    '*': ['node_modules/docusign-esign/**','node_modules/axios/**'],
   },
   images: {
     remotePatterns: [

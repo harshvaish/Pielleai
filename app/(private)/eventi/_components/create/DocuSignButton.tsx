@@ -218,6 +218,7 @@ const handleClick = async () => {
     const res = await fetch("/api/contract/docusign-document", {
       method: "POST",
       body: formData,
+      credentials:"include"
     });
 
     console.log("API status:", res.status);
