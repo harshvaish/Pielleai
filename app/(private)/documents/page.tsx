@@ -441,6 +441,7 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
       {contracts.length > 0 ? (
         <div className="max-h-full flex flex-col gap-3 overflow-auto">
           {contracts.map((contract) => {
+            console.log(contract, "contract---------")
             const s = STATUS_STYLES[contract.status];
             const cardHref = `/documents/${contract.id}?data=${encodeURIComponent(
               JSON.stringify(contract)
@@ -492,8 +493,6 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
                         {contract.time}
                       </span>
                     </div>
-
-                    {/* FILE LINK (opens new tab, no JS) */}
                     <div className="flex items-center gap-4 text-xs font-semibold text-zinc-600 relative z-10">
                       <span className="flex items-center gap-2">
                         <FileText className="size-4 text-zinc-400" />
@@ -512,12 +511,8 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
                       )}
                     </div>
                   </div>
-
-                  {/* Arrow */}
                   <ChevronRight className="size-4" />
                 </div>
-
-                {/* FULL CARD CLICK AREA */}
                 <a
                   href={cardHref}
                   className="absolute inset-0"
