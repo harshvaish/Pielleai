@@ -28,7 +28,7 @@ type ContractData = {
   paymentDate: string;
 
   signerName: string;
-  signerEmail: string;
+  tourManagerEmail: string;
 };
 
 type Props = {
@@ -77,6 +77,7 @@ export async function generateFilledContractHtml(
 -------------------------------- */
 
 export default function DocuSignButton({ payload }: Props) {
+    console.log(payload, "payload--------------------------123")
   const [loading, setLoading] = useState(false);
   const getEventTime = (
     start?: string,
@@ -115,7 +116,7 @@ export default function DocuSignButton({ payload }: Props) {
       : "",
 
     signerName: "Luca Bianchi",
-    signerEmail: "luca.bianchi@example.com",
+    tourManagerEmail: payload.artist?.tourManagerEmail ?? "",
   };
 
   const handleClick = async () => {
@@ -171,7 +172,7 @@ export default function DocuSignButton({ payload }: Props) {
       formData.append("file", pdfBlob, "contract.pdf");
       formData.append("contractId", String(payload.id));
       formData.append("name", CONTRACT_DATA.signerName);
-      formData.append("email", CONTRACT_DATA.signerEmail);
+      formData.append("email", CONTRACT_DATA.tourManagerEmail);
 
       formData.append("pageNumber", "5");
       formData.append("x", "450");
