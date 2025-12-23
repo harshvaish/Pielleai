@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { it } from 'date-fns/locale';
 import { format } from 'date-fns';
 
@@ -98,6 +99,7 @@ type EventType = {
 
 export default function DocuSignButton({ event }: { event: EventType }) {
   const [loading, setLoading] = useState(false);
+  const router = useRouter();
 console.log(event, "event-----------------------------");
 
 const getTime = (
@@ -230,6 +232,7 @@ const handleClick = async () => {
 
     const json = await res.json();
     console.log("✅ DocuSign response:", json);
+    router.refresh();
 
   } catch (err) {
     console.error("❌ FINAL ERROR:", err);
