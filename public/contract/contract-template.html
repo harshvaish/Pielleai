@@ -94,6 +94,25 @@
         margin: 0;
       }
     }
+ /* DATE ROW — isolated, does NOT affect signature blocks */
+.date-block {
+  margin-top: 80px;
+}
+
+.date-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* already good, keep it */
+.date-signature-line {
+  display: inline-block;
+  width: 180px;
+  border-bottom: 1px solid #000;
+}
+
+
   </style>
 </head>
 
@@ -220,94 +239,231 @@
 
   </ul>
 
-  <h2>Art. 3 - Obblighi dell’Organizzatore</h2>
+    <h2>Art. 3 - Obblighi dell’Organizzatore</h2>
+  
+    <p class="indent">
+      1. Ai fini della realizzazione e rappresentazione dello SPETTACOLO,
+      l’ORGANIZZATORE si obbliga a mettere a disposizione, sopportandone i
+      relativi costi e spese, tutto quanto necessario sotto il profilo tecnico,
+      artistico ed organizzativo, eccezione fatta per quanto previsto al
+      precedente art. 2.
+    </p>
+  
+    <p class="indent">
+      A tal fine, l’ORGANIZZATORE si obbliga, a mero titolo esemplificativo:
+    </p>
+  
+    <ul class="list">
+      <p class="indent">
+        a) a fornire una struttura di palco perfettamente collaudata ed idonea,
+        secondo le caratteristiche indicate nel Rider Tecnico (Allegato I);
+      </p>
+  
+      <p class="indent">
+        b) a fornire un impianto audio e luci idoneo secondo il Rider Tecnico,
+        consentendo eventuali verifiche tecniche da parte della SOCIETÀ;
+      </p>
+  
+      <p class="indent">
+        c) a mettere a disposizione, a proprie spese, il personale tecnico
+        necessario;
+      </p>
+  
+      <p class="indent">
+        d) a richiedere ed ottenere tutte le autorizzazioni e licenze necessarie,
+        sollevando la SOCIETÀ e l’ARTISTA da ogni responsabilità;
+      </p>
+  
+      <p class="indent">
+        e) ad adottare tutte le misure di sicurezza idonee a garantire il regolare
+        svolgimento dello SPETTACOLO, inclusa l’incolumità dell’ARTISTA;
+      </p>
+  
+      <p class="indent">
+        f) a mettere a disposizione il numero di camerini previsti nel Rider
+        Tecnico;
+      </p>
+  
+      <p class="indent">
+        g) a stipulare idonea polizza assicurativa per eventuali sinistri,
+        fornendone evidenza almeno 48 ore prima dell’evento;
+      </p>
+  
+      <p class="indent">
+        h) a pagare al competente Ente percettore quanto dovuto per la pubblica
+        esecuzione delle opere musicali;
+      </p>
+  
+      <p class="indent">
+        i) a sostenere i costi di viaggio per l’ARTISTA ed eventuali
+        accompagnatori, per spese stimate in euro
+        <strong>{{TRANSPORTATION_COST}}</strong>, da corrispondere in serata.
+        Vitto e alloggio restano a carico del locale previo accordo con il tour
+        manager.
+      </p>
+    </ul>
+    <p class="indent">
+      2. Fermo restando quanto previsto all’art. 3.1., l’ORGANIZZATORE si obbliga:
+    </p>
+    <ul class="list">
+      <p class="indent">
+       i) a non realizzare e/o non far realizzare da terzi e, comunque, a non permettere la ripresa fotografica e audio e/o video, anche parziale, dello SPETTACOLO. L’ARTISTA potrà invece liberamente effettuare registrazioni audio/video dello SPETTACOLO ed utilizzare liberamente tali registrazioni senza che all’ORGANIZZATORE sia dovuto alcunché;
+      </p>
+      <p class="indent">
+      ii) ad utilizzare, nell’effettuazione della campagna promozionale e pubblicitaria dello SPETTACOLO presso il pubblico, che dovrà essere concordata con la SOCIETÀ,  esclusivamente il MATERIALE fornito dalla SOCIETÀ ai sensi del precedente art. 2.2. lett. B;
+
+</p>
+<p class="indent">
+ iii) a non concludere alcun tipo di accordo con terzi avente ad oggetto la sponsorizzazione dello SPETTACOLO, né ad utilizzare e/o far utilizzare gli elementi identificativi dell’ARTISTA per finalità pubblicitarie e/o promozionali a favore di aziende e/o di prodotti;
+</p>
+<p class="indent">
+  iv)a non utilizzare e/o far utilizzare gli elementi identificativi dell’ARTISTA e/o immagini dello SPETTACOLO su siti internet e/o social network dell’ORGANIZZATORE, né per finalità pubblicitarie e/o promozionali in favore dell’ORGANIZZATORE, salvo quanto espressamente concordato con la SOCIETÀ;
+
+ </p>
+ <p class="indent">
+  a non consentire, all’interno della VENUE, l’esposizione di materiale pubblicitario di qualsiasi tipo non espressamente autorizzato dalla SOCIETÀ.
+</p>
+</ul>
+<p class="indent">
+3.L’ORGANIZZATORE, inoltre, acconsente a che la SOCIETÀ possa adibire, presso la VENUE, una postazione per la vendita degli oggetti di merchandising dell’ARTISTA da parte del soggetto ufficialmente incaricato dalla SOCIETÀ, il quale provvederà autonomamente a tutti i necessari adempimenti fiscali e/o burocratici e a sostenerne gli eventuali costi. 
+L’ORGANIZZATORE  accetta altresì sin d’ora, senza alcuna eccezione, che la SOCIETÀ e l’ARTISTA possano, nel corso dello SPETTACOLO, svolgere attività di promozione in favore di prodotti e/o servizi da essi scelti, anche mediante, a titolo meramente esemplificativo, messaggi comunicati durante l’esibizione, di gadget distribuiti nel corso della serata, di materiale promozionale esposto all’interno del locale, ecc.
+  
+</p>
+
+<div class="hr"></div>
+
+<h2>Art. 4 - Corrispettivo dovuto. Termini e modalità di pagamento
+</h2>
+<p class="indent">
+  A fronte delle obbligazioni assunte, del diritto di rappresentazione dello SPETTACOLO concesso dalla SOCIETÀ e delle attività e/o garanzie prestate da quest’ultima ai sensi del presente accordo, l’ORGANIZZATORE si obbliga a pagare alla SOCIETÀ la somma complessiva di euro<strong>{{TOTAL_COST}}</strong>, oltre IVA se dovuta, dietro presentazione della relativa documentazione fiscale da parte della SOCIETÀ, secondo le seguenti modalità:
+</p>
+<ul>
   <p class="indent">
-    1. Ai fini della realizzazione e rappresentazione dello SPETTACOLO, l’ORGANIZZATORE si obbliga a mettere a
-    disposizione, sopportandone i relativi costi e spese, tutto quanto necessario alla suddetta rappresentazione
-    sotto il profilo tecnico, artistico ed organizzativo, eccezione fatta per quanto previsto al precedente art. 2.
-  </p>
+    a)in data di sottoscrizione del contratto euro <strong>{{UPFRONT_PAYMENT}}</strong> al momento della sottoscrizione del presente contratto, mediante il pagamento tramite piattaforma Eagle Booking (https://www.eaglebooking.it/) o tramite bonifico bancario da effettuarsi sulle coordinate bancarie che saranno comunicate dalla SOCIETÀ;
+</p>
+<p class="indent">
+  b)il saldo verrà effettuato in data <strong> {{PAYMENT_DATE}}</strong> 
+</p>
+<p class="indent">
+  c)in caso di annullamento da parte dell’ORGANIZZATORE, comunicato con un preavviso minimo di 10 (dieci) giorni dalla data prevista dello SPETTACOLO, le somme eventualmente già corrisposte non saranno rimborsate. Le Parti si impegnano a concordare una nuova data di recupero dell’evento compatibile con le rispettive disponibilità, entro e non oltre 60 (sessanta) giorni dalla data originaria.
+</p>
+</ul>
 
-  <p class="indent">A tal fine, l’ORGANIZZATORE si obbliga, a mero titolo esemplificativo:</p>
+<p class="indent">
+  Rimane inteso che, in caso di mancata corresponsione del compenso entro i termini sopra indicati, la SOCIETÀ avrà facoltà di risolvere il presente accordo ai sensi di quanto previsto al successivo art. 9 e, in ogni caso, avrà diritto di non far partecipare l’ARTISTA allo SPETTACOLO sino ad avvenuto pagamento.
+</p>
+
+<div class="hr"></div>
+<h2>Art. 5 - Mancata effettuazione dello Spettacolo
+</h2>
+<ul class="list">
+  <p class="indent">
+1.Nel caso in cui, a causa di forza maggiore, lo SPETTACOLO non potesse aver luogo, l’ORGANIZZATORE corrisponderà alla SOCIETÀ il 50% (cinquanta per cento) della somma indicata all’art. 4.
+    
+  </p>
+  <p class="indent">
+2.Nel caso in cui, invece, lo SPETTACOLO non potesse aver luogo per fatto e colpa dell’ORGANIZZATORE, quest’ultimo sarà obbligato a corrispondere alla SOCIETÀ, a titolo di penale, il 100% (cento per cento) della somma indicata all’art. 4, fermo restando il diritto della SOCIETÀ al risarcimento del maggior danno subito.   
+  </p>
+</ul>
+<div class="hr"></div>
+<h2>Art. 6 - Sospensione dello Spettacolo
+</h2>
+<ul class="list">
+  <p class="indent">
+    1.Nel caso in cui lo SPETTACOLO venisse sospeso, interrotto e/o annullato dopo il suo inizio a causa di forza maggiore, l’ORGANIZZATORE corrisponderà, comunque, alla SOCIETÀ il 100% (cento per cento) della somma indicata all’art. 4.
+</p>
+<p class="indent">
+  2.Nel caso in cui lo SPETTACOLO venisse sospeso, interrotto e/o annullato dopo il suo inizio per fatto e colpa dell’ORGANIZZATORE, quest’ultimo sarà obbligato a corrispondere alla SOCIETÀ il 100% (cento per cento) della somma indicata all’art. 4, fermo restando il diritto della SOCIETÀ al risarcimento del maggior danno subito.
+
+</p>
+</ul>
+<div class="hr"></div>
+
+<h2>Art. 7 - Recesso</h2>
+<p class="indent">
+  La SOCIETÀ avrà la facoltà di recedere dal presente contratto, senza nulla dovere ad alcun titolo o ragione all’ORGANIZZATORE, salva la restituzione della parte di compenso già eventualmente versata a titolo di anticipo (Anticipo), nei seguenti casi:
+  </p>
   <ul class="list">
-    a) a fornire una struttura di palco perfettamente collaudata ed idonea, anche sotto il profilo tecnico, alla rappresentazione dello SPETTACOLO secondo le caratteristiche indicate nel Rider Tecnico, allegato sub I;
-    b) a fornire un impianto audio e luci idoneo, anche sotto il profilo tecnico, alla rappresentazione dello SPETTACOLO secondo le caratteristiche indicate nel Rider Tecnico, allegato sub I. Rimane inteso che la SOCIETÀ si riserva il diritto di nominare un proprio incaricato che verifichi, nel pomeriggio del giorno di rappresentazione dello SPETTACOLO, in orario antecedente, il rispetto delle caratteristiche tecniche e degli strumenti messi a disposizione dall’ORGANIZZATORE. Qualora non fosse consentita tale verifica ovvero le verifiche avessero esito negativo, la SOCIETÀ si riserva il diritto di risolvere il presente accordo ai sensi e per gli effetti di cui al successivo art. 9;
-
-   </ul>
-</section>
-
-<!-- ================= PAGE 3 ================= -->
-<section class="page">
-  c) a mettere a disposizione, a proprie spese, il personale tecnico necessario alla esatta realizzazione e rappresentazione dello SPETTACOLO;
-  d) a chiedere ed ottenere tutti i necessari permessi e/o autorizzazioni e/o licenze di qualunque tipo (civili, amministrative, di pubblica sicurezza ecc.) finalizzati alla realizzazione e rappresentazione dello SPETTACOLO, sollevando e manlevando la SOCIETÀ e l’ARTISTA da qualsiasi responsabilità in merito;
-  e) ad adottare tutte le misure tecniche e di sicurezza idonee a garantire il regolare svolgimento dello SPETTACOLO, sollevando e manlevando la SOCIETÀ e l’ARTISTA da qualsiasi responsabilità in merito. In particolare, l’ORGANIZZATORE si obbliga ad adottare le più opportune misure atte ad assicurare l’incolumità dell’ARTISTA e di tutto il personale artistico e tecnico coinvolto nello SPETTACOLO. A tal fine l’ORGANIZZATORE si obbliga a predisporre un adeguato servizio d’ordine;
-  f) a mettere a disposizione dell’ARTISTA il numero di camerini previsti nel Rider Tecnico, dotati delle caratteristiche ivi specificate;
-  g) a stipulare idonea polizza assicurativa per la responsabilità civile relativa ad eventuali sinistri (verificatisi durante lo SPETTACOLO, sul luogo dello SPETTACOLO e/o durante gli spostamenti per il raggiungimento del luogo dello SPETTACOLO), anche di carattere mortale, afferenti la persona dell’ARTISTA, nonché eventuali sinistri relativi al danneggiamento o perdita della strumentazione di proprietà e/o disponibilità dell’ARTISTA, e a darne evidenza alla SOCIETÀ almeno 48 ore prima della rappresentazione dello SPETTACOLO;
-  h) a pagare al competente Ente percettore quanto dovuto per la pubblica esecuzione delle opere musicali eseguite dall’ARTISTA durante lo SPETTACOLO;
-  i) a tenere a proprio carico i costi di viaggio (mezzo di trasporto, benzina, caselli) per l’ARTISTA ed eventuali accompagnatori, per spese stimate in euro {{TRANSPORTATION_COST}} da ritirare in serata. Il locale dovrà sostenere i costi di vitto e alloggio separatamente e previo consenso del tour manager.
-</section>
-
-<!-- ================= PAGE 4 ================= -->
-<section class="page">
-  <h2>Art. 3 – Obblighi dell’Organizzatore</h2>
-
-  <p>
-    L’Organizzatore si impegna a fornire:
-  </p>
-
-  <ul>
-    <li>impianto audio adeguato</li>
-    <li>sicurezza del pubblico</li>
-    <li>permessi amministrativi</li>
+    <p class="indent">
+i)nell’ipotesi in cui, per malattia, infortunio o altra causa di forza maggiore che generi un impedimento dell’ARTISTA, quest’ultima non sia più in grado di effettuare le proprie prestazioni relativamente allo SPETTACOLO;
+   
+   </p>  
+   <p class="indent">
+    ii)nel caso di sopraggiunti ed inderogabili impegni professionali dell’ARTISTA che rendano inconciliabile la rappresentazione dello SPETTACOLO.
+   </p>  
   </ul>
-
-  <p>
-    L’Organizzatore è responsabile del rispetto delle normative vigenti.
+  <p class="indent">
+    La SOCIETÀ si impegna ad avvertire tempestivamente (anche a mezzo telefono) l’ORGANIZZATORE nel caso del verificarsi di quanto sopra.
   </p>
-</section>
+  <p class="indent">
+    Resta salva la possibilità da parte della SOCIETÀ di concordare una nuova data di rappresentazione dello SPETTACOLO e, in tal caso, l’Anticipo non dovrà essere restituito e sarà considerato quale anticipo del compenso dovuto per la rappresentazione dello SPETTACOLO nella nuova data.  
+</p>
+<div class="hr"></div>
+<h2>Art. 8 - Responsabilità diretta dell’Organizzatore. Manleva
+</h2>
+<p class="indent">
+  L’ORGANIZZATORE sarà direttamente responsabile, in via esclusiva, per le obbligazioni da esso assunte nei confronti dei terzi (privati e/o amministrazioni e/o pubbliche autorità) e per le attività da esso prestate per dare esecuzione al presente accordo. 
+</p>
+<p class="indent">
+  Nessuna eccezione potrà essere opposta alla SOCIETÀ e/o all’ARTISTA dall'ORGANIZZATORE derivante da rapporti da quest’ultimo intrapresi con terzi per dare esatta esecuzione al presente accordo.
+</p>
+<p class="indent">
+  In ogni caso, l’ORGANIZZATORE si impegna a tenere indenne e a manlevare la SOCIETÀ e/o l’ARTISTA da ogni responsabilità e/o conseguenza di qualsiasi genere o titolo che possa derivare da eventuali azioni introdotte dai soggetti con i quali l’ORGANIZZATORE abbia stretto rapporti per dare corretta esecuzione alle obbligazioni su di esso gravanti ai sensi del presente accordo.
+</p>
+<div class="hr"></div>
+<h2>Art. 9 - Clausola risolutiva espressa. Penale
+</h2>
+<p class="indent">
+  La SOCIETÀ potrà ritenere risolto di diritto, ai sensi e per gli effetti dell’art. 1456 c.c., il presente accordo per inadempimento dell’ORGANIZZATORE in caso di violazione da parte di quest’ultimo degli obblighi assunti ai sensi degli artt. 1, 3 e 4, dandone comunicazione all’ORGANIZZATORE anche a mezzo e-mail e/o PEC.
+</p>
+<p class="indent">
+  In detti casi, e fermo restando quanto previsto ai precedenti artt. 5 e 6, l’ORGANIZZATORE sarà tenuto a pagare alla SOCIETÀ, a titolo di penale, il 100% del corrispettivo di cui all’art. 4, fatto salvo il diritto della SOCIETÀ al risarcimento del maggior danno subito.
+</p>
+<div class="hr"></div>
 
-<!-- ================= PAGE 5 ================= -->
-<section class="page">
-  <h2>Art. 4 – Obblighi dell’Artista</h2>
-
-  <p>
-    L’Artista si impegna a presentarsi puntualmente e a svolgere la prestazione
-    concordata in modo professionale.
+<h2>Art. 10 - Legge applicabile. Foro competente
+</h2>
+<ul class="list">
+  <p class="indent">
+    1.Le Parti riconoscono che il presente accordo è disciplinato, in via esclusiva, dalla legge italiana.
   </p>
-
-  <p>
-    L’Artista mantiene piena autonomia artistica.
+  <p class="indent">
+    2.Per ogni controversia relativa al presente accordo sarà ritenuta competente, in via esclusiva, l’Autorità Giudiziaria di Milano.
   </p>
-</section>
+</ul>
 
-<!-- ================= PAGE 6 ================= -->
-<section class="page">
-  <h2>Art. 5 – Risoluzione e Forza Maggiore</h2>
+<div class="hr"></div>
+<h2>Art. 11 - Forma delle modifiche
+</h2>
+<p class="indent">
+  Qualsiasi patto che modifichi e/o integri il contenuto del presente accordo dovrà avere, a pena di nullità, la forma scritta.
+</p>
 
-  <p>
-    In caso di forza maggiore, nessuna delle Parti potrà essere ritenuta responsabile.
+<div class="hr"></div>
+<h2>Art. 12 - Trattative </h2>
+  <p class="indent">
+    Le Parti dichiarano che quanto previsto dal Contratto corrisponde a quanto è stato pattuito nelle trattative preliminarmente intercorse, essendo privo di validità ogni altro accordo non recepito nello stesso. 
   </p>
-
-  <p>
-    Il contratto potrà essere risolto in caso di grave inadempimento.
-  </p>
-</section>
-
-<!-- ================= PAGE 7 ================= -->
-<section class="page">
-  <h2>Art. 6 – Foro competente</h2>
-
-  <p>
-    Per ogni controversia è competente in via esclusiva il Foro di Milano.
-  </p>
-
+  <p class="indent">
+    Il presente contratto è il risultato di una negoziazione tra le Parti con riferimento ad ogni sua clausola. In relazione a ciò, le Parti si danno reciprocamente atto che le disposizioni degli articoli 1341 e 1342 c.c. non trovano pertanto applicazione.
+  </p> 
+  <div class="date-block">
+    <div class="date-row">
+      <strong>Milano,</strong>
+      <span class="date-signature-line"></span>
+    </div>
+  </div>
+  
   <div class="signature-block">
+    <!-- LEFT SIGNATURE -->
     <div class="signature">
-      <p>Per la SOCIETÀ</p>
+      <p><strong>Milano Ovest S.r.l.</strong></p>
       <div class="signature-line"></div>
     </div>
 
+    <!-- RIGHT SIGNATURE -->
     <div class="signature">
-      <p>Per l’ORGANIZZATORE</p>
+      <div class="signature-line"></div>
       <div class="signature-line"></div>
     </div>
   </div>
@@ -334,10 +490,13 @@
     EVENT_TYPE: DATA.eventType ?? "",
     EVENT_DATE: DATA.eventDate ?? "",
     EVENT_TIME: DATA.eventTime ?? "22:00",
+    PAYMENT_DATE : DATA.paymentDate ?? "",
+    UPFRONT_PAYMENT : DATA.upfrontPayment ?? "",
+    TOTAL_COST : DATA.totalCost ?? "",
+    TRANSPORTATION_COST : DATA.transportationsCost ?? "",
 
     // Financial
     TOTAL_FEE: DATA.totalFee ?? "",
-    PAYMENT_DATE: DATA.paymentDate ?? "",
   };
       document.body.innerHTML = document.body.innerHTML.replace(
         /{{(.*?)}}/g,
