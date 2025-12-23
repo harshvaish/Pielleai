@@ -26,6 +26,7 @@ import { GREEN_TICK_ICON } from "@/lib/constants";
 import UplodPdf from "../_components/UploadPdf";
 import GenerateButton from "../_components/GenerateButton";
 import DocuSignButton from "../_components/DocuSignButton";
+import Link from "next/link";
 
 type ContractDetailPageProps = {
   params?: Promise<{ id: string }>;
@@ -416,8 +417,11 @@ export default async function ContractDetailPage({
                 variant="link"
                 size="sm"
                 className="p-0 h-auto text-sm text-sky-700"
+                asChild
               >
-                View event details
+                <Link href="/eventi" target="_blank" rel="noreferrer">
+                  View event details
+                </Link>
               </Button>
             </div>
 
