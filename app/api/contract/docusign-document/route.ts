@@ -25,9 +25,17 @@ type ResponseData = {
 
 export async function POST(req: NextRequest): Promise<NextResponse<ApiResponse<ResponseData>>> {
   try {
-    // ---- Auth (same as your other API) ----
+    // ---- Auth (same pattern as your other API) ----
     const requestHeaders = await headers();
     const session = await auth.api.getSession({ headers: requestHeaders });
+
+    // Safe debug (remove later if you want)
+    console.log(
+      '[docusign-document] session?',
+      !!session,
+      'role:',
+      session?.user?.role,
+    );
 
     if (!session || session.user.role !== 'admin') {
       return NextResponse.json(
@@ -38,7 +46,7 @@ export async function POST(req: NextRequest): Promise<NextResponse<ApiResponse<R
 
     // ---- Parse multipart/form-data ----
     const form = await req.formData();
-console.log(form, "form----------------------------");
+
     const file = form.get('file') as File | null;
     const contractId = form.get('contractId') ? Number(form.get('contractId')) : NaN;
 
@@ -48,10 +56,15 @@ console.log(form, "form----------------------------");
     const pageNumber = form.get('pageNumber') ? Number(form.get('pageNumber')) : 1;
     const x = form.get('x') ? Number(form.get('x')) : 450;
     const y = form.get('y') ? Number(form.get('y')) : 650;
-    const anchorString = form.get('anchorString') ? String(form.get('anchorString')) : undefined;
+    const anchorString = form.get('anchorString')
+      ? String(form.get('anchorString'))
+      : undefined;
 
     if (!file) {
-      return NextResponse.json({ success: false, message: 'Missing file.', data: null }, { status: 400 });
+      return NextResponse.json(
+        { success: false, message: 'Missing file.', data: null },
+        { status: 400 },
+      );
     }
 
     if (!Number.isFinite(contractId) || contractId <= 0) {
@@ -71,7 +84,7 @@ console.log(form, "form----------------------------");
     // ---- Read PDF buffer ----
     const pdfBuffer = Buffer.from(await file.arrayBuffer());
 
-    // ---- Upload to Supabase Storage (direct upload, server-side) ----
+    // ---- Upload to Supabase Storage ----
     const bucket = process.env.NEXT_PUBLIC_SUPABASE_BUCKET_NAME!;
     if (!bucket) {
       return NextResponse.json(
@@ -84,11 +97,8 @@ console.log(form, "form----------------------------");
     const safeBase = sanitizeFileName(original.replace(/\.pdf$/i, ''));
     const finalFileName = safeBase.toLowerCase().endsWith('.pdf') ? safeBase : `${safeBase}.pdf`;
 
-    // Use a folder per contract (clean + easy to manage)
     const storagePath = `contracts/${contractId}/${Date.now()}-${finalFileName}`;
 
-    // Supabase upload expects Blob/File/ArrayBuffer/ReadableStream depending on runtime.
-    // In Node route handler, Buffer works fine.
     const { error: uploadError } = await supabaseServerClient.storage
       .from(bucket)
       .upload(storagePath, pdfBuffer, {
@@ -104,8 +114,6 @@ console.log(form, "form----------------------------");
       );
     }
 
-    // If your bucket is public, you can store the public URL.
-    // If bucket is private, you should store storagePath and generate signed urls when needed.
     const isPrivateBucket = process.env.SUPABASE_BUCKET_PRIVATE === 'true';
 
     let fileUrl: string;
@@ -114,24 +122,22 @@ console.log(form, "form----------------------------");
       const { data } = supabaseServerClient.storage.from(bucket).getPublicUrl(storagePath);
       fileUrl = data.publicUrl;
     } else {
-      // Store a stable reference (recommended). Later, generate signed URL on demand.
       fileUrl = `storage://${bucket}/${storagePath}`;
     }
 
-    // ---- Update Contract (fileUrl + fileName) ----
+    // ---- Update Contract ----
     const updated = await database
       .update(contracts)
       .set({
         fileUrl,
         fileName: finalFileName,
-        recipientEmail:email,
-        status:'sent'
+        recipientEmail: email,
+        status: 'sent',
       })
       .where(eq(contracts.id, contractId))
       .returning({ id: contracts.id });
 
     if (!updated.length) {
-      // cleanup orphan file
       await supabaseServerClient.storage.from(bucket).remove([storagePath]);
 
       return NextResponse.json(
@@ -149,6 +155,10 @@ console.log(form, "form----------------------------");
       signer: { name, email },
       placement,
     });
+
+    if (!envelopeId) {
+      throw new Error('DocuSign did not return envelopeId');
+    }
 
     return NextResponse.json(
       {

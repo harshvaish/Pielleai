@@ -325,9 +325,9 @@ const { date, time } = formatDateAndTime(payload?.availability ?? null);
           </Button>
           {/* <DocuSignButton  event={event} /> */}
           
-          <Button variant="default" size="sm" disabled={flow.actionsDisabled}>
+          {/* <Button variant="default" size="sm" disabled={flow.actionsDisabled}>
             Send to DocuSign
-          </Button>
+          </Button> */}
         </div>
       </div>
 
