@@ -25,6 +25,9 @@ export type ContractListFilters = {
   status?: Array<ContractStatus | 'all'>;
   startDate?: string | null; // YYYY-MM-DD
   endDate?: string | null; // YYYY-MM-DD
+  artistIds?: string[];
+  artistManagerIds?: string[];
+  venueIds?: string[];
   sort?: 'asc' | 'desc';
 };
 
@@ -58,7 +61,7 @@ function normalizeStatus(status?: Array<ContractStatus | 'all'>): ContractStatus
 
 export async function getContracts(
   user: User,
-  { currentPage, status, startDate, endDate, sort = 'desc' }: ContractListFilters,
+  { currentPage, status, startDate, endDate, artistIds, artistManagerIds, venueIds, sort = 'desc' }: ContractListFilters,
 ): Promise<{
   data: any[];
   totalPages: number;
@@ -78,6 +81,9 @@ export async function getContracts(
 
     const { start, end } = resolveDateRange({ start: startDate ?? null, end: endDate ?? null });
     const statusValues = normalizeStatus(status);
+    const artistIdsFilter = (artistIds ?? []).map(Number);
+    const artistManagerIdsFilter = (artistManagerIds ?? []).map(Number);
+    const venueIdsFilter = (venueIds ?? []).map(Number);
 
     // ✅ NULL-safe effective date: contractDate if present, else createdAt::date
     const effectiveDate = sql`coalesce(${contracts.contractDate}, ${contracts.createdAt}::date)`;
@@ -86,6 +92,11 @@ export async function getContracts(
       gte(effectiveDate, start),
       lte(effectiveDate, end),
       statusValues ? inArray(contracts.status, statusValues) : undefined,
+      artistIdsFilter.length ? inArray(contracts.artistId, artistIdsFilter) : undefined,
+      artistManagerIdsFilter.length
+        ? inArray(events.artistManagerProfileId, artistManagerIdsFilter)
+        : undefined,
+      venueIdsFilter.length ? inArray(contracts.venueId, venueIdsFilter) : undefined,
     );
 
     let baseQuery = database
@@ -194,7 +205,11 @@ export async function getContracts(
             .where(inArray(contractEmailCcs.contractId, contractIds))
         : Promise.resolve([]),
 
-      database.select({ total: count() }).from(contracts).where(filters),
+      database
+        .select({ total: count() })
+        .from(contracts)
+        .innerJoin(events, eq(contracts.eventId, events.id))
+        .where(filters),
     ]);
 
     const historyByContract = new Map<number, any[]>();
