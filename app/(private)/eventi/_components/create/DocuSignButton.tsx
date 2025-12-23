@@ -2,13 +2,8 @@
 
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
-import { it } from "date-fns/locale";
-import { format } from "date-fns";
-import { toast } from "sonner";
-
-/* --------------------------------
-   TYPES
--------------------------------- */
+import { it } from 'date-fns/locale';
+import { format } from 'date-fns';
 
 type ContractData = {
   artistName: string;
@@ -124,6 +119,7 @@ export async function generateFilledContractHtml(
 
 export default function DocuSignButton({ event }: { event: EventType }) {
   const [loading, setLoading] = useState(false);
+console.log(event, "event-----------------------------");
 
   const getTimeRange = (
     start?: Date | string,
@@ -224,16 +220,24 @@ export default function DocuSignButton({ event }: { event: EventType }) {
         credentials: "include",
       });
 
-      if (res.status) {
-        toast.success("Docusign generated!");
-      } else {
-        throw new Error(await res.text());      }
-    } catch (err) {
-      console.error("DocuSign error:", err);
-    } finally {
-      setLoading(false);
+    console.log("API status:", res.status);
+
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(text);
     }
-  };
+
+    const json = await res.json();
+    console.log("✅ DocuSign response:", json);
+
+  } catch (err) {
+    console.error("❌ FINAL ERROR:", err);
+    //alert("Errore durante invio a DocuSign");
+  } finally {
+    setLoading(false);
+    console.log("🏁 DocuSign flow finished");
+  }
+};
 
 
   return (

@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
 import { toast } from "sonner";
@@ -79,6 +80,7 @@ export async function generateFilledContractHtml(
 export default function DocuSignButton({ payload }: Props) {
     console.log(payload, "payload--------------------------123")
   const [loading, setLoading] = useState(false);
+  const router = useRouter();
   const getEventTime = (
     start?: string,
     end?: string
@@ -184,10 +186,11 @@ export default function DocuSignButton({ payload }: Props) {
         body: formData,
         credentials: "include",
       });
-      if (res.status) {
-        toast.success("Docusign generated!");
-      } else {
-        throw new Error(await res.text());      }
+      if (!res.ok) {
+        throw new Error(await res.text());
+      }
+      toast.success("Docusign generated!");
+      router.refresh();
     } catch (err) {
       console.error("DocuSign error:", err);
     } finally {

@@ -2,6 +2,7 @@ export const runtime = 'nodejs';
 import 'server-only';
 
 import { NextRequest, NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import { headers } from 'next/headers';
 import { eq } from 'drizzle-orm';
 
@@ -159,6 +160,9 @@ export async function POST(req: NextRequest): Promise<NextResponse<ApiResponse<R
     if (!envelopeId) {
       throw new Error('DocuSign did not return envelopeId');
     }
+
+    revalidatePath('/documents');
+    revalidatePath(`/documents/${contractId}`);
 
     return NextResponse.json(
       {
