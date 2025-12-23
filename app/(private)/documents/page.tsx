@@ -470,7 +470,6 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
       {hasContracts ? (
         <div className="max-h-full flex flex-col gap-3 overflow-auto">
           {contracts.map((contract) => {
-            console.log(contract, "contract---------")
             const s = STATUS_STYLES[contract.status];
             const cardHref = `/documents/${contract.id}?data=${encodeURIComponent(
               JSON.stringify(contract)
@@ -490,7 +489,7 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
                       className={`w-max gap-2 px-3 py-1.5 text-xs font-semibold border ${s.badgeBorder} ${s.badgeBg}`}
                     >
                       <span className={`h-2 w-2 rounded-full ${s.dot}`} />
-                      {contract.backendStatus}
+                      {contract.backendStatus == "voided" ? "archived" : contract.backendStatus}
                     </Badge>
                     <div className="text-xs text-zinc-500">
                       Status changed on {contract.statusDate}
