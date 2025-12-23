@@ -27,10 +27,6 @@ import { useEffect, useMemo, useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import {
   QUESTION_ICON,
-  UPLOAD_ICON,
-  FILE_ICON,
-  DOWNLOAD_ICON,
-  DELETE_ICON,
   CIRCLE_RIGHT_ICON,
   GREEN_TICK_ICON,
 } from "@/lib/constants";
@@ -55,11 +51,6 @@ type EventForm = {
   closeDialog?: () => void;
 };
 
-type UploadedFile = {
-  name: string;
-  file: File;
-};
-
 export default function EventForm({
   artists,
   venues,
@@ -80,7 +71,6 @@ export default function EventForm({
   const selectedVenueId = watch("venueId");
   const selectedVenue = venues.find((venue) => venue.id == selectedVenueId);
   const router = useRouter();
-  // Watch the values needed for calculation
   const moCost = watch("moCost");
   const bookingPercentage = watch("bookingPercentage");
   const moArtistAdvancedExpenses = watch("moArtistAdvancedExpenses");
@@ -155,48 +145,18 @@ export default function EventForm({
     setValue("cashBalanceCost", cashBalanceCost);
   }, [cashBalanceCost, setValue]);
 
-  const contractData = {
-    event: {
-      artist: { id: 1, name: "Ann Carrot" },
-      venue: { id: 12, name: "Milano Social Club" },
-      artistManager: { id: 5, name: "Luca Bianchi" },
-      ccEmails: [
-        "Tour Manager",
-        "Admin",
-        "team@agency.com",
-        "finance@agency.com",
-        "admin@agency.com",
-      ],
-      history: [
-        {
-          action: "Contract uploaded",
-          user: "Ann Carrot",
-          date: "2025-11-12 14:32",
-        },
-        {
-          action: "Status changed to Ready",
-          user: "Luca Bianchi",
-          date: "2025-11-13 10:15",
-        },
-        {
-          action: "Sent to DocuSign",
-          user: "Marco Rossi",
-          date: "2025-11-14 09:48",
-        },
-      ],
-    },
-
-    signedContractDocument: {
-      name: "Contract_Artist_AnnCarrot.pdf",
-      url: "https://dummyfiles.com/contracts/contract_123.pdf",
-    },
-  };
+  const ccEmails = [
+    "Tour Manager",
+    "Admin",
+    "team@agency.com",
+    "finance@agency.com",
+    "admin@agency.com",
+  ];
 
   function isSectionComplete(values: Record<string, any>, fields: string[]) {
     return fields.every((f) => {
       const val = values[f];
 
-      // Consider empty, null, undefined, false as incomplete
       return val !== undefined && val !== null && val !== "" && val !== false;
     });
   }
@@ -239,7 +199,7 @@ export default function EventForm({
         time: createdAt.toLocaleTimeString("en-US", {
           hour: "2-digit",
           minute: "2-digit",
-          hour12: true, // ← AM / PM
+          hour12: true,
         }),
 
         title: h.fromStatus
@@ -252,54 +212,32 @@ export default function EventForm({
       },
     ];
   }, [event]);
-
-  type BackendContractStatus =
-    | "draft"
-    | "queued"
-    | "sent"
-    | "viewed"
-    | "signed"
-    | "voided"
-    | "declined";
-
-  function mapUiStatusToBackend(
-    status?: EventFormSchema["contractStatus"]
-  ): BackendContractStatus {
-    switch (status) {
-      case "draft":
-        return "draft";
-      case "pending":
-        return "queued";
-      case "ready":
-        return "sent";
-      case "sent":
-        return "sent";
-      default:
-        return "draft"; // safe fallback
-    }
-  }
-
-  const handleGenerateContract = async () => {
+  const buildPerformanceTime = (
+    startTime?: string,
+    endTime?: string
+  ): string => {
+    if (!startTime || !endTime) return "";
+    return `${startTime} - ${endTime}`;
+  };
+  const buildCcEmails = (values: any): string[] => {
+    if (!Array.isArray(values.ccEmails)) return [];
+  
+    return (values.ccEmails as (boolean | string)[])
+      .map((checked, index) =>
+        checked ? ccEmails[index] : null
+      )
+      .filter((email): email is string => Boolean(email)) ?? [];
+    };
+    
+  const handleUpsertContract = async () => {
     const values = getValues();
 
-    if (values.eventId === undefined) {
+    if (!values.eventId) {
       toast.error("Event ID is required.");
       return;
     }
 
-    const selectedCcEmails =
-      values.ccEmails
-        ?.map((checked, index) =>
-          checked ? contractData.event.ccEmails[index] : null
-        )
-        .filter((email): email is string => Boolean(email)) ?? [];
-    const startTime = values.eventStartTime;
-    const endTime = values.eventEndTime;
-
-    const performanceTime =
-      startTime && endTime ? `${startTime} - ${endTime}` : "";
-
-    const payload = {
+    const payloadBase = {
       artistId: values.artistId,
       venueId: values.venueId,
       eventId: values.eventId,
@@ -314,75 +252,32 @@ export default function EventForm({
       totalCost: values.totalCost,
       upfrontPayment: values.upfrontPayment,
       eventDate: values.eventDate,
-      perfomanceTime: performanceTime,
-      // paymentDate: values.eventDate,
+      perfomanceTime: buildPerformanceTime(
+        values.eventStartTime,
+        values.eventEndTime
+      ),
       paymentDate: values.paymentDate,
       contractDate: new Date().toISOString().split("T")[0],
-      status: mapUiStatusToBackend(values.contractStatus),
-      ccEmails: selectedCcEmails,
+      ccEmails: buildCcEmails(values),
+      status: values.contractStatus,
     };
-    const response = await createContract(payload);
-
-    if (response.success) {
-      toast.success("Contract created!");
-      closeDialog?.();
-
-      startTransition(() => {
-        router.refresh();
-      });
-    } else {
-      toast.error(response.message);
-    }
-  };
-
-  const handleRegenerateContract = async () => {
-    if (!event?.contract?.id) {
-      toast.error("Contract not found.");
-      return;
-    }
 
     startTransition(async () => {
-      const values = getValues();
-      const selectedCcEmails =
-        values.ccEmails
-          ?.map((checked, index) =>
-            checked ? contractData.event.ccEmails[index] : null
-          )
-          .filter((email): email is string => Boolean(email)) ?? [];
-
-      const startTime = values.eventStartTime;
-      const endTime = values.eventEndTime;
-
-      const performanceTime =
-        startTime && endTime ? `${startTime} - ${endTime}` : undefined;
-
-      const payload = {
-        artistId: values.artistId,
-        venueId: values.venueId,
-        eventId: values.eventId,
-        eventType: values.eventType,
-        artistName: values.artistFullName,
-        artistStageName: values.artistStageName,
-        venueName: values.venueName,
-        venueCompanyName: values.venueCompanyName,
-        venueVatNumber: values.venueVatNumber,
-        venueAddress: values.venueAddress,
-        transfortCost: values.transportationsCost,
-        totalCost: values.totalCost,
-        upfrontPayment: values.upfrontPayment,
-        eventDate: values.eventDate,
-        perfomanceTime: performanceTime,
-        contractId: event.contract.id, // ✅ now guaranteed
-        paymentDate: values.paymentDate,
-        contractDate: new Date().toISOString().split("T")[0],
-        status: mapUiStatusToBackend(values.contractStatus),
-        ccEmails: selectedCcEmails,
-      };
-
-      const response = await editContract(payload);
+      const response = event?.contract
+        ? await editContract({
+            ...payloadBase,
+            contractId: event.contract.id,
+            status: values.contractStatus as "draft" | "sent" | "voided" | "queued" | "viewed" | "signed" | "declined" | undefined,
+          })
+        : await createContract({
+            ...payloadBase,
+            status: values.contractStatus as "draft" | "sent" | "voided" | "queued" | "viewed" | "signed" | "declined" | undefined,
+          });
 
       if (response.success) {
-        toast.success("Contract regenerated!");
+        toast.success(
+          event?.contract ? "Contract regenerated!" : "Contract created!"
+        );
         closeDialog?.();
         router.refresh();
       } else {
@@ -1353,7 +1248,6 @@ export default function EventForm({
           </div>
         </TabsContent>
         <TabsContent value="e" className="flex flex-col gap-6 p-2">
-          {/* STATUS BAR */}
           <div className="flex justify-between items-start">
             <div className="flex flex-col gap-1">
               <Controller
@@ -1382,8 +1276,6 @@ export default function EventForm({
                         >
                           {derivedStatusLabel}
                         </span>
-
-                        {/* Question icon (always inside, on right) */}
                         <img
                           src={isMissing ? QUESTION_ICON : CIRCLE_RIGHT_ICON}
                           alt="info"
@@ -1401,18 +1293,13 @@ export default function EventForm({
                 Status changed on 13/11/25 by Ann Carrot
               </span>
             </div>
-
-            {/* BUTTONS */}
             <div className="flex items-center gap-2">
               <Button
                 type="button"
                 size="sm"
                 variant="outline"
-                onClick={
-                  event?.contract
-                    ? handleRegenerateContract
-                    : handleGenerateContract
-                }
+                disabled={isPending}
+                onClick={handleUpsertContract}
               >
                 {isPending
                   ? "Generating..."
@@ -1420,14 +1307,12 @@ export default function EventForm({
                     ? "Regenerate"
                     : "Generate"}
               </Button>
-              <DocuSignButton  event={event} />
+
+              <DocuSignButton event={event} />
             </div>
           </div>
-
-          {/* CONTRACT FILE BLOCK */}
           <div className="flex flex-col gap-2">
             <div className="text-sm font-semibold">Contract file</div>
-
             <UploadPdf />
             {errors.contractDocument && (
               <p className="text-xs text-destructive mt-2">
@@ -1442,7 +1327,6 @@ export default function EventForm({
             collapsible
             className="w-full border-y border-zinc-100 rounded-none"
           >
-            {/* DETAILS */}
             <AccordionItem value="details">
               <AccordionTrigger className="px-3 hover:no-underline">
                 Details
@@ -1450,10 +1334,8 @@ export default function EventForm({
 
               <AccordionContent className="px-0">
                 <Accordion type="multiple" className="border-none">
-                  {/* ---------------- ARTIST SECTION ---------------- */}
                   <AccordionItem value="artist">
                     <AccordionTrigger className="px-3 hover:no-underline bg-zinc-50">
-                      {/* Icon + Label group */}
                       <div className="flex items-center gap-2">
                         <img
                           src={
@@ -1474,10 +1356,8 @@ export default function EventForm({
                     </AccordionTrigger>
 
                     <AccordionContent className="px-3">
-                      {/* Panel background box */}
                       <div className="bg-zinc-50 rounded-xl p-4 flex flex-col gap-4">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          {/* Artist Full Name */}
                           <div className="flex flex-col gap-1">
                             <label className="text-sm text-zinc-600">
                               Artist full name
@@ -1494,7 +1374,6 @@ export default function EventForm({
                             )}
                           </div>
 
-                          {/* Artist Stage Name */}
                           <div className="flex flex-col gap-1">
                             <label className="text-sm text-zinc-600">
                               Artist stage name
@@ -1515,7 +1394,6 @@ export default function EventForm({
                     </AccordionContent>
                   </AccordionItem>
 
-                  {/* ---------------- VENUE SECTION ---------------- */}
                   <AccordionItem value="venue">
                     <AccordionTrigger className="px-3 hover:no-underline">
                       <div className="flex items-center gap-2">
@@ -1539,9 +1417,7 @@ export default function EventForm({
                     </AccordionTrigger>
 
                     <AccordionContent className="px-3 py-2 space-y-3">
-                      {/* First Row */}
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {/* Venue name */}
                         <div className="flex flex-col gap-1">
                           <label className="text-sm text-zinc-600">
                             Venue name
@@ -1552,8 +1428,6 @@ export default function EventForm({
                             className="h-10"
                           />
                         </div>
-
-                        {/* Venue Company name */}
                         <div className="flex flex-col gap-1">
                           <label className="text-sm text-zinc-600">
                             Venue Company name
@@ -1565,10 +1439,7 @@ export default function EventForm({
                           />
                         </div>
                       </div>
-
-                      {/* Second Row */}
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {/* Venue VAT number */}
                         <div className="flex flex-col gap-1">
                           <label className="text-sm text-zinc-600">
                             Venue VAT number
@@ -1580,7 +1451,6 @@ export default function EventForm({
                           />
                         </div>
 
-                        {/* Venue address */}
                         <div className="flex flex-col gap-1">
                           <label className="text-sm text-zinc-600">
                             Venue address
@@ -1595,7 +1465,6 @@ export default function EventForm({
                     </AccordionContent>
                   </AccordionItem>
 
-                  {/* ---------------- EVENT SECTION ---------------- */}
                   <AccordionItem value="event">
                     <AccordionTrigger className="px-3 hover:no-underline">
                       <div className="flex items-center gap-2">
@@ -1621,7 +1490,6 @@ export default function EventForm({
                     </AccordionTrigger>
 
                     <AccordionContent className="px-3 py-4 space-y-4">
-                      {/* EVENT TYPE */}
                       <div className="flex flex-col gap-1">
                         <label className="text-sm text-zinc-600">
                           Event type
@@ -1648,8 +1516,6 @@ export default function EventForm({
                           )}
                         />
                       </div>
-
-                      {/* DATE + TIME */}
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="flex flex-col gap-1">
                           <label className="text-sm text-zinc-600">
@@ -1681,7 +1547,6 @@ export default function EventForm({
                         </div>
                       </div>
 
-                      {/* TRANSPORT COSTS */}
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="flex flex-col gap-1">
                           <label className="text-sm text-zinc-600">
@@ -1714,7 +1579,6 @@ export default function EventForm({
                         </div>
                       </div>
 
-                      {/* UPFRONT PAYMENT */}
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="flex flex-col gap-1">
                           <label className="text-sm text-zinc-600">
@@ -1753,9 +1617,8 @@ export default function EventForm({
               <AccordionTrigger className="px-3 hover:no-underline">
                 CCs of the email
               </AccordionTrigger>
-
               <AccordionContent className="px-3 flex flex-col gap-3">
-                {contractData.event.ccEmails.map((email, idx) => (
+                {ccEmails.map((email, idx) => (
                   <div key={idx} className="flex flex-col">
                     <Controller
                       control={control}
@@ -1782,7 +1645,6 @@ export default function EventForm({
               <AccordionTrigger className="px-3 hover:no-underline">
                 <span className="text-sm font-medium">History of changes</span>
               </AccordionTrigger>
-
               <AccordionContent className="px-3 py-4">
                 {historyData.length === 0 ? (
                   <div className="text-sm text-zinc-400 text-center">
@@ -1798,7 +1660,6 @@ export default function EventForm({
                           key={index}
                           className="grid grid-cols-[60px_1fr] gap-4 relative"
                         >
-                          {/* LEFT: DATE + TIME */}
                           <div className="flex flex-col items-center text-center leading-tight">
                             <span className="text-xs font-medium text-zinc-600">
                               {item.date}
@@ -1808,20 +1669,14 @@ export default function EventForm({
                             </span>
                           </div>
 
-                          {/* RIGHT SIDE BLOCK */}
                           <div className="relative pl-6">
-                            {/* Timeline vertical line */}
                             {!isLast && (
                               <div className="absolute left-[6px] top-4 bottom-[-2px] w-[0.5px] bg-green-600/70"></div>
                             )}
-
-                            {/* Status dot */}
                             <div className="absolute left-0 top-1">
                               {item.type === "archived" ? (
-                                // Black outlined circle (same as screenshot)
                                 <div className="w-3 h-3 border border-zinc-700 rounded-full bg-white"></div>
                               ) : (
-                                // Green Tick Icon
                                 <img
                                   src={GREEN_TICK_ICON}
                                   width={12}
@@ -1832,12 +1687,10 @@ export default function EventForm({
                               )}
                             </div>
 
-                            {/* Title */}
                             <div className="text-sm font-medium text-zinc-800">
                               {item.title}
                             </div>
 
-                            {/* Description */}
                             <div className="text-xs text-zinc-500 leading-relaxed mt-1">
                               {item.description}
                             </div>

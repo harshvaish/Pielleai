@@ -6,22 +6,8 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Separator } from "@/components/ui/separator";
-import {
-  BadgeInfo,
-  CalendarDays,
-  Download,
-  FileText,
-  Mail,
-  MapPin,
-  Trash,
-  Upload,
-  Users,
-} from "lucide-react";
 import { Controller, useForm } from "react-hook-form";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
@@ -31,13 +17,6 @@ import {
   SelectItem,
   SelectTrigger,
 } from "@/components/ui/select";
-
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { GREEN_TICK_ICON, QUESTION_ICON } from "@/lib/constants";
 
 type Props = {
