@@ -225,7 +225,7 @@ export async function getContracts(
       ccs: ccsByContract.get(r.id) ?? [],
       history: historyByContract.get(r.id) ?? [],
     }));
-
+console.log(data, "data from getContracts-----------------");
     const totalPages = isPaginated ? Math.max(1, Math.ceil(Number(total ?? 0) / limit)) : 1;
     return {
       data,

@@ -132,7 +132,6 @@ export default function ContractDetailClient({ payload }: Props) {
     formState: { errors },
   } = form;
 
-  const values = watch();
   const formValues = watch();
 
   /* ---------------- HELPERS ---------------- */
