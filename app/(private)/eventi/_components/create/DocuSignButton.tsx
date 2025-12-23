@@ -2,7 +2,6 @@
 
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
-import html2pdf from "html2pdf.js";
 import { it } from 'date-fns/locale';
 import { format } from 'date-fns';
 
@@ -151,6 +150,7 @@ const handleClick = async () => {
 
   try {
     setLoading(true);
+    const { default: html2pdf } = await import("html2pdf.js");
 
     /* 1️⃣ Generate filled HTML */
     console.log("1️⃣ Generating HTML");
