@@ -222,14 +222,14 @@ export default function EventForm({
   };
   const buildCcEmails = (values: any): string[] => {
     if (!Array.isArray(values.ccEmails)) return [];
-  
-    return (values.ccEmails as (boolean | string)[])
-      .map((checked, index) =>
-        checked ? ccEmails[index] : null
-      )
-      .filter((email): email is string => Boolean(email)) ?? [];
-    };
-    
+
+    return (
+      (values.ccEmails as (boolean | string)[])
+        .map((checked, index) => (checked ? ccEmails[index] : null))
+        .filter((email): email is string => Boolean(email)) ?? []
+    );
+  };
+
   const handleUpsertContract = async () => {
     const values = getValues();
 
@@ -268,11 +268,27 @@ export default function EventForm({
         ? await editContract({
             ...payloadBase,
             contractId: event.contract.id,
-            status: values.contractStatus as "draft" | "sent" | "voided" | "queued" | "viewed" | "signed" | "declined" | undefined,
+            status: values.contractStatus as
+              | "draft"
+              | "sent"
+              | "voided"
+              | "queued"
+              | "viewed"
+              | "signed"
+              | "declined"
+              | undefined,
           })
         : await createContract({
             ...payloadBase,
-            status: values.contractStatus as "draft" | "sent" | "voided" | "queued" | "viewed" | "signed" | "declined" | undefined,
+            status: values.contractStatus as
+              | "draft"
+              | "sent"
+              | "voided"
+              | "queued"
+              | "viewed"
+              | "signed"
+              | "declined"
+              | undefined,
           });
 
       if (response.success) {
@@ -1285,6 +1301,11 @@ export default function EventForm({
                           className="opacity-80 ml-auto"
                         />
                       </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="sent">Sent</SelectItem>
+                        <SelectItem value="pending">Pending</SelectItem>
+                        <SelectItem value="archived">Archived</SelectItem>
+                      </SelectContent>
                     </Select>
                   );
                 }}
@@ -1314,7 +1335,7 @@ export default function EventForm({
           </div>
           <div className="flex flex-col gap-2">
             <div className="text-sm font-semibold">Contract file</div>
-            <UploadPdf />
+            <UploadPdf event={event}/>
             {errors.contractDocument && (
               <p className="text-xs text-destructive mt-2">
                 {errors.contractDocument.message as string}
