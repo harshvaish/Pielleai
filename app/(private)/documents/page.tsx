@@ -50,6 +50,7 @@ type ActionVariant = "default" | "secondary" | "outline" | "ghost";
 export type ContractCard = {
   id: number;
   status: ContractCardStatus;
+  backendStatus: BackendContractStatus; // Added this line
   statusLabel: string;
   venueName: string;
   artistName: string;
@@ -243,11 +244,13 @@ function formatDateAndTime(
 function mapContract(c: any): ContractCard {
   const uiStatus = mapStatus(c.status as BackendContractStatus);
   const { date, time } = formatDateAndTime(c.availability);
+  const backendStatus = c.status as BackendContractStatus;
 
   return {
     id: c.id,
 
     status: uiStatus,
+    backendStatus,
     statusLabel: uiStatus,
 
     venueName: c.venue.name,
@@ -461,7 +464,7 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
                       className={`w-max gap-2 px-3 py-1.5 text-xs font-semibold border ${s.badgeBorder} ${s.badgeBg}`}
                     >
                       <span className={`h-2 w-2 rounded-full ${s.dot}`} />
-                      {contract.status}
+                      {contract.backendStatus}
                     </Badge>
                     <div className="text-xs text-zinc-500">
                       Status changed on {contract.statusDate}

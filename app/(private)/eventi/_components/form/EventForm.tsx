@@ -174,6 +174,7 @@ export default function EventForm({
 
   const isEventComplete = isSectionComplete(formValues, [
     "eventDate",
+    "eventType",
     "eventStartTime",
     "eventEndTime",
     "transportationsCost",
@@ -1472,6 +1473,7 @@ export default function EventForm({
                           src={
                             isSectionComplete(watch(), [
                               "eventDate",
+                              "eventType",
                               "eventStartTime",
                               "eventEndTime",
                               "transportationsCost",
