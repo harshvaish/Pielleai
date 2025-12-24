@@ -1337,7 +1337,7 @@ const toUiStatus = (status?: string) => {
                         />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="sent">Sent</SelectItem>
+                        <SelectItem value="sent">Send to docusign</SelectItem>
                         <SelectItem value="pending">Pending</SelectItem>
                         <SelectItem value="archived">Archived</SelectItem>
                         </SelectContent>

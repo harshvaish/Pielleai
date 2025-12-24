@@ -51,7 +51,7 @@ type ContractsTableFilters = {
   sort: "asc" | "desc";
 };
 
-type ContractCardStatus = ContractFilterStatus | "missing-info" | "cancelled";
+type ContractCardStatus = ContractFilterStatus | "missing-info" | "cancelled" | "sent";
 type ActionVariant = "default" | "secondary" | "outline" | "ghost";
 
 export type ContractCard = {
@@ -168,6 +168,12 @@ const STATUS_STYLES: Record<
     badgeBorder: "border-emerald-200",
     badgeBg: "bg-emerald-50 text-emerald-700",
   },
+  sent: {
+    dot: "bg-emerald-500",
+    badgeBorder: "border-emerald-200",
+    badgeBg: "bg-emerald-50 text-emerald-700",
+  },
+  
   refused: {
     dot: "bg-rose-500",
     badgeBorder: "border-rose-200",
@@ -209,6 +215,9 @@ function mapStatus(status: BackendContractStatus): ContractCardStatus {
       return "refused";
     case "voided":
       return "archived";
+      case "sent":
+        return "sent"; 
+  
     default:
       return "all";
   }
@@ -416,6 +425,28 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
   const totalPages = api.totalPages;
   const hasContracts = contracts.length > 0;
 
+  function getBackendStatusLabel(status: string) {
+    switch (status) {
+      case "voided":
+        return "Archived";
+      case "sent":
+        return "Sent to DocuSign";
+      case "queued":
+        return "Queued";
+      case "viewed":
+        return "Viewed";
+      case "signed":
+        return "Signed";
+      case "declined":
+        return "Refused";
+      case "draft":
+        return "Draft";
+      default:
+        return status;
+    }
+  }
+  
+
   return (
     <div className="h-full grid grid-rows-[min-content_min-content_1fr_min-content] gap-4">
       <div className="flex flex-wrap justify-between items-center gap-3">
@@ -489,8 +520,8 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
                       className={`w-max gap-2 px-3 py-1.5 text-xs font-semibold border ${s.badgeBorder} ${s.badgeBg}`}
                     >
                       <span className={`h-2 w-2 rounded-full ${s.dot}`} />
-                      {contract.backendStatus == "voided" ? "archived" : contract.backendStatus}
-                    </Badge>
+                      {getBackendStatusLabel(contract.backendStatus)}
+                      </Badge>
                     <div className="text-xs text-zinc-500">
                       Status changed on {contract.statusDate}
                     </div>
