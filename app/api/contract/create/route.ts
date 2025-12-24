@@ -28,7 +28,7 @@ const contractCreateSchema = z.object({
   fileName: z.string().min(1),
   recipientEmail: z.string().email().optional(),
   ccEmails: z.array(z.string().email()).optional(),
-  status: z.enum(['draft', 'queued', 'sent', 'viewed', 'signed', 'voided']).default('draft').optional(),
+  status: z.enum(['draft', 'queued', 'sent', 'viewed', 'signed', 'voided','declined']).default('draft').optional(),
   note: z.string().max(10_000).optional(),
 });
 
