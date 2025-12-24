@@ -85,11 +85,17 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       ? s.flatMap(mapUiStatusToApi)
       : (['all'] as BackendContractStatus[]);
 
+    const formatDateForApi = (date?: string | Date | null): string | null => {
+      if (!date) return null;
+      if (typeof date === 'string') return date;
+      return date.toISOString().split('T')[0];
+    };
+
     const result = await getContracts(user, {
       currentPage: null,
       status: mappedStatuses,
-      startDate: sd ?? '',
-      endDate: ed ?? '',
+      startDate: formatDateForApi(sd),
+      endDate: formatDateForApi(ed),
       artistIds: a,
       artistManagerIds: m,
       venueIds: v,
