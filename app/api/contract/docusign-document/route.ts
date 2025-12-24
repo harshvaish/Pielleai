@@ -96,9 +96,10 @@ export async function POST(req: NextRequest): Promise<NextResponse<ApiResponse<R
 
     const original = file.name || `contract-${contractId}.pdf`;
     const safeBase = sanitizeFileName(original.replace(/\.pdf$/i, ''));
-    const finalFileName = safeBase.toLowerCase().endsWith('.pdf') ? safeBase : `${safeBase}.pdf`;
+    const baseFileName = safeBase.toLowerCase().endsWith('.pdf') ? safeBase : `${safeBase}.pdf`;
+    const finalFileName = `${Date.now()}-${baseFileName}`;
 
-    const storagePath = `contracts/${contractId}/${Date.now()}-${finalFileName}`;
+    const storagePath = `contracts/${contractId}/${finalFileName}`;
 
     const { error: uploadError } = await supabaseServerClient.storage
       .from(bucket)
@@ -127,6 +128,7 @@ export async function POST(req: NextRequest): Promise<NextResponse<ApiResponse<R
     }
 
     // ---- Update Contract ----
+    console.log("fileUrl:", fileUrl, "fileName:", finalFileName);
     const updated = await database
       .update(contracts)
       .set({
