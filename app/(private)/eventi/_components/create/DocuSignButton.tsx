@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { it } from 'date-fns/locale';
 import { format } from 'date-fns';
+import { toast } from "sonner";
 
 type ContractData = {
   artistName: string;
@@ -43,6 +44,7 @@ type EventType = {
     stageName?: string;
     tourManagerEmail?: string;
   };
+  tourManagerName?: string;
 
   venue?: {
     name: string;
@@ -161,7 +163,7 @@ console.log(event, "event-----------------------------");
 
     totalFee: event.event?.totalCost ?? "€0",
 
-    signerName: "Luca Bianchi",
+    signerName: event?.tourManagerName ?? "",
     signerEmail: event?.tourManagerEmail ?? "",
   };
 
@@ -225,6 +227,8 @@ console.log(event, "event-----------------------------");
     if (!res.ok) {
       const text = await res.text();
       throw new Error(text);
+    } else{
+      toast.success("Docusign generated!");
     }
 
     const json = await res.json();

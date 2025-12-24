@@ -30,6 +30,7 @@ type ContractData = {
 
   signerName: string;
   tourManagerEmail: string;
+  tourManagerName: string;
 };
 
 type Props = {
@@ -119,6 +120,8 @@ export default function DocuSignButton({ payload }: Props) {
 
     signerName: "Luca Bianchi",
     tourManagerEmail: payload.artist?.tourManagerEmail ?? "",
+    tourManagerName: payload.artist?.tourManagerName ?? "",
+
   };
 
   const handleClick = async () => {
@@ -173,7 +176,7 @@ export default function DocuSignButton({ payload }: Props) {
       const formData = new FormData();
       formData.append("file", pdfBlob, "contract.pdf");
       formData.append("contractId", String(payload.id));
-      formData.append("name", CONTRACT_DATA.signerName);
+      formData.append("name", CONTRACT_DATA.tourManagerName);
       formData.append("email", CONTRACT_DATA.tourManagerEmail);
 
       formData.append("pageNumber", "5");
