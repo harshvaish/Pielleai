@@ -17,13 +17,13 @@ import { Checkbox } from "@/components/ui/checkbox";
 import VenueSelect from "./VenueSelect";
 import ArtistManagerSelect from "./ArtistManagerSelect";
 import EventNotesInput from "./EventNotesInput";
-import { Controller, useFormContext } from "react-hook-form";
+import { Controller, useFormContext, useWatch } from "react-hook-form";
 import ArtistSelect from "./ArtistSelect";
 import { eventStatus } from "@/lib/database/schema";
 import { EventFormSchema } from "@/lib/validation/event-form-schema";
 import ArtistAvailabilitySelectWithCreate from "./ArtistAvailabilitySelectWithCreate";
 import EventStatusBadge from "@/app/(private)/_components/Badges/EventStatusBadge";
-import { useEffect, useMemo, useState, useTransition } from "react";
+import { useEffect, useMemo, useRef, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import {
   QUESTION_ICON,
@@ -80,6 +80,11 @@ export default function EventForm({
   const hotelCost = watch("hotelCost");
   const restaurantCost = watch("restaurantCost");
   const formValues = watch();
+  const contractStatus = useWatch({
+    control,
+    name: "contractStatus",
+  });
+  
 
   // Calculate artistNetCost
   const artistNetCost = useMemo(() => {
@@ -174,6 +179,7 @@ export default function EventForm({
 
   const isEventComplete = isSectionComplete(formValues, [
     "eventDate",
+    "eventType",
     "eventStartTime",
     "eventEndTime",
     "transportationsCost",
@@ -221,14 +227,14 @@ export default function EventForm({
   };
   const buildCcEmails = (values: any): string[] => {
     if (!Array.isArray(values.ccEmails)) return [];
-  
-    return (values.ccEmails as (boolean | string)[])
-      .map((checked, index) =>
-        checked ? ccEmails[index] : null
-      )
-      .filter((email): email is string => Boolean(email)) ?? [];
-    };
-    
+
+    return (
+      (values.ccEmails as (boolean | string)[])
+        .map((checked, index) => (checked ? ccEmails[index] : null))
+        .filter((email): email is string => Boolean(email)) ?? []
+    );
+  };
+
   const handleUpsertContract = async () => {
     const values = getValues();
 
@@ -267,11 +273,27 @@ export default function EventForm({
         ? await editContract({
             ...payloadBase,
             contractId: event.contract.id,
-            status: values.contractStatus as "draft" | "sent" | "voided" | "queued" | "viewed" | "signed" | "declined" | undefined,
+            status: values.contractStatus as
+              | "draft"
+              | "sent"
+              | "voided"
+              | "queued"
+              | "viewed"
+              | "signed"
+              | "declined"
+              | undefined,
           })
         : await createContract({
             ...payloadBase,
-            status: values.contractStatus as "draft" | "sent" | "voided" | "queued" | "viewed" | "signed" | "declined" | undefined,
+            status: values.contractStatus as
+              | "draft"
+              | "sent"
+              | "voided"
+              | "queued"
+              | "viewed"
+              | "signed"
+              | "declined"
+              | undefined,
           });
 
       if (response.success) {
@@ -285,7 +307,38 @@ export default function EventForm({
       }
     });
   };
+const prevStatusRef = useRef<string | undefined>(undefined);
 
+useEffect(() => {
+  if (
+    toUiStatus(contractStatus) === "archived" &&
+    prevStatusRef.current !== "archived" &&
+    event?.contract?.id
+  ) {
+    startTransition(async () => {
+      const response = await editContract({
+        contractId: event.contract.id,
+        status: "voided", // ✅ backend-safe
+        note: "Contratto archiviato",
+      });
+
+      if (response.success) {
+        toast.success("Contract archived");
+        router.refresh();
+      } else {
+        toast.error(response.message);
+      }
+    });
+  }
+
+  prevStatusRef.current = contractStatus;
+}, [contractStatus, event?.contract?.id]);
+const toUiStatus = (status?: string) => {
+  if (!status) return undefined;
+  if (status === "voided") return "archived";
+  return status;
+};
+    
   return (
     <>
       <div className="flex justify-between items-center gap-2">
@@ -1254,12 +1307,11 @@ export default function EventForm({
                 control={control}
                 name="contractStatus"
                 render={({ field }) => {
-                  const derivedStatusLabel = event?.contract?.status
-                    ? event.contract.status
-                    : isDetailsComplete
-                      ? "draft"
-                      : "Missing data";
-
+                  const derivedStatusLabel =
+                  field.value ??
+                  toUiStatus(event?.contract?.status) ??
+                  (isDetailsComplete ? "draft" : "Missing data");
+            
                   const isMissing = derivedStatusLabel === "Missing data";
                   return (
                     <Select value={field.value} onValueChange={field.onChange}>
@@ -1284,6 +1336,11 @@ export default function EventForm({
                           className="opacity-80 ml-auto"
                         />
                       </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="sent">Sent</SelectItem>
+                        <SelectItem value="pending">Pending</SelectItem>
+                        <SelectItem value="archived">Archived</SelectItem>
+                        </SelectContent>
                     </Select>
                   );
                 }}
@@ -1313,7 +1370,7 @@ export default function EventForm({
           </div>
           <div className="flex flex-col gap-2">
             <div className="text-sm font-semibold">Contract file</div>
-            <UploadPdf />
+            <UploadPdf event={event}/>
             {errors.contractDocument && (
               <p className="text-xs text-destructive mt-2">
                 {errors.contractDocument.message as string}
@@ -1472,6 +1529,7 @@ export default function EventForm({
                           src={
                             isSectionComplete(watch(), [
                               "eventDate",
+                              "eventType",
                               "eventStartTime",
                               "eventEndTime",
                               "transportationsCost",

@@ -9,22 +9,33 @@ import { EventFormSchema } from "@/lib/validation/event-form-schema";
 import { ApiResponse } from "@/lib/types";
 import { pdfUploadSchema } from "@/lib/validation/pdf-upload-schema";
 
-type Props = {
-  className?: string;
+type EventType = {
+  contract?: {
+    id: string;
+    fileName: string;
+    fileUrl: string;
+  };
 };
 
-export default function LocalPdfUpload({ className }: Props) {
+export default function LocalPdfUpload({ event }: { event: EventType }) {
   const [uploading, setUploading] = useState(false);
 
-  const {
-    watch,
-    setValue,
-    formState: { errors },
-  } = useFormContext<EventFormSchema>();
+  const { watch, setValue } = useFormContext<EventFormSchema>();
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
-  const pdf = watch("contractDocument");
+  /* ---------------- FORM VALUE ---------------- */
+  const formPdf = watch("contractDocument");
+
+  /* ---------------- DISPLAY PDF (FORM → EVENT) ---------------- */
+  const displayPdf =
+    formPdf ??
+    (event?.contract?.fileUrl
+      ? {
+          url: event.contract.fileUrl,
+          name: event.contract.fileName,
+        }
+      : null);
 
   /* ---------------- UPLOAD ---------------- */
   const onUpload = async (file: File) => {
@@ -64,7 +75,11 @@ export default function LocalPdfUpload({ className }: Props) {
 
     const url = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/${process.env.NEXT_PUBLIC_SUPABASE_BUCKET_NAME}/${path}`;
 
-    setValue("contractDocument", { url, name: fileName }, { shouldDirty: true });
+    setValue(
+      "contractDocument",
+      { url, name: fileName },
+      { shouldDirty: true }
+    );
   };
 
   /* ---------------- INPUT CHANGE ---------------- */
@@ -100,21 +115,20 @@ export default function LocalPdfUpload({ className }: Props) {
 
   /* ---------------- DOWNLOAD ---------------- */
   const onDownload = () => {
-    if (!pdf?.url) return;
-    window.open(pdf.url, "_blank", "noopener,noreferrer");
+    if (!displayPdf?.url) return;
+    window.open(displayPdf.url, "_blank", "noopener,noreferrer");
   };
 
   /* ---------------- DELETE ---------------- */
   const onDeleteHandler = () => {
-    setValue('contractDocument', undefined);
+    setValue("contractDocument", undefined, { shouldDirty: true });
     if (fileInputRef.current) {
-      fileInputRef.current.value = '';
+      fileInputRef.current.value = "";
     }
   };
 
-
   return (
-    <div className={cn("flex items-center gap-3 w-fit", className)}>
+    <div className={cn("flex items-center gap-3 w-fit")}>
       {/* Hidden input */}
       <input
         ref={fileInputRef}
@@ -125,13 +139,13 @@ export default function LocalPdfUpload({ className }: Props) {
       />
 
       {/* FILE EXISTS */}
-      {pdf ? (
+      {displayPdf ? (
         <div className="flex items-center gap-3 w-fit">
           {/* FILE CHIP */}
           <div className="flex items-center gap-2 bg-white border border-zinc-300 rounded-full px-4 py-1.5 shadow-sm">
             <Upload className="w-4 h-4 text-zinc-500" />
             <span className="text-sm font-medium truncate max-w-[220px]">
-              {pdf.name}
+              {displayPdf.name}
             </span>
           </div>
 

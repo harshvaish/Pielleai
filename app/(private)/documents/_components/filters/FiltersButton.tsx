@@ -5,7 +5,6 @@ import { Eraser, ListFilter } from 'lucide-react';
 import {
   ArtistManagerSelectData,
   ArtistSelectData,
-  EventsTableFilters,
   UserRole,
   VenueSelectData,
 } from '@/lib/types';
@@ -18,7 +17,11 @@ import VenueSelect from '@/app/(private)/_components/filters/VenueSelect';
 
 type FiltersButtonProps = {
   userRole: UserRole;
-  filters: EventsTableFilters;
+  filters: {
+    artistIds: string[];
+    artistManagerIds: string[];
+    venueIds: string[];
+  };
   artists: ArtistSelectData[];
   artistManagers: ArtistManagerSelectData[];
   venues: VenueSelectData[];

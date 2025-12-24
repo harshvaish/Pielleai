@@ -2,8 +2,14 @@
 
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
-import { it } from 'date-fns/locale';
-import { format } from 'date-fns';
+import { useRouter } from "next/navigation";
+import { format } from "date-fns";
+import { it } from "date-fns/locale";
+import { toast } from "sonner";
+
+/* -------------------------------
+   TYPES
+-------------------------------- */
 
 type ContractData = {
   artistName: string;
@@ -19,59 +25,18 @@ type ContractData = {
   eventDate: string;
   eventTime: string;
 
-  transportationsCost: string;
-  totalCost: string;
-  upfrontPayment: string;
-
   totalFee: string;
   paymentDate: string;
 
   signerName: string;
-  signerEmail: string;
-};
-
-type EventType = {
-  id: string;
-  totalCost: string;
-  depositCost: string;
-  transportCost: string;
-  paymentDate: string;
   tourManagerEmail: string;
-  artist: {
-    name: string;
-    surname: string;
-    stageName?: string;
-    tourManagerEmail?: string;
-  };
-
-  venue?: {
-    name: string;
-    company?: string;
-    address?: string;
-    vatCode?: string;
-    city?: string;
-  };
-
-  availability?: {
-    startDate?: Date | string;
-    endDate?: Date | string;
-  };
-
-  eventType?: string;
-
-  event?: {
-    totalCost?: string;
-    depositCost?: string;
-    paymentDate?: string;
-    transportCost?: string;
-  };
-
-  contract: {
-    id: string;
-  };
 };
 
-/* --------------------------------
+type Props = {
+  payload: any;
+};
+
+/* -------------------------------
    HTML TEMPLATE FILLER
 -------------------------------- */
 
@@ -79,9 +44,7 @@ export async function generateFilledContractHtml(
   data: ContractData
 ): Promise<string> {
   const res = await fetch("/contract/contract-template.html");
-  if (!res.ok) {
-    throw new Error("Failed to load contract template");
-  }
+  if (!res.ok) throw new Error("Failed to load contract template");
 
   let html = await res.text();
 
@@ -99,10 +62,7 @@ export async function generateFilledContractHtml(
     EVENT_DATE: data.eventDate,
     EVENT_TIME: data.eventTime,
 
-    TRANSPORTATION_COST: data.transportationsCost,
-    TOTAL_COST: data.totalCost,
-    UPFRONT_PAYMENT: data.upfrontPayment,
-
+    TOTAL_FEE: data.totalFee,
     PAYMENT_DATE: data.paymentDate,
   };
 
@@ -113,17 +73,17 @@ export async function generateFilledContractHtml(
   return html;
 }
 
-/* --------------------------------
+/* -------------------------------
    COMPONENT
 -------------------------------- */
 
-export default function DocuSignButton({ event }: { event: EventType }) {
+export default function DocuSignButton({ payload }: Props) {
+    console.log(payload, "payload--------------------------123")
   const [loading, setLoading] = useState(false);
-console.log(event, "event-----------------------------");
-
-  const getTimeRange = (
-    start?: Date | string,
-    end?: Date | string
+  const router = useRouter();
+  const getEventTime = (
+    start?: string,
+    end?: string
   ): string => {
     if (!start || !end) return "";
     return `${format(new Date(start), "HH:mm", { locale: it })} – ${format(
@@ -134,51 +94,53 @@ console.log(event, "event-----------------------------");
   };
 
   const CONTRACT_DATA: ContractData = {
-    artistName: `${event.artist.name} ${event.artist.surname}`,
-    artistStageName: event.artist.stageName,
+    artistName: `${payload.artist.name} ${payload.artist.surname}`,
+    artistStageName: payload.artist.stageName,
 
-    venueName: event.venue?.name ?? "",
-    venueCompanyName: event.venue?.company,
-    venueAddress: event.venue?.address,
-    venueVatNumber: event.venue?.vatCode,
-    venueCity: event.venue?.city ?? "",
+    venueName: payload.venue?.name ?? "",
+    venueCompanyName: payload.venue?.company,
+    venueAddress: payload.venue?.address,
+    venueVatNumber: payload.venue?.vatCode,
+    venueCity: payload.venue?.address ?? "",
 
-    eventType: event.eventType,
-    eventDate: event.availability?.startDate
-      ? format(new Date(event.availability.startDate), "yyyy-MM-dd")
+    eventType: payload.event?.eventType,
+    eventDate: payload.availability?.startDate
+      ? format(new Date(payload.availability.startDate), "yyyy-MM-dd")
       : "",
-    eventTime: getTimeRange(
-      event.availability?.startDate,
-      event.availability?.endDate
+    eventTime: getEventTime(
+      payload.availability?.startDate,
+      payload.availability?.endDate
     ),
 
-    totalCost: event?.totalCost ?? "0",
-    upfrontPayment: event?.depositCost ?? "0",
-    transportationsCost: event?.transportCost ?? "0",
-    paymentDate: event?.paymentDate
-      ? format(new Date(event?.paymentDate), "dd/MM/yyyy")
+    totalFee: payload.event?.totalFee ?? "€5,000",
+    paymentDate: payload.event?.paymentDate
+      ? format(new Date(payload.event.paymentDate), "dd/MM/yyyy")
       : "",
 
-    totalFee: event.event?.totalCost ?? "€0",
-
     signerName: "Luca Bianchi",
-    signerEmail: event?.tourManagerEmail ?? "",
+    tourManagerEmail: payload.artist?.tourManagerEmail ?? "",
   };
-
-
 
   const handleClick = async () => {
     try {
       setLoading(true);
+
       const { default: html2pdf } = await import("html2pdf.js");
 
+      /* 1️⃣ Generate HTML */
+      console.log("1️⃣ Generating HTML");
       const filledHtml = await generateFilledContractHtml(CONTRACT_DATA);
 
-      const preview = window.open("", "_blank");
-      if (!preview) throw new Error("Popup blocked");
-      preview.document.write(filledHtml);
-      preview.document.close();
+      /* 2️⃣ Preview */
+      console.log("2️⃣ Opening preview tab");
+      const previewWindow = window.open("", "_blank");
+      if (!previewWindow) throw new Error("Popup blocked");
+      previewWindow.document.open();
+      previewWindow.document.write(filledHtml);
+      previewWindow.document.close();
 
+      /* 3️⃣ Convert to PDF */
+      console.log("3️⃣ Converting HTML to PDF");
       const container = document.createElement("div");
       container.innerHTML = filledHtml;
 
@@ -204,48 +166,44 @@ console.log(event, "event-----------------------------");
         })
         .from(container)
         .outputPdf("blob");
+        console.log("✅ PDF generated", pdfBlob.size);
 
+      /* 4️⃣ API payload */
+      console.log("4️⃣ Preparing FormData");
       const formData = new FormData();
       formData.append("file", pdfBlob, "contract.pdf");
-      formData.append("contractId", event.contract.id);
+      formData.append("contractId", String(payload.id));
       formData.append("name", CONTRACT_DATA.signerName);
-      formData.append("email", CONTRACT_DATA.signerEmail);
+      formData.append("email", CONTRACT_DATA.tourManagerEmail);
+
       formData.append("pageNumber", "5");
       formData.append("x", "450");
       formData.append("y", "650");
-
+      /* 5️⃣ Send */
+      console.log("5️⃣ Calling DocuSign API");
       const res = await fetch("/api/contract/docusign-document", {
         method: "POST",
         body: formData,
         credentials: "include",
       });
-
-    console.log("API status:", res.status);
-
-    if (!res.ok) {
-      const text = await res.text();
-      throw new Error(text);
+      if (!res.ok) {
+        throw new Error(await res.text());
+      }
+      toast.success("Docusign generated!");
+      router.refresh();
+    } catch (err) {
+      console.error("DocuSign error:", err);
+    } finally {
+      setLoading(false);
     }
-
-    const json = await res.json();
-    console.log("✅ DocuSign response:", json);
-
-  } catch (err) {
-    console.error("❌ FINAL ERROR:", err);
-    //alert("Errore durante invio a DocuSign");
-  } finally {
-    setLoading(false);
-    console.log("🏁 DocuSign flow finished");
-  }
-};
-
+  };
 
   return (
     <Button
       type="button"
       size="sm"
       className="max-w-max"
-      disabled={!event?.contract || loading}
+      //disabled={!payload?.contract || loading}
       onClick={handleClick}
     >
       {loading ? "Sending..." : "Send to DocuSign"}

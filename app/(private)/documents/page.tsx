@@ -14,18 +14,25 @@ import {
   ChevronDown,
   ChevronRight,
   Clock,
-  Download,
   FileText,
   MapPin,
   Repeat,
 } from "lucide-react";
 import DatesFilterButton from "./_components/filters/DatesFilterButton";
 import { getContracts } from "@/lib/data/contracts/get-contracts";
+import FiltersButton from "./_components/filters/FiltersButton";
+import { getArtistsCached } from "@/lib/cache/artists";
+import { getArtistManagersCached } from "@/lib/cache/artist-managers";
+import { getVenuesCached } from "@/lib/cache/venues";
+import ExportButton from "./_components/ExportButton";
 
 type EventsPageProps = {
   searchParams?: Promise<{
     page?: string;
     status?: string;
+    artist?: string;
+    manager?: string;
+    venue?: string;
     start?: string;
     end?: string;
     sort?: "asc" | "desc";
@@ -38,9 +45,9 @@ type ContractsTableFilters = {
   startDate: Date | null;
   endDate: Date | null;
   conflict?: boolean;
-  artistIds?: string[];
-  artistManagerIds?: string[];
-  venueIds?: string[];
+  artistIds: string[];
+  artistManagerIds: string[];
+  venueIds: string[];
   sort: "asc" | "desc";
 };
 
@@ -50,6 +57,7 @@ type ActionVariant = "default" | "secondary" | "outline" | "ghost";
 export type ContractCard = {
   id: number;
   status: ContractCardStatus;
+  backendStatus: BackendContractStatus; // Added this line
   statusLabel: string;
   venueName: string;
   artistName: string;
@@ -243,11 +251,13 @@ function formatDateAndTime(
 function mapContract(c: any): ContractCard {
   const uiStatus = mapStatus(c.status as BackendContractStatus);
   const { date, time } = formatDateAndTime(c.availability);
+  const backendStatus = c.status as BackendContractStatus;
 
   return {
     id: c.id,
 
     status: uiStatus,
+    backendStatus,
     statusLabel: uiStatus,
 
     venueName: c.venue.name,
@@ -342,15 +352,22 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
   if (!hasRole(user, ["admin", "artist-manager", "venue-manager"])) {
     notFound();
   }
+  const isAdmin = user.role === "admin";
+  const isArtistManager = user.role === "artist-manager";
+  const isVenueManager = user.role === "venue-manager";
 
   const sp = await searchParams;
-  const selectedStatus = (sp?.status as ContractFilterStatus) ?? "all";
+  const statusParam = sp?.status === "declined" ? "refused" : sp?.status;
+  const selectedStatus = (statusParam as ContractFilterStatus) ?? "all";
   const currentPage = Number(sp?.page ?? "1");
   const sort = (sp?.sort as "asc" | "desc") ?? "desc";
 
   const filters: ContractsTableFilters = {
     currentPage: currentPage,
-    status: splitCsv(sp?.status) as ContractFilterStatus[],
+    status: splitCsv(statusParam) as ContractFilterStatus[],
+    artistIds: splitCsv(sp?.artist),
+    artistManagerIds: splitCsv(sp?.manager),
+    venueIds: splitCsv(sp?.venue),
     startDate: sp?.start ? new Date(sp.start) : null,
     endDate: sp?.end ? new Date(sp.end) : null,
     sort: sort,
@@ -374,29 +391,37 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
         return ["all"];
     }
   }
-  const api = await getContracts(user, {
-    currentPage,
-    startDate: sp?.start ?? "",
-    endDate: sp?.end ?? "",
-    status: getApiStatusFromUi(selectedStatus),
-    sort,
-  });
+  const [api, artists, artistManagers, venues] = await Promise.all([
+    getContracts(user, {
+      currentPage,
+      startDate: sp?.start ?? "",
+      endDate: sp?.end ?? "",
+      status: getApiStatusFromUi(selectedStatus),
+      artistIds: filters.artistIds,
+      artistManagerIds: filters.artistManagerIds,
+      venueIds: filters.venueIds,
+      sort,
+    }),
+    getArtistsCached(isArtistManager ? profileId! : undefined),
+    isAdmin ? getArtistManagersCached() : Promise.resolve([]),
+    getVenuesCached(isVenueManager ? profileId! : undefined),
+  ]);
 
-  let contracts: ContractCard[] = api.data.map(mapContract);
+  const apiData = Array.isArray(api.data) ? api.data : [];
+  let contracts: ContractCard[] = apiData.map(mapContract);
   if (selectedStatus !== "all") {
     contracts = contracts.filter((c) => c.status === selectedStatus);
   }
 
   const totalPages = api.totalPages;
+  const hasContracts = contracts.length > 0;
 
   return (
     <div className="h-full grid grid-rows-[min-content_min-content_1fr_min-content] gap-4">
       <div className="flex flex-wrap justify-between items-center gap-3">
         <h1 className="text-xl md:text-2xl font-bold">Contracts</h1>
 
-        <Button variant="outline" size="sm">
-          <Download className="size-4" /> Export
-        </Button>
+        {isAdmin && <ExportButton filters={filters} />}
       </div>
 
       {/* Filters */}
@@ -430,15 +455,19 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
               <ChevronDown className="size-4 ml-1" />
             </Link>
           </Button>
-          <Button variant="ghost" size="sm">
-            Filtri <ChevronDown className="size-4" />
-          </Button>
+          <FiltersButton
+            userRole={user.role}
+            filters={filters}
+            artists={artists}
+            artistManagers={artistManagers}
+            venues={venues}
+          />
           <DatesFilterButton filters={filters} />
         </div>
       </div>
 
       {/* List */}
-      {contracts.length > 0 ? (
+      {hasContracts ? (
         <div className="max-h-full flex flex-col gap-3 overflow-auto">
           {contracts.map((contract) => {
             const s = STATUS_STYLES[contract.status];
@@ -460,7 +489,7 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
                       className={`w-max gap-2 px-3 py-1.5 text-xs font-semibold border ${s.badgeBorder} ${s.badgeBg}`}
                     >
                       <span className={`h-2 w-2 rounded-full ${s.dot}`} />
-                      {contract.status}
+                      {contract.backendStatus == "voided" ? "archived" : contract.backendStatus}
                     </Badge>
                     <div className="text-xs text-zinc-500">
                       Status changed on {contract.statusDate}
@@ -492,8 +521,6 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
                         {contract.time}
                       </span>
                     </div>
-
-                    {/* FILE LINK (opens new tab, no JS) */}
                     <div className="flex items-center gap-4 text-xs font-semibold text-zinc-600 relative z-10">
                       <span className="flex items-center gap-2">
                         <FileText className="size-4 text-zinc-400" />
@@ -512,12 +539,8 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
                       )}
                     </div>
                   </div>
-
-                  {/* Arrow */}
                   <ChevronRight className="size-4" />
                 </div>
-
-                {/* FULL CARD CLICK AREA */}
                 <a
                   href={cardHref}
                   className="absolute inset-0"
@@ -536,7 +559,7 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
         </section>
       )}
 
-      {contracts.length > 0 && (
+      {hasContracts && (
         <TablePagination
           totalPages={totalPages}
           currentPage={currentPage}

@@ -1,7 +1,6 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { EventsTableFilters } from '@/lib/types';
 import { useState, useTransition } from 'react';
 import ResponsivePopover from '@/app/_components/ResponsivePopover';
 import { Download, Info, TriangleAlert } from 'lucide-react';
@@ -9,7 +8,15 @@ import { toast } from 'sonner';
 import { saveAs } from 'file-saver';
 
 type ExportButtonProps = {
-  filters: EventsTableFilters;
+  filters: {
+    status: string[];
+    conflict?: boolean;
+    artistIds: string[];
+    artistManagerIds: string[];
+    venueIds: string[];
+    startDate: Date | null;
+    endDate: Date | null;
+  };
 };
 
 export default function ExportButton({ filters }: ExportButtonProps) {
@@ -28,7 +35,7 @@ export default function ExportButton({ filters }: ExportButtonProps) {
   const onClickHandler = async () => {
     startTransition(async () => {
       try {
-        const fetchReponse = await fetch('/api/events/export', {
+        const fetchReponse = await fetch('/api/contract/export', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -36,7 +43,7 @@ export default function ExportButton({ filters }: ExportButtonProps) {
           },
           body: JSON.stringify({
             s: filters.status,
-            c: filters.conflict,
+            c: Boolean(filters.conflict),
             a: filters.artistIds,
             m: filters.artistManagerIds,
             v: filters.venueIds,
@@ -52,7 +59,7 @@ export default function ExportButton({ filters }: ExportButtonProps) {
         }
 
         const blob = await fetchReponse.blob();
-        saveAs(blob, `export-eventi.csv`);
+        saveAs(blob, `export-contratti.csv`);
         setOpen(false);
       } catch {
         toast.error('Esportazione dati non riuscita.');
