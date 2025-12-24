@@ -31,7 +31,6 @@ export default function UpdateEventForm({
 }: UpdateEventFormProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
-
   // event.availability.startDate = new Date(event.availability.startDate);
   // event.availability.endDate = new Date(event.availability.endDate);
   const methods = useForm({
@@ -53,6 +52,7 @@ export default function UpdateEventForm({
       venueVatNumber: event.venue.vatCode || '',
       venueCompanyName: event.venue.company || '',
       tourManagerEmail: event.tourManagerEmail || '',
+      tourManagerName: event.tourManagerName || '',
       payrollConsultantEmail: event.payrollConsultantEmail || '',
       notes: event.notes.flatMap((note) => note.content) || [],
 

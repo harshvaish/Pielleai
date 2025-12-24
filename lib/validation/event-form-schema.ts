@@ -52,6 +52,7 @@ upfrontPayment: z
 .optional(), 
 ccEmails: z.array(z.boolean()).optional(),
 
+tourManagerName: z.string().optional(),
 
   tourManagerEmail: z.preprocess(
     (val) => (typeof val === 'string' && val.trim() !== '' ? val : undefined),

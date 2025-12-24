@@ -533,14 +533,13 @@ export type Event = {
   totalCost: string | null;
 
   transportationsCost: string | null;
-
   cashBalanceCost: string | null;
 
   soundCheckStart: string | null;
   soundCheckEnd: string | null;
   tecnicalRiderUrl: string | null;
   tecnicalRiderName: string | null;
-
+  tourManagerName: string | null;
   contractSigning: boolean;
   depositInvoiceIssuing: boolean;
   depositReceiptVerification: boolean;

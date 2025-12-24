@@ -114,6 +114,7 @@ export type ContractCard = {
     transportCost: string | null;
     totalFee: string | null;
     tourManagerEmail: string | null;
+    tourManagerName: string | null;
     payrollConsultantEmail: string | null;
   };
 
@@ -330,6 +331,7 @@ function mapContract(c: any): ContractCard {
       transportCost: c.event.transportCost ?? null,
       totalFee: c.event.totalFee ?? null,
       tourManagerEmail: c.event.tourManagerEmail ?? null,
+      tourManagerName: c.event?.tourManagerName ?? null,
       payrollConsultantEmail: c.event.payrollConsultantEmail ?? null,
     },
 
@@ -432,7 +434,7 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
       case "sent":
         return "Sent to DocuSign";
       case "queued":
-        return "Queued";
+        return "To be Signed";
       case "viewed":
         return "Viewed";
       case "signed":
