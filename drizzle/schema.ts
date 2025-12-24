@@ -1011,6 +1011,8 @@ export const contracts = pgTable(
     fileUrl: text('file_url'),
     fileName: text('file_name'),
     recipientEmail: text('recipient_email'),
+    // store DocuSign envelopeId so we can map webhooks to contracts
+    envelopeId: text('envelope_id'),
 
     createdAt: timestamp('created_at', { precision: 6, withTimezone: true, mode: 'string' })
       .defaultNow()

@@ -127,20 +127,35 @@ export async function POST(req: NextRequest): Promise<NextResponse<ApiResponse<R
       fileUrl = `storage://${bucket}/${storagePath}`;
     }
 
-    // ---- Update Contract ----
-    console.log("fileUrl:", fileUrl, "fileName:", finalFileName);
-    const updated = await database
+    const webhookUrl = process.env.DOCUSIGN_WEBHOOK_URL || '';
+    const placement = anchorString ? { anchorString } : { pageNumber, x, y };
+
+    const { envelopeId } = await (sendPdfForSignature as any)({
+      pdfBuffer,
+      fileName: finalFileName,
+      signer: { name, email },
+      placement,
+      webhookUrl: webhookUrl || undefined,
+    });
+
+    if (!envelopeId) {
+      throw new Error('DocuSign did not return envelopeId');
+    }
+
+    // ---- Update Contract (persist envelopeId & file) ----
+    const updatedRes = await database
       .update(contracts)
       .set({
         fileUrl,
         fileName: finalFileName,
         recipientEmail: email,
         status: 'sent',
+        envelopeId: envelopeId,
       })
       .where(eq(contracts.id, contractId))
       .returning({ id: contracts.id });
 
-    if (!updated.length) {
+    if (!updatedRes.length) {
       await supabaseServerClient.storage.from(bucket).remove([storagePath]);
 
       return NextResponse.json(
@@ -148,21 +163,6 @@ export async function POST(req: NextRequest): Promise<NextResponse<ApiResponse<R
         { status: 404 },
       );
     }
-
-    // ---- Send to DocuSign ----
-    const placement = anchorString ? { anchorString } : { pageNumber, x, y };
-
-    const { envelopeId } = await sendPdfForSignature({
-      pdfBuffer,
-      fileName: finalFileName,
-      signer: { name, email },
-      placement,
-    });
-
-    if (!envelopeId) {
-      throw new Error('DocuSign did not return envelopeId');
-    }
-
     revalidatePath('/documents');
     revalidatePath(`/documents/${contractId}`);
 

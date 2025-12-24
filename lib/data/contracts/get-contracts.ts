@@ -14,6 +14,9 @@ import {
   events,
 } from '../../../drizzle/schema';
 
+import { supabaseServerClient } from '@/lib/supabase-server-client';
+import { sanitizeFileName } from '@/lib/utils';
+
 import { artistAvailabilities } from '@/lib/database/schema';
 
 // ----- constants -----
@@ -107,6 +110,7 @@ export async function getContracts(
         fileUrl: contracts.fileUrl,
         fileName: contracts.fileName,
         recipientEmail: contracts.recipientEmail,
+        envelopeId: contracts.envelopeId,
         createdAt: contracts.createdAt,
 
         artist: {
@@ -240,6 +244,104 @@ export async function getContracts(
       ccs: ccsByContract.get(r.id) ?? [],
       history: historyByContract.get(r.id) ?? [],
     }));
+
+    // ---- Post-processing: for contracts with envelopeId, verify DocuSign status and sync signed PDF ----
+    // This is best-effort: errors are logged per-contract and do not fail the whole request.
+    try {
+      // Lazy import of DocuSign helper to avoid touching original client code
+      // @ts-ignore
+      const { getSignedDocument, getEnvelopeStatus } = require('../../../docusign/getSignedDocument');
+      // imports for storage and sanitization
+      // @ts-ignore
+      const { supabaseServerClient } = require('@/lib/supabase-server-client');
+      // @ts-ignore
+      const { sanitizeFileName } = require('@/lib/utils');
+
+      const bucket = process.env.NEXT_PUBLIC_SUPABASE_BUCKET_NAME;
+
+      // For each contract that has an envelopeId and isn't already signed, check the envelope status
+      for (const item of data) {
+        try {
+          if (!item.envelopeId) continue;
+          if (item.status === 'signed') continue; // already processed
+
+          const envStatus = await getEnvelopeStatus(item.envelopeId);
+          const envelopeStatus = envStatus && envStatus.status ? String(envStatus.status).toLowerCase() : null;
+
+          if (envelopeStatus !== 'completed') continue; // not yet signed
+
+          // Download signed PDF
+          const pdfBuffer = await getSignedDocument(item.envelopeId);
+
+          if (!bucket) {
+            console.warn('[getContracts] Supabase bucket not configured; skipping signed PDF upload');
+            continue;
+          }
+
+          const safeBase = sanitizeFileName((item.fileName || `contract-${item.id}.pdf`).replace(/\.pdf$/i, ''));
+          const finalFileName = `${Date.now()}-signed-${safeBase}.pdf`;
+          const storagePath = `contracts/${item.id}/${finalFileName}`;
+
+          const { error: uploadError } = await supabaseServerClient.storage
+            .from(bucket)
+            .upload(storagePath, pdfBuffer, { contentType: 'application/pdf', upsert: true });
+
+          if (uploadError) {
+            console.error('[getContracts] supabase upload error:', uploadError);
+            continue;
+          }
+
+          const isPrivateBucket = process.env.SUPABASE_BUCKET_PRIVATE === 'true';
+          let fileUrl: string;
+          if (!isPrivateBucket) {
+            const { data } = supabaseServerClient.storage.from(bucket).getPublicUrl(storagePath);
+            fileUrl = data.publicUrl;
+          } else {
+            fileUrl = `storage://${bucket}/${storagePath}`;
+          }
+
+          const prevStatus = item.status;
+
+          // Persist DB update and history
+          await database.transaction(async (tx) => {
+            await tx.update(contracts).set({ fileUrl, fileName: finalFileName, status: 'signed' }).where(eq(contracts.id, item.id));
+            await tx.insert(contractHistory).values({
+              contractId: item.id,
+              fromStatus: prevStatus,
+              toStatus: 'signed',
+              fileUrl,
+              fileName: finalFileName,
+              changedByUserId: null,
+              note: 'File firmato caricato da DocuSign (sync).',
+            });
+          });
+
+          // Mutate in-memory data to reflect the change for this response
+          item.fileUrl = fileUrl;
+          item.fileName = finalFileName;
+          item.status = 'signed';
+
+          // Also push a history entry to the response object
+          const arr = historyByContract.get(item.id) ?? [];
+          arr.unshift({
+            id: -1,
+            fromStatus: prevStatus,
+            toStatus: 'signed',
+            fileUrl,
+            fileName: finalFileName,
+            note: 'File firmato caricato da DocuSign (sync).',
+            changedByUserId: null,
+            createdAt: new Date().toISOString(),
+          });
+          historyByContract.set(item.id, arr);
+        } catch (innerErr) {
+          console.error('[getContracts] error syncing envelope for contract', item.id, innerErr);
+          // continue with next contract
+        }
+      }
+    } catch (err) {
+      console.error('[getContracts] error in post-processing sync:', err);
+    }
     const totalPages = isPaginated ? Math.max(1, Math.ceil(Number(total ?? 0) / limit)) : 1;
     return {
       data,
