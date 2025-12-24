@@ -23,10 +23,10 @@ import {
 import BackButton from "@/app/_components/BackButton";
 import ContractDetailClient from "./ContractDetailClient";
 import { GREEN_TICK_ICON } from "@/lib/constants";
-import UplodPdf from "../_components/UploadPdf";
 import GenerateButton from "../_components/GenerateButton";
 import DocuSignButton from "../_components/DocuSignButton";
 import Link from "next/link";
+import UplodPdfClient from "./UploadPdfClient";
 
 type ContractDetailPageProps = {
   params?: Promise<{ id: string }>;
@@ -248,10 +248,8 @@ export default async function ContractDetailPage({
   const sp = await searchParams;
   if (!sp?.data) notFound();
   const payload = JSON.parse(decodeURIComponent(sp.data));
-  console.log(payload, "payload-------------");
   const stage = (sp?.stage as ContractDetailStatus | undefined) ?? "missing";
   const flow = FLOW_STATES[stage] ?? FLOW_STATES["missing"];
-  const statusLabel = flow.statusLabel;
   const statusColor = flow.badge;
 
   const statusOptions: { value: ContractDetailStatus; label: string }[] = [
@@ -291,6 +289,7 @@ export default async function ContractDetailPage({
 
     return { date, time };
   }
+
   console.log(payload, "--------------------------------");
   const { date, time } = formatDateAndTime(payload?.availability ?? null);
 
@@ -313,8 +312,6 @@ export default async function ContractDetailPage({
         };
       })
     : [];
-
-  console.log(payload, "payload-------------------------");
   return (
     <div className="h-full w-full bg-zinc-50 px-4 py-6 md:p-6 flex flex-col gap-6">
       <div className="flex flex-wrap justify-between items-center gap-3">
@@ -365,37 +362,22 @@ export default async function ContractDetailPage({
               </div>
 
               <div className="flex flex-col items-end gap-2 min-w-[220px]">
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className={`gap-2 px-5 h-11 rounded-full font-semibold text-base border-amber-200 bg-white shadow-[0_1px_2px_rgba(16,24,40,0.05)] ${statusColor.bg}`}
-                    >
-                      <span
-                        className={`size-3 rounded-full ${statusColor.dot}`}
-                      />
-                      {statusLabel}
-                      <BadgeInfo className="size-4 text-amber-600" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="min-w-[200px]">
-                    {statusOptions.map((opt) => (
-                      <DropdownMenuItem
-                        key={opt.value}
-                        className={
-                          opt.value === stage
-                            ? "font-semibold text-amber-700"
-                            : ""
-                        }
-                      >
-                        {opt.label}
-                      </DropdownMenuItem>
-                    ))}
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className={`gap-2 px-5 h-11 rounded-full font-semibold text-base 
+    shadow-[0_1px_2px_rgba(16,24,40,0.05)] 
+    ${statusColor.bg}`}
+                >
+                  <span className={`size-3 rounded-full ${statusColor.dot}`} />
+                  {payload.backendStatus == "voided"
+                    ? "archived"
+                    : payload.backendStatus}
+                  <BadgeInfo className="size-4 text-sky-600" />
+                </Button>
+
                 <div className="text-xs text-zinc-500">
-                  Status changed on {mockContract.statusDate}
+                  Status changed on {payload.statusDate}
                 </div>
               </div>
             </div>
@@ -406,7 +388,7 @@ export default async function ContractDetailPage({
               <div className="text-sm font-semibold text-zinc-800">
                 Contract file
               </div>
-              <UplodPdf />
+              <UplodPdfClient payload={payload} />
             </div>
 
             <Separator />
