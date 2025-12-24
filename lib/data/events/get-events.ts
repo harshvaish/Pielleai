@@ -150,6 +150,7 @@ export async function getEvents(
           avatarUrl: profiles.avatarUrl,
           name: profiles.name,
           surname: profiles.surname,
+          tourManagerPhone: profiles.phone  
         },
 
         tourManagerEmail: events.tourManagerEmail,
