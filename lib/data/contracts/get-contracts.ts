@@ -68,7 +68,7 @@ export async function getContracts(
   currentPage: number;
 }> {
   const limit = PAGINATED_TABLE_ROWS_X_PAGE;
-
+  console.log("status from getContracts:", status);
   const isPaginated =
     typeof currentPage === 'number' && Number.isInteger(currentPage) && currentPage > 0;
   const safePage = isPaginated ? currentPage : 1;
@@ -240,7 +240,6 @@ export async function getContracts(
       ccs: ccsByContract.get(r.id) ?? [],
       history: historyByContract.get(r.id) ?? [],
     }));
-console.log(data, "data from getContracts-----------------");
     const totalPages = isPaginated ? Math.max(1, Math.ceil(Number(total ?? 0) / limit)) : 1;
     return {
       data,
