@@ -51,7 +51,11 @@ type ContractsTableFilters = {
   sort: "asc" | "desc";
 };
 
-type ContractCardStatus = ContractFilterStatus | "missing-info" | "cancelled" | "sent";
+type ContractCardStatus =
+  | ContractFilterStatus
+  | "missing-info"
+  | "cancelled"
+  | "sent";
 type ActionVariant = "default" | "secondary" | "outline" | "ghost";
 
 export type ContractCard = {
@@ -174,7 +178,7 @@ const STATUS_STYLES: Record<
     badgeBorder: "border-emerald-200",
     badgeBg: "bg-emerald-50 text-emerald-700",
   },
-  
+
   refused: {
     dot: "bg-rose-500",
     badgeBorder: "border-rose-200",
@@ -216,9 +220,9 @@ function mapStatus(status: BackendContractStatus): ContractCardStatus {
       return "refused";
     case "voided":
       return "archived";
-      case "sent":
-        return "sent"; 
-  
+    case "sent":
+      return "sent";
+
     default:
       return "all";
   }
@@ -254,7 +258,6 @@ function formatDateAndTime(
   return { date, time };
 }
 
-
 /* -------------------------------------------------------
    BACKEND → UI CARD MAPPER (FIX #2)
 --------------------------------------------------------*/
@@ -274,7 +277,7 @@ function mapContract(c: any): ContractCard {
     artistName: `${c.artist.name} ${c.artist.surname}`,
     stageName: `@${c.artist.stageName}`,
 
-    date,    
+    date,
     time,
 
     statusDate: new Date(c.createdAt).toLocaleDateString("it-IT"),
@@ -447,7 +450,6 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
         return status;
     }
   }
-  
 
   return (
     <div className="h-full grid grid-rows-[min-content_min-content_1fr_min-content] gap-4">
@@ -513,66 +515,87 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
                 key={contract.id}
                 className="relative bg-white border border-zinc-100 rounded-2xl"
               >
-                {/* CARD CONTENT */}
-                <div className="grid grid-cols-[minmax(160px,200px)_1fr_auto] gap-4 md:gap-6 items-center p-4">
-                  {/* Status Badge */}
-                  <div className="flex flex-col gap-3">
-                    <Badge
-                      variant="outline"
-                      className={`w-max gap-2 px-3 py-1.5 text-xs font-semibold border ${s.badgeBorder} ${s.badgeBg}`}
+                <div className="grid grid-cols-[180px_1fr_auto] items-start gap-6 p-4">
+                  {/* LEFT */}
+                  <div className="flex flex-col gap-1.5">
+                    <span
+                      className={`inline-flex w-fit items-center rounded-md px-2 py-1.5 text-xs font-medium border ${s.badgeBorder} ${s.badgeBg}`}
                     >
-                      <span className={`h-2 w-2 rounded-full ${s.dot}`} />
                       {getBackendStatusLabel(contract.backendStatus)}
-                      </Badge>
-                    <div className="text-xs text-zinc-500">
-                      Status changed on {contract.statusDate}
-                    </div>
+                    </span>
+                    <span className="text-xs text-zinc-500">
+                      Stato aggiornato
+                    </span>
+                    <span className="text-xs text-zinc-500">
+                      il {contract.statusDate}
+                    </span>
                   </div>
 
-                  {/* Info */}
-                  <div className="flex flex-col gap-3">
-                    <div className="flex flex-wrap items-center gap-3 text-sm text-zinc-700">
-                      <span className="font-semibold text-black">
-                        {contract.stageName}
-                      </span>
-                      <span className="text-zinc-500">
-                        {contract.artistName}
-                      </span>
-
-                      <span className="flex items-center gap-1 text-zinc-500">
-                        <MapPin className="size-4 text-zinc-400" />
-                        {contract.venueName}
-                      </span>
-
-                      <span className="flex items-center gap-1 text-zinc-500">
-                        <CalendarDays className="size-4 text-zinc-400" />
-                        {contract.date}
-                      </span>
-
-                      <span className="flex items-center gap-1 text-zinc-500">
-                        <Clock className="size-4 text-zinc-400" />
-                        {contract.time}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-4 text-xs font-semibold text-zinc-600 relative z-10">
-                      <span className="flex items-center gap-2">
-                        <FileText className="size-4 text-zinc-400" />
-                        Contract
-                      </span>
-
-                      {contract.fileUrl && (
-                        <a
-                          href={contract.fileUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center gap-1 text-emerald-700 underline"
-                        >
-                          {contract.fileName}
-                        </a>
+                  {/* CENTER */}
+                  <div className="flex flex-col gap-2">
+                    {/* Row 1 */}
+                    <div className="flex flex-wrap items-center gap-2 text-sm">
+                      {contract?.artist?.avatarUrl && (
+                        <img
+                          src={contract.artist.avatarUrl}
+                          alt={contract.artistName}
+                          className="h-8 w-8 rounded-full object-cover"
+                        />
                       )}
+
+                      <div className="flex flex-col leading-tight">
+                        <span className="font-semibold text-zinc-900">
+                          {contract.stageName}
+                        </span>
+                        <span className="text-zinc-500 text-xs">
+                          {contract.artistName}
+                        </span>
+                      </div>
+                      <div className="flex flex-col leading-tight">
+                        <span className="rounded-md w-fit bg-zinc-100 px-2 py-1.5 text-xs text-zinc-700">
+                          <span className="text-zinc-400">•</span>
+                          Club "{contract.venueName}"
+                        </span>
+                        <div className="flex items-center gap-4 text-xs py-0.5 text-zinc-500">
+                          <span className="flex items-center gap-1">
+                            <CalendarDays className="h-4 w-4 text-zinc-400" />
+                            {contract.date}
+                          </span>
+
+                          <span className="flex items-center gap-1">
+                            <Clock className="h-4 w-4 text-zinc-400" />
+                            {contract.time}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Row 2 */}
+                    <div className="flex items-center gap-2 text-xs text-zinc-500 py-2">
+                      <FileText className="h-4 w-4 text-zinc-400" />
+                      <span>Contratto</span>
+                      <span>
+                        {contract.fileUrl ? (
+                          <span className="flex items-center gap-2">
+                            <FileText className="h-4 w-4 text-zinc-400" />
+                            <a
+                              href={contract.fileUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-zinc-700 hover:underline"
+                            >
+                              {contract.fileName}
+                            </a>
+                          </span>
+                        ) : (
+                          "Mancante"
+                        )}
+                      </span>
                     </div>
                   </div>
-                  <ChevronRight className="size-4" />
+
+                  {/* RIGHT */}
+                  <ChevronRight className="mt-1 h-4 w-4 text-zinc-400" />
                 </div>
                 <a
                   href={cardHref}
