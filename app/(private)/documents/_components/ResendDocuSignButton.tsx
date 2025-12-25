@@ -1,0 +1,63 @@
+"use client";
+
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+
+type Props = {
+  contractId: number;
+  artistName: string;
+  recipientEmail: string | null;
+  pageNumber?: number;
+};
+
+export default function ResendDocuSignButton({
+  contractId,
+  artistName,
+  recipientEmail,
+  pageNumber,
+}: Props) {
+  const router = useRouter();
+
+  async function handleClick(e: React.MouseEvent<HTMLButtonElement>) {
+    e.stopPropagation();
+    e.preventDefault();
+
+    try {
+      const res = await fetch("/api/contract/resend-docusign", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          contractId,
+          name: artistName,
+          email: recipientEmail,
+          pageNumber,
+        }),
+      });
+
+      const json = await res.json();
+      if (!res.ok || !json.success) {
+        throw new Error(json.message || "Invio DocuSign non riuscito");
+      }
+
+      toast.success("Documento inviato nuovamente per la firma");
+
+      // ✅ re-fetch server data
+      router.refresh();
+    } catch (err: any) {
+      console.error("Resend DocuSign failed:", err);
+      toast.error(err?.message || "Errore durante l’invio a DocuSign");
+    }
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={handleClick}
+      className="flex h-full items-center justify-end pr-2 text-sm font-medium text-[#16A34A] hover:underline"
+    >
+      Invia di nuovo per firma
+    </button>
+  );
+}

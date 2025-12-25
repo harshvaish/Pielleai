@@ -8,15 +8,16 @@ import { notFound, redirect } from "next/navigation";
 import getSession from "@/lib/data/auth/get-session";
 import { getUserProfileIdCached } from "@/lib/cache/users";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import {
   CalendarDays,
   ChevronDown,
   ChevronRight,
   Clock,
   FileText,
-  MapPin,
-  Repeat,
+  X,
+  Check,
+  PartyPopper,
+  Dot 
 } from "lucide-react";
 import DatesFilterButton from "./_components/filters/DatesFilterButton";
 import { getContracts } from "@/lib/data/contracts/get-contracts";
@@ -25,6 +26,8 @@ import { getArtistsCached } from "@/lib/cache/artists";
 import { getArtistManagersCached } from "@/lib/cache/artist-managers";
 import { getVenuesCached } from "@/lib/cache/venues";
 import ExportButton from "./_components/ExportButton";
+import { JSX } from "react";
+import ResendDocuSignButton from "./_components/ResendDocuSignButton";
 
 type EventsPageProps = {
   searchParams?: Promise<{
@@ -156,51 +159,87 @@ type BackendContractStatus =
 
 const STATUS_STYLES: Record<
   ContractCardStatus,
-  { dot: string; badgeBorder: string; badgeBg: string }
+  { icon: JSX.Element; badgeBorder: string; badgeBg: string }
 > = {
   "missing-info": {
-    dot: "bg-amber-500",
+    icon: (
+      <div className="w-3 h-3 flex justify-center items-center bg-amber-600 rounded-full">
+        <span className="text-[8px] text-white">?</span>
+      </div>
+    ),
     badgeBorder: "border-amber-200",
     badgeBg: "bg-amber-50 text-amber-700",
   },
   "to-sign": {
-    dot: "bg-sky-500",
-    badgeBorder: "border-sky-200",
-    badgeBg: "bg-sky-50 text-sky-700",
+    icon: (
+      <div className="w-3 h-3 flex justify-center items-center bg-amber-600 rounded-full">
+        <span className="text-[8px] text-white">?</span>
+      </div>
+    ),
+    badgeBorder: "border-amber-200",
+    badgeBg: "bg-amber-50 text-amber-700",
   },
   signed: {
-    dot: "bg-emerald-500",
-    badgeBorder: "border-emerald-200",
-    badgeBg: "bg-emerald-50 text-emerald-700",
+    icon: (
+      <div className="w-3 h-3 flex justify-center items-center bg-lime-600 rounded-full">
+        <Check className="size-2 text-white" />
+      </div>
+    ),
+    badgeBorder: "border-lime-200",
+    badgeBg: "bg-emerald-50 text-lime-700",
   },
   sent: {
-    dot: "bg-emerald-500",
-    badgeBorder: "border-emerald-200",
-    badgeBg: "bg-emerald-50 text-emerald-700",
+    icon: (
+      <div className="w-3 h-3 flex justify-center items-center bg-sky-600 rounded-full gap-1">
+        <ChevronRight className="size-2 text-white" />
+      </div>
+    ),
+    badgeBorder: "border-sky-200",
+    badgeBg: "bg-sky-50 text-sky-600",
   },
 
   refused: {
-    dot: "bg-rose-500",
+    icon: (
+      <div className="w-3 h-3 flex justify-center items-center bg-red-600 rounded-full">
+        <X className="size-2 text-white" />
+      </div>
+    ),
     badgeBorder: "border-rose-200",
     badgeBg: "bg-rose-50 text-rose-700",
   },
   error: {
-    dot: "bg-red-500",
+    icon: (
+      <div className="w-3 h-3 flex justify-center items-center bg-red-600 rounded-full">
+        <X className="size-2 text-white" />
+      </div>
+    ),
     badgeBorder: "border-red-200",
     badgeBg: "bg-red-50 text-red-700",
   },
   cancelled: {
-    dot: "bg-pink-500",
+    icon: (
+      <div className="w-3 h-3 flex justify-center items-center bg-blue-600 rounded-full">
+        <ChevronRight className="size-2 text-white" />
+      </div>
+    ),
     badgeBorder: "border-pink-200",
     badgeBg: "bg-pink-50 text-pink-700",
   },
   archived: {
-    dot: "bg-zinc-400",
+    icon: (
+      <div className="w-3 h-3 flex justify-center items-center bg-white rounded-full">
+        <PartyPopper className="size-3 text-zinc-700" />
+      </div>
+    ),
     badgeBorder: "border-zinc-200",
     badgeBg: "bg-zinc-50 text-zinc-600",
   },
   all: {
-    dot: "bg-zinc-400",
+    icon: (
+      <div className="w-3 h-3 flex justify-center items-center bg-blue-600 rounded-full">
+        <ChevronRight className="size-2 text-white" />
+      </div>
+    ),
     badgeBorder: "border-zinc-200",
     badgeBg: "bg-zinc-50 text-zinc-600",
   },
@@ -358,7 +397,6 @@ export const dynamic = "force-dynamic";
 export default async function EventsPage({ searchParams }: EventsPageProps) {
   const { session, user } = await getSession();
   if (!session || !user || user.banned) redirect("/logout");
-
   const profileId = await getUserProfileIdCached(user.id);
   const target = resolveNextPath({ user, hasProfile: Boolean(profileId) });
   if (target) redirect(target);
@@ -435,8 +473,6 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
       case "voided":
         return "Archived";
       case "sent":
-        return "Sent to DocuSign";
-      case "queued":
         return "To be Signed";
       case "viewed":
         return "Viewed";
@@ -450,6 +486,7 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
         return status;
     }
   }
+  console.log(contracts, "contract");
 
   return (
     <div className="h-full grid grid-rows-[min-content_min-content_1fr_min-content] gap-4">
@@ -519,9 +556,10 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
                   {/* LEFT */}
                   <div className="flex flex-col gap-1.5">
                     <span
-                      className={`inline-flex w-fit items-center rounded-md px-2 py-1.5 text-xs font-medium border ${s.badgeBorder} ${s.badgeBg}`}
+                      className={`w-fit inline-flex gap-1.5 items-center rounded-md px-2 py-1.5 text-xs font-medium border ${s.badgeBorder} ${s.badgeBg}`}
                     >
                       {getBackendStatusLabel(contract.backendStatus)}
+                      <span>{s.icon}</span>
                     </span>
                     <span className="text-xs text-zinc-500">
                       Stato aggiornato
@@ -552,10 +590,10 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
                         </span>
                       </div>
                       <div className="flex flex-col leading-tight">
-                        <span className="rounded-md w-fit bg-zinc-100 px-2 py-1.5 text-xs text-zinc-700">
-                          <span className="text-zinc-400">•</span>
-                          Club "{contract.venueName}"
-                        </span>
+                      <span className="inline-flex items-center gap-1.5 rounded-md w-fit bg-zinc-100 px-2 py-1.5 text-xs text-zinc-700">
+  <span className="w-3 h-3 flex shrink-0 justify-center items-center bg-zinc-600 rounded-full" />
+  <span>Club "{contract.venueName}"</span>
+</span>
                         <div className="flex items-center gap-4 text-xs py-0.5 text-zinc-500">
                           <span className="flex items-center gap-1">
                             <CalendarDays className="h-4 w-4 text-zinc-400" />
@@ -593,9 +631,18 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
                       </span>
                     </div>
                   </div>
-
                   {/* RIGHT */}
-                  <ChevronRight className="mt-1 h-4 w-4 text-zinc-400" />
+                  <div className="flex h-full items-center">
+                    {contract.backendStatus == "declined" && (
+                      <ResendDocuSignButton
+                        contractId={contract.id}
+                        artistName={contract.artistName}
+                        recipientEmail={contract.recipientEmail}
+                        pageNumber={currentPage}
+                      />
+                    )}
+                    <ChevronRight className="h-4 w-4 text-zinc-400 translate-y-[0.5px]" />
+                  </div>
                 </div>
                 <a
                   href={cardHref}

@@ -265,35 +265,19 @@ export default function EventForm({
       paymentDate: values.paymentDate,
       contractDate: new Date().toISOString().split("T")[0],
       ccEmails: buildCcEmails(values),
-      status: values.contractStatus,
+      // status: values.contractStatus,
     };
-
+console.log(payloadBase, event?.contract?.status, "payloadBase")
     startTransition(async () => {
-      const response = event?.contract
+      const response = event?.contract 
         ? await editContract({
             ...payloadBase,
             contractId: event.contract.id,
-            status: values.contractStatus as
-              | "draft"
-              | "sent"
-              | "voided"
-              | "queued"
-              | "viewed"
-              | "signed"
-              | "declined"
-              | undefined,
+            status: event?.contract?.status,
           })
         : await createContract({
             ...payloadBase,
-            status: values.contractStatus as
-              | "draft"
-              | "sent"
-              | "voided"
-              | "queued"
-              | "viewed"
-              | "signed"
-              | "declined"
-              | undefined,
+            status: "draft",
           });
 
       if (response.success) {
@@ -333,6 +317,7 @@ useEffect(() => {
 
   prevStatusRef.current = contractStatus;
 }, [contractStatus, event?.contract?.id]);
+
 const toUiStatus = (status?: string) => {
   if (!status) return undefined;
   if (status === "voided") return "archived";
@@ -1311,10 +1296,10 @@ const toUiStatus = (status?: string) => {
                   field.value ??
                   toUiStatus(event?.contract?.status) ??
                   (isDetailsComplete ? "draft" : "Missing data");
-            
                   const isMissing = derivedStatusLabel === "Missing data";
                   return (
-                    <Select value={field.value} onValueChange={field.onChange}>
+                    <Select value={field.value} onValueChange={field.onChange} 
+>
                       <SelectTrigger
                         id="contractStatus"
                         className="h-8 rounded-xl flex items-center gap-2 px-3 text-xs font-medium"
@@ -1336,11 +1321,11 @@ const toUiStatus = (status?: string) => {
                           className="opacity-80 ml-auto"
                         />
                       </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="sent">Send to docusign</SelectItem>
-                        <SelectItem value="pending">Pending</SelectItem>
-                        <SelectItem value="archived">Archived</SelectItem>
-                        </SelectContent>
+          <SelectContent>
+          <SelectItem value="draft">draft</SelectItem>
+            <SelectItem value="sent">To be Signed</SelectItem>
+            <SelectItem value="archived">Archived</SelectItem>
+          </SelectContent>
                     </Select>
                   );
                 }}

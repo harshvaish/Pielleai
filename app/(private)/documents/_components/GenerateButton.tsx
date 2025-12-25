@@ -25,6 +25,7 @@ export default function GenerateButton({ payload }: Props) {
       "HH:mm"
     )}`;
   };
+  const hasFile = Boolean(payload?.fileUrl);
 
   const handleGenerate = () => {
     if (!payload?.event?.id) {
@@ -98,10 +99,14 @@ export default function GenerateButton({ payload }: Props) {
       disabled={isPending}
       onClick={handleGenerate}
     >
-      {isPending
-        ? "Generating..."
-        : "Regenerate"
-          }
+{isPending
+  ? hasFile
+    ? "Regenerating..."
+    : "Generating..."
+  : hasFile
+    ? "Regenerate"
+    : "Generate"
+}
     </Button>
   );
 }

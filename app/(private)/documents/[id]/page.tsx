@@ -10,16 +10,11 @@ import {
   CalendarDays,
   Mail,
   MapPin,
-  Link as LinkIcon,
+  Clock,
   Users,
+  Briefcase
 } from "lucide-react";
 import { notFound, redirect } from "next/navigation";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import BackButton from "@/app/_components/BackButton";
 import ContractDetailClient from "./ContractDetailClient";
 import { GREEN_TICK_ICON } from "@/lib/constants";
@@ -27,6 +22,8 @@ import GenerateButton from "../_components/GenerateButton";
 import DocuSignButton from "../_components/DocuSignButton";
 import Link from "next/link";
 import UplodPdfClient from "./UploadPdfClient";
+import ViewContractButton from "../_components/ViewContractButton";
+import ResendDocuSignButton from "../_components/ResendDocuSignButton";
 
 type ContractDetailPageProps = {
   params?: Promise<{ id: string }>;
@@ -51,23 +48,6 @@ type ContractDetailStatus =
   | "refused"
   | "error"
   | "archived";
-
-const mockContract = {
-  id: "c-123",
-  statusDate: "13/11/25",
-  artistHandle: "@bobjohnson",
-  artistName: "Bob Johnson",
-  venueName: "Club “Maestro”",
-  date: "27/05/2025",
-  time: "14:00 - 16:30",
-  tourManager: "Anna Trevisan",
-  tourManagerEmail: "trevisana@gmail.com",
-  consultantEmail: "robert.fox.events@gmail.com",
-  adminEmail: "brooklyn@gmail.com",
-  managerName: "Anna Trevisan",
-  managerEmail: "mail@wow.com",
-  downloadLabel: "Contract.pdf",
-};
 
 const FLOW_STATES: Record<
   ContractDetailStatus,
@@ -312,16 +292,39 @@ export default async function ContractDetailPage({
         };
       })
     : [];
+
   return (
     <div className="h-full w-full bg-zinc-50 px-4 py-6 md:p-6 flex flex-col gap-6">
       <div className="flex flex-wrap justify-between items-center gap-3">
         {/* <h1 className='text-2xl font-bold'>Contracts</h1> */}
         <BackButton />
         <div className="flex items-center gap-2">
-          <GenerateButton payload={payload} />
+  {payload?.backendStatus === "declined" && (
+    <>
+      <ResendDocuSignButton
+        contractId={payload.id}
+        artistName={payload.artistName}
+        recipientEmail={payload.ccs}
+        pageNumber={1}
+      />
 
-          <DocuSignButton payload={payload} />
-        </div>
+      <ViewContractButton fileUrl={payload.fileUrl} />
+    </>
+  )}
+
+  {payload?.backendStatus === "voided" && (
+    <ViewContractButton fileUrl={payload.fileUrl} />
+  )}
+
+  {payload?.backendStatus !== "declined" &&
+    payload?.backendStatus !== "voided" && (
+      <>
+        <GenerateButton payload={payload} />
+        <DocuSignButton payload={payload} />
+      </>
+    )}
+</div>
+
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-[2fr_1fr] gap-4">
@@ -347,15 +350,16 @@ export default async function ContractDetailPage({
 
                 <div className="flex items-center gap-3 text-sm text-zinc-600">
                   <span className="flex items-center gap-1">
-                    <MapPin className="size-4 text-zinc-400" />
-                    {payload?.venue?.name}
+                  <span className="w-3 h-3 flex shrink-0 justify-center items-center bg-zinc-600 rounded-full" />
+  <span>Club "{payload?.venue?.name}"</span>
+                    
                   </span>
                   <span className="flex items-center gap-1">
                     <CalendarDays className="size-4 text-zinc-400" />
                     {date}
                   </span>
                   <span className="flex items-center gap-1">
-                    <Users className="size-4 text-zinc-400" />
+                    <Clock className="size-4 text-zinc-400" />
                     {time}
                   </span>
                 </div>
@@ -398,7 +402,7 @@ export default async function ContractDetailPage({
               <Button
                 variant="link"
                 size="sm"
-                className="p-0 h-auto text-sm text-sky-700"
+                className="p-0 h-auto text-sm text-sky-600"
                 asChild
               >
                 <Link href="/eventi" target="_blank" rel="noreferrer">
@@ -412,24 +416,32 @@ export default async function ContractDetailPage({
                 <MapPin className="size-4 text-zinc-400" />
                 Locale
               </span>
-              <Badge variant="secondary">{payload?.venue?.name}</Badge>
-              <Badge variant="secondary">manager</Badge>
+              <span className="inline-flex items-center gap-1.5 rounded-md w-fit bg-zinc-100 px-2 py-1.5 text-xs text-zinc-700">
+  <span className="w-3 h-3 flex shrink-0 justify-center items-center bg-zinc-600 rounded-full" />
+  <span>Club "{payload?.venue?.name}"</span>
+</span>
+
+<span className="flex items-center gap-1">
+<Briefcase className="h-4 w-4 text-zinc-600" />
+Manager
+              </span>
+
               <Badge variant="secondary">
                 {payload?.artist?.tourManagerName}
               </Badge>
             </div>
 
-            <div className="flex flex-wrap gap-2 text-xs text-zinc-500">
-              <span className="flex items-center gap-1">
-                <Users className="size-4 text-zinc-400" />
+            <div className="flex flex-wrap gap-6 text-xs text-zinc-500">
+              <span className="flex items-center gap-2">
+                <Briefcase className="size-4 text-zinc-400" />
                 Tour manager
               </span>
-              <Badge variant="outline">
+              <span>
                 {" "}
                 {payload?.artist?.tourManagerName || ""}{" "}
                 {payload?.artist?.tourManagerSurname || ""}
-              </Badge>
-              <Badge variant="outline">Administration</Badge>
+              </span>
+              <span>Administration</span>
               <span className="flex items-center gap-1">
                 <Mail className="size-4 text-zinc-400" />
                 {payload?.artist?.tourManagerEmail}
