@@ -389,7 +389,7 @@ export async function getEvents(
 
       return newObj;
     });
-
+console.log(mergedResult, "merged results")
     const totalPages = isPaginated ? Math.max(1, Math.ceil(Number(eventCount) / limit)) : 1;
     return {
       data: mergedResult,

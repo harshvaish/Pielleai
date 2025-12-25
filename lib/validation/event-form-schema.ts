@@ -35,7 +35,7 @@ contractStatus: z
 
 artistFullName: z.string().optional(),
 artistStageName: z.string().optional(),
-
+artistManagerFullName :  z.string().optional(),
 venueName: z.string().optional(),
 venueCompanyName: z.string().optional(),
 venueVatNumber: z.string().optional(),

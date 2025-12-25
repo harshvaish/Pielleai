@@ -31,6 +31,8 @@ export default function UpdateEventForm({
 }: UpdateEventFormProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
+  console.log(event,"event");
+
   // event.availability.startDate = new Date(event.availability.startDate);
   // event.availability.endDate = new Date(event.availability.endDate);
   const methods = useForm({
@@ -51,11 +53,12 @@ export default function UpdateEventForm({
       venueAddress: event.venue.address || '',
       venueVatNumber: event.venue.vatCode || '',
       venueCompanyName: event.venue.company || '',
+      artistManagerFullName: `${event?.artistManager?.name} ${event?.artistManager?.surname}`,
       tourManagerEmail: event.tourManagerEmail || '',
       tourManagerName: event.tourManagerName || '',
       payrollConsultantEmail: event.payrollConsultantEmail || '',
       notes: event.notes.flatMap((note) => note.content) || [],
-
+     
       moCost: parseFloat(event.moCost || '') || undefined,
       venueManagerCost: parseFloat(event.venueManagerCost || '') || undefined,
       depositCost: parseFloat(event.depositCost || '') || undefined,

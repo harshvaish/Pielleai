@@ -26,9 +26,8 @@ type ContractData = {
 
   totalFee: string;
   paymentDate: string;
-
-  signerName: string;
-  signerEmail: string;
+  tourManagerEmail: string;
+  artistManagerFullName: string;
 };
 
 type EventType = {
@@ -37,6 +36,7 @@ type EventType = {
   depositCost: string;
   transportCost: string;
   paymentDate: string;
+  artistManagerFullName: string;
   tourManagerEmail: string;
   artist: {
     name: string;
@@ -44,6 +44,10 @@ type EventType = {
     stageName?: string;
     tourManagerEmail?: string;
   };
+  artistManager: {
+    name: string;
+    surname: string;
+  }
   tourManagerName?: string;
 
   venue?: {
@@ -153,7 +157,6 @@ console.log(event, "event-----------------------------");
       event.availability?.startDate,
       event.availability?.endDate
     ),
-
     totalCost: event?.totalCost ?? "0",
     upfrontPayment: event?.depositCost ?? "0",
     transportationsCost: event?.transportCost ?? "0",
@@ -162,9 +165,8 @@ console.log(event, "event-----------------------------");
       : "",
 
     totalFee: event.event?.totalCost ?? "€0",
-
-    signerName: event?.tourManagerName ?? "",
-    signerEmail: event?.tourManagerEmail ?? "",
+    artistManagerFullName: `${event?.artistManager?.name} ${event?.artistManager?.surname}`,
+    tourManagerEmail: event?.tourManagerEmail ?? "",
   };
 
 
@@ -210,8 +212,8 @@ console.log(event, "event-----------------------------");
       const formData = new FormData();
       formData.append("file", pdfBlob, "contract.pdf");
       formData.append("contractId", event.contract.id);
-      formData.append("name", CONTRACT_DATA.signerName);
-      formData.append("email", CONTRACT_DATA.signerEmail);
+      formData.append("name", CONTRACT_DATA.artistManagerFullName);
+      formData.append("email", event?.tourManagerEmail);
       formData.append("pageNumber", "5");
       formData.append("x", "450");
       formData.append("y", "650");
