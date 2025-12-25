@@ -302,7 +302,7 @@ useEffect(() => {
     startTransition(async () => {
       const response = await editContract({
         contractId: event.contract.id,
-        status: "voided", // ✅ backend-safe
+        status: "voided",
         note: "Contratto archiviato",
       });
 
