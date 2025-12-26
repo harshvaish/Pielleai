@@ -17,7 +17,7 @@ import {
   X,
   Check,
   PartyPopper,
-  Dot 
+  Dot,
 } from "lucide-react";
 import DatesFilterButton from "./_components/filters/DatesFilterButton";
 import { getContracts } from "@/lib/data/contracts/get-contracts";
@@ -589,10 +589,10 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
                         </span>
                       </div>
                       <div className="flex flex-col leading-tight">
-                      <span className="inline-flex items-center gap-1.5 rounded-md w-fit bg-zinc-100 px-2 py-1.5 text-xs text-zinc-700">
-  <span className="w-3 h-3 flex shrink-0 justify-center items-center bg-zinc-600 rounded-full" />
-  <span>Club "{contract.venueName}"</span>
-</span>
+                        <span className="inline-flex items-center gap-1.5 rounded-md w-fit bg-zinc-100 px-2 py-1.5 text-xs text-zinc-700">
+                          <span className="w-3 h-3 flex shrink-0 justify-center items-center bg-zinc-600 rounded-full" />
+                          <span>Club "{contract.venueName}"</span>
+                        </span>
                         <div className="flex items-center gap-4 text-xs py-0.5 text-zinc-500">
                           <span className="flex items-center gap-1">
                             <CalendarDays className="h-4 w-4 text-zinc-400" />
@@ -633,18 +633,22 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
                   {/* RIGHT */}
                   <div className="flex h-full items-center">
                     {contract.backendStatus == "declined" && (
-                      <ResendDocuSignButton
-                        contractId={contract.id}
-                      />
+                      <ResendDocuSignButton contractId={contract.id} />
                     )}
-                    <ChevronRight className="h-4 w-4 text-zinc-400 translate-y-[0.5px]" />
+                    <a
+                      href={cardHref}
+                      aria-label="Open contract details"
+                      className="inline-flex items-center"
+                    >
+                      <ChevronRight className="h-4 w-4 text-zinc-400 translate-y-[0.5px]" />
+                    </a>
                   </div>
                 </div>
-                <a
+                {/* <a
                   href={cardHref}
                   className="absolute inset-0"
                   aria-label="Open contract details"
-                />
+                /> */}
               </div>
             );
           })}
