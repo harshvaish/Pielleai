@@ -186,7 +186,7 @@ export default function ContractDetailClient({ payload }: Props) {
                       "artistFullName",
                       "artistStageName",
                       "tourManager",
-                      "consultantEmail",
+                      // "consultantEmail",
                       "adminEmail",
                     ])
                       ? GREEN_TICK_ICON

@@ -123,7 +123,7 @@ export async function generateFilledContractHtml(
    COMPONENT
 -------------------------------- */
 
-export default function DocuSignButton({ event }: { event: EventType }) {
+export default function DocuSignButton({ event, isDetailsComplete }: { event: EventType, isDetailsComplete:boolean }) {
   const [loading, setLoading] = useState(false);
   console.log(event, "event-----------------------------");
 
@@ -249,7 +249,7 @@ export default function DocuSignButton({ event }: { event: EventType }) {
       type="button"
       size="sm"
       className="max-w-max"
-      disabled={!event?.contract || loading}
+      disabled={!event?.contract || loading || !isDetailsComplete}
       onClick={handleClick}
     >
       {loading ? "Sending..." : "Send to DocuSign"}

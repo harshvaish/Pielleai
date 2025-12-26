@@ -25,7 +25,7 @@ export default function GenerateButton({ payload }: Props) {
       "HH:mm"
     )}`;
   };
-  const hasFile = Boolean(payload?.fileUrl);
+  // const hasFile = Boolean(payload?.fileUrl);
 
   const handleGenerate = () => {
     if (!payload?.event?.id) {
@@ -39,7 +39,6 @@ export default function GenerateButton({ payload }: Props) {
       venueId: payload.venue.id,
       eventId: payload.event.id,
       contractId: payload.id,
-
 
       // Artist
       artistName: `${payload.artist.name} ${payload.artist.surname}`,
@@ -99,14 +98,7 @@ export default function GenerateButton({ payload }: Props) {
       disabled={isPending}
       onClick={handleGenerate}
     >
-{isPending
-  ? hasFile
-    ? "Regenerating..."
-    : "Generating..."
-  : hasFile
-    ? "Regenerate"
-    : "Generate"
-}
+      {isPending ? "Regenerating..." : "Regenerate"}
     </Button>
   );
 }

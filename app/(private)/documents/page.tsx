@@ -297,13 +297,45 @@ function formatDateAndTime(
   return { date, time };
 }
 
+function hasMissingDetails(c: any): boolean {
+  const artistOk =
+    c.artist?.name &&
+    c.artist?.surname &&
+    c.artist?.stageName;
+
+  const venueOk =
+    c.venue?.name &&
+    c.venue?.company &&
+    c.venue?.vatCode &&
+    c.venue?.address;
+
+  const eventOk =
+    c.availability?.startDate &&
+    c.availability?.endDate &&
+    c.event?.depositCost &&
+    c.event?.totalFee &&
+    c.event?.paymentDate;
+
+  return !(artistOk && venueOk && eventOk);
+}
+
+
 /* -------------------------------------------------------
    BACKEND → UI CARD MAPPER (FIX #2)
 --------------------------------------------------------*/
 function mapContract(c: any): ContractCard {
-  const uiStatus = mapStatus(c.status as BackendContractStatus);
+  //const uiStatus = mapStatus(c.status as BackendContractStatus);
   const { date, time } = formatDateAndTime(c.availability);
+  //const backendStatus = c.status as BackendContractStatus;
+  const missing = hasMissingDetails(c);
+
   const backendStatus = c.status as BackendContractStatus;
+
+  // 🚨 PRIORITY: missing info ALWAYS wins
+  const uiStatus: ContractCardStatus = missing
+    ? "missing-info"
+    : mapStatus(backendStatus);
+    console.log(uiStatus,"uiStatus")
 
   return {
     id: c.id,
@@ -392,6 +424,7 @@ function mapContract(c: any): ContractCard {
   };
 }
 
+
 export const dynamic = "force-dynamic";
 
 export default async function EventsPage({ searchParams }: EventsPageProps) {
@@ -466,7 +499,7 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
   }
 
   const totalPages = api.totalPages;
-  const hasContracts = contracts.length > 0;
+  const hasContracts = contracts.length > 0;  
 
   function getBackendStatusLabel(status: string) {
     switch (status) {
@@ -482,6 +515,9 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
         return "Refused";
       case "draft":
         return "Draft";
+        case "missing-info":
+          return "Missing-info";
+  
       default:
         return status;
     }
@@ -557,7 +593,9 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
                     <span
                       className={`w-fit inline-flex gap-1.5 items-center rounded-md px-2 py-1.5 text-xs font-medium border ${s.badgeBorder} ${s.badgeBg}`}
                     >
-                      {getBackendStatusLabel(contract.backendStatus)}
+{contract.status === "missing-info"
+  ? "Missing info"
+  : getBackendStatusLabel(contract.backendStatus)}
                       <span>{s.icon}</span>
                     </span>
                     <span className="text-xs text-zinc-500">
