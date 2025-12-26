@@ -84,9 +84,7 @@ export default function LocalPdfUpload({ event }: { event: EventType }) {
   };
 
   /* ---------------- INPUT CHANGE ---------------- */
-  const onChangeHandler = async (
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
+  const onChangeHandler = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -114,7 +112,7 @@ export default function LocalPdfUpload({ event }: { event: EventType }) {
     }
   };
 
-  console.log(event, "event in pdfff")
+  console.log(event, "event in pdfff");
 
   /* ---------------- DOWNLOAD ---------------- */
   const onDownload = () => {
@@ -123,27 +121,28 @@ export default function LocalPdfUpload({ event }: { event: EventType }) {
   };
 
   /* ---------------- DELETE ---------------- */
-  const onDeleteHandler = async() => {  
-      const response = await deleteContractFile({
-        contractId: event.contract.id,
-      });
-  
-      if (response.success) {
-        // 1️⃣ clear form state
-        setValue("contractDocument", undefined, { shouldDirty: true });
-  
-        // 2️⃣ reset file input
-        if (fileInputRef.current) {
-          fileInputRef.current.value = "";
-        }
-  
-        // 3️⃣ feedback + refresh
-        toast.success("Contract file removed.");
-        // router.refresh();
-      } else {
-        toast.error(response.message ?? "Failed to remove contract file.");
+  const onDeleteHandler = async () => {
+    if (!event?.contract) {
+      toast.error("Contract not found.");
+      return;
+    }
+
+    const contractId = Number(event.contract.id);
+
+    const response = await deleteContractFile({
+      contractId: contractId,
+    });
+
+    if (response.success) {
+      setValue("contractDocument", undefined, { shouldDirty: true });
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
       }
-    
+      toast.success("Contract file removed.");
+      // router.refresh();
+    } else {
+      toast.error(response.message ?? "Failed to remove contract file.");
+    }
   };
 
   return (

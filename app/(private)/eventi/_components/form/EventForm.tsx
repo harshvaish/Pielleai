@@ -266,7 +266,6 @@ export default function EventForm({
       contractDate: new Date().toISOString().split("T")[0],
       ccEmails: buildCcEmails(values),
     };
-console.log(payloadBase, event?.contract?.status, "payloadBase")
     startTransition(async () => {
       const response = event?.contract 
         ? await editContract({

@@ -8,12 +8,14 @@ import { useFormContext } from "react-hook-form";
 import { toast } from "sonner";
 import { ApiResponse } from "@/lib/types";
 import { pdfUploadSchema } from "@/lib/validation/pdf-upload-schema";
+import { deleteContractFile } from "@/lib/server-actions/contracts/delete-contract-file";
 
 
 type EventType = {
   contract?: {
     id: string;
   };
+  id: string;
   fileName: string;
   fileUrl: string;
 
@@ -117,14 +119,30 @@ export default function UplodPdf({ payload }: {payload: EventType}) {
     if (!displayPdf?.url) return;
     window.open(displayPdf.url, "_blank", "noopener,noreferrer");
   };
-
   /* ---------------- DELETE ---------------- */
-  const onDeleteHandler = () => {
-    setValue("contractDocument", undefined, { shouldDirty: true });
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
-  };
+  const onDeleteHandler = async () => {
+      if (!payload.id) {
+        toast.error("Contract not found.");
+        return;
+      }
+  
+      const contractId = Number(payload.id);
+  
+      const response = await deleteContractFile({
+        contractId: contractId,
+      });
+  
+      if (response.success) {
+        setValue("contractDocument", undefined, { shouldDirty: true });
+        if (fileInputRef.current) {
+          fileInputRef.current.value = "";
+        }
+        toast.success("Contract file removed.");
+        // router.refresh();
+      } else {
+        toast.error(response.message ?? "Failed to remove contract file.");
+      }
+    };
 
   return (
     <div className={cn("flex items-center gap-3 w-fit")}>

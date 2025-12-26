@@ -486,7 +486,6 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
         return status;
     }
   }
-  console.log(contracts, "contract");
 
   return (
     <div className="h-full grid grid-rows-[min-content_min-content_1fr_min-content] gap-4">

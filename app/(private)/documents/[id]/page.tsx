@@ -94,7 +94,6 @@ export default async function ContractDetailPage({
     return { date, time };
   }
 
-  console.log(payload, "--------------------------------");
   const { date, time } = formatDateAndTime(payload?.availability ?? null);
 
   const historyData: HistoryItem[] = Array.isArray(payload.history)

@@ -5,9 +5,6 @@ import { toast } from "sonner";
 
 type Props = {
   contractId: number;
-  artistName: string;
-  recipientEmail: string | null;
-  pageNumber?: number;
 };
 
 export default function ResendDocuSignButton({
