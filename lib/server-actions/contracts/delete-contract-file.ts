@@ -1,6 +1,5 @@
 'use server';
 
-import { z } from 'zod';
 import { desc, eq } from 'drizzle-orm';
 
 import { ServerActionResponse } from '@/lib/types';
@@ -17,18 +16,26 @@ import {
   events,
 } from '../../../drizzle/schema';
 
-// ----- constants -----
-const CONTRACT_STATUS = ['draft', 'queued', 'sent', 'viewed', 'signed', 'voided','declined'] as const;
+// ------------------------------
+// local (NON-exported) helpers
+// ------------------------------
+const CONTRACT_STATUS = [
+  'draft',
+  'queued',
+  'sent',
+  'viewed',
+  'signed',
+  'voided',
+  'declined',
+] as const;
+
 type ContractStatus = (typeof CONTRACT_STATUS)[number];
 
-// ---- Validation ----
-export const contractDeleteFileSchema = z.object({
-  contractId: z.number().int().positive(),
-});
-    
-export type ContractDeleteFileInput = z.infer<typeof contractDeleteFileSchema>;
+type DeleteContractFileInput = {
+  contractId: number;
+};
 
-export type DeleteContractFileResult = {
+type DeleteContractFileResult = {
   id: number;
   status: ContractStatus;
   contractDate: string;
@@ -71,42 +78,44 @@ export type DeleteContractFileResult = {
     fileUrl: string | null;
     fileName: string | null;
     note: string | null;
-    changedByUserId: string | null; // uuid/string
+    changedByUserId: string | null;
     createdAt: string;
   }>;
 };
 
-// ----- action (createEvent-style) -----
-export const deleteContractFile = async (
-  data: ContractDeleteFileInput,
-): Promise<ServerActionResponse<DeleteContractFileResult>> => {
+// ----------------------------------------------------
+// ✅ ONLY exported value = async server action
+// ----------------------------------------------------
+export async function deleteContractFile(
+  data: DeleteContractFileInput,
+): Promise<ServerActionResponse<DeleteContractFileResult>> {
   try {
-    console.log(data, "data");
-    // Auth
+    // ------------------ Auth ------------------
     const { session, user } = await getSession();
 
     if (!session || !user || user.banned) {
-      console.error('[deleteContractFile] - Error: unauthorized', session);
       throw new AppError('Non sei autenticato.');
     }
 
     if (user.role !== 'admin') {
-      console.error('[deleteContractFile] - Error: unauthorized', user.role);
       throw new AppError('Non sei autorizzato.');
     }
 
-    // Validate
-    const validation = contractDeleteFileSchema.safeParse(data);
-
-    if (!validation.success) {
-      console.error('[deleteContractFile] - Error: validation failed', validation.error.issues[0]);
+    // ---------------- Validation (manual) ----------------
+    if (
+      !data ||
+      typeof data.contractId !== 'number' ||
+      !Number.isInteger(data.contractId) ||
+      data.contractId <= 0
+    ) {
       throw new AppError('I dati inviati non sono corretti.');
     }
 
-    const { contractId } = validation.data;
+    const { contractId } = data;
 
+    // ---------------- Transaction ----------------
     const result = await database.transaction(async (tx) => {
-      // STEP 1: Load existing ---------------------------------------------------
+      // 1️⃣ Load existing
       const existing = await tx.query.contracts.findFirst({
         where: (c, { eq }) => eq(c.id, contractId),
         columns: {
@@ -117,21 +126,23 @@ export const deleteContractFile = async (
         },
       });
 
-      if (!existing) throw new AppError('Contratto non trovato.');
+      if (!existing) {
+        throw new AppError('Contratto non trovato.');
+      }
 
-      // STEP 2: Clear file fields ------------------------------------------------
+      // 2️⃣ Clear file fields
       const fileWasPresent = Boolean(existing.fileUrl || existing.fileName);
+
       await tx
         .update(contracts)
         .set({
           fileUrl: null,
           fileName: null,
-          // NOTE: if your updatedAt column is timestamp, change to new Date()
-          updatedAt: new Date().toISOString() as any,
+          updatedAt: new Date() as any,
         })
         .where(eq(contracts.id, contractId));
 
-      // STEP 3: Insert history --------------------------------------------------
+      // 3️⃣ Insert history
       await tx.insert(contractHistory).values({
         contractId,
         fromStatus: existing.status as ContractStatus,
@@ -139,10 +150,12 @@ export const deleteContractFile = async (
         fileUrl: existing.fileUrl ?? null,
         fileName: existing.fileName ?? null,
         changedByUserId: user.id,
-        note: fileWasPresent ? 'File contratto rimosso.' : 'Rimozione file richiesta (già assente).',
+        note: fileWasPresent
+          ? 'File contratto rimosso.'
+          : 'Rimozione file richiesta (già assente).',
       });
 
-      // STEP 4: Hydrate response ------------------------------------------------
+      // 4️⃣ Hydrate response
       const [base] = await tx
         .select({
           id: contracts.id,
@@ -153,7 +166,6 @@ export const deleteContractFile = async (
           recipientEmail: contracts.recipientEmail,
           createdAt: contracts.createdAt,
           updatedAt: contracts.updatedAt,
-
           artist: {
             id: artists.id,
             name: artists.name,
@@ -182,7 +194,9 @@ export const deleteContractFile = async (
         .innerJoin(events, eq(contracts.eventId, events.id))
         .where(eq(contracts.id, contractId));
 
-      if (!base) throw new AppError('Rimozione file riuscita ma contratto non recuperabile.');
+      if (!base) {
+        throw new AppError('Rimozione riuscita ma contratto non recuperabile.');
+      }
 
       const ccs = await tx
         .select({ email: contractEmailCcs.email })
@@ -217,21 +231,20 @@ export const deleteContractFile = async (
           changedByUserId: h.changedByUserId ?? null,
           createdAt: String(h.createdAt),
         })),
-      } satisfies DeleteContractFileResult;
+      };
     });
 
-    return {
-      success: true,
-      message: null,
-      data: result,
-    };
+    return { success: true, message: null, data: result };
   } catch (error) {
-    console.error('[deleteContractFile] transaction failed:', error);
+    console.error('[deleteContractFile]', error);
 
     return {
       success: false,
-      message: error instanceof AppError ? error.message : 'Rimozione file contratto non riuscita.',
+      message:
+        error instanceof AppError
+          ? error.message
+          : 'Rimozione file contratto non riuscita.',
       data: null,
     };
   }
-};
+}
