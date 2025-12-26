@@ -1391,7 +1391,7 @@ const toUiStatus = (status?: string) => {
                     : "Generate"}
               </Button>
 
-              <DocuSignButton event={event} />
+              <DocuSignButton event={event} isDetailsComplete={isDetailsComplete} />
             </div>
           </div>
           <div className="flex flex-col gap-2">
