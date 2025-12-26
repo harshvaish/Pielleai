@@ -81,6 +81,7 @@ export const deleteContractFile = async (
   data: ContractDeleteFileInput,
 ): Promise<ServerActionResponse<DeleteContractFileResult>> => {
   try {
+    console.log(data, "data");
     // Auth
     const { session, user } = await getSession();
 

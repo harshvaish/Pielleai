@@ -257,7 +257,7 @@ export default function EventForm({
       transfortCost: values.transportationsCost,
       totalCost: values.totalCost,
       upfrontPayment: values.upfrontPayment,
-      eventDate: new Date(values.eventDate).toISOString(),
+      eventDate: new Date(`${values.eventDate}T00:00:00`).toISOString(),
       perfomanceTime: buildPerformanceTime(
         values.eventStartTime,
         values.eventEndTime
@@ -265,7 +265,6 @@ export default function EventForm({
       paymentDate: values.paymentDate,
       contractDate: new Date().toISOString().split("T")[0],
       ccEmails: buildCcEmails(values),
-      // status: values.contractStatus,
     };
 console.log(payloadBase, event?.contract?.status, "payloadBase")
     startTransition(async () => {

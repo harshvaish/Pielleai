@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { EventFormSchema } from "@/lib/validation/event-form-schema";
 import { ApiResponse } from "@/lib/types";
 import { pdfUploadSchema } from "@/lib/validation/pdf-upload-schema";
+import { deleteContractFile } from "@/lib/server-actions/contracts/delete-contract-file";
 
 type EventType = {
   contract?: {
@@ -113,6 +114,8 @@ export default function LocalPdfUpload({ event }: { event: EventType }) {
     }
   };
 
+  console.log(event, "event in pdfff")
+
   /* ---------------- DOWNLOAD ---------------- */
   const onDownload = () => {
     if (!displayPdf?.url) return;
@@ -120,11 +123,27 @@ export default function LocalPdfUpload({ event }: { event: EventType }) {
   };
 
   /* ---------------- DELETE ---------------- */
-  const onDeleteHandler = () => {
-    setValue("contractDocument", undefined, { shouldDirty: true });
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
+  const onDeleteHandler = async() => {  
+      const response = await deleteContractFile({
+        contractId: event.contract.id,
+      });
+  
+      if (response.success) {
+        // 1️⃣ clear form state
+        setValue("contractDocument", undefined, { shouldDirty: true });
+  
+        // 2️⃣ reset file input
+        if (fileInputRef.current) {
+          fileInputRef.current.value = "";
+        }
+  
+        // 3️⃣ feedback + refresh
+        toast.success("Contract file removed.");
+        // router.refresh();
+      } else {
+        toast.error(response.message ?? "Failed to remove contract file.");
+      }
+    
   };
 
   return (

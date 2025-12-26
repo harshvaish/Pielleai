@@ -2,8 +2,8 @@
 
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
-import { it } from 'date-fns/locale';
-import { format } from 'date-fns';
+import { it } from "date-fns/locale";
+import { format } from "date-fns";
 import { toast } from "sonner";
 
 type ContractData = {
@@ -47,7 +47,7 @@ type EventType = {
   artistManager: {
     name: string;
     surname: string;
-  }
+  };
   tourManagerName?: string;
 
   venue?: {
@@ -125,12 +125,9 @@ export async function generateFilledContractHtml(
 
 export default function DocuSignButton({ event }: { event: EventType }) {
   const [loading, setLoading] = useState(false);
-console.log(event, "event-----------------------------");
+  console.log(event, "event-----------------------------");
 
-  const getTimeRange = (
-    start?: Date | string,
-    end?: Date | string
-  ): string => {
+  const getTimeRange = (start?: Date | string, end?: Date | string): string => {
     if (!start || !end) return "";
     return `${format(new Date(start), "HH:mm", { locale: it })} – ${format(
       new Date(end),
@@ -169,10 +166,13 @@ console.log(event, "event-----------------------------");
     tourManagerEmail: event?.tourManagerEmail ?? "",
   };
 
-
-
   const handleClick = async () => {
     try {
+      if (!event?.tourManagerEmail) {
+        toast.error("Tour Manager is required.");
+        return;
+      }
+
       setLoading(true);
       const { default: html2pdf } = await import("html2pdf.js");
 
@@ -224,27 +224,25 @@ console.log(event, "event-----------------------------");
         credentials: "include",
       });
 
-    console.log("API status:", res.status);
+      console.log("API status:", res.status);
 
-    if (!res.ok) {
-      const text = await res.text();
-      throw new Error(text);
-    } else{
-      toast.success("Docusign generated!");
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(text);
+      } else {
+        toast.success("Docusign generated!");
+      }
+
+      const json = await res.json();
+      console.log("✅ DocuSign response:", json);
+    } catch (err) {
+      console.error("❌ FINAL ERROR:", err);
+      //alert("Errore durante invio a DocuSign");
+    } finally {
+      setLoading(false);
+      console.log("🏁 DocuSign flow finished");
     }
-
-    const json = await res.json();
-    console.log("✅ DocuSign response:", json);
-
-  } catch (err) {
-    console.error("❌ FINAL ERROR:", err);
-    //alert("Errore durante invio a DocuSign");
-  } finally {
-    setLoading(false);
-    console.log("🏁 DocuSign flow finished");
-  }
-};
-
+  };
 
   return (
     <Button

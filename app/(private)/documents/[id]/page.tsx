@@ -127,9 +127,6 @@ export default async function ContractDetailPage({
             <>
               <ResendDocuSignButton
                 contractId={payload.id}
-                artistName={payload.artistName}
-                recipientEmail={payload.ccs}
-                pageNumber={1}
               />
 
               <ViewContractButton fileUrl={payload.fileUrl} />

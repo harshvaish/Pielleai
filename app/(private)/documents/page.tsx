@@ -636,9 +636,6 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
                     {contract.backendStatus == "declined" && (
                       <ResendDocuSignButton
                         contractId={contract.id}
-                        artistName={contract.artistName}
-                        recipientEmail={contract.recipientEmail}
-                        pageNumber={currentPage}
                       />
                     )}
                     <ChevronRight className="h-4 w-4 text-zinc-400 translate-y-[0.5px]" />

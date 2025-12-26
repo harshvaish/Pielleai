@@ -12,9 +12,6 @@ type Props = {
 
 export default function ResendDocuSignButton({
   contractId,
-  artistName,
-  recipientEmail,
-  pageNumber,
 }: Props) {
   const router = useRouter();
 
@@ -29,11 +26,7 @@ export default function ResendDocuSignButton({
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          contractId,
-          name: artistName,
-          email: recipientEmail,
-          pageNumber,
-        }),
+          contractId        }),
       });
 
       const json = await res.json();

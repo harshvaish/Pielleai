@@ -179,6 +179,18 @@ export default function ContractStatusButton({
         </DropdownMenuItem>
 
         <DropdownMenuItem
+          onClick={() => updateStatus("declined")}
+          className="flex items-center gap-2"
+        >
+          Reject
+          <span className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-sky-600">
+            <ChevronRight className="h-3 w-3 text-white" />
+          </span>
+        </DropdownMenuItem>
+
+
+
+        <DropdownMenuItem
           onClick={() => updateStatus("voided")}
           className="flex items-center gap-2"
         >
