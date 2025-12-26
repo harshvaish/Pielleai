@@ -257,7 +257,7 @@ export default function EventForm({
       transfortCost: values.transportationsCost,
       totalCost: values.totalCost,
       upfrontPayment: values.upfrontPayment,
-      eventDate: values.eventDate,
+      eventDate: new Date(values.eventDate).toISOString(),
       perfomanceTime: buildPerformanceTime(
         values.eventStartTime,
         values.eventEndTime
@@ -317,6 +317,55 @@ useEffect(() => {
 
   prevStatusRef.current = contractStatus;
 }, [contractStatus, event?.contract?.id]);
+
+type ContractUiState = {
+  label: string;
+  icon: string;
+  color: string;
+};
+
+function getContractUiState({
+  backendStatus,
+  isDetailsComplete,
+}: {
+  backendStatus?: string;
+  isDetailsComplete: boolean;
+}): ContractUiState {
+  // 🚨 PRIORITY 1 — Missing data ALWAYS wins
+  if (!isDetailsComplete) {
+    return {
+      label: "Missing data",
+      icon: QUESTION_ICON,
+      color: "text-amber-600",
+    };
+  }
+
+  // ✅ Only reached when ALL details are complete
+  switch (backendStatus) {
+    case "voided":
+      return {
+        label: "Archived",
+        icon: CIRCLE_RIGHT_ICON,
+        color: "text-zinc-600",
+      };
+
+    case "sent":
+      return {
+        label: "To be signed",
+        icon: CIRCLE_RIGHT_ICON,
+        color: "text-sky-600",
+      };
+
+    case "draft":
+    default:
+      return {
+        label: "Draft",
+        icon: CIRCLE_RIGHT_ICON,
+        color: "text-blue-600",
+      };
+  }
+}
+
 
 const toUiStatus = (status?: string) => {
   if (!status) return undefined;
@@ -1292,12 +1341,11 @@ const toUiStatus = (status?: string) => {
                 control={control}
                 name="contractStatus"
                 render={({ field }) => {
-                  const derivedStatusLabel =
-                  field.value ??
-                  toUiStatus(event?.contract?.status) ??
-                  (isDetailsComplete ? "draft" : "Missing data");
-                  const isMissing = derivedStatusLabel === "Missing data";
-                  return (
+                  const ui = getContractUiState({
+                    backendStatus: event?.contract?.status,
+                    isDetailsComplete,
+                  });
+                                return (
                     <Select value={field.value} onValueChange={field.onChange} 
 >
                       <SelectTrigger
@@ -1305,17 +1353,12 @@ const toUiStatus = (status?: string) => {
                         className="h-8 rounded-xl flex items-center gap-2 px-3 text-xs font-medium"
                         size="sm"
                       >
-                        <span
-                          className={cn(
-                            "truncate",
-                            isMissing ? "text-[#D97706]" : "text-[#2563EB]"
-                          )}
-                        >
-                          {derivedStatusLabel}
-                        </span>
+          <span className={cn("truncate", ui.color)}>
+            {ui.label}
+          </span>
                         <img
-                          src={isMissing ? QUESTION_ICON : CIRCLE_RIGHT_ICON}
-                          alt="info"
+            src={ui.icon}
+            alt="info"
                           width={14}
                           height={14}
                           className="opacity-80 ml-auto"
