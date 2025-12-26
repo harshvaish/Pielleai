@@ -12,6 +12,8 @@ import {
   events,
 } from '../../../../drizzle/schema';
 
+import { users } from '@/lib/database/schema';
+
 import getSession from '@/lib/data/auth/get-session';
 
 export const runtime = 'nodejs';
@@ -181,7 +183,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         fileUrl: string | null;
         fileName: string | null;
         note: string | null;
-        changedByUserId: number;
+        changedByUserId: string | null;
         createdAt: string;
       }>
     >();
@@ -199,10 +201,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
             fileUrl: contractHistory.fileUrl,
             fileName: contractHistory.fileName,
             note: contractHistory.note,
-            changedByUserId: contractHistory.changedByUserId,
-            createdAt: contractHistory.createdAt,
-          })
-          .from(contractHistory)
+changedByUserId: users.name,
+          createdAt: contractHistory.createdAt,
+        })
+        .from(contractHistory)
+        .leftJoin(users, eq(contractHistory.changedByUserId, users.id))
           .where(inArray(contractHistory.contractId, contractIds))
           .orderBy(desc(contractHistory.createdAt)),
 

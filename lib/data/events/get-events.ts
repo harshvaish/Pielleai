@@ -276,9 +276,11 @@ export async function getEvents(
               fileUrl: contractHistory.fileUrl,
               fileName: contractHistory.fileName,
               note: contractHistory.note,
+              changedByUserId: users.name,
               createdAt: contractHistory.createdAt,
             })
             .from(contractHistory)
+            .leftJoin(users, eq(contractHistory.changedByUserId, users.id))
             .where(inArray(contractHistory.contractId, contractIds))
             .orderBy(contractHistory.contractId, desc(contractHistory.createdAt))
         : Promise.resolve([] as Array<any>),
@@ -305,20 +307,21 @@ export async function getEvents(
       });
     }
 
-    // latest history per contractId
-    const latestHistoryByContract: Record<number, any> = {};
+    // all history per contractId (newest-first)
+    const historiesByContract: Record<number, any[]> = {};
     for (const h of contractHistoryResult) {
-      if (!latestHistoryByContract[h.contractId]) {
-        latestHistoryByContract[h.contractId] = {
-          id: h.id,
-          fromStatus: h.fromStatus ?? null,
-          toStatus: h.toStatus ?? null,
-          fileUrl: h.fileUrl ?? null,
-          fileName: h.fileName ?? null,
-          note: h.note ?? null,
-          createdAt: String(h.createdAt),
-        };
-      }
+      const arr = historiesByContract[h.contractId] ?? [];
+      arr.push({
+        id: h.id,
+        fromStatus: h.fromStatus ?? null,
+        toStatus: h.toStatus ?? null,
+        fileUrl: h.fileUrl ?? null,
+        fileName: h.fileName ?? null,
+        note: h.note ?? null,
+        changedByUserId: h.changedByUserId ?? null,
+        createdAt: String(h.createdAt),
+      });
+      historiesByContract[h.contractId] = arr;
     }
 
     // ccs per contractId
@@ -341,9 +344,9 @@ export async function getEvents(
           recipientEmail: c.recipientEmail,
           createdAt: c.createdAt,
 
-          // ✅ attach CC + latest history
+          // ✅ attach CC + all history entries (newest-first)
           ccs: ccsByContract[c.id] ?? [],
-          latestHistory: latestHistoryByContract[c.id] ?? null,
+          latestHistory: historiesByContract[c.id] ?? [],
         };
       }
     }

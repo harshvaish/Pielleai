@@ -17,7 +17,7 @@ import {
 import { supabaseServerClient } from '@/lib/supabase-server-client';
 import { sanitizeFileName } from '@/lib/utils';
 
-import { artistAvailabilities } from '@/lib/database/schema';
+import { artistAvailabilities, users } from '@/lib/database/schema';
 
 // ----- constants -----
 export const CONTRACT_STATUS = ['draft', 'queued', 'sent', 'viewed', 'signed', 'voided', 'declined'] as const;
@@ -191,10 +191,11 @@ export async function getContracts(
               fileUrl: contractHistory.fileUrl,
               fileName: contractHistory.fileName,
               note: contractHistory.note,
-              changedByUserId: contractHistory.changedByUserId,
+              changedByUserId: users.name,
               createdAt: contractHistory.createdAt,
             })
             .from(contractHistory)
+            .leftJoin(users, eq(contractHistory.changedByUserId, users.id))
             .where(inArray(contractHistory.contractId, contractIds))
             .orderBy(desc(contractHistory.createdAt))
         : Promise.resolve([]),
@@ -343,6 +344,7 @@ export async function getContracts(
       console.error('[getContracts] error in post-processing sync:', err);
     }
     const totalPages = isPaginated ? Math.max(1, Math.ceil(Number(total ?? 0) / limit)) : 1;
+    console.log("getContracts total:", data, "totalPages:", totalPages);
     return {
       data,
       totalPages,

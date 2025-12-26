@@ -10,7 +10,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
-  FileText,
   Send,
   Eye,
   Check,
@@ -29,10 +28,7 @@ import { JSX } from "react";
 
 type ContractStatus =
   | "draft"
-  | "queued"
   | "sent"
-  | "viewed"
-  | "signed"
   | "declined"
   | "voided";
 
@@ -43,7 +39,7 @@ type Props = {
 };
 
 /* ----------------------------------------
-   STATUS STYLES (badge + icon)
+   STATUS STYLES (EventStatusBadge style)
 ---------------------------------------- */
 
 const STATUS_STYLES: Record<
@@ -51,56 +47,38 @@ const STATUS_STYLES: Record<
   {
     label: string;
     text: string;
+    bg: string;
     icon: JSX.Element;
   }
 > = {
   draft: {
     label: "Draft",
     text: "text-amber-600",
+    bg: "bg-amber-50",
     icon: (
-      <div className="w-3 h-3 flex justify-center items-center bg-amber-600 rounded-full">
+      <div className="w-3 h-3 flex items-center justify-center bg-amber-600 rounded-full">
         <span className="text-[8px] text-white">?</span>
       </div>
     ),
   },
 
-  queued: {
-    label: "To be signed",
-    text: "text-amber-700",
-    icon: <Send className="h-3 w-3" />,
-  },
-
   sent: {
     label: "Sent",
     text: "text-sky-600",
+    bg: "bg-sky-50",
     icon: (
-      <span className="inline-flex h-3 w-3 items-center justify-center rounded-full bg-sky-600">
-        <ChevronRight className="h-2 w-2 text-white" />
-      </span>
-    ),
-  },
-
-  viewed: {
-    label: "Viewed",
-    text: "text-indigo-600",
-    icon: <Eye className="h-3 w-3" />,
-  },
-
-  signed: {
-    label: "Signed",
-    text: "text-lime-700",
-    icon: (
-      <div className="w-3 h-3 flex justify-center items-center bg-lime-600 rounded-full">
-        <Check className="size-2 text-white" />
+      <div className="w-3 h-3 flex items-center justify-center bg-sky-600 rounded-full">
+        <ChevronRight className="size-2 text-white" />
       </div>
     ),
   },
 
   declined: {
     label: "Refused",
-    text: "text-rose-700",
+    text: "text-red-700",
+    bg: "bg-red-50",
     icon: (
-      <div className="w-3 h-3 flex justify-center items-center bg-red-600 rounded-full">
+      <div className="w-3 h-3 flex items-center justify-center bg-red-600 rounded-full">
         <X className="size-2 text-white" />
       </div>
     ),
@@ -109,7 +87,12 @@ const STATUS_STYLES: Record<
   voided: {
     label: "Archived",
     text: "text-zinc-600",
-    icon: <PartyPopper className="h-3 w-3" />,
+    bg: "bg-zinc-100",
+    icon: (
+      <div className="w-3 h-3 flex items-center justify-center bg-zinc-600 rounded-full">
+        <PartyPopper className="size-2 text-white" />
+      </div>
+    ),
   },
 };
 
@@ -125,7 +108,27 @@ export default function ContractStatusButton({
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
-  const s = STATUS_STYLES[status];
+  const current = STATUS_STYLES[status];
+
+  const STATUS_TOAST: Record<
+  ContractStatus,
+  { success: string; error?: string }
+> = {
+  draft: {
+    success: "Contract draft successfully",
+
+  },
+  sent: {
+    success: "Contract sent successfully",
+  },
+  declined: {
+    success: "Contract rejected",
+  },
+  voided: {
+    success: "Contract archived",
+  },
+};
+
 
   const updateStatus = (next: ContractStatus) => {
     if (next === status) return;
@@ -134,14 +137,13 @@ export default function ContractStatusButton({
       const response = await editContract({
         contractId,
         status: next,
-        note: next === "voided" ? "Contratto archiviato" : undefined,
       });
 
       if (response.success) {
         toast.success(
-          next === "voided" ? "Contract archived" : "Status updated"
+          STATUS_TOAST[next]?.success ?? "Status updated"
         );
-        router.refresh();
+              router.refresh();
       } else {
         toast.error(response.message);
       }
@@ -154,48 +156,53 @@ export default function ContractStatusButton({
         <button
           disabled={isPending}
           className={cn(
-            "inline-flex items-center gap-2 rounded-md border px-2 py-2.5 text-xs font-medium",
-            s.text,
+            "inline-flex items-center gap-2 rounded-md px-2.5 py-2.5 text-s font-medium",
+            "max-w-min whitespace-nowrap",
+            "border border-zinc-200 hover:border-zinc-300",
+            "bg-white",
+                    current.text,
             isPending && "opacity-60 cursor-not-allowed",
             className
           )}
         >
-          <span >{s.label}</span>
-          {s.icon}
+          {current.label}
+          <span className="truncate"> {current.icon} </span>
 
-          <ChevronDown className="h-3 w-3 text-zinc-400" />
+          <ChevronDown className="h-3 w-3 text-zinc-400 ml-1" />
         </button>
       </DropdownMenuTrigger>
 
-      <DropdownMenuContent align="start" className="min-w-[160px]">
+      <DropdownMenuContent align="start" className="min-w-[100px]">
         <DropdownMenuItem
           onClick={() => updateStatus("sent")}
           className="flex items-center gap-2"
         >
           Sent
-          <span className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-sky-600">
-            <ChevronRight className="h-3 w-3 text-white" />
-          </span>
+          <div className="w-3 h-3 flex items-center justify-center bg-sky-600 rounded-full">
+            <ChevronRight className="size-2 text-white" />
+          </div>
         </DropdownMenuItem>
 
         <DropdownMenuItem
           onClick={() => updateStatus("declined")}
           className="flex items-center gap-2"
         >
-          Reject
-          <span className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-sky-600">
-            <ChevronRight className="h-3 w-3 text-white" />
-          </span>
+          Refused
+          <div className="w-3 h-3 flex items-center justify-center bg-red-600 rounded-full">
+            <X className="size-2 text-white" />
+          </div>
+
         </DropdownMenuItem>
-
-
 
         <DropdownMenuItem
           onClick={() => updateStatus("voided")}
           className="flex items-center gap-2"
         >
           Archived
-          <PartyPopper className="h-4 w-4 text-zinc-600" />
+          <div className="w-3 h-3 flex items-center justify-center rounded-full">
+            <PartyPopper className="size-3 text-zinc-600" />
+          </div>
+
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

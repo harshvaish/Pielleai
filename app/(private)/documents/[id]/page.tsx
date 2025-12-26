@@ -38,6 +38,8 @@ type HistoryItem = {
   time: string;
   title: string;
   description?: string;
+  fileUrl?: string;
+  fileName?: string;
   type: "archived" | "success";
 };
 
@@ -111,6 +113,8 @@ export default async function ContractDetailPage({
             ? `Status changed from "${h.fromStatus}" to "${h.toStatus}"`
             : "Contract created",
           description: h.note ?? "No description available",
+          fileUrl: h.fileUrl ?? undefined,
+          fileName: h.fileName ?? undefined,
           type: h.toStatus === "voided" ? "archived" : "success",
         };
       })
@@ -124,9 +128,7 @@ export default async function ContractDetailPage({
         <div className="flex items-center gap-2">
           {payload?.backendStatus === "declined" && (
             <>
-              <ResendDocuSignButton
-                contractId={payload.id}
-              />
+              <ResendDocuSignButton contractId={payload.id} />
 
               <ViewContractButton fileUrl={payload.fileUrl} />
             </>
@@ -310,6 +312,19 @@ export default async function ContractDetailPage({
                       {/* Description */}
                       <div className="text-xs text-zinc-500 leading-relaxed mt-1">
                         {item.description}
+                        {/* <span>
+                          {" "}
+                          {item.fileUrl && item.fileName && (
+                            <a
+                              href={item.fileUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1 mt-1 text-xs text-sky-600 hover:underline"
+                            >
+                              {item.fileName}
+                            </a>
+                          )}
+                        </span> */}
                       </div>
                     </div>
                   </div>

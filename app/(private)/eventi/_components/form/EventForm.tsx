@@ -51,6 +51,15 @@ type EventForm = {
   closeDialog?: () => void;
 };
 
+type HistoryItem = {
+  date: string;
+  time: string;
+  title: string;
+  description?: string;
+  updatedBy?: string;
+  type: "archived" | "success";
+};
+
 export default function EventForm({
   artists,
   venues,
@@ -84,7 +93,6 @@ export default function EventForm({
     control,
     name: "contractStatus",
   });
-  
 
   // Calculate artistNetCost
   const artistNetCost = useMemo(() => {
@@ -193,31 +201,26 @@ export default function EventForm({
 
   const [isPending, startTransition] = useTransition();
 
-  const historyData = useMemo(() => {
-    const h = event?.contract?.latestHistory;
-    if (!h) return [];
+  const historyData: HistoryItem[] = Array.isArray(event?.contract?.latestHistory)
+    ? event?.contract?.latestHistory.map((h: any) => {
 
     const createdAt = new Date(h.createdAt);
-
-    return [
-      {
-        date: createdAt.toLocaleDateString("it-IT"),
-        time: createdAt.toLocaleTimeString("en-US", {
-          hour: "2-digit",
-          minute: "2-digit",
-          hour12: true,
-        }),
-
-        title: h.fromStatus
-          ? `Status changed from "${h.fromStatus}" to "${h.toStatus}"`
-          : "Contract created",
-
-        description: h.note ?? "No description available",
-
-        type: h.toStatus === "voided" ? "archived" : "success",
-      },
-    ];
-  }, [event]);
+    return {
+      date: createdAt.toLocaleDateString("it-IT"),
+      time: createdAt.toLocaleTimeString("en-US", {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true,
+      }),
+      updatedBy: h?.changedByUserId,
+      title: h.fromStatus
+        ? `Status changed from "${h.fromStatus}" to "${h.toStatus}"`
+        : "Contract created",
+      description: h.note ?? "No description available",
+      type: h.toStatus === "voided" ? "archived" : "success",
+    };
+  })
+: [];
   const buildPerformanceTime = (
     startTime?: string,
     endTime?: string
@@ -267,7 +270,7 @@ export default function EventForm({
       ccEmails: buildCcEmails(values),
     };
     startTransition(async () => {
-      const response = event?.contract 
+      const response = event?.contract
         ? await editContract({
             ...payloadBase,
             contractId: event.contract.id,
@@ -289,88 +292,87 @@ export default function EventForm({
       }
     });
   };
-const prevStatusRef = useRef<string | undefined>(undefined);
+  const prevStatusRef = useRef<string | undefined>(undefined);
 
-useEffect(() => {
-  if (
-    toUiStatus(contractStatus) === "archived" &&
-    prevStatusRef.current !== "archived" &&
-    event?.contract?.id
-  ) {
-    startTransition(async () => {
-      const response = await editContract({
-        contractId: event.contract.id,
-        status: "voided",
-        note: "Contratto archiviato",
+  useEffect(() => {
+    if (
+      toUiStatus(contractStatus) === "archived" &&
+      prevStatusRef.current !== "archived" &&
+      event?.contract?.id
+    ) {
+      startTransition(async () => {
+        const response = await editContract({
+          contractId: event.contract.id,
+          status: "voided",
+          note: "Contratto archiviato",
+        });
+
+        if (response.success) {
+          toast.success("Contract archived");
+          router.refresh();
+        } else {
+          toast.error(response.message);
+        }
       });
+    }
 
-      if (response.success) {
-        toast.success("Contract archived");
-        router.refresh();
-      } else {
-        toast.error(response.message);
-      }
-    });
+    prevStatusRef.current = contractStatus;
+  }, [contractStatus, event?.contract?.id]);
+
+  type ContractUiState = {
+    label: string;
+    icon: string;
+    color: string;
+  };
+
+  function getContractUiState({
+    backendStatus,
+    isDetailsComplete,
+  }: {
+    backendStatus?: string;
+    isDetailsComplete: boolean;
+  }): ContractUiState {
+    // 🚨 PRIORITY 1 — Missing data ALWAYS wins
+    if (!isDetailsComplete) {
+      return {
+        label: "Missing data",
+        icon: QUESTION_ICON,
+        color: "text-amber-600",
+      };
+    }
+
+    // ✅ Only reached when ALL details are complete
+    switch (backendStatus) {
+      case "voided":
+        return {
+          label: "Archived",
+          icon: CIRCLE_RIGHT_ICON,
+          color: "text-zinc-600",
+        };
+
+      case "sent":
+        return {
+          label: "To be signed",
+          icon: CIRCLE_RIGHT_ICON,
+          color: "text-sky-600",
+        };
+
+      case "draft":
+      default:
+        return {
+          label: "Draft",
+          icon: CIRCLE_RIGHT_ICON,
+          color: "text-blue-600",
+        };
+    }
   }
 
-  prevStatusRef.current = contractStatus;
-}, [contractStatus, event?.contract?.id]);
+  const toUiStatus = (status?: string) => {
+    if (!status) return undefined;
+    if (status === "voided") return "archived";
+    return status;
+  };
 
-type ContractUiState = {
-  label: string;
-  icon: string;
-  color: string;
-};
-
-function getContractUiState({
-  backendStatus,
-  isDetailsComplete,
-}: {
-  backendStatus?: string;
-  isDetailsComplete: boolean;
-}): ContractUiState {
-  // 🚨 PRIORITY 1 — Missing data ALWAYS wins
-  if (!isDetailsComplete) {
-    return {
-      label: "Missing data",
-      icon: QUESTION_ICON,
-      color: "text-amber-600",
-    };
-  }
-
-  // ✅ Only reached when ALL details are complete
-  switch (backendStatus) {
-    case "voided":
-      return {
-        label: "Archived",
-        icon: CIRCLE_RIGHT_ICON,
-        color: "text-zinc-600",
-      };
-
-    case "sent":
-      return {
-        label: "To be signed",
-        icon: CIRCLE_RIGHT_ICON,
-        color: "text-sky-600",
-      };
-
-    case "draft":
-    default:
-      return {
-        label: "Draft",
-        icon: CIRCLE_RIGHT_ICON,
-        color: "text-blue-600",
-      };
-  }
-}
-
-
-const toUiStatus = (status?: string) => {
-  if (!status) return undefined;
-  if (status === "voided") return "archived";
-  return status;
-};
-    
   return (
     <>
       <div className="flex justify-between items-center gap-2">
@@ -1343,37 +1345,37 @@ const toUiStatus = (status?: string) => {
                     backendStatus: event?.contract?.status,
                     isDetailsComplete,
                   });
-                                return (
-                    <Select value={field.value} onValueChange={field.onChange} 
->
+                  return (
+                    <Select value={field.value} onValueChange={field.onChange}>
                       <SelectTrigger
                         id="contractStatus"
                         className="h-8 rounded-xl flex items-center gap-2 px-3 text-xs font-medium"
                         size="sm"
                       >
-          <span className={cn("truncate", ui.color)}>
-            {ui.label}
-          </span>
+                        <span className={cn("truncate", ui.color)}>
+                          {ui.label}
+                        </span>
                         <img
-            src={ui.icon}
-            alt="info"
+                          src={ui.icon}
+                          alt="info"
                           width={14}
                           height={14}
                           className="opacity-80 ml-auto"
                         />
                       </SelectTrigger>
-          <SelectContent>
-          <SelectItem value="draft">draft</SelectItem>
-            <SelectItem value="sent">To be Signed</SelectItem>
-            <SelectItem value="archived">Archived</SelectItem>
-          </SelectContent>
+                      <SelectContent>
+                        <SelectItem value="draft">draft</SelectItem>
+                        <SelectItem value="sent">Sent</SelectItem>
+                        <SelectItem value="declined">Refused</SelectItem>
+                        <SelectItem value="voided">Archived</SelectItem>
+                      </SelectContent>
                     </Select>
                   );
                 }}
               />
 
               <span className="text-xs text-zinc-500">
-                Status changed on 13/11/25 by Ann Carrot
+                Status changed on {historyData[0]?.date} by {historyData[0]?.updatedBy}
               </span>
             </div>
             <div className="flex items-center gap-2">
@@ -1391,12 +1393,15 @@ const toUiStatus = (status?: string) => {
                     : "Generate"}
               </Button>
 
-              <DocuSignButton event={event} isDetailsComplete={isDetailsComplete} />
+              <DocuSignButton
+                event={event}
+                isDetailsComplete={isDetailsComplete}
+              />
             </div>
           </div>
           <div className="flex flex-col gap-2">
             <div className="text-sm font-semibold">Contract file</div>
-            <UploadPdf event={event}/>
+            <UploadPdf event={event} />
             {errors.contractDocument && (
               <p className="text-xs text-destructive mt-2">
                 {errors.contractDocument.message as string}
