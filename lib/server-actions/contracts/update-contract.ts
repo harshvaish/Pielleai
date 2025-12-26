@@ -49,6 +49,12 @@ export type ContractEditInput = {
 
   eventType?: string;
   eventDate?: string | number | Date;
+
+  /**
+   * Expected formats:
+   * - "HH:mm - HH:mm" (preferred)
+   * - "HH:mm" (fallback: start only, end preserved by duration)
+   */
   perfomanceTime?: string;
 
   transfortCost?: string | number;
@@ -157,25 +163,94 @@ function hasKeys(obj: Record<string, unknown>) {
 }
 
 /**
- * Combines eventDate + perfomanceTime ("HH:mm") into a Date.
- * If perfomanceTime invalid/missing -> keep date as-is.
+ * Parses perfomanceTime.
+ * Supports:
+ * - "HH:mm - HH:mm"
+ * - "HH:mm"
  */
-function buildEventStartDate(eventDate: string | number | Date, perfomanceTime?: string | null): Date {
-  const d = eventDate instanceof Date ? new Date(eventDate) : new Date(eventDate);
-  if (Number.isNaN(d.getTime())) throw new AppError('Data evento non valida.');
+function parsePerformanceTime(input: string | null | undefined):
+  | { startH: number; startM: number; endH: number | null; endM: number | null }
+  | null {
+  const t = cleanStr(input);
+  if (!t) return null;
 
-  const t = cleanStr(perfomanceTime);
-  if (!t) return d;
+  // Range: "HH:mm - HH:mm"
+  const r = t.match(/^\s*(\d{1,2}):(\d{2})\s*-\s*(\d{1,2}):(\d{2})\s*$/);
+  if (r) {
+    const sh = Number(r[1]);
+    const sm = Number(r[2]);
+    const eh = Number(r[3]);
+    const em = Number(r[4]);
 
-  const m = /^(\d{1,2}):(\d{2})$/.exec(t);
-  if (!m) return d;
+    if (
+      [sh, sm, eh, em].some(Number.isNaN) ||
+      sh < 0 || sh > 23 || eh < 0 || eh > 23 ||
+      sm < 0 || sm > 59 || em < 0 || em > 59
+    ) return null;
 
-  const hh = Number(m[1]);
-  const mm = Number(m[2]);
-  if (Number.isNaN(hh) || Number.isNaN(mm) || hh < 0 || hh > 23 || mm < 0 || mm > 59) return d;
+    return { startH: sh, startM: sm, endH: eh, endM: em };
+  }
 
-  d.setHours(hh, mm, 0, 0);
-  return d;
+  // Single time: "HH:mm"
+  const s = t.match(/^\s*(\d{1,2}):(\d{2})\s*$/);
+  if (s) {
+    const sh = Number(s[1]);
+    const sm = Number(s[2]);
+
+    if (Number.isNaN(sh) || Number.isNaN(sm) || sh < 0 || sh > 23 || sm < 0 || sm > 59) return null;
+
+    return { startH: sh, startM: sm, endH: null, endM: null };
+  }
+
+  return null;
+}
+
+/**
+ * Combines eventDate + perfomanceTime into start/end.
+ * If perfomanceTime missing/invalid:
+ * - start = eventDate as-is
+ * - end = start (caller may preserve duration)
+ *
+ * If perfomanceTime is "HH:mm":
+ * - start time set
+ * - end is not set (caller may preserve duration)
+ *
+ * If perfomanceTime is "HH:mm - HH:mm":
+ * - both start & end set; if end < start => crosses midnight, end += 1 day.
+ */
+function buildEventStartEnd(
+  eventDate: string | number | Date,
+  perfomanceTime?: string | null,
+): { start: Date; end: Date; hasExplicitEnd: boolean } {
+  const base = eventDate instanceof Date ? new Date(eventDate) : new Date(eventDate);
+  if (Number.isNaN(base.getTime())) throw new AppError('Data evento non valida.');
+
+  const parsed = parsePerformanceTime(perfomanceTime);
+
+  if (!parsed) {
+    const start = new Date(base);
+    const end = new Date(base);
+    return { start, end, hasExplicitEnd: false };
+  }
+
+  const start = new Date(base);
+  start.setHours(parsed.startH, parsed.startM, 0, 0);
+
+  // only start provided
+  if (parsed.endH === null || parsed.endM === null) {
+    const end = new Date(start);
+    return { start, end, hasExplicitEnd: false };
+  }
+
+  const end = new Date(base);
+  end.setHours(parsed.endH, parsed.endM, 0, 0);
+
+  // crosses midnight
+  if (end.getTime() < start.getTime()) {
+    end.setDate(end.getDate() + 1);
+  }
+
+  return { start, end, hasExplicitEnd: true };
 }
 
 // ----- action -----
@@ -183,6 +258,7 @@ export const editContract = async (
   data: ContractEditInput,
 ): Promise<ServerActionResponse<EditContractResult>> => {
   try {
+    console.log('[editContract] - executing with data:', data);
     const { session, user } = await getSession();
 
     if (!session || !user || user.banned) {
@@ -260,7 +336,6 @@ export const editContract = async (
       }
 
       if (Object.keys(updateValues).length > 0) {
-        // updatedAt type varies by drizzle config; string is safest in your project pattern
         (updateValues as any).updatedAt = new Date().toISOString();
         await tx.update(contracts).set(updateValues).where(eq(contracts.id, data.contractId));
       }
@@ -300,7 +375,7 @@ export const editContract = async (
       // --- events ---
       const eventPatch: Partial<typeof events.$inferInsert> = {};
       const eventType = cleanStr(data.eventType);
-      if (eventType) (eventPatch as any).eventType = eventType; // requires column exists in DB
+      if (eventType) (eventPatch as any).eventType = eventType;
 
       const transportCost = toNumericString(data.transfortCost);
       if (transportCost !== null) eventPatch.transportationsCost = transportCost as any;
@@ -311,21 +386,48 @@ export const editContract = async (
       const upfrontPayment = toNumericString(data.upfrontPayment);
       if (upfrontPayment !== null) eventPatch.artistUpfrontCost = upfrontPayment as any;
 
-      if (data.paymentDate) {
-        // your events.paymentDate is mode:'string' in schema
-        (eventPatch as any).paymentDate = toISOStringOrThrow(data.paymentDate, 'Data pagamento non valida.');
+      if (data.paymentDate !== undefined) {
+        (eventPatch as any).paymentDate =
+          data.paymentDate === null ? null : toISOStringOrThrow(data.paymentDate, 'Data pagamento non valida.');
       }
 
       if (hasKeys(eventPatch)) {
         await tx.update(events).set(eventPatch).where(eq(events.id, existing.eventId));
       }
 
-      // --- availability.startDate (eventDate + perfomanceTime) ---
+      // --- availability.startDate/endDate (eventDate + perfomanceTime) ---
       if (data.eventDate && ev?.availabilityId) {
-        const start = buildEventStartDate(data.eventDate, data.perfomanceTime);
+        const existingAvail = await tx.query.artistAvailabilities.findFirst({
+          where: (a, { eq }) => eq(a.id, ev.availabilityId),
+          columns: { id: true, startDate: true, endDate: true },
+        });
+
+        if (!existingAvail) throw new AppError('Disponibilità non trovata.');
+
+        const oldStart = new Date(existingAvail.startDate);
+        const oldEnd = new Date(existingAvail.endDate);
+
+        if (Number.isNaN(oldStart.getTime()) || Number.isNaN(oldEnd.getTime())) {
+          throw new AppError('Disponibilità esistente non valida.');
+        }
+
+        // preserve old duration if we don't have an explicit end time
+        const durationMs = Math.max(0, oldEnd.getTime() - oldStart.getTime());
+
+        const { start, end, hasExplicitEnd } = buildEventStartEnd(data.eventDate, data.perfomanceTime);
+
+        const nextEnd = hasExplicitEnd ? end : new Date(start.getTime() + durationMs);
+
+        if (nextEnd.getTime() < start.getTime()) {
+          throw new AppError('Orario performance non valido (fine prima dell’inizio).');
+        }
+
         await tx
           .update(artistAvailabilities)
-          .set({ startDate: start.toISOString() }) // string
+          .set({
+            startDate: start.toISOString(),
+            endDate: nextEnd.toISOString(),
+          })
           .where(eq(artistAvailabilities.id, ev.availabilityId));
       }
 
@@ -362,7 +464,10 @@ export const editContract = async (
         fileUrl: (data.fileUrl ?? existing.fileUrl ?? null) as any,
         fileName: (data.fileName ?? existing.fileName ?? null) as any,
         changedByUserId: user.id,
-        note: (typeof data.note === 'string' && data.note.trim().length ? data.note.slice(0, 10_000) : 'Contratto aggiornato') as any,
+        note:
+          (typeof data.note === 'string' && data.note.trim().length
+            ? data.note.slice(0, 10_000)
+            : 'Contratto aggiornato') as any,
       });
 
       // STEP 6: hydrate response
