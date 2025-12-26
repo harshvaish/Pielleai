@@ -43,16 +43,16 @@ export type CreateContractInput = {
 
   eventType?: string;
 
-  eventDate?: string | number | Date; // update availability.startDate (combine with perfomanceTime)
-  perfomanceTime?: string; // "HH:mm"
+  eventDate?: string | number | Date; // update availability.startDate/endDate (combine with perfomanceTime)
+  perfomanceTime?: string; // "HH:mm" OR "HH:mm - HH:mm"
 
   transfortCost?: string | number; // events.transportationsCost
   totalCost?: string | number; // events.totalCost
-  upfrontPayment?: string | number; // events.artistUpfrontCost
+  upfrontPayment?: string | number; // events.depositCost (per your current code)
   paymentDate?: string | number | Date; // events.paymentDate (string mode)
 };
 
-// ----- output (adjust as you like) -----
+// ----- output -----
 export type CreateContractResult = {
   id: number;
   status: ContractStatus;
@@ -138,25 +138,46 @@ function hasKeys(obj: Record<string, unknown>) {
 }
 
 /**
- * Combines eventDate + perfomanceTime ("HH:mm") into a Date.
- * If perfomanceTime invalid/missing -> keep date as-is.
+ * Supports:
+ * - "HH:mm"
+ * - "HH:mm - HH:mm"  (if end < start => assume crosses midnight)
  */
-function buildEventStartDate(eventDate: string | number | Date, perfomanceTime?: string | null): Date {
-  const d = eventDate instanceof Date ? new Date(eventDate) : new Date(eventDate);
-  if (Number.isNaN(d.getTime())) throw new AppError('Data evento non valida.');
+function buildEventStartEnd(
+  eventDate: string | number | Date,
+  perfomanceTime?: string | null,
+): { start: Date; end?: Date } {
+  const base = eventDate instanceof Date ? new Date(eventDate) : new Date(eventDate);
+  if (Number.isNaN(base.getTime())) throw new AppError('Data evento non valida.');
 
   const t = cleanStr(perfomanceTime);
-  if (!t) return d;
+  if (!t) return { start: base };
 
-  const m = /^(\d{1,2}):(\d{2})$/.exec(t);
-  if (!m) return d;
+  const m = /^(\d{1,2}):(\d{2})(?:\s*-\s*(\d{1,2}):(\d{2}))?$/.exec(t);
+  if (!m) return { start: base };
 
-  const hh = Number(m[1]);
-  const mm = Number(m[2]);
-  if (Number.isNaN(hh) || Number.isNaN(mm) || hh < 0 || hh > 23 || mm < 0 || mm > 59) return d;
+  const sh = Number(m[1]);
+  const sm = Number(m[2]);
+  if (Number.isNaN(sh) || Number.isNaN(sm) || sh < 0 || sh > 23 || sm < 0 || sm > 59) return { start: base };
 
-  d.setHours(hh, mm, 0, 0);
-  return d;
+  const start = new Date(base);
+  start.setHours(sh, sm, 0, 0);
+
+  // end provided?
+  if (m[3] != null && m[4] != null) {
+    const eh = Number(m[3]);
+    const em = Number(m[4]);
+    if (Number.isNaN(eh) || Number.isNaN(em) || eh < 0 || eh > 23 || em < 0 || em > 59) return { start };
+
+    const end = new Date(base);
+    end.setHours(eh, em, 0, 0);
+
+    // If end earlier than start, assume next day
+    if (end.getTime() < start.getTime()) end.setDate(end.getDate() + 1);
+
+    return { start, end };
+  }
+
+  return { start };
 }
 
 // ----- action -----
@@ -164,7 +185,6 @@ export const createContract = async (
   data: CreateContractInput,
 ): Promise<ServerActionResponse<CreateContractResult>> => {
   try {
-    console.log(data,'datarecievefd')
     const { session, user } = await getSession();
 
     if (!session || !user || user.banned) {
@@ -215,7 +235,7 @@ export const createContract = async (
     const contractDate = normalizeToYyyyMmDd(data.contractDate ?? data.eventDate ?? new Date());
 
     const created = await database.transaction(async (tx) => {
-      // 1) Create contract (your contracts schema requires artistId, venueId, eventId, contractDate)
+      // 1) Create contract
       const [contractRow] = await tx
         .insert(contracts)
         .values({
@@ -288,23 +308,29 @@ export const createContract = async (
         await tx.update(events).set(eventPatch).where(eq(events.id, eventId));
       }
 
-      // --- availability startDate (eventDate + perfomanceTime) ---
+      // --- availability start/end (eventDate + perfomanceTime) ---
+      // IMPORTANT: keep range valid by updating endDate too (when provided)
       if (data.eventDate && ev.availabilityId) {
-        const start = buildEventStartDate(data.eventDate, data.perfomanceTime);
+        const { start, end } = buildEventStartEnd(data.eventDate, data.perfomanceTime);
+
+        const availabilityPatch: Partial<typeof artistAvailabilities.$inferInsert> = {
+          startDate: start.toISOString(),
+        };
+
+        if (end) availabilityPatch.endDate = end.toISOString();
+
         await tx
           .update(artistAvailabilities)
-          .set({ startDate: start.toISOString() })
+          .set(availabilityPatch)
           .where(eq(artistAvailabilities.id, ev.availabilityId));
       }
 
-      // 3) CCs
+      // 3) CCs (safe against duplicates if you have unique(contractId,email))
       if (ccEmails.length) {
-        await tx.insert(contractEmailCcs).values(
-          ccEmails.map((email) => ({
-            contractId,
-            email,
-          })),
-        );
+        await tx
+          .insert(contractEmailCcs)
+          .values(ccEmails.map((email) => ({ contractId, email })))
+          .onConflictDoNothing();
       }
 
       // 4) History

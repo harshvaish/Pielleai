@@ -56,7 +56,6 @@ export type ContractEditInput = {
    * - "HH:mm" (fallback: start only, end preserved by duration)
    */
   perfomanceTime?: string;
-
   transfortCost?: string | number;
   totalCost?: string | number;
   upfrontPayment?: string | number;
@@ -433,26 +432,42 @@ export const editContract = async (
 
       // STEP 4: replace CCs (if provided)
       if (data.ccEmails !== undefined) {
-        const deduped = Array.from(
-          new Set(
-            data.ccEmails
-              .filter((x): x is string => typeof x === 'string' && x.trim().length > 0)
-              .map((e) => e.toLowerCase().trim())
-              .filter((e) => isValidEmail(e)),
-          ),
-        );
+  const deduped = Array.from(
+    new Set(
+      (data.ccEmails ?? [])
+        .filter((x): x is string => typeof x === 'string')
+        .map((e) => e.trim().toLowerCase())
+        .filter((e) => e.length > 0)
+        .filter((e) => isValidEmail(e)),
+    ),
+  );
 
-        await tx.delete(contractEmailCcs).where(eq(contractEmailCcs.contractId, data.contractId));
+  console.log('[editContract][cc] incoming:', data.ccEmails);
+  console.log('[editContract][cc] deduped:', deduped);
 
-        if (deduped.length) {
-          await tx.insert(contractEmailCcs).values(
-            deduped.map((email) => ({
-              contractId: data.contractId,
-              email,
-            })),
-          );
-        }
-      }
+  // Always delete existing CCs for this contract
+  const delRes = await tx.delete(contractEmailCcs).where(eq(contractEmailCcs.contractId, data.contractId));
+  console.log('[editContract][cc] delete result:', delRes);
+
+  // Insert new CCs (if any)
+  if (deduped.length > 0) {
+    const insRes = await tx.insert(contractEmailCcs).values(
+      deduped.map((email) => ({
+        contractId: data.contractId,
+        email,
+      })),
+    );
+    console.log('[editContract][cc] insert result:', insRes);
+  }
+
+  // Verify immediately (this removes any doubt)
+  const ccAfter = await tx
+    .select({ email: contractEmailCcs.email })
+    .from(contractEmailCcs)
+    .where(eq(contractEmailCcs.contractId, data.contractId));
+
+  console.log('[editContract][cc] after:', ccAfter.map((x) => x.email));
+}
 
       // STEP 5: history row
       const toStatus = (data.status ?? existing.status) as ContractStatus;
