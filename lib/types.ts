@@ -511,6 +511,7 @@ export type Event = {
   contract?: {
     id: number;
     status?: string;
+    ccs?: string[]; 
     latestHistory?: any;
   } | null;  
   depositInvoiceNumber: string | null;

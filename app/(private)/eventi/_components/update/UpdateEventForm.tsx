@@ -32,7 +32,21 @@ export default function UpdateEventForm({
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   console.log(event,"event");
-
+  const ALL_CC_EMAILS = [
+    "Tour Manager",
+    "Admin",
+    "team@agency.com",
+    "finance@agency.com",
+    "admin@agency.com",
+  ];
+  
+  const buildDefaultCcBooleans = (
+    contractCcs?: string[] | null
+  ): boolean[] =>
+    ALL_CC_EMAILS.map((email) =>
+      contractCcs?.includes(email) ?? false
+    );
+  
   // event.availability.startDate = new Date(event.availability.startDate);
   // event.availability.endDate = new Date(event.availability.endDate);
   const methods = useForm({
@@ -96,6 +110,7 @@ export default function UpdateEventForm({
       eventId: event.id,
       eventType: event.eventType,
       eventDate: format(event.availability.startDate, 'yyyy-MM-dd'),
+      ccEmails: buildDefaultCcBooleans(event.contract?.ccs),
       eventStartTime : format(event.availability.startDate, 'HH:mm', { locale: it }),
       eventEndTime : format(event.availability.endDate, 'HH:mm', { locale: it }),
       paymentDate: event.paymentDate
