@@ -1381,7 +1381,7 @@ const toUiStatus = (status?: string) => {
                 type="button"
                 size="sm"
                 variant="outline"
-                disabled={isPending}
+                disabled={isPending || !isDetailsComplete}
                 onClick={handleUpsertContract}
               >
                 {isPending
