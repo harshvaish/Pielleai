@@ -17,6 +17,8 @@ import {
   events,
 } from '../../../drizzle/schema';
 
+import { users } from '@/lib/database/schema';
+
 // ----- constants -----
 const CONTRACT_STATUS = ['draft', 'queued', 'sent', 'viewed', 'signed', 'voided','declined'] as const;
 type ContractStatus = (typeof CONTRACT_STATUS)[number];
@@ -167,10 +169,11 @@ export const getContractDetailById = async (
         fileUrl: contractHistory.fileUrl,
         fileName: contractHistory.fileName,
         note: contractHistory.note,
-        changedByUserId: contractHistory.changedByUserId,
+        changedByUserId: users.name,
         createdAt: contractHistory.createdAt,
       })
       .from(contractHistory)
+      .leftJoin(users, eq(contractHistory.changedByUserId, users.id))
       .where(eq(contractHistory.contractId, contractId))
       .orderBy(desc(contractHistory.createdAt));
 

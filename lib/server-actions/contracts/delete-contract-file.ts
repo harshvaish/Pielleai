@@ -16,6 +16,8 @@ import {
   events,
 } from '../../../drizzle/schema';
 
+import { users } from '@/lib/database/schema';
+
 // ------------------------------
 // local (NON-exported) helpers
 // ------------------------------
@@ -211,10 +213,11 @@ export async function deleteContractFile(
           fileUrl: contractHistory.fileUrl,
           fileName: contractHistory.fileName,
           note: contractHistory.note,
-          changedByUserId: contractHistory.changedByUserId,
+          changedByUserId: users.name,
           createdAt: contractHistory.createdAt,
         })
         .from(contractHistory)
+        .leftJoin(users, eq(contractHistory.changedByUserId, users.id))
         .where(eq(contractHistory.contractId, contractId))
         .orderBy(desc(contractHistory.createdAt));
 

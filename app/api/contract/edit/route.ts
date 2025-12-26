@@ -11,7 +11,7 @@ import {
   venues,
   events,
 } from '../../../../drizzle/schema';
-
+import { users } from '@/lib/database/schema';
 import getSession from '@/lib/data/auth/get-session';
 
 export const runtime = 'nodejs';
@@ -174,10 +174,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           fileUrl: contractHistory.fileUrl,
           fileName: contractHistory.fileName,
           note: contractHistory.note,
-          changedByUserId: contractHistory.changedByUserId,
+          changedByUserId: users.name,
           createdAt: contractHistory.createdAt,
         })
         .from(contractHistory)
+        .leftJoin(users, eq(contractHistory.changedByUserId, users.id))
         .where(eq(contractHistory.contractId, contractId))
         .orderBy(desc(contractHistory.createdAt));
 
