@@ -41,6 +41,7 @@ import { createContract } from "@/lib/server-actions/contracts/create-contract";
 import { editContract } from "@/lib/server-actions/contracts/update-contract";
 import UploadPdf from "../create/UploadPdf";
 import DocuSignButton from "../create/DocuSignButton";
+import ContractStatusButton from "../update/ContractStatusButton";
 
 type EventForm = {
   artists: ArtistSelectData[];
@@ -201,26 +202,27 @@ export default function EventForm({
 
   const [isPending, startTransition] = useTransition();
 
-  const historyData: HistoryItem[] = Array.isArray(event?.contract?.latestHistory)
+  const historyData: HistoryItem[] = Array.isArray(
+    event?.contract?.latestHistory
+  )
     ? event?.contract?.latestHistory.map((h: any) => {
-
-    const createdAt = new Date(h.createdAt);
-    return {
-      date: createdAt.toLocaleDateString("it-IT"),
-      time: createdAt.toLocaleTimeString("en-US", {
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: true,
-      }),
-      updatedBy: h?.changedByUserId,
-      title: h.fromStatus
-        ? `Status changed from "${h.fromStatus}" to "${h.toStatus}"`
-        : "Contract created",
-      description: h.note ?? "No description available",
-      type: h.toStatus === "voided" ? "archived" : "success",
-    };
-  })
-: [];
+        const createdAt = new Date(h.createdAt);
+        return {
+          date: createdAt.toLocaleDateString("it-IT"),
+          time: createdAt.toLocaleTimeString("en-US", {
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: true,
+          }),
+          updatedBy: h?.changedByUserId,
+          title: h.fromStatus
+            ? `Status changed from "${h.fromStatus}" to "${h.toStatus}"`
+            : "Contract created",
+          description: h.note ?? "No description available",
+          type: h.toStatus === "voided" ? "archived" : "success",
+        };
+      })
+    : [];
   const buildPerformanceTime = (
     startTime?: string,
     endTime?: string
@@ -1337,45 +1339,29 @@ export default function EventForm({
         <TabsContent value="e" className="flex flex-col gap-6 p-2">
           <div className="flex justify-between items-start">
             <div className="flex flex-col gap-1">
-              <Controller
-                control={control}
-                name="contractStatus"
-                render={({ field }) => {
-                  const ui = getContractUiState({
-                    backendStatus: event?.contract?.status,
-                    isDetailsComplete,
-                  });
-                  return (
-                    <Select value={field.value} onValueChange={field.onChange}>
-                      <SelectTrigger
-                        id="contractStatus"
-                        className="h-8 rounded-xl flex items-center gap-2 px-3 text-xs font-medium"
-                        size="sm"
-                      >
-                        <span className={cn("truncate", ui.color)}>
-                          {ui.label}
-                        </span>
-                        <img
-                          src={ui.icon}
-                          alt="info"
-                          width={14}
-                          height={14}
-                          className="opacity-80 ml-auto"
-                        />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="draft">draft</SelectItem>
-                        <SelectItem value="sent">Sent</SelectItem>
-                        <SelectItem value="declined">Refused</SelectItem>
-                        <SelectItem value="voided">Archived</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  );
-                }}
-              />
+            {!isDetailsComplete ? (
+  /* 🔒 MISSING DATA */
+  <div className="inline-flex items-center gap-2 rounded-md border border-amber-200 bg-amber-50 px-2.5 py-2 text-xs font-medium text-amber-600">
+    Missing data
+    <img
+      src={QUESTION_ICON}
+      alt="missing"
+      width={14}
+      height={14}
+      className="opacity-80"
+    />
+
+  </div>
+) : (
+  <ContractStatusButton
+    contractId={event?.contract?.id}
+    status={event?.contract?.status ?? "draft"}
+  />
+)}
 
               <span className="text-xs text-zinc-500">
-                Status changed on {historyData[0]?.date} by {historyData[0]?.updatedBy}
+                Status changed on {historyData[0]?.date} by{" "}
+                {historyData[0]?.updatedBy}
               </span>
             </div>
             <div className="flex items-center gap-2">

@@ -9,7 +9,15 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { X, PartyPopper, ChevronDown, ChevronRight } from "lucide-react";
+import {
+  Send,
+  Eye,
+  Check,
+  X,
+  PartyPopper,
+  ChevronDown,
+  ChevronRight,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { editContract } from "@/lib/server-actions/contracts/update-contract";
 import { JSX } from "react";
@@ -18,7 +26,11 @@ import { JSX } from "react";
    TYPES
 ---------------------------------------- */
 
-type ContractStatus = "draft" | "sent" | "declined" | "voided";
+type ContractStatus =
+  | "draft"
+  | "sent"
+  | "declined"
+  | "voided";
 
 type Props = {
   contractId: number;
@@ -99,22 +111,24 @@ export default function ContractStatusButton({
   const current = STATUS_STYLES[status];
 
   const STATUS_TOAST: Record<
-    ContractStatus,
-    { success: string; error?: string }
-  > = {
-    draft: {
-      success: "Contract draft successfully",
-    },
-    sent: {
-      success: "Contract sent successfully",
-    },
-    declined: {
-      success: "Contract Refused",
-    },
-    voided: {
-      success: "Contract archived",
-    },
-  };
+  ContractStatus,
+  { success: string; error?: string }
+> = {
+  draft: {
+    success: "Contract draft successfully",
+
+  },
+  sent: {
+    success: "Contract sent successfully",
+  },
+  declined: {
+    success: "Contract Refused",
+  },
+  voided: {
+    success: "Contract archived",
+  },
+};
+
 
   const updateStatus = (next: ContractStatus) => {
     if (next === status) return;
@@ -126,8 +140,10 @@ export default function ContractStatusButton({
       });
 
       if (response.success) {
-        toast.success(STATUS_TOAST[next]?.success ?? "Status updated");
-        router.refresh();
+        toast.success(
+          STATUS_TOAST[next]?.success ?? "Status updated"
+        );
+              router.refresh();
       } else {
         toast.error(response.message);
       }
@@ -144,7 +160,7 @@ export default function ContractStatusButton({
             "max-w-min whitespace-nowrap",
             "border border-zinc-200 hover:border-zinc-300",
             "bg-white",
-            current.text,
+                    current.text,
             isPending && "opacity-60 cursor-not-allowed",
             className
           )}
@@ -175,6 +191,7 @@ export default function ContractStatusButton({
           <div className="w-3 h-3 flex items-center justify-center bg-red-600 rounded-full">
             <X className="size-2 text-white" />
           </div>
+
         </DropdownMenuItem>
 
         <DropdownMenuItem
@@ -185,6 +202,7 @@ export default function ContractStatusButton({
           <div className="w-3 h-3 flex items-center justify-center rounded-full">
             <PartyPopper className="size-3 text-zinc-600" />
           </div>
+
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
