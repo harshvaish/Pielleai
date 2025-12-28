@@ -47,7 +47,7 @@ type EventForm = {
   artists: ArtistSelectData[];
   venues: VenueSelectData[];
   moCoordinators: MoCoordinator[];
-  event?: any; // Replace 'any' with the correct type or import the 'DomainEvent' type if available
+  event?: any;
   mode: "create" | "update";
   closeDialog?: () => void;
 };
@@ -147,7 +147,6 @@ export default function EventForm({
     return undefined;
   }, [totalCost, transportationsCost, hotelCost, restaurantCost]);
 
-  // Update the form value when calculation changes
   useEffect(() => {
     setValue("artistNetCost", artistNetCost);
   }, [artistNetCost, setValue]);
