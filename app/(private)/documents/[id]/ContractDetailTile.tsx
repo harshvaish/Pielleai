@@ -14,11 +14,10 @@ import ContractDetailClient from "./ContractDetailClient";
 import GenerateButton from "../_components/GenerateButton";
 import DocuSignButton from "../_components/DocuSignButton";
 import ViewContractButton from "../_components/ViewContractButton";
-import ResendDocuSignButton from "../_components/ResendDocuSignButton";
 import ContractStatusButton from "../_components/ContractStatusButton";
 import { GREEN_TICK_ICON } from "@/lib/constants";
-import type { ContractStatus } from "@/lib/types";
 import UplodPdf from "../_components/UploadPdf";
+import ResendDocuSignButton from "./ResendDocuSignButton";
 
 type Props = {
   payload: any;
