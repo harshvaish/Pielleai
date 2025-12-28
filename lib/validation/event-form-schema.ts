@@ -28,7 +28,7 @@ export const eventFormSchema = z.object({
   /* ================= CONTRACT ================= */
 
 contractStatus: z
-.enum(["draft", "pending", "ready", "sent"])
+.enum(["draft", "sent", "declined", "voided"])
 .optional(),
 
 /* ================= EVENT UI DETAILS ================= */

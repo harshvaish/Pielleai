@@ -10,34 +10,16 @@ import { ApiResponse } from "@/lib/types";
 import { pdfUploadSchema } from "@/lib/validation/pdf-upload-schema";
 import { deleteContractFile } from "@/lib/server-actions/contracts/delete-contract-file";
 
-type EventType = {
-  contract?: {
-    id: string;
-    fileName: string;
-    fileUrl: string;
-  };
-};
-
-export default function LocalPdfUpload({ event }: { event: EventType }) {
+export default function LocalPdfUpload() {
   const [uploading, setUploading] = useState(false);
 
   const { watch, setValue } = useFormContext<EventFormSchema>();
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
-  /* ---------------- FORM VALUE ---------------- */
-  const formPdf = watch("contractDocument");
-
-  /* ---------------- DISPLAY PDF (FORM → EVENT) ---------------- */
-  const displayPdf =
-    formPdf ??
-    (event?.contract?.fileUrl
-      ? {
-          url: event.contract.fileUrl,
-          name: event.contract.fileName,
-        }
-      : null);
-
+  /* ---------------- FORM VALUE (SINGLE SOURCE) ---------------- */
+  const displayPdf = watch("contractDocument");
+console.log(displayPdf, "displayPdf")
   /* ---------------- UPLOAD ---------------- */
   const onUpload = async (file: File) => {
     const fetchResponse = await fetch("/api/upload/pdf", {
@@ -76,6 +58,7 @@ export default function LocalPdfUpload({ event }: { event: EventType }) {
 
     const url = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/${process.env.NEXT_PUBLIC_SUPABASE_BUCKET_NAME}/${path}`;
 
+    // 🔥 Replace or set instantly
     setValue(
       "contractDocument",
       { url, name: fileName },
@@ -112,8 +95,6 @@ export default function LocalPdfUpload({ event }: { event: EventType }) {
     }
   };
 
-  console.log(event, "event in pdfff");
-
   /* ---------------- DOWNLOAD ---------------- */
   const onDownload = () => {
     if (!displayPdf?.url) return;
@@ -122,24 +103,20 @@ export default function LocalPdfUpload({ event }: { event: EventType }) {
 
   /* ---------------- DELETE ---------------- */
   const onDeleteHandler = async () => {
-    if (!event?.contract) {
+    const contractId = watch("contractId");
+    if (!contractId) {
       toast.error("Contract not found.");
       return;
     }
 
-    const contractId = Number(event.contract.id);
-
     const response = await deleteContractFile({
-      contractId: contractId,
+      contractId: Number(contractId),
     });
 
     if (response.success) {
       setValue("contractDocument", undefined, { shouldDirty: true });
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
-      }
+      if (fileInputRef.current) fileInputRef.current.value = "";
       toast.success("Contract file removed.");
-      // router.refresh();
     } else {
       toast.error(response.message ?? "Failed to remove contract file.");
     }
@@ -147,7 +124,6 @@ export default function LocalPdfUpload({ event }: { event: EventType }) {
 
   return (
     <div className={cn("flex items-center gap-3 w-fit")}>
-      {/* Hidden input */}
       <input
         ref={fileInputRef}
         type="file"
@@ -156,10 +132,8 @@ export default function LocalPdfUpload({ event }: { event: EventType }) {
         onChange={onChangeHandler}
       />
 
-      {/* FILE EXISTS */}
       {displayPdf ? (
         <div className="flex items-center gap-3 w-fit">
-          {/* FILE CHIP */}
           <div className="flex items-center gap-2 bg-white border border-zinc-300 rounded-full px-4 py-1.5 shadow-sm">
             <Upload className="w-4 h-4 text-zinc-500" />
             <span className="text-sm font-medium truncate max-w-[220px]">
@@ -167,7 +141,6 @@ export default function LocalPdfUpload({ event }: { event: EventType }) {
             </span>
           </div>
 
-          {/* DOWNLOAD */}
           <button
             type="button"
             onClick={onDownload}
@@ -176,7 +149,6 @@ export default function LocalPdfUpload({ event }: { event: EventType }) {
             <Download className="w-4 h-4" />
           </button>
 
-          {/* DELETE */}
           <button
             type="button"
             onClick={onDeleteHandler}
@@ -190,17 +162,7 @@ export default function LocalPdfUpload({ event }: { event: EventType }) {
           type="button"
           onClick={() => fileInputRef.current?.click()}
           disabled={uploading}
-          className="
-            flex items-center gap-2
-            bg-white
-            border border-zinc-300
-            rounded-xl
-            px-4 py-2
-            text-sm
-            shadow-sm
-            hover:bg-zinc-50
-            disabled:opacity-50
-          "
+          className="flex items-center gap-2 bg-white border border-zinc-300 rounded-xl px-4 py-2 text-sm shadow-sm hover:bg-zinc-50 disabled:opacity-50"
         >
           <Upload className="w-4 h-4" />
           Upload

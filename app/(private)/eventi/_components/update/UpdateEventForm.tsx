@@ -31,7 +31,6 @@ export default function UpdateEventForm({
 }: UpdateEventFormProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
-  console.log(event,"event");
   const ALL_CC_EMAILS = [
     "Tour Manager",
     "Admin",
@@ -47,8 +46,6 @@ export default function UpdateEventForm({
       contractCcs?.includes(email) ?? false
     );
   
-  // event.availability.startDate = new Date(event.availability.startDate);
-  // event.availability.endDate = new Date(event.availability.endDate);
   const methods = useForm({
     resolver: zodResolver(eventFormSchema),
     defaultValues: {
@@ -87,6 +84,7 @@ export default function UpdateEventForm({
       moCoordinatorId: event.moCoordinator?.id || undefined,
       totalCost: parseFloat(event.totalCost || '') || undefined,
       contractId: event.contract?.id || undefined,
+      contractStatus: event?.contract?.status ?? "draft",
       transportationsCost: parseFloat(event.transportationsCost || '') || undefined,
       cashBalanceCost: parseFloat(event.cashBalanceCost || '') || undefined,
       tecnicalRiderDocument:
