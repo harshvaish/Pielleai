@@ -10,9 +10,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
-  Send,
-  Eye,
-  Check,
   X,
   PartyPopper,
   ChevronDown,
@@ -138,7 +135,6 @@ export default function ContractStatusButton({
         contractId,
         status: next,
       });
-
       if (response.success) {
         toast.success(
           STATUS_TOAST[next]?.success ?? "Status updated"

@@ -23,75 +23,6 @@ type Props = {
   payload: any;
 };
 
-type ContractDetailStatus =
-  | "missing"
-  | "to-sign"
-  | "signed"
-  | "refused"
-  | "error"
-  | "archived";
-
-/* ---------------- FLOW CONFIG ---------------- */
-
-const FLOW_STATES: Record<
-  ContractDetailStatus,
-  {
-    statusLabel: string;
-    badge: { dot: string; bg: string };
-    actionsDisabled: boolean;
-    requireTourManager: boolean;
-  }
-> = {
-  missing: {
-    statusLabel: "Missing data",
-    badge: {
-      dot: "bg-amber-500",
-      bg: "bg-amber-50 text-amber-700 border-amber-200",
-    },
-    actionsDisabled: true,
-    requireTourManager: true,
-  },
-  "to-sign": {
-    statusLabel: "To sign",
-    badge: { dot: "bg-sky-500", bg: "bg-sky-50 text-sky-700 border-sky-100" },
-    actionsDisabled: false,
-    requireTourManager: false,
-  },
-  signed: {
-    statusLabel: "Signed",
-    badge: {
-      dot: "bg-emerald-500",
-      bg: "bg-emerald-50 text-emerald-700 border-emerald-100",
-    },
-    actionsDisabled: false,
-    requireTourManager: false,
-  },
-  refused: {
-    statusLabel: "Refused",
-    badge: {
-      dot: "bg-rose-500",
-      bg: "bg-rose-50 text-rose-700 border-rose-100",
-    },
-    actionsDisabled: false,
-    requireTourManager: false,
-  },
-  error: {
-    statusLabel: "Error",
-    badge: { dot: "bg-red-500", bg: "bg-red-50 text-red-700 border-red-100" },
-    actionsDisabled: false,
-    requireTourManager: false,
-  },
-  archived: {
-    statusLabel: "Archived",
-    badge: {
-      dot: "bg-zinc-400",
-      bg: "bg-zinc-50 text-zinc-600 border-zinc-200",
-    },
-    actionsDisabled: true,
-    requireTourManager: false,
-  },
-};
-
 /* ---------------- COMPONENT ---------------- */
 
 export default function ContractDetailClient({ payload }: Props) {
@@ -132,43 +63,14 @@ export default function ContractDetailClient({ payload }: Props) {
     formState: { errors },
   } = form;
 
-  const formValues = watch();
-
   /* ---------------- HELPERS ---------------- */
 
   function isSectionComplete(values: Record<string, any>, fields: string[]) {
     return fields.every((f) => {
       const val = values[f];
-
-      // Consider empty, null, undefined, false as incomplete
       return val !== undefined && val !== null && val !== "" && val !== false;
     });
   }
-  const isArtistComplete = isSectionComplete(formValues, [
-    "artistFullName",
-    "artistStageName",
-  ]);
-
-  const isVenueComplete = isSectionComplete(formValues, [
-    "venueName",
-    "venueCompanyName",
-    "venueVatNumber",
-    "venueAddress",
-  ]);
-
-  const isEventComplete = isSectionComplete(formValues, [
-    "eventDate",
-    "eventStartTime",
-    "eventEndTime",
-    "transportationsCost",
-    "totalCost",
-    "upfrontPayment",
-    "paymentDate",
-  ]);
-
-  const isDetailsComplete =
-    isArtistComplete && isVenueComplete && isEventComplete;
-
   /* ---------------- RENDER ---------------- */
 
   return (

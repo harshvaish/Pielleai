@@ -55,7 +55,6 @@ export default function LocalPdfUpload({ event }: { event: EventType }) {
       path: string;
       fileName: string;
     }> = await fetchResponse.json();
-
     if (!response.success) {
       toast.error(response.message || "Caricamento pdf non riuscito.");
       return;
@@ -112,8 +111,6 @@ export default function LocalPdfUpload({ event }: { event: EventType }) {
     }
   };
 
-  console.log(event, "event in pdfff");
-
   /* ---------------- DOWNLOAD ---------------- */
   const onDownload = () => {
     if (!displayPdf?.url) return;
@@ -132,7 +129,6 @@ export default function LocalPdfUpload({ event }: { event: EventType }) {
     const response = await deleteContractFile({
       contractId: contractId,
     });
-
     if (response.success) {
       setValue("contractDocument", undefined, { shouldDirty: true });
       if (fileInputRef.current) {

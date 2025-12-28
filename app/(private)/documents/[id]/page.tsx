@@ -6,7 +6,6 @@ import getSession from "@/lib/data/auth/get-session";
 import { getUserProfileIdCached } from "@/lib/cache/users";
 import { hasRole, resolveNextPath } from "@/lib/utils";
 import {
-  BadgeInfo,
   CalendarDays,
   Mail,
   MapPin,
