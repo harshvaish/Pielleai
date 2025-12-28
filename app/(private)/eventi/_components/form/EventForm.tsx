@@ -1264,7 +1264,9 @@ export default function EventForm({
         <TabsContent value="e" className="flex flex-col gap-6 p-2">
           <div className="flex justify-between items-start">
             <div className="flex flex-col gap-1">
-              {!isDetailsComplete ? (
+              {(!isDetailsComplete ||
+                typeof contractId !== "number" ||
+                typeof contractStatus !== "string") ? (
                 /* 🔒 MISSING DATA */
                 <div className="inline-flex items-center gap-2 rounded-md border border-amber-200 bg-amber-50 px-2.5 py-2 text-xs font-medium text-amber-600">
                   Missing data

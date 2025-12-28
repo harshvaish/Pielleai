@@ -9,7 +9,8 @@ import { format } from 'date-fns';
 import { ArtistSelectData,   Event as DomainEvent, MoCoordinator, VenueSelectData } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
-import { EventFormSchema, eventFormSchema } from '@/lib/validation/event-form-schema';
+import { eventFormSchema } from '@/lib/validation/event-form-schema';
+import type { EventFormSchema } from '@/lib/validation/event-form-schema';
 import { updateEvent } from '@/lib/server-actions/events/update-event';
 import EventForm from '../form/EventForm';
 import { useTransition } from 'react';
@@ -20,6 +21,26 @@ type UpdateEventFormProps = {
   venues: VenueSelectData[];
   moCoordinators: MoCoordinator[];
   closeDialog: () => void;
+};
+
+type FormContractStatus = EventFormSchema['contractStatus'];
+
+const normalizeContractStatus = (
+  status?: string | null
+): FormContractStatus => {
+  switch (status) {
+    case 'draft':
+    case 'sent':
+    case 'declined':
+    case 'voided':
+      return status;
+    case 'queued':
+    case 'viewed':
+    case 'signed':
+      return 'sent';
+    default:
+      return 'draft';
+  }
 };
 
 export default function UpdateEventForm({
@@ -84,7 +105,7 @@ export default function UpdateEventForm({
       moCoordinatorId: event.moCoordinator?.id || undefined,
       totalCost: parseFloat(event.totalCost || '') || undefined,
       contractId: event.contract?.id || undefined,
-      contractStatus: event?.contract?.status ?? "draft",
+      contractStatus: normalizeContractStatus(event.contract?.status),
       transportationsCost: parseFloat(event.transportationsCost || '') || undefined,
       cashBalanceCost: parseFloat(event.cashBalanceCost || '') || undefined,
       tecnicalRiderDocument:
