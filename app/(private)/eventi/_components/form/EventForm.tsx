@@ -80,7 +80,8 @@ export default function EventForm({
 
   const selectedVenueId = watch("venueId");
   const selectedVenue = venues.find((venue) => venue.id == selectedVenueId);
-  const router = useRouter();
+  const contractId = watch("contractId");
+  const hasContract = Boolean(contractId);
   const moCost = watch("moCost");
   const bookingPercentage = watch("bookingPercentage");
   const moArtistAdvancedExpenses = watch("moArtistAdvancedExpenses");
@@ -272,107 +273,31 @@ export default function EventForm({
       ccEmails: buildCcEmails(values),
     };
     startTransition(async () => {
-      const response = event?.contract
-        ? await editContract({
-            ...payloadBase,
-            contractId: event.contract.id,
-            status: event?.contract?.status,
-          })
-        : await createContract({
-            ...payloadBase,
-            status: "draft",
-          });
+      const response = hasContract && typeof contractId === "number"
+      ? await editContract({
+          ...payloadBase,
+          contractId,
+          status: "draft",
+        })
+      : await createContract({
+          ...payloadBase,
+          status: "draft",
+        });
+          if (response.success) {
+        setValue("contractId", response.data.id);
+        setValue("contractStatus", "draft", {
+          shouldDirty: false,
+          shouldTouch: false,
+        });
 
-      if (response.success) {
         toast.success(
-          event?.contract ? "Contract regenerated!" : "Contract created!"
+          hasContract ? "Contract regenerated!" : "Contract created!"
         );
-        closeDialog?.();
-        router.refresh();
+        //closeDialog?.();
       } else {
         toast.error(response.message);
       }
     });
-  };
-  const prevStatusRef = useRef<string | undefined>(undefined);
-
-  useEffect(() => {
-    if (
-      toUiStatus(contractStatus) === "archived" &&
-      prevStatusRef.current !== "archived" &&
-      event?.contract?.id
-    ) {
-      startTransition(async () => {
-        const response = await editContract({
-          contractId: event.contract.id,
-          status: "voided",
-          note: "Contratto archiviato",
-        });
-
-        if (response.success) {
-          toast.success("Contract archived");
-          router.refresh();
-        } else {
-          toast.error(response.message);
-        }
-      });
-    }
-
-    prevStatusRef.current = contractStatus;
-  }, [contractStatus, event?.contract?.id]);
-
-  type ContractUiState = {
-    label: string;
-    icon: string;
-    color: string;
-  };
-
-  function getContractUiState({
-    backendStatus,
-    isDetailsComplete,
-  }: {
-    backendStatus?: string;
-    isDetailsComplete: boolean;
-  }): ContractUiState {
-    // 🚨 PRIORITY 1 — Missing data ALWAYS wins
-    if (!isDetailsComplete) {
-      return {
-        label: "Missing data",
-        icon: QUESTION_ICON,
-        color: "text-amber-600",
-      };
-    }
-
-    // ✅ Only reached when ALL details are complete
-    switch (backendStatus) {
-      case "voided":
-        return {
-          label: "Archived",
-          icon: CIRCLE_RIGHT_ICON,
-          color: "text-zinc-600",
-        };
-
-      case "sent":
-        return {
-          label: "To be signed",
-          icon: CIRCLE_RIGHT_ICON,
-          color: "text-sky-600",
-        };
-
-      case "draft":
-      default:
-        return {
-          label: "Draft",
-          icon: CIRCLE_RIGHT_ICON,
-          color: "text-blue-600",
-        };
-    }
-  }
-
-  const toUiStatus = (status?: string) => {
-    if (!status) return undefined;
-    if (status === "voided") return "archived";
-    return status;
   };
 
   return (
@@ -474,8 +399,7 @@ export default function EventForm({
           <TabsTrigger value="c">Scheda tecnica</TabsTrigger>
           <TabsTrigger value="d">Attività</TabsTrigger>
           {mode == "update" && <TabsTrigger value="e">Contract</TabsTrigger>}
-        </TabsList>
-
+        </TabsList>   
         <TabsContent value="a" className="flex flex-col gap-4 p-2">
           <div className="flex flex-col">
             <div className="text-sm font-semibold mb-2">Manager artista</div>
@@ -1336,28 +1260,30 @@ export default function EventForm({
             )}
           </div>
         </TabsContent>
+     
         <TabsContent value="e" className="flex flex-col gap-6 p-2">
           <div className="flex justify-between items-start">
             <div className="flex flex-col gap-1">
-            {!isDetailsComplete ? (
-  /* 🔒 MISSING DATA */
-  <div className="inline-flex items-center gap-2 rounded-md border border-amber-200 bg-amber-50 px-2.5 py-2 text-xs font-medium text-amber-600">
-    Missing data
-    <img
-      src={QUESTION_ICON}
-      alt="missing"
-      width={14}
-      height={14}
-      className="opacity-80"
-    />
-
-  </div>
-) : (
-  <ContractStatusButton
-    contractId={event?.contract?.id}
-    status={event?.contract?.status ?? "draft"}
-  />
-)}
+              {(!isDetailsComplete ||
+                typeof contractId !== "number" ||
+                typeof contractStatus !== "string") ? (
+                /* 🔒 MISSING DATA */
+                <div className="inline-flex items-center gap-2 rounded-md border border-amber-200 bg-amber-50 px-2.5 py-2 text-xs font-medium text-amber-600">
+                  Missing data
+                  <img
+                    src={QUESTION_ICON}
+                    alt="missing"
+                    width={14}
+                    height={14}
+                    className="opacity-80"
+                  />
+                </div>
+              ) : (
+                <ContractStatusButton
+                  contractId={contractId}
+                  status={contractStatus}
+                />
+              )}
 
               <span className="text-xs text-zinc-500">
                 Status changed on {historyData[0]?.date} by{" "}
@@ -1373,8 +1299,10 @@ export default function EventForm({
                 onClick={handleUpsertContract}
               >
                 {isPending
-                  ? "Generating..."
-                  : event?.contract
+                  ? hasContract
+                    ? "Regenerating..."
+                    : "Generating..."
+                  : hasContract
                     ? "Regenerate"
                     : "Generate"}
               </Button>
@@ -1387,7 +1315,7 @@ export default function EventForm({
           </div>
           <div className="flex flex-col gap-2">
             <div className="text-sm font-semibold">Contract file</div>
-            <UploadPdf event={event} />
+            <UploadPdf />
             {errors.contractDocument && (
               <p className="text-xs text-destructive mt-2">
                 {errors.contractDocument.message as string}

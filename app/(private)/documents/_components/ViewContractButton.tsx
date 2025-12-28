@@ -1,13 +1,16 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { EventFormSchema } from "@/lib/validation/event-form-schema";
+import { useFormContext } from "react-hook-form";
 import { toast } from "sonner";
 
-type Props = {
-  fileUrl: string | null;
-};
+export default function ViewContractButton() {
+  const { watch } = useFormContext<EventFormSchema>();
 
-export default function ViewContractButton({ fileUrl }: Props) {
+  const contractDocument = watch("contractDocument");
+  const fileUrl = contractDocument?.url;
+
   const handleClick = () => {
     if (!fileUrl) {
       toast.error("File contratto non disponibile.");

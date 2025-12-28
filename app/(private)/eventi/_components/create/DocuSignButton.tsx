@@ -5,11 +5,12 @@ import { useState } from "react";
 import { it } from "date-fns/locale";
 import { format } from "date-fns";
 import { toast } from "sonner";
+import { useFormContext } from "react-hook-form";
+import { EventFormSchema } from "@/lib/validation/event-form-schema";
 
 type ContractData = {
   artistName: string;
   artistStageName?: string;
-
   venueCompanyName?: string;
   venueAddress?: string;
   venueVatNumber?: string;
@@ -123,9 +124,17 @@ export async function generateFilledContractHtml(
    COMPONENT
 -------------------------------- */
 
-export default function DocuSignButton({ event, isDetailsComplete }: { event: EventType, isDetailsComplete:boolean }) {
+export default function DocuSignButton({
+  event,
+  isDetailsComplete,
+}: {
+  event: EventType;
+  isDetailsComplete: boolean;
+}) {
   const [loading, setLoading] = useState(false);
-  console.log(event, "event-----------------------------");
+  const { watch, setValue } = useFormContext<EventFormSchema>();
+
+  const contractId = watch("contractId");
 
   const getTimeRange = (start?: Date | string, end?: Date | string): string => {
     if (!start || !end) return "";
@@ -211,7 +220,7 @@ export default function DocuSignButton({ event, isDetailsComplete }: { event: Ev
 
       const formData = new FormData();
       formData.append("file", pdfBlob, "contract.pdf");
-      formData.append("contractId", event.contract.id);
+      formData.append("contractId", String(contractId));
       formData.append("name", CONTRACT_DATA.artistManagerFullName);
       formData.append("email", event?.tourManagerEmail);
       formData.append("pageNumber", "5");
@@ -224,8 +233,6 @@ export default function DocuSignButton({ event, isDetailsComplete }: { event: Ev
         credentials: "include",
       });
 
-      console.log("API status:", res.status);
-
       if (!res.ok) {
         const text = await res.text();
         throw new Error(text);
@@ -234,10 +241,23 @@ export default function DocuSignButton({ event, isDetailsComplete }: { event: Ev
       }
 
       const json = await res.json();
-      console.log("✅ DocuSign response:", json);
+      setValue(
+        "contractDocument",
+        {
+          url: json?.data?.fileUrl,
+          name: json?.data?.fileName,
+        },
+        {
+          shouldDirty: false,
+          shouldTouch: false,
+        }
+      );
+      setValue("contractStatus", "sent" as const, {
+        shouldDirty: false,
+        shouldTouch: false,
+      });
     } catch (err) {
       console.error("❌ FINAL ERROR:", err);
-      //alert("Errore durante invio a DocuSign");
     } finally {
       setLoading(false);
       console.log("🏁 DocuSign flow finished");
@@ -249,7 +269,7 @@ export default function DocuSignButton({ event, isDetailsComplete }: { event: Ev
       type="button"
       size="sm"
       className="max-w-max"
-      disabled={!event?.contract || loading || !isDetailsComplete}
+      disabled={!contractId || loading || !isDetailsComplete}
       onClick={handleClick}
     >
       {loading ? "Sending..." : "Send to DocuSign"}

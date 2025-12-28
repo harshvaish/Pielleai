@@ -1,7 +1,6 @@
 "use client";
 
 import { useTransition } from "react";
-import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import {
   DropdownMenu,
@@ -10,9 +9,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
-  Send,
-  Eye,
-  Check,
   X,
   PartyPopper,
   ChevronDown,
@@ -21,10 +17,8 @@ import {
 import { cn } from "@/lib/utils";
 import { editContract } from "@/lib/server-actions/contracts/update-contract";
 import { JSX } from "react";
-
-/* ----------------------------------------
-   TYPES
----------------------------------------- */
+import { EventFormSchema } from "@/lib/validation/event-form-schema";
+import { useFormContext } from "react-hook-form";
 
 type ContractStatus =
   | "draft"
@@ -37,10 +31,6 @@ type Props = {
   status: ContractStatus;
   className?: string;
 };
-
-/* ----------------------------------------
-   STATUS STYLES (EventStatusBadge style)
----------------------------------------- */
 
 const STATUS_STYLES: Record<
   ContractStatus,
@@ -96,17 +86,15 @@ const STATUS_STYLES: Record<
   },
 };
 
-/* ----------------------------------------
-   COMPONENT
----------------------------------------- */
-
 export default function ContractStatusButton({
   contractId,
   status,
   className,
 }: Props) {
-  const router = useRouter();
   const [isPending, startTransition] = useTransition();
+
+  const form = useFormContext<EventFormSchema>();
+  const setValue = form?.setValue;
 
   const current = STATUS_STYLES[status];
 
@@ -116,7 +104,6 @@ export default function ContractStatusButton({
 > = {
   draft: {
     success: "Contract draft successfully",
-
   },
   sent: {
     success: "Contract sent successfully",
@@ -143,12 +130,17 @@ export default function ContractStatusButton({
         toast.success(
           STATUS_TOAST[next]?.success ?? "Status updated"
         );
-              router.refresh();
+
+        setValue?.("contractStatus", next, {
+          shouldDirty: false,
+          shouldTouch: false,
+        });
       } else {
         toast.error(response.message);
       }
     });
   };
+
 
   return (
     <DropdownMenu>
@@ -167,7 +159,6 @@ export default function ContractStatusButton({
         >
           {current.label}
           <span className="truncate"> {current.icon} </span>
-
           <ChevronDown className="h-3 w-3 text-zinc-400 ml-1" />
         </button>
       </DropdownMenuTrigger>
@@ -191,7 +182,6 @@ export default function ContractStatusButton({
           <div className="w-3 h-3 flex items-center justify-center bg-red-600 rounded-full">
             <X className="size-2 text-white" />
           </div>
-
         </DropdownMenuItem>
 
         <DropdownMenuItem
@@ -202,7 +192,6 @@ export default function ContractStatusButton({
           <div className="w-3 h-3 flex items-center justify-center rounded-full">
             <PartyPopper className="size-3 text-zinc-600" />
           </div>
-
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

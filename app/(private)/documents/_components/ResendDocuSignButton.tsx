@@ -1,16 +1,17 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { EventFormSchema } from "@/lib/validation/event-form-schema";
+import { useFormContext } from "react-hook-form";
 import { toast } from "sonner";
 
 type Props = {
-  contractId: number;
+  contractId?: number;
 };
 
-export default function ResendDocuSignButton({
-  contractId,
-}: Props) {
-  const router = useRouter();
+export default function ResendDocuSignButton({ contractId }: Props) {
+  const { watch } = useFormContext<EventFormSchema>();  
+  const watchedContractId = watch("contractId");
+  const finalContractId = watchedContractId ?? contractId;
 
   async function handleClick(e: React.MouseEvent<HTMLButtonElement>) {
     e.stopPropagation();
@@ -23,7 +24,7 @@ export default function ResendDocuSignButton({
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          contractId        }),
+          finalContractId        }),
       });
 
       const json = await res.json();
@@ -32,9 +33,6 @@ export default function ResendDocuSignButton({
       }
 
       toast.success("Documento inviato nuovamente per la firma");
-
-      // ✅ re-fetch server data
-      router.refresh();
     } catch (err: any) {
       console.error("Resend DocuSign failed:", err);
       toast.error(err?.message || "Errore durante l’invio a DocuSign");

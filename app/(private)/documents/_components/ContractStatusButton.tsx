@@ -13,10 +13,8 @@ import { X, PartyPopper, ChevronDown, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { editContract } from "@/lib/server-actions/contracts/update-contract";
 import { JSX } from "react";
-
-/* ----------------------------------------
-   TYPES
----------------------------------------- */
+import { EventFormSchema } from "@/lib/validation/event-form-schema";
+import { useFormContext } from "react-hook-form";
 
 type ContractStatus = "draft" | "sent" | "declined" | "voided";
 
@@ -25,10 +23,6 @@ type Props = {
   status: ContractStatus;
   className?: string;
 };
-
-/* ----------------------------------------
-   STATUS STYLES (EventStatusBadge style)
----------------------------------------- */
 
 const STATUS_STYLES: Record<
   ContractStatus,
@@ -84,17 +78,14 @@ const STATUS_STYLES: Record<
   },
 };
 
-/* ----------------------------------------
-   COMPONENT
----------------------------------------- */
-
 export default function ContractStatusButton({
   contractId,
   status,
   className,
 }: Props) {
-  const router = useRouter();
   const [isPending, startTransition] = useTransition();
+  const form = useFormContext<EventFormSchema>();
+  const setValue = form?.setValue;
 
   const current = STATUS_STYLES[status];
 
@@ -127,7 +118,10 @@ export default function ContractStatusButton({
 
       if (response.success) {
         toast.success(STATUS_TOAST[next]?.success ?? "Status updated");
-        router.refresh();
+        setValue?.("contractStatus", next, {
+          shouldDirty: false,
+          shouldTouch: false,
+        });
       } else {
         toast.error(response.message);
       }
