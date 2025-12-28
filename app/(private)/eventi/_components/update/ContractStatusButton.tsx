@@ -18,6 +18,8 @@ import {
 import { cn } from "@/lib/utils";
 import { editContract } from "@/lib/server-actions/contracts/update-contract";
 import { JSX } from "react";
+import { EventFormSchema } from "@/lib/validation/event-form-schema";
+import { useFormContext } from "react-hook-form";
 
 /* ----------------------------------------
    TYPES
@@ -30,7 +32,6 @@ type ContractStatus =
   | "voided";
 
 type Props = {
-  contractId: number;
   status: ContractStatus;
   className?: string;
 };
@@ -96,14 +97,15 @@ const STATUS_STYLES: Record<
 /* ----------------------------------------
    COMPONENT
 ---------------------------------------- */
-
 export default function ContractStatusButton({
   contractId,
   status,
   className,
 }: Props) {
-  const router = useRouter();
   const [isPending, startTransition] = useTransition();
+
+  const form = useFormContext<EventFormSchema>();
+  const setValue = form?.setValue;
 
   const current = STATUS_STYLES[status];
 
@@ -135,16 +137,22 @@ export default function ContractStatusButton({
         contractId,
         status: next,
       });
+
       if (response.success) {
         toast.success(
           STATUS_TOAST[next]?.success ?? "Status updated"
         );
-              router.refresh();
+
+        setValue?.("contractStatus", next, {
+          shouldDirty: false,
+          shouldTouch: false,
+        });
       } else {
         toast.error(response.message);
       }
     });
   };
+
 
   return (
     <DropdownMenu>
