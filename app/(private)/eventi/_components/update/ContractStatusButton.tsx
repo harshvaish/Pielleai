@@ -27,6 +27,7 @@ type ContractStatus =
   | "voided";
 
 type Props = {
+  contractId: number;
   status: ContractStatus;
   className?: string;
 };
