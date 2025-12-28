@@ -1,5 +1,13 @@
 import getSession from "@/lib/data/auth/get-session";
 import { hasRole, resolveNextPath } from "@/lib/utils";
+import {
+  BadgeInfo,
+  CalendarDays,
+  Mail,
+  MapPin,
+  Clock,
+  Briefcase,
+} from "lucide-react";
 import { notFound, redirect } from "next/navigation";
 import { getUserProfileIdCached } from "@/lib/cache/users";
 import ContractDetailTile from "./ContractDetailTile";
