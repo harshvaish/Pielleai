@@ -4,12 +4,12 @@ import { EventFormSchema } from "@/lib/validation/event-form-schema";
 import { useFormContext } from "react-hook-form";
 import { toast } from "sonner";
 
-type Props = {
-  contractId?: number;
-};
 
-export default function ResendDocuSignButton({ contractId }: Props) {
-console.log(contractId, "contractId")
+export default function ResendDocuSignButton() {
+  const { watch } = useFormContext<EventFormSchema>();  
+  
+  const contractId = watch("contractId");
+
   async function handleClick(e: React.MouseEvent<HTMLButtonElement>) {
     e.stopPropagation();
     e.preventDefault();
@@ -21,7 +21,7 @@ console.log(contractId, "contractId")
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          contractId        }),
+            contractId        }),
       });
 
       const json = await res.json();
