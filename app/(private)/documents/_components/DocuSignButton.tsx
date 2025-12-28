@@ -6,10 +6,8 @@ import { useRouter } from "next/navigation";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
 import { toast } from "sonner";
-
-/* -------------------------------
-   TYPES
--------------------------------- */
+import { useFormContext } from "react-hook-form";
+import { EventFormSchema } from "@/lib/validation/event-form-schema";
 
 type ContractData = {
   artistName: string;
@@ -36,10 +34,6 @@ type ContractData = {
 type Props = {
   payload: any;
 };
-
-/* -------------------------------
-   HTML TEMPLATE FILLER
--------------------------------- */
 
 export async function generateFilledContractHtml(
   data: ContractData
@@ -74,14 +68,11 @@ export async function generateFilledContractHtml(
   return html;
 }
 
-/* -------------------------------
-   COMPONENT
--------------------------------- */
-
 export default function DocuSignButton({ payload }: Props) {
-    console.log(payload, "payload--------------------------123")
   const [loading, setLoading] = useState(false);
-  const router = useRouter();
+  const { watch, setValue } = useFormContext<EventFormSchema>();
+  const contractId = watch("contractId");
+
   const getEventTime = (
     start?: string,
     end?: string
@@ -129,21 +120,14 @@ export default function DocuSignButton({ payload }: Props) {
       setLoading(true);
 
       const { default: html2pdf } = await import("html2pdf.js");
-
-      /* 1️⃣ Generate HTML */
-      console.log("1️⃣ Generating HTML");
       const filledHtml = await generateFilledContractHtml(CONTRACT_DATA);
 
-      /* 2️⃣ Preview */
-      console.log("2️⃣ Opening preview tab");
       const previewWindow = window.open("", "_blank");
       if (!previewWindow) throw new Error("Popup blocked");
       previewWindow.document.open();
       previewWindow.document.write(filledHtml);
       previewWindow.document.close();
 
-      /* 3️⃣ Convert to PDF */
-      console.log("3️⃣ Converting HTML to PDF");
       const container = document.createElement("div");
       container.innerHTML = filledHtml;
 
@@ -169,31 +153,44 @@ export default function DocuSignButton({ payload }: Props) {
         })
         .from(container)
         .outputPdf("blob");
-        console.log("✅ PDF generated", pdfBlob.size);
 
-      /* 4️⃣ API payload */
-      console.log("4️⃣ Preparing FormData");
       const formData = new FormData();
       formData.append("file", pdfBlob, "contract.pdf");
-      formData.append("contractId", String(payload.id));
+      formData.append("contractId", String(contractId));
       formData.append("name", CONTRACT_DATA.tourManagerName);
       formData.append("email", CONTRACT_DATA.tourManagerEmail);
 
       formData.append("pageNumber", "5");
       formData.append("x", "450");
       formData.append("y", "650");
-      /* 5️⃣ Send */
-      console.log("5️⃣ Calling DocuSign API");
       const res = await fetch("/api/contract/docusign-document", {
         method: "POST",
         body: formData,
         credentials: "include",
       });
       if (!res.ok) {
-        throw new Error(await res.text());
+        const text = await res.text();
+        throw new Error(text);
+      } else {
+        toast.success("Docusign generated!");
       }
-      toast.success("Docusign generated!");
-      router.refresh();
+
+      const json = await res.json();
+      setValue(
+        "contractDocument",
+        {
+          url: json?.data?.fileUrl,
+          name: json?.data?.fileName,
+        },
+        {
+          shouldDirty: false,
+          shouldTouch: false,
+        }
+      );
+      setValue("contractStatus", "sent" as const, {
+        shouldDirty: false,
+        shouldTouch: false,
+      });
     } catch (err) {
       console.error("DocuSign error:", err);
     } finally {

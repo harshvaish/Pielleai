@@ -11,7 +11,6 @@ import { EventFormSchema } from "@/lib/validation/event-form-schema";
 type ContractData = {
   artistName: string;
   artistStageName?: string;
-
   venueCompanyName?: string;
   venueAddress?: string;
   venueVatNumber?: string;

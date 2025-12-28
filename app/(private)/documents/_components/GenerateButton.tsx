@@ -4,8 +4,8 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { createContract } from "@/lib/server-actions/contracts/create-contract";
 import { format } from "date-fns";
+import { editContract } from "@/lib/server-actions/contracts/update-contract";
 
 type Props = {
   payload: any;
@@ -79,7 +79,7 @@ export default function GenerateButton({ payload }: Props) {
     };
 
     startTransition(async () => {
-      const response = await createContract(contractPayload);
+      const response = await editContract(contractPayload);
 
       if (response.success) {
         toast.success("Contract regenerated!");

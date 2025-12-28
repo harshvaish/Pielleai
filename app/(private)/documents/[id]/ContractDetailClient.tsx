@@ -80,7 +80,6 @@ export default function ContractDetailClient({ payload }: Props) {
           {/* ---------------- ARTIST SECTION ---------------- */}
           <AccordionItem value="artist">
             <AccordionTrigger className="px-3 hover:no-underline bg-zinc-50">
-              {/* Icon + Label group */}
               <div className="flex items-center gap-2">
                 <img
                   src={
@@ -301,7 +300,6 @@ export default function ContractDetailClient({ payload }: Props) {
                 />
               </div>
 
-              {/* DATE + TIME */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="flex flex-col gap-1">
                   <label className="text-sm text-zinc-600">Event date</label>
