@@ -512,6 +512,8 @@ export type Event = {
     id: number;
     status?: string;
     ccs?: string[]; 
+    fileUrl?: string | null;
+    fileName?: string | null;
     latestHistory?: any;
   } | null;  
   depositInvoiceNumber: string | null;

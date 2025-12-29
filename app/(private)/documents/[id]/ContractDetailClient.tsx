@@ -55,6 +55,7 @@ export default function ContractDetailClient({ payload }: Props) {
     adminEmail: payload.artist?.tourManagerEmail ?? "",
 
     },
+    shouldUnregister: true, 
   });
   const {
     register,

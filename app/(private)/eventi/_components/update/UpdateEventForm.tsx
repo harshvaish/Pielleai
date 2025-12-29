@@ -132,11 +132,18 @@ export default function UpdateEventForm({
       ccEmails: buildDefaultCcBooleans(event.contract?.ccs),
       eventStartTime : format(event.availability.startDate, 'HH:mm', { locale: it }),
       eventEndTime : format(event.availability.endDate, 'HH:mm', { locale: it }),
+      contractDocument:
+      event.contract?.fileUrl && event.contract?.fileName
+        ? {
+            url: event.contract.fileUrl,
+            name: event.contract.fileName,
+          }
+        : undefined,
+
       paymentDate: event.paymentDate
       ? format(event.paymentDate, "yyyy-MM-dd")
       : "",
           upfrontPayment: parseFloat(event.depositCost || '') || undefined,
-
     },
   });
   const { handleSubmit } = methods;
