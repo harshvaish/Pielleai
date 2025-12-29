@@ -1,6 +1,5 @@
 'use server';
 
-import { z } from 'zod';
 import { desc, eq } from 'drizzle-orm';
 
 import { ServerActionResponse } from '@/lib/types';
@@ -17,27 +16,24 @@ import {
   events,
 } from '../../../drizzle/schema';
 
-import { users } from '@/lib/database/schema';
+import { users, artistAvailabilities } from '@/lib/database/schema';
 
 // ----- constants -----
 const CONTRACT_STATUS = ['draft', 'queued', 'sent', 'viewed', 'signed', 'voided','declined'] as const;
 type ContractStatus = (typeof CONTRACT_STATUS)[number];
 
-// ----- validation -----
-export const getContractDetailSchema = z.object({
-  contractId: z.number().int().positive(),
-});
-
-export type GetContractDetailInput = z.infer<typeof getContractDetailSchema>;
+// ----- input type -----
+export type GetContractDetailInput = number;
 
 // ----- result type -----
 export type GetContractDetailResult = {
   id: number;
   status: ContractStatus;
-  contractDate: string;
+  contractDate: string | null;
   fileUrl: string | null;
   fileName: string | null;
   recipientEmail: string | null;
+  envelopeId: string | null;
   createdAt: string | null;
   updatedAt: string | null;
 
@@ -49,6 +45,10 @@ export type GetContractDetailResult = {
     avatarUrl: string | null;
     status: string | null;
     slug: string | null;
+    tourManagerPhone?: string | null;
+    tourManagerName?: string | null;
+    tourManagerEmail?: string | null;
+    tourManagerSurname?: string | null;
   };
 
   venue: {
@@ -58,12 +58,31 @@ export type GetContractDetailResult = {
     status: string | null;
     slug: string | null;
     avatarUrl: string | null;
+    vatCode?: string | null;
+    company?: string | null;
   };
 
   event: {
     id: number;
     status: string | null;
+    availabilityId?: number | null;
+    depositCost?: string | number | null;
+    tourManagerEmail?: string | null;
+    eventStatus?: string | null;
+    transportCost?: string | number | null;
+    totalFee?: string | number | null;
+    payrollConsultantEmail?: string | null;
+    eventType?: string | null;
+    paymentDate?: string | null;
   };
+
+  availability?: {
+    id: number;
+    artistId: number;
+    startDate: string | Date;
+    endDate: string | Date;
+    status: string;
+  } | null;
 
   ccs: string[];
 
@@ -81,7 +100,7 @@ export type GetContractDetailResult = {
 
 // ----- action -----
 export const getContractDetailById = async (
-  data: GetContractDetailInput,
+  contractId: GetContractDetailInput,
 ): Promise<ServerActionResponse<GetContractDetailResult>> => {
   try {
     // Auth
@@ -97,18 +116,11 @@ export const getContractDetailById = async (
       throw new AppError('Non sei autorizzato.');
     }
 
-    // Validate
-    const validation = getContractDetailSchema.safeParse(data);
-
-    if (!validation.success) {
-      console.error(
-        '[getContractDetailById] - Error: validation failed',
-        validation.error.issues[0],
-      );
+    // Basic validation
+    if (!Number.isInteger(contractId) || contractId <= 0) {
+      console.error('[getContractDetailById] - Error: invalid contractId', contractId);
       throw new AppError('I dati inviati non sono corretti.');
     }
-
-    const { contractId } = validation.data;
 
     // STEP 1: base contract + joins -------------------------------------------
     const [base] = await database
@@ -119,6 +131,7 @@ export const getContractDetailById = async (
         fileUrl: contracts.fileUrl,
         fileName: contracts.fileName,
         recipientEmail: contracts.recipientEmail,
+        envelopeId: contracts.envelopeId,
         createdAt: contracts.createdAt,
         updatedAt: contracts.updatedAt,
 
@@ -130,6 +143,10 @@ export const getContractDetailById = async (
           avatarUrl: artists.avatarUrl,
           status: artists.status,
           slug: artists.slug,
+          tourManagerPhone: artists.tourManagerPhone,
+          tourManagerName: artists.tourManagerName,
+          tourManagerEmail: artists.tourManagerEmail,
+          tourManagerSurname: artists.tourManagerSurname,
         },
         venue: {
           id: venues.id,
@@ -138,16 +155,40 @@ export const getContractDetailById = async (
           status: venues.status,
           slug: venues.slug,
           avatarUrl: venues.avatarUrl,
+          vatCode: venues.vatCode,
+          company: venues.company,
         },
         event: {
           id: events.id,
           status: events.status,
+          availabilityId: events.availabilityId,
+          depositCost: events.depositCost,
+          tourManagerEmail: events.tourManagerEmail,
+          eventStatus: events.status,
+          transportCost: events.transportationsCost,
+          totalFee: events.totalCost,
+          payrollConsultantEmail: events.payrollConsultantEmail,
+          eventType: events.eventType,
+          paymentDate: events.paymentDate,
+        },
+
+        // availability like in getContracts
+        availability: {
+          id: artistAvailabilities.id,
+          artistId: artistAvailabilities.artistId,
+          startDate: artistAvailabilities.startDate,
+          endDate: artistAvailabilities.endDate,
+          status: artistAvailabilities.status,
         },
       })
       .from(contracts)
       .innerJoin(artists, eq(contracts.artistId, artists.id))
       .innerJoin(venues, eq(contracts.venueId, venues.id))
       .innerJoin(events, eq(contracts.eventId, events.id))
+
+      // LEFT JOIN so contract still returns even if availabilityId is null
+      .leftJoin(artistAvailabilities, eq(events.availabilityId, artistAvailabilities.id))
+
       .where(eq(contracts.id, contractId));
 
     if (!base) {

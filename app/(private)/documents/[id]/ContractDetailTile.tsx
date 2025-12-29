@@ -36,7 +36,7 @@ export default function ContractDetailTile({ payload }: Props) {
   const methods = useForm({
     defaultValues: {
       contractId: payload.id,
-      contractStatus: payload.backendStatus,
+      contractStatus: payload.status,
       contractDocument: payload?.fileUrl
         ? {
             url: payload.fileUrl,
@@ -88,7 +88,6 @@ export default function ContractDetailTile({ payload }: Props) {
         };
       })
     : [];
-
   return (
     <FormProvider {...methods}>
       <div className="h-full w-full bg-zinc-50 px-4 py-6 md:p-6 flex flex-col gap-6">

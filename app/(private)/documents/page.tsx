@@ -325,7 +325,6 @@ function mapContract(c: any): ContractCard {
   const uiStatus: ContractCardStatus = missing
     ? "missing-info"
     : mapStatus(backendStatus);
-  console.log(uiStatus, "uiStatus");
 
   return {
     id: c.id,
@@ -567,10 +566,7 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
         <div className="max-h-full flex flex-col gap-3 overflow-auto">
           {contracts.map((contract) => {
             const s = STATUS_STYLES[contract.status];
-            const cardHref = `/documents/${contract.id}?data=${encodeURIComponent(
-              JSON.stringify(contract)
-            )}`;
-
+            const cardHref = `/documents/${contract.id}`;
             return (
               <div
                 key={contract.id}

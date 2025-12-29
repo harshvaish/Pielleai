@@ -127,7 +127,6 @@ export default function ContractStatusButton({
       }
     });
   };
-
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
