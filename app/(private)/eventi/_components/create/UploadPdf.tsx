@@ -13,13 +13,13 @@ import { deleteContractFile } from "@/lib/server-actions/contracts/delete-contra
 export default function LocalPdfUpload() {
   const [uploading, setUploading] = useState(false);
 
-  const { watch, setValue } = useFormContext<EventFormSchema>();
+  const { watch, setValue, resetField  } = useFormContext<EventFormSchema>();
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   /* ---------------- FORM VALUE (SINGLE SOURCE) ---------------- */
   const displayPdf = watch("contractDocument");
-console.log(displayPdf, "displayPdf")
+
   /* ---------------- UPLOAD ---------------- */
   const onUpload = async (file: File) => {
     const fetchResponse = await fetch("/api/upload/pdf", {
@@ -114,6 +114,7 @@ console.log(displayPdf, "displayPdf")
     });
 
     if (response.success) {
+      resetField("contractDocument");
       setValue("contractDocument", undefined, { shouldDirty: true });
       if (fileInputRef.current) fileInputRef.current.value = "";
       toast.success("Contract file removed.");

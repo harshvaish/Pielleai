@@ -23,7 +23,7 @@ type EventType = {
 
 export default function UplodPdf({ payload }: {payload: EventType}) {
   const [uploading, setUploading] = useState(false);
-    const { watch, setValue } = useFormContext<EventFormSchema>();
+    const { watch, setValue, resetField } = useFormContext<EventFormSchema>();
   
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -121,19 +121,19 @@ export default function UplodPdf({ payload }: {payload: EventType}) {
   };
   /* ---------------- DELETE ---------------- */
   const onDeleteHandler = async () => {
-      if (!payload.id) {
+    const contractId = watch("contractId");
+      if (!contractId) {
         toast.error("Contract not found.");
         return;
       }
-  
-      const contractId = Number(payload.id);
-  
+
       const response = await deleteContractFile({
         contractId: contractId,
       });
   
       if (response.success) {
-        setValue("contractDocument", undefined, { shouldDirty: true });
+        resetField("contractDocument");
+        setValue("contractDocument", undefined);
         if (fileInputRef.current) {
           fileInputRef.current.value = "";
         }
