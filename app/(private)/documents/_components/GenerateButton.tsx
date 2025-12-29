@@ -82,7 +82,7 @@ export default function GenerateButton({ payload }: Props) {
       const response = await editContract(contractPayload);
 
       if (response.success) {
-        toast.success("Contract regenerated!");
+        toast.success("Contratto generato!");
         router.refresh();
       } else {
         toast.error(response.message);
@@ -98,7 +98,7 @@ export default function GenerateButton({ payload }: Props) {
       disabled={isPending}
       onClick={handleGenerate}
     >
-      {isPending ? "Regenerating..." : "Regenerate"}
+      {isPending ? "Rigenero..." : "Rigenera"}
     </Button>
   );
 }

@@ -178,7 +178,7 @@ export default function DocuSignButton({
   const handleClick = async () => {
     try {
       if (!event?.tourManagerEmail) {
-        toast.error("Tour Manager is required.");
+        toast.error("Il Tour Manager è obbligatorio.");
         return;
       }
 
@@ -237,7 +237,7 @@ export default function DocuSignButton({
         const text = await res.text();
         throw new Error(text);
       } else {
-        toast.success("Docusign generated!");
+        toast.success("DocuSign generato!");
       }
 
       const json = await res.json();
@@ -272,7 +272,7 @@ export default function DocuSignButton({
       disabled={!contractId || loading || !isDetailsComplete}
       onClick={handleClick}
     >
-      {loading ? "Sending..." : "Send to DocuSign"}
+      {loading ? "Invio..." : "Invia a DocuSign"}
     </Button>
   );
 }

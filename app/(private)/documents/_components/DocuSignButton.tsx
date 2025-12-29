@@ -172,7 +172,7 @@ export default function DocuSignButton({ payload }: Props) {
         const text = await res.text();
         throw new Error(text);
       } else {
-        toast.success("Docusign generated!");
+        toast.success("DocuSign generato!");
       }
 
       const json = await res.json();
@@ -206,7 +206,7 @@ export default function DocuSignButton({ payload }: Props) {
       //disabled={!payload?.contract || loading}
       onClick={handleClick}
     >
-      {loading ? "Sending..." : "Send to DocuSign"}
+      {loading ? "Invio..." : "Invia a DocuSign"}
     </Button>
   );
 }

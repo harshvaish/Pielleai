@@ -94,16 +94,16 @@ export default function ContractStatusButton({
     { success: string; error?: string }
   > = {
     draft: {
-      success: "Contract draft successfully",
+      success: "Contratto draft con successo",
     },
     sent: {
-      success: "Contract sent successfully",
+      success: "Contratto Da firmare con successo",
     },
     declined: {
-      success: "Contract Refused",
+      success: "Contratto Rifiutato",
     },
     voided: {
-      success: "Contract archived",
+      success: "Contratto  Archiviato",
     },
   };
 
@@ -155,7 +155,7 @@ export default function ContractStatusButton({
           onClick={() => updateStatus("sent")}
           className="flex items-center gap-2"
         >
-          Sent
+          Da firmare
           <div className="w-3 h-3 flex items-center justify-center bg-sky-600 rounded-full">
             <ChevronRight className="size-2 text-white" />
           </div>
@@ -165,7 +165,7 @@ export default function ContractStatusButton({
           onClick={() => updateStatus("declined")}
           className="flex items-center gap-2"
         >
-          Refused
+          Rifiutato
           <div className="w-3 h-3 flex items-center justify-center bg-red-600 rounded-full">
             <X className="size-2 text-white" />
           </div>
@@ -175,7 +175,7 @@ export default function ContractStatusButton({
           onClick={() => updateStatus("voided")}
           className="flex items-center gap-2"
         >
-          Archived
+          Archiviato
           <div className="w-3 h-3 flex items-center justify-center rounded-full">
             <PartyPopper className="size-3 text-zinc-600" />
           </div>

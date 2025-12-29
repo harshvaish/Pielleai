@@ -137,7 +137,7 @@ export default function UplodPdf({ payload }: {payload: EventType}) {
         if (fileInputRef.current) {
           fileInputRef.current.value = "";
         }
-        toast.success("Contract file removed.");
+        toast.success("File del contratto rimosso.");
         // router.refresh();
       } else {
         toast.error(response.message ?? "Failed to remove contract file.");
