@@ -216,9 +216,9 @@ export default function EventForm({
           }),
           updatedBy: h?.changedByUserId,
           title: h.fromStatus
-            ? `Status changed from "${h.fromStatus}" to "${h.toStatus}"`
-            : "Contract created",
-          description: h.note ?? "No description available",
+            ? `Stato modificato a "${h.fromStatus}" to "${h.toStatus}"`
+            : "Contratti creati",
+          description: h.note ?? "Nessuna descrizione disponibile.",
           type: h.toStatus === "voided" ? "archived" : "success",
         };
       })
@@ -272,17 +272,18 @@ export default function EventForm({
       ccEmails: buildCcEmails(values),
     };
     startTransition(async () => {
-      const response = hasContract && typeof contractId === "number"
-      ? await editContract({
-          ...payloadBase,
-          contractId,
-          status: "draft",
-        })
-      : await createContract({
-          ...payloadBase,
-          status: "draft",
-        });
-          if (response.success) {
+      const response =
+        hasContract && typeof contractId === "number"
+          ? await editContract({
+              ...payloadBase,
+              contractId,
+              status: "draft",
+            })
+          : await createContract({
+              ...payloadBase,
+              status: "draft",
+            });
+      if (response.success) {
         setValue("contractId", response.data.id);
         setValue("contractStatus", "draft", {
           shouldDirty: false,
@@ -290,7 +291,7 @@ export default function EventForm({
         });
 
         toast.success(
-          hasContract ? "Contract regenerated!" : "Contract created!"
+          hasContract ? "Contratto rigenerato!" : "Contratto generato!"
         );
         //closeDialog?.();
       } else {
@@ -397,8 +398,8 @@ export default function EventForm({
           <TabsTrigger value="b">Financial</TabsTrigger>
           <TabsTrigger value="c">Scheda tecnica</TabsTrigger>
           <TabsTrigger value="d">Attività</TabsTrigger>
-          {mode == "update" && <TabsTrigger value="e">Contract</TabsTrigger>}
-        </TabsList>   
+          {mode == "update" && <TabsTrigger value="e">Contratto</TabsTrigger>}
+        </TabsList>
         <TabsContent value="a" className="flex flex-col gap-4 p-2">
           <div className="flex flex-col">
             <div className="text-sm font-semibold mb-2">Manager artista</div>
@@ -1259,16 +1260,16 @@ export default function EventForm({
             )}
           </div>
         </TabsContent>
-     
+
         <TabsContent value="e" className="flex flex-col gap-6 p-2">
           <div className="flex justify-between items-start">
             <div className="flex flex-col gap-1">
-              {(!isDetailsComplete ||
-                typeof contractId !== "number" ||
-                typeof contractStatus !== "string") ? (
+              {!isDetailsComplete ||
+              typeof contractId !== "number" ||
+              typeof contractStatus !== "string" ? (
                 /* 🔒 MISSING DATA */
                 <div className="inline-flex items-center gap-2 rounded-md border border-amber-200 bg-amber-50 px-2.5 py-2 text-xs font-medium text-amber-600">
-                  Missing data
+                  Info mancanti{" "}
                   <img
                     src={QUESTION_ICON}
                     alt="missing"
@@ -1283,9 +1284,8 @@ export default function EventForm({
                   status={contractStatus}
                 />
               )}
-
               <span className="text-xs text-zinc-500">
-                Status changed on {historyData[0]?.date} by{" "}
+                Stato aggiornato il {historyData[0]?.date} da{" "}
                 {historyData[0]?.updatedBy}
               </span>
             </div>
@@ -1299,11 +1299,11 @@ export default function EventForm({
               >
                 {isPending
                   ? hasContract
-                    ? "Regenerating..."
-                    : "Generating..."
+                    ? "Rigenero..."
+                    : "Genero..."
                   : hasContract
-                    ? "Regenerate"
-                    : "Generate"}
+                    ? "Rigenera"
+                    : "Genera"}
               </Button>
 
               <DocuSignButton
@@ -1313,7 +1313,7 @@ export default function EventForm({
             </div>
           </div>
           <div className="flex flex-col gap-2">
-            <div className="text-sm font-semibold">Contract file</div>
+            <div className="text-sm font-semibold">File del contratto</div>
             <UploadPdf />
             {errors.contractDocument && (
               <p className="text-xs text-destructive mt-2">
@@ -1330,7 +1330,7 @@ export default function EventForm({
           >
             <AccordionItem value="details">
               <AccordionTrigger className="px-3 hover:no-underline">
-                Details
+                Dettagli
               </AccordionTrigger>
 
               <AccordionContent className="px-0">
@@ -1352,7 +1352,7 @@ export default function EventForm({
                           className="shrink-0"
                         />
 
-                        <span className="text-sm font-medium">Artist</span>
+                        <span className="text-sm font-medium">Artista</span>
                       </div>
                     </AccordionTrigger>
 
@@ -1361,7 +1361,7 @@ export default function EventForm({
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div className="flex flex-col gap-1">
                             <label className="text-sm text-zinc-600">
-                              Artist full name
+                              Nome artista{" "}
                             </label>
                             <Input
                               {...register("artistFullName")}
@@ -1377,7 +1377,7 @@ export default function EventForm({
 
                           <div className="flex flex-col gap-1">
                             <label className="text-sm text-zinc-600">
-                              Artist stage name
+                              Nome d'arte{" "}
                             </label>
                             <Input
                               {...register("artistStageName")}
@@ -1421,7 +1421,7 @@ export default function EventForm({
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="flex flex-col gap-1">
                           <label className="text-sm text-zinc-600">
-                            Venue name
+                            Nome locale{" "}
                           </label>
                           <Input
                             {...register("venueName")}
@@ -1431,7 +1431,7 @@ export default function EventForm({
                         </div>
                         <div className="flex flex-col gap-1">
                           <label className="text-sm text-zinc-600">
-                            Venue Company name
+                            Ragione sociale locale{" "}
                           </label>
                           <Input
                             {...register("venueCompanyName")}
@@ -1443,7 +1443,7 @@ export default function EventForm({
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="flex flex-col gap-1">
                           <label className="text-sm text-zinc-600">
-                            Venue VAT number
+                            PIVA locale{" "}
                           </label>
                           <Input
                             {...register("venueVatNumber")}
@@ -1454,7 +1454,7 @@ export default function EventForm({
 
                         <div className="flex flex-col gap-1">
                           <label className="text-sm text-zinc-600">
-                            Venue address
+                            Indirizzo locale{" "}
                           </label>
                           <Input
                             {...register("venueAddress")}
@@ -1487,14 +1487,14 @@ export default function EventForm({
                           width={16}
                           height={16}
                         />
-                        <span className="text-sm font-medium">Event</span>
+                        <span className="text-sm font-medium">Evento</span>
                       </div>
                     </AccordionTrigger>
 
                     <AccordionContent className="px-3 py-4 space-y-4">
                       <div className="flex flex-col gap-1">
                         <label className="text-sm text-zinc-600">
-                          Event type
+                          Tipologia evento{" "}
                         </label>
                         <Controller
                           control={control}
@@ -1521,7 +1521,7 @@ export default function EventForm({
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="flex flex-col gap-1">
                           <label className="text-sm text-zinc-600">
-                            Event date
+                            Data evento{" "}
                           </label>
                           <Input
                             type="date"
@@ -1532,7 +1532,7 @@ export default function EventForm({
 
                         <div className="flex flex-col gap-1">
                           <label className="text-sm text-zinc-600">
-                            Performance time
+                            Orario performance{" "}
                           </label>
                           <div className="flex gap-2">
                             <Input
@@ -1552,7 +1552,7 @@ export default function EventForm({
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="flex flex-col gap-1">
                           <label className="text-sm text-zinc-600">
-                            Transport costs EUR
+                            Costi di trasporto (€){" "}
                           </label>
                           <Input
                             type="number"
@@ -1567,7 +1567,7 @@ export default function EventForm({
 
                         <div className="flex flex-col gap-1">
                           <label className="text-sm text-zinc-600">
-                            Total cachet EUR
+                            Totale cachet (€){" "}
                           </label>
                           <Input
                             type="number"
@@ -1584,7 +1584,7 @@ export default function EventForm({
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="flex flex-col gap-1">
                           <label className="text-sm text-zinc-600">
-                            Upfront payment EUR
+                            Pagamento anticipo (€){" "}
                           </label>
                           <Input
                             type="number"
@@ -1599,7 +1599,7 @@ export default function EventForm({
 
                         <div className="flex flex-col gap-1">
                           <label className="text-sm text-zinc-600">
-                            Payment date
+                            Data pagamento saldo{" "}
                           </label>
                           <Input
                             type="date"
@@ -1617,7 +1617,7 @@ export default function EventForm({
             {/* CCs */}
             <AccordionItem value="ccs">
               <AccordionTrigger className="px-3 hover:no-underline">
-                CCs of the email
+                CC dell'email{" "}
               </AccordionTrigger>
               <AccordionContent className="px-3 flex flex-col gap-3">
                 {ccEmails.map((email, idx) => (
@@ -1645,7 +1645,9 @@ export default function EventForm({
             {/* HISTORY */}
             <AccordionItem value="history">
               <AccordionTrigger className="px-3 hover:no-underline">
-                <span className="text-sm font-medium">History of changes</span>
+                <span className="text-sm font-medium">
+                  Storico dei cambiamenti
+                </span>
               </AccordionTrigger>
               <AccordionContent className="px-3 py-4">
                 {historyData.length === 0 ? (

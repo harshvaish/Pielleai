@@ -2,7 +2,6 @@
 
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
 import { toast } from "sonner";
@@ -72,7 +71,6 @@ export default function DocuSignButton({ payload }: Props) {
   const [loading, setLoading] = useState(false);
   const { watch, setValue } = useFormContext<EventFormSchema>();
   const contractId = watch("contractId");
-
   const getEventTime = (
     start?: string,
     end?: string
@@ -84,7 +82,6 @@ export default function DocuSignButton({ payload }: Props) {
       { locale: it }
     )}`;
   };
-
   const CONTRACT_DATA: ContractData = {
     artistName: `${payload.artist.name} ${payload.artist.surname}`,
     artistStageName: payload.artist.stageName,
@@ -172,7 +169,7 @@ export default function DocuSignButton({ payload }: Props) {
         const text = await res.text();
         throw new Error(text);
       } else {
-        toast.success("Docusign generated!");
+        toast.success("DocuSign generato!");
       }
 
       const json = await res.json();
@@ -206,7 +203,7 @@ export default function DocuSignButton({ payload }: Props) {
       //disabled={!payload?.contract || loading}
       onClick={handleClick}
     >
-      {loading ? "Sending..." : "Send to DocuSign"}
+      {loading ? "Invio..." : "Invia a DocuSign"}
     </Button>
   );
 }

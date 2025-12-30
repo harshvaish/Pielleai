@@ -72,7 +72,7 @@ export const NAVBAR_LINKS: NavbarLink[] = [
     separator: false,
   },
   {
-    label: 'Documents',
+    label: 'Documenti',
     href: '/documents',
     iconSrc: '/images/navbar-icons/contract-management.svg',
     iconAlt: 'icona Documents',

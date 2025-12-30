@@ -37,25 +37,29 @@ export default function ContractDetailClient({ payload }: Props) {
       venueVatNumber: payload.venue.vatCode,
       venueAddress: payload.venue.address,
 
-      eventDate: format(payload.availability.startDate, 'yyyy-MM-dd'),
-      eventStartTime : format(payload.availability.startDate, 'HH:mm', { locale: it }),
-      eventEndTime : format(payload.availability.endDate, 'HH:mm', { locale: it }),
+      eventDate: format(payload.availability.startDate, "yyyy-MM-dd"),
+      eventStartTime: format(payload.availability.startDate, "HH:mm", {
+        locale: it,
+      }),
+      eventEndTime: format(payload.availability.endDate, "HH:mm", {
+        locale: it,
+      }),
       eventType: payload?.event.eventType,
 
       transportationsCost: payload.event.transportCost ?? "",
       totalCost: payload.event.totalFee ?? "",
       upfrontPayment: payload.event.depositCost ?? "",
-      paymentDate: payload.event.paymentDate ?  format(payload?.event.paymentDate, "yyyy-MM-dd")
-      : "",
+      paymentDate: payload.event.paymentDate
+        ? format(payload?.event.paymentDate, "yyyy-MM-dd")
+        : "",
       tourManager: payload.artist?.tourManagerName
-      ? `${payload.artist.tourManagerName} ${payload.artist.tourManagerSurname ?? ""}`
-      : "",
+        ? `${payload.artist.tourManagerName} ${payload.artist.tourManagerSurname ?? ""}`
+        : "",
 
-    consultantEmail: payload.event?.payrollConsultantEmail ?? "",
-    adminEmail: payload.artist?.tourManagerEmail ?? "",
-
+      consultantEmail: payload.event?.payrollConsultantEmail ?? "",
+      adminEmail: payload.artist?.tourManagerEmail ?? "",
     },
-    shouldUnregister: true, 
+    shouldUnregister: true,
   });
   const {
     register,
@@ -99,7 +103,7 @@ export default function ContractDetailClient({ payload }: Props) {
                   className="shrink-0"
                 />
 
-                <span className="text-sm font-medium">Artist</span>
+                <span className="text-sm font-medium">Artista</span>
               </div>
             </AccordionTrigger>
 
@@ -110,7 +114,7 @@ export default function ContractDetailClient({ payload }: Props) {
                   {/* Artist Full Name */}
                   <div className="flex flex-col gap-1">
                     <label className="text-sm text-zinc-600">
-                      Artist full name
+                      Nome artista
                     </label>
                     <Input
                       {...register("artistFullName")}
@@ -126,9 +130,7 @@ export default function ContractDetailClient({ payload }: Props) {
 
                   {/* Artist Stage Name */}
                   <div className="flex flex-col gap-1">
-                    <label className="text-sm text-zinc-600">
-                      Artist stage name
-                    </label>
+                    <label className="text-sm text-zinc-600">Nome d'arte</label>
                     <Input
                       {...register("artistStageName")}
                       placeholder="Enter stage name"
@@ -206,7 +208,7 @@ export default function ContractDetailClient({ payload }: Props) {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* Venue name */}
                 <div className="flex flex-col gap-1">
-                  <label className="text-sm text-zinc-600">Venue name</label>
+                  <label className="text-sm text-zinc-600">Nome locale</label>
                   <Input
                     {...register("venueName")}
                     placeholder="Venue name"
@@ -217,7 +219,7 @@ export default function ContractDetailClient({ payload }: Props) {
                 {/* Venue Company name */}
                 <div className="flex flex-col gap-1">
                   <label className="text-sm text-zinc-600">
-                    Venue Company name
+                    Ragione sociale locale
                   </label>
                   <Input
                     {...register("venueCompanyName")}
@@ -231,9 +233,7 @@ export default function ContractDetailClient({ payload }: Props) {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* Venue VAT number */}
                 <div className="flex flex-col gap-1">
-                  <label className="text-sm text-zinc-600">
-                    Venue VAT number
-                  </label>
+                  <label className="text-sm text-zinc-600">PIVA locale</label>
                   <Input
                     {...register("venueVatNumber")}
                     placeholder="Venue VAT number"
@@ -243,7 +243,9 @@ export default function ContractDetailClient({ payload }: Props) {
 
                 {/* Venue address */}
                 <div className="flex flex-col gap-1">
-                  <label className="text-sm text-zinc-600">Venue address</label>
+                  <label className="text-sm text-zinc-600">
+                    Indirizzo locale
+                  </label>
                   <Input
                     {...register("venueAddress")}
                     placeholder="Venue address"
@@ -275,14 +277,16 @@ export default function ContractDetailClient({ payload }: Props) {
                   width={16}
                   height={16}
                 />
-                <span className="text-sm font-medium">Event</span>
+                <span className="text-sm font-medium">Evento</span>
               </div>
             </AccordionTrigger>
 
             <AccordionContent className="px-3 py-4 space-y-4">
               {/* EVENT TYPE */}
               <div className="flex flex-col gap-1">
-                <label className="text-sm text-zinc-600">Event type</label>
+                <label className="text-sm text-zinc-600">
+                  Tipologia evento
+                </label>
                 <Controller
                   control={control}
                   name="eventType"
@@ -303,7 +307,7 @@ export default function ContractDetailClient({ payload }: Props) {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="flex flex-col gap-1">
-                  <label className="text-sm text-zinc-600">Event date</label>
+                  <label className="text-sm text-zinc-600">Data evento</label>
                   <Input
                     type="date"
                     {...register("eventDate")}
@@ -313,7 +317,7 @@ export default function ContractDetailClient({ payload }: Props) {
 
                 <div className="flex flex-col gap-1">
                   <label className="text-sm text-zinc-600">
-                    Performance time
+                    Orario performance{" "}
                   </label>
                   <div className="flex gap-2">
                     <Input
@@ -334,7 +338,7 @@ export default function ContractDetailClient({ payload }: Props) {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="flex flex-col gap-1">
                   <label className="text-sm text-zinc-600">
-                    Transport costs EUR
+                    Costi di trasporto (€){" "}
                   </label>
                   <Input
                     type="number"
@@ -348,7 +352,7 @@ export default function ContractDetailClient({ payload }: Props) {
 
                 <div className="flex flex-col gap-1">
                   <label className="text-sm text-zinc-600">
-                    Total cachet EUR
+                    Totale cachet (€)
                   </label>
                   <Input
                     type="number"
@@ -365,7 +369,7 @@ export default function ContractDetailClient({ payload }: Props) {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="flex flex-col gap-1">
                   <label className="text-sm text-zinc-600">
-                    Upfront payment EUR
+                    Pagamento anticipo (€){" "}
                   </label>
                   <Input
                     type="number"
@@ -378,7 +382,10 @@ export default function ContractDetailClient({ payload }: Props) {
                 </div>
 
                 <div className="flex flex-col gap-1">
-                  <label className="text-sm text-zinc-600">Payment date</label>
+                  <label className="text-sm text-zinc-600">
+                    {" "}
+                    Data pagamento saldo{" "}
+                  </label>
                   <Input
                     type="date"
                     {...register("paymentDate")}
@@ -391,5 +398,5 @@ export default function ContractDetailClient({ payload }: Props) {
         </Accordion>
       </CardContent>
     </div>
-  )
+  );
 }

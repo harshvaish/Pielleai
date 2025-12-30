@@ -9,7 +9,6 @@ import { CalendarDays, Mail, MapPin, Clock, Briefcase } from "lucide-react";
 import { FormProvider, useForm } from "react-hook-form";
 import BackButton from "@/app/_components/BackButton";
 import Link from "next/link";
-
 import ContractDetailClient from "./ContractDetailClient";
 import GenerateButton from "../_components/GenerateButton";
 import DocuSignButton from "../_components/DocuSignButton";
@@ -37,7 +36,7 @@ export default function ContractDetailTile({ payload }: Props) {
   const methods = useForm({
     defaultValues: {
       contractId: payload.id,
-      contractStatus: payload.backendStatus,
+      contractStatus: payload.status,
       contractDocument: payload?.fileUrl
         ? {
             url: payload.fileUrl,
@@ -80,16 +79,15 @@ export default function ContractDetailTile({ payload }: Props) {
             hour12: true,
           }),
           title: h.fromStatus
-            ? `Status changed from "${h.fromStatus}" to "${h.toStatus}"`
-            : "Contract created",
-          description: h.note ?? "No description available",
+            ? `Stato modificato a "${h.fromStatus}" to "${h.toStatus}"`
+            : "Contratti creati",
+          description: h.note ?? "Nessuna descrizione disponibile.",
           fileUrl: h.fileUrl ?? undefined,
           fileName: h.fileName ?? undefined,
           type: h.toStatus === "voided" ? "archived" : "success",
         };
       })
     : [];
-
   return (
     <FormProvider {...methods}>
       <div className="h-full w-full bg-zinc-50 px-4 py-6 md:p-6 flex flex-col gap-6">
@@ -105,17 +103,14 @@ export default function ContractDetailTile({ payload }: Props) {
               </>
             )}
 
-            {contractStatus === "voided" && (
-              <ViewContractButton />
-            )}
+            {contractStatus === "voided" && <ViewContractButton />}
 
-            {contractStatus !== "declined" &&
-              contractStatus !== "voided" && (
-                <>
-                  <GenerateButton payload={payload} />
-                  <DocuSignButton payload={payload} />
-                </>
-              )}
+            {contractStatus !== "declined" && contractStatus !== "voided" && (
+              <>
+                <GenerateButton payload={payload} />
+                <DocuSignButton payload={payload} />
+              </>
+            )}
           </div>
         </div>
 
@@ -163,7 +158,7 @@ export default function ContractDetailTile({ payload }: Props) {
                   />
 
                   <div className="text-xs text-zinc-500">
-                    Status changed on {payload.statusDate}
+                    Stato aggiornato il {payload.statusDate}
                   </div>
                 </div>
               </div>
@@ -172,7 +167,7 @@ export default function ContractDetailTile({ payload }: Props) {
 
               <div className="flex flex-col gap-3">
                 <div className="text-sm font-semibold text-zinc-800">
-                  Contract file
+                  File del contratto
                 </div>
                 <UplodPdf payload={payload} />
               </div>
@@ -181,7 +176,7 @@ export default function ContractDetailTile({ payload }: Props) {
 
               <div className="flex flex-wrap items-center gap-3 text-sm text-zinc-600">
                 <span className="text-zinc-800 font-semibold">
-                  Event details
+                  Dettagli evento
                 </span>
                 <Button
                   variant="link"
@@ -190,7 +185,7 @@ export default function ContractDetailTile({ payload }: Props) {
                   asChild
                 >
                   <Link href="/eventi" target="_blank" rel="noreferrer">
-                    View event details
+                    Visualizza dettagli evento{" "}
                   </Link>
                 </Button>
               </div>
@@ -237,7 +232,9 @@ export default function ContractDetailTile({ payload }: Props) {
           <Card className="bg-white shadow-sm border-zinc-200">
             <CardContent className="flex flex-col gap-4">
               <div className="flex items-center justify-between">
-                <div className="text-lg font-semibold">History of changes</div>
+                <div className="text-lg font-semibold">
+                  Storico dei cambiamenti
+                </div>
               </div>
 
               <div className="max-h-[300px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-zinc-300 scrollbar-track-transparent flex flex-col gap-4">
@@ -311,7 +308,7 @@ export default function ContractDetailTile({ payload }: Props) {
         <Card className="bg-white shadow-sm border-zinc-200">
           <CardContent className="flex flex-col gap-6">
             <div className="flex items-center justify-between">
-              <div className="text-lg font-semibold">Details</div>
+              <div className="text-lg font-semibold">Dettagli</div>
             </div>
 
             <ContractDetailClient payload={payload} />

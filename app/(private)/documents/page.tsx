@@ -325,7 +325,6 @@ function mapContract(c: any): ContractCard {
   const uiStatus: ContractCardStatus = missing
     ? "missing-info"
     : mapStatus(backendStatus);
-  console.log(uiStatus, "uiStatus");
 
   return {
     id: c.id,
@@ -493,15 +492,15 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
   function getBackendStatusLabel(status: string) {
     switch (status) {
       case "voided":
-        return "Archived";
+        return "Archiviato";
       case "sent":
-        return "To be Signed";
+        return "Da firmare";
       case "viewed":
         return "Viewed";
       case "signed":
-        return "Signed";
+        return "Firmato";
       case "declined":
-        return "Refused";
+        return "Rifiutato";
       case "draft":
         return "Draft";
       case "missing-info":
@@ -515,7 +514,7 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
   return (
     <div className="h-full grid grid-rows-[min-content_min-content_1fr_min-content] gap-4">
       <div className="flex flex-wrap justify-between items-center gap-3">
-        <h1 className="text-xl md:text-2xl font-bold">Contracts</h1>
+        <h1 className="text-xl md:text-2xl font-bold">Contratti</h1>
 
         {isAdmin && <ExportButton filters={filters} />}
       </div>
@@ -523,12 +522,12 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
       {/* Filters */}
       <div className="w-full flex flex-col lg:flex-row justify-between items-end lg:items-center gap-4 overflow-hidden">
         <div className="max-w-full bg-white flex items-center gap-1 p-1 rounded-2xl overflow-auto">
-          <StatusFilterButton status="all" label="All" />
-          <StatusFilterButton status="to-sign" label="To sign" />
-          <StatusFilterButton status="signed" label="Signed" />
-          <StatusFilterButton status="refused" label="Refused" />
-          <StatusFilterButton status="error" label="Error" />
-          <StatusFilterButton status="archived" label="Archived" />
+          <StatusFilterButton status="all" label="Tutti" />
+          <StatusFilterButton status="to-sign" label="Da firmare" />
+          <StatusFilterButton status="signed" label="Firmato" />
+          <StatusFilterButton status="refused" label="Rifiutato" />
+          <StatusFilterButton status="error" label="Errore" />
+          <StatusFilterButton status="archived" label="Archiviato" />
         </div>
 
         <div className="flex items-center gap-2">
@@ -567,10 +566,7 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
         <div className="max-h-full flex flex-col gap-3 overflow-auto">
           {contracts.map((contract) => {
             const s = STATUS_STYLES[contract.status];
-            const cardHref = `/documents/${contract.id}?data=${encodeURIComponent(
-              JSON.stringify(contract)
-            )}`;
-
+            const cardHref = `/documents/${contract.id}`;
             return (
               <div
                 key={contract.id}
@@ -583,7 +579,7 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
                       className={`w-fit inline-flex gap-1.5 items-center rounded-md px-2 py-1.5 text-xs font-medium border ${s.badgeBorder} ${s.badgeBg}`}
                     >
                       {contract.status === "missing-info"
-                        ? "Missing info"
+                        ? "Info mancanti"
                         : getBackendStatusLabel(contract.backendStatus)}
                       <span>{s.icon}</span>
                     </span>

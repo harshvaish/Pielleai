@@ -1,27 +1,16 @@
 import getSession from "@/lib/data/auth/get-session";
 import { hasRole, resolveNextPath } from "@/lib/utils";
-import {
-  BadgeInfo,
-  CalendarDays,
-  Mail,
-  MapPin,
-  Clock,
-  Briefcase,
-} from "lucide-react";
 import { notFound, redirect } from "next/navigation";
 import { getUserProfileIdCached } from "@/lib/cache/users";
 import ContractDetailTile from "./ContractDetailTile";
+import { getContractDetailById } from "@/lib/data/contracts/get-contract-by-id";
 
 type ContractDetailPageProps = {
   params?: Promise<{ id: string }>;
-  searchParams?: Promise<{
-    stage?: string;
-    data?: string;
-  }>;
 };
 
 export default async function ContractDetailPage({
-  searchParams,
+  params,
 }: ContractDetailPageProps) {
   const { session, user } = await getSession();
 
@@ -35,10 +24,10 @@ export default async function ContractDetailPage({
     notFound();
   }
 
-  const sp = await searchParams;
-  if (!sp?.data) notFound();
-
-  const payload = JSON.parse(decodeURIComponent(sp.data));
-
-  return <ContractDetailTile payload={payload} />;
-}
+  const sp = await params;
+  const contractId = Number(sp?.id)
+  const payload = await getContractDetailById(contractId);
+  if (!payload) notFound();
+  
+  return <ContractDetailTile payload={payload?.data} />;
+  }

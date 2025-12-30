@@ -108,6 +108,10 @@ export default function UpdateEventForm({
       contractStatus: normalizeContractStatus(event.contract?.status),
       transportationsCost: parseFloat(event.transportationsCost || '') || undefined,
       cashBalanceCost: parseFloat(event.cashBalanceCost || '') || undefined,
+      hotelCost : parseFloat(event.hotelCost || '') || undefined,
+      restaurantCost: parseFloat(event.restaurantCost || '') || undefined,
+      soundCheckEnd: event.soundCheckEnd || '',
+      soundCheckStart: event.soundCheckStart || '',
       tecnicalRiderDocument:
         event.tecnicalRiderUrl && event.tecnicalRiderName
           ? {
