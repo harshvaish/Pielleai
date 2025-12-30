@@ -84,6 +84,7 @@ export const createEventRequest = async (
           availabilityId: availability.id,
           venueId: venueId,
           status: 'proposed',
+          paymentDate: validation.data.paymentDate || null,
         })
         .returning({ id: events.id });
 

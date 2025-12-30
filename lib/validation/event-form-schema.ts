@@ -245,6 +245,7 @@ export const eventRequestFormSchema = eventFormSchema
   .pick({
     artistId: true,
     venueId: true,
+    paymentDate: true,
   })
   .extend({
     availability: z.object(

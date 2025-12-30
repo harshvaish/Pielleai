@@ -232,6 +232,7 @@ export const updateEvent = async (
 
           tecnicalRiderUrl: validTecnicalRider ? tecnicalRiderDocument!.url : null,
           tecnicalRiderName: validTecnicalRider ? tecnicalRiderDocument!.name : null,
+          paymentDate: validation.data.paymentDate || null,
 
           contractSigning: validation.data.contractSigning,
           depositInvoiceIssuing: validation.data.depositInvoiceIssuing,

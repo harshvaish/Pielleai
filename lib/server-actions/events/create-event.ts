@@ -189,6 +189,7 @@ export const createEvent = async (data: EventFormSchema): Promise<ServerActionRe
           tecnicalRiderName: validTecnicalRider
             ? validation.data.tecnicalRiderDocument!.name
             : null,
+          paymentDate: validation.data.paymentDate || null,
 
           contractSigning: validation.data.contractSigning,
           depositInvoiceIssuing: validation.data.depositInvoiceIssuing,
