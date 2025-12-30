@@ -9,6 +9,7 @@ import { CalendarDays, Mail, MapPin, Clock, Briefcase } from "lucide-react";
 import { FormProvider, useForm } from "react-hook-form";
 import BackButton from "@/app/_components/BackButton";
 import Link from "next/link";
+import { format } from "date-fns";
 import ContractDetailClient from "./ContractDetailClient";
 import GenerateButton from "../_components/GenerateButton";
 import DocuSignButton from "../_components/DocuSignButton";
@@ -32,13 +33,35 @@ type HistoryItem = {
   type: "archived" | "success";
 };
 
-export default function ContractDetailTile({ payload }: Props) {
-  console.log(payload, "payload---------")
+ export default function ContractDetailTile({ payload }: Props) {
   const methods = useForm({
     defaultValues: {
       contractId: payload.id,
       contractStatus: payload.status,
-      contractDocument: payload?.fileUrl
+
+          artistFullName: `${payload.artist.name} ${payload.artist.surname}`,
+          artistStageName: payload.artist.stageName,
+      
+          venueName: payload.venue.name,
+          venueCompanyName: payload.venue.company,
+          venueVatNumber: payload.venue.vatCode,
+          venueAddress: payload.venue.address,
+      
+          eventDate: format(payload.availability.startDate, "yyyy-MM-dd"),
+          eventStartTime: format(payload.availability.startDate, "HH:mm"),
+          eventEndTime: format(payload.availability.endDate, "HH:mm"),
+          eventType: payload?.event.eventType,
+      
+          transportationsCost: payload.event.transportCost ?? "",
+          totalCost: payload.event.totalFee ?? "",
+          upfrontPayment: payload.event.depositCost ?? "",
+          tourManager: payload.artist?.tourManagerName
+          ? `${payload.artist.tourManagerName} ${payload.artist.tourManagerSurname ?? ""}`
+          : "",
+          consultantEmail: payload.event?.payrollConsultantEmail ?? "",
+          adminEmail: payload.artist?.tourManagerEmail ?? "",
+      
+         contractDocument: payload?.fileUrl
         ? {
             url: payload.fileUrl,
             name: payload.fileName,

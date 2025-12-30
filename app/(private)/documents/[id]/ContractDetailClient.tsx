@@ -8,9 +8,7 @@ import {
 } from "@/components/ui/accordion";
 import { CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Controller, useForm } from "react-hook-form";
-import { format } from "date-fns";
-import { it } from "date-fns/locale";
+import { Controller, useFormContext } from "react-hook-form";
 import {
   Select,
   SelectContent,
@@ -18,54 +16,23 @@ import {
   SelectTrigger,
 } from "@/components/ui/select";
 import { GREEN_TICK_ICON, QUESTION_ICON } from "@/lib/constants";
+import { cn } from "@/lib/utils";
 
 type Props = {
   payload: any;
 };
 
-/* ---------------- COMPONENT ---------------- */
-
 export default function ContractDetailClient({ payload }: Props) {
-  /* ---------------- FORM ---------------- */
-  const form = useForm({
-    defaultValues: {
-      artistFullName: `${payload.artist.name} ${payload.artist.surname}`,
-      artistStageName: payload.artist.stageName,
-
-      venueName: payload.venue.name,
-      venueCompanyName: payload.venue.company,
-      venueVatNumber: payload.venue.vatCode,
-      venueAddress: payload.venue.address,
-
-      eventDate: format(payload.availability.startDate, "yyyy-MM-dd"),
-      eventStartTime: format(payload.availability.startDate, "HH:mm", {
-        locale: it,
-      }),
-      eventEndTime: format(payload.availability.endDate, "HH:mm", {
-        locale: it,
-      }),
-      eventType: payload?.event.eventType,
-
-      transportationsCost: payload.event.transportCost ?? "",
-      totalCost: payload.event.totalFee ?? "",
-      upfrontPayment: payload.event.depositCost ?? "",
-      tourManager: payload.artist?.tourManagerName
-        ? `${payload.artist.tourManagerName} ${payload.artist.tourManagerSurname ?? ""}`
-        : "",
-
-      consultantEmail: payload.event?.payrollConsultantEmail ?? "",
-      adminEmail: payload.artist?.tourManagerEmail ?? "",
-    },
-    shouldUnregister: true,
-  });
   const {
     register,
     control,
     watch,
     formState: { errors },
-  } = form;
+  } = useFormContext();
 
   /* ---------------- HELPERS ---------------- */
+  const contractStatus = watch("contractStatus");
+  const isVoided = contractStatus === "voided";
 
   function isSectionComplete(values: Record<string, any>, fields: string[]) {
     return fields.every((f) => {
@@ -73,7 +40,6 @@ export default function ContractDetailClient({ payload }: Props) {
       return val !== undefined && val !== null && val !== "" && val !== false;
     });
   }
-  /* ---------------- RENDER ---------------- */
 
   return (
     <div>
@@ -116,7 +82,11 @@ export default function ContractDetailClient({ payload }: Props) {
                     <Input
                       {...register("artistFullName")}
                       placeholder="Enter full name"
-                      className="h-10"
+                      className={cn(
+                        "h-10",
+                        isVoided && "bg-zinc-100 text-zinc-500"
+                      )}
+                      readOnly={isVoided}
                     />
                     {errors.artistFullName && (
                       <p className="text-xs text-destructive">
@@ -131,7 +101,10 @@ export default function ContractDetailClient({ payload }: Props) {
                     <Input
                       {...register("artistStageName")}
                       placeholder="Enter stage name"
-                      className="h-10"
+                      className={cn(
+                        "h-10",
+                        isVoided && "bg-zinc-100 text-zinc-500"
+                      )}
                     />
                     {errors.artistStageName && (
                       <p className="text-xs text-destructive">
@@ -148,7 +121,10 @@ export default function ContractDetailClient({ payload }: Props) {
                     <Input
                       {...register("tourManager")}
                       placeholder="Enter full name"
-                      className="h-10"
+                      className={cn(
+                        "h-10",
+                        isVoided && "bg-zinc-100 text-zinc-500"
+                      )}
                     />
                   </div>
 
@@ -159,7 +135,10 @@ export default function ContractDetailClient({ payload }: Props) {
                     <Input
                       {...register("consultantEmail")}
                       placeholder="Email"
-                      className="h-10"
+                      className={cn(
+                        "h-10",
+                        isVoided && "bg-zinc-100 text-zinc-500"
+                      )}
                     />
                   </div>
                 </div>
@@ -170,7 +149,10 @@ export default function ContractDetailClient({ payload }: Props) {
                   <Input
                     {...register("adminEmail")}
                     placeholder="Email"
-                    className="h-10"
+                    className={cn(
+                      "h-10",
+                      isVoided && "bg-zinc-100 text-zinc-500"
+                    )}
                   />
                 </div>
               </div>
@@ -209,7 +191,10 @@ export default function ContractDetailClient({ payload }: Props) {
                   <Input
                     {...register("venueName")}
                     placeholder="Venue name"
-                    className="h-10"
+                    className={cn(
+                      "h-10",
+                      isVoided && "bg-zinc-100 text-zinc-500"
+                    )}
                   />
                 </div>
 
@@ -221,7 +206,10 @@ export default function ContractDetailClient({ payload }: Props) {
                   <Input
                     {...register("venueCompanyName")}
                     placeholder="Venue Company name"
-                    className="h-10"
+                    className={cn(
+                      "h-10",
+                      isVoided && "bg-zinc-100 text-zinc-500"
+                    )}
                   />
                 </div>
               </div>
@@ -234,7 +222,10 @@ export default function ContractDetailClient({ payload }: Props) {
                   <Input
                     {...register("venueVatNumber")}
                     placeholder="Venue VAT number"
-                    className="h-10"
+                    className={cn(
+                      "h-10",
+                      isVoided && "bg-zinc-100 text-zinc-500"
+                    )}
                   />
                 </div>
 
@@ -246,7 +237,10 @@ export default function ContractDetailClient({ payload }: Props) {
                   <Input
                     {...register("venueAddress")}
                     placeholder="Venue address"
-                    className="h-10"
+                    className={cn(
+                      "h-10",
+                      isVoided && "bg-zinc-100 text-zinc-500"
+                    )}
                   />
                 </div>
               </div>
@@ -287,8 +281,18 @@ export default function ContractDetailClient({ payload }: Props) {
                   control={control}
                   name="eventType"
                   render={({ field }) => (
-                    <Select value={field.value} onValueChange={field.onChange}>
-                      <SelectTrigger className="h-10 w-full">
+                    <Select
+                      value={field.value}
+                      onValueChange={field.onChange}
+                      disabled={isVoided}
+                    >
+                      <SelectTrigger
+                        className={cn(
+                          "h-10 w-full",
+                          isVoided &&
+                            "bg-zinc-100 text-zinc-500"
+                        )}
+                      >
                         {field.value ?? "Select"}
                       </SelectTrigger>
                       <SelectContent>
@@ -307,7 +311,10 @@ export default function ContractDetailClient({ payload }: Props) {
                   <Input
                     type="date"
                     {...register("eventDate")}
-                    className="h-10"
+                    className={cn(
+                      "h-10",
+                      isVoided && "bg-zinc-100 text-zinc-500"
+                    )}
                   />
                 </div>
 
@@ -319,12 +326,18 @@ export default function ContractDetailClient({ payload }: Props) {
                     <Input
                       type="time"
                       {...register("eventStartTime")}
-                      className="h-10"
+                      className={cn(
+                        "h-10",
+                        isVoided && "bg-zinc-100 text-zinc-500"
+                      )}
                     />
                     <Input
                       type="time"
                       {...register("eventEndTime")}
-                      className="h-10"
+                      className={cn(
+                        "h-10",
+                        isVoided && "bg-zinc-100 text-zinc-500"
+                      )}
                     />
                   </div>
                 </div>
@@ -342,7 +355,10 @@ export default function ContractDetailClient({ payload }: Props) {
                     {...register("transportationsCost", {
                       setValueAs: (v) => (v === "" ? undefined : parseFloat(v)),
                     })}
-                    className="h-10"
+                    className={cn(
+                      "h-10",
+                      isVoided && "bg-zinc-100 text-zinc-500"
+                    )}
                   />
                 </div>
 
@@ -356,7 +372,10 @@ export default function ContractDetailClient({ payload }: Props) {
                     {...register("totalCost", {
                       setValueAs: (v) => (v === "" ? undefined : parseFloat(v)),
                     })}
-                    className="h-10"
+                    className={cn(
+                      "h-10",
+                      isVoided && "bg-zinc-100 text-zinc-500"
+                    )}
                   />
                 </div>
               </div>
@@ -373,7 +392,10 @@ export default function ContractDetailClient({ payload }: Props) {
                     {...register("upfrontPayment", {
                       setValueAs: (v) => (v === "" ? undefined : parseFloat(v)),
                     })}
-                    className="h-10"
+                    className={cn(
+                      "h-10",
+                      isVoided && "bg-zinc-100 text-zinc-500"
+                    )}
                   />
                 </div>
               </div>
@@ -384,3 +406,4 @@ export default function ContractDetailClient({ payload }: Props) {
     </div>
   );
 }
+
