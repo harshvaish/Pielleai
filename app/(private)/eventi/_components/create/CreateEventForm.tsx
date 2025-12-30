@@ -74,6 +74,7 @@ export default function CreateEventForm({
 
       postDateFeedback: false,
       bordereau: false,
+      paymentDate: '',
     },
   });
 

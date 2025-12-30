@@ -194,12 +194,10 @@ export default function EventForm({
     "transportationsCost",
     "totalCost",
     "upfrontPayment",
-    "paymentDate",
   ]);
 
   const isDetailsComplete =
     isArtistComplete && isVenueComplete && isEventComplete;
-
   const [isPending, startTransition] = useTransition();
 
   const historyData: HistoryItem[] = Array.isArray(
@@ -665,6 +663,18 @@ export default function EventForm({
                   {errors.artistUpfrontCost.message as string}
                 </p>
               )}
+            </div>
+
+            <div className="flex flex-col">
+              <div className="text-sm font-semibold mb-2">
+                {" "}
+                Data pagamento saldo{" "}
+              </div>
+              <Input
+                type="date"
+                {...register("paymentDate")}
+                className="h-10"
+              />
             </div>
           </div>
 
@@ -1264,9 +1274,7 @@ export default function EventForm({
         <TabsContent value="e" className="flex flex-col gap-6 p-2">
           <div className="flex justify-between items-start">
             <div className="flex flex-col gap-1">
-              {!isDetailsComplete ||
-              typeof contractId !== "number" ||
-              typeof contractStatus !== "string" ? (
+              {!isDetailsComplete ? (
                 /* 🔒 MISSING DATA */
                 <div className="inline-flex items-center gap-2 rounded-md border border-amber-200 bg-amber-50 px-2.5 py-2 text-xs font-medium text-amber-600">
                   Info mancanti{" "}
@@ -1280,9 +1288,9 @@ export default function EventForm({
                 </div>
               ) : (
                 <ContractStatusButton
-                  contractId={contractId}
-                  status={contractStatus}
-                />
+                  contractId={contractId ?? 0}
+                  status={contractStatus ?? "draft"}
+                  />
               )}
               <span className="text-xs text-zinc-500">
                 Stato aggiornato il {historyData[0]?.date} da{" "}
@@ -1479,7 +1487,6 @@ export default function EventForm({
                               "transportationsCost",
                               "totalCost",
                               "upfrontPayment",
-                              "paymentDate",
                             ])
                               ? GREEN_TICK_ICON
                               : QUESTION_ICON
@@ -1593,17 +1600,6 @@ export default function EventForm({
                               setValueAs: (v) =>
                                 v === "" ? undefined : parseFloat(v),
                             })}
-                            className="h-10"
-                          />
-                        </div>
-
-                        <div className="flex flex-col gap-1">
-                          <label className="text-sm text-zinc-600">
-                            Data pagamento saldo{" "}
-                          </label>
-                          <Input
-                            type="date"
-                            {...register("paymentDate")}
                             className="h-10"
                           />
                         </div>

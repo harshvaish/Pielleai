@@ -33,6 +33,7 @@ type HistoryItem = {
 };
 
 export default function ContractDetailTile({ payload }: Props) {
+  console.log(payload, "payload---------")
   const methods = useForm({
     defaultValues: {
       contractId: payload.id,
@@ -158,7 +159,7 @@ export default function ContractDetailTile({ payload }: Props) {
                   />
 
                   <div className="text-xs text-zinc-500">
-                    Stato aggiornato il {payload.statusDate}
+                    Stato aggiornato il {payload.contractDate}
                   </div>
                 </div>
               </div>

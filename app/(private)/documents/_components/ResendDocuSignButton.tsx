@@ -9,7 +9,6 @@ type Props = {
 };
 
 export default function ResendDocuSignButton({ contractId }: Props) {
-console.log(contractId, "contractId")
   async function handleClick(e: React.MouseEvent<HTMLButtonElement>) {
     e.stopPropagation();
     e.preventDefault();

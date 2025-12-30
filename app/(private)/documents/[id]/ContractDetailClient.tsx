@@ -49,9 +49,6 @@ export default function ContractDetailClient({ payload }: Props) {
       transportationsCost: payload.event.transportCost ?? "",
       totalCost: payload.event.totalFee ?? "",
       upfrontPayment: payload.event.depositCost ?? "",
-      paymentDate: payload.event.paymentDate
-        ? format(payload?.event.paymentDate, "yyyy-MM-dd")
-        : "",
       tourManager: payload.artist?.tourManagerName
         ? `${payload.artist.tourManagerName} ${payload.artist.tourManagerSurname ?? ""}`
         : "",
@@ -269,7 +266,6 @@ export default function ContractDetailClient({ payload }: Props) {
                       "transportationsCost",
                       "totalCost",
                       "upfrontPayment",
-                      "paymentDate",
                     ])
                       ? GREEN_TICK_ICON
                       : QUESTION_ICON
@@ -377,18 +373,6 @@ export default function ContractDetailClient({ payload }: Props) {
                     {...register("upfrontPayment", {
                       setValueAs: (v) => (v === "" ? undefined : parseFloat(v)),
                     })}
-                    className="h-10"
-                  />
-                </div>
-
-                <div className="flex flex-col gap-1">
-                  <label className="text-sm text-zinc-600">
-                    {" "}
-                    Data pagamento saldo{" "}
-                  </label>
-                  <Input
-                    type="date"
-                    {...register("paymentDate")}
                     className="h-10"
                   />
                 </div>
