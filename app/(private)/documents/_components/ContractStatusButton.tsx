@@ -1,7 +1,6 @@
 "use client";
 
 import { useTransition } from "react";
-import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import {
   DropdownMenu,
@@ -9,14 +8,14 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { X, PartyPopper, ChevronDown, ChevronRight } from "lucide-react";
+import { X, PartyPopper, ChevronDown, ChevronRight, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { editContract } from "@/lib/server-actions/contracts/update-contract";
 import { JSX } from "react";
 import { EventFormSchema } from "@/lib/validation/event-form-schema";
 import { useFormContext } from "react-hook-form";
 
-type ContractStatus = "draft" | "sent" | "declined" | "voided";
+type ContractStatus = "draft" | "sent" | "declined" | "voided" | "signed";
 
 type Props = {
   contractId: number;
@@ -33,6 +32,17 @@ const STATUS_STYLES: Record<
     icon: JSX.Element;
   }
 > = {
+  signed: {
+    label: "Firmato",
+    text: "text-lime-600",
+    bg: "bg-lime-50",
+    icon: (
+      <div className="w-3 h-3 flex items-center justify-center bg-lime-600 rounded-full">
+        <Check className="size-2 text-white" />
+      </div>
+    ),
+  },
+
   draft: {
     label: "Draft",
     text: "text-amber-600",
@@ -56,7 +66,7 @@ const STATUS_STYLES: Record<
   },
 
   declined: {
-    label: "Refused",
+    label: "Rifiutato",
     text: "text-red-700",
     bg: "bg-red-50",
     icon: (
@@ -86,12 +96,12 @@ export default function ContractStatusButton({
   const [isPending, startTransition] = useTransition();
   const form = useFormContext<EventFormSchema>();
   const setValue = form?.setValue;
+  const isReadOnly = status == "signed";
 
   const current = STATUS_STYLES[status];
 
-  const STATUS_TOAST: Record<
-    ContractStatus,
-    { success: string; error?: string }
+  const STATUS_TOAST: Partial<
+    Record<ContractStatus, { success: string; error?: string }>
   > = {
     draft: {
       success: "Contratto draft con successo",
@@ -106,8 +116,9 @@ export default function ContractStatusButton({
       success: "Contratto  Archiviato",
     },
   };
+  type MutableStatus = Exclude<ContractStatus, "signed">;
 
-  const updateStatus = (next: ContractStatus) => {
+  const updateStatus = (next: MutableStatus) => {
     if (next === status) return;
 
     startTransition(async () => {
@@ -131,7 +142,7 @@ export default function ContractStatusButton({
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <button
-          disabled={isPending}
+          disabled={isPending || isReadOnly}
           className={cn(
             "inline-flex items-center gap-2 rounded-md px-2.5 py-2.5 text-s font-medium",
             "max-w-min whitespace-nowrap",
@@ -145,41 +156,44 @@ export default function ContractStatusButton({
           {current.label}
           <span className="truncate"> {current.icon} </span>
 
-          <ChevronDown className="h-3 w-3 text-zinc-400 ml-1" />
+          {!isReadOnly && (
+            <ChevronDown className="h-3 w-3 text-zinc-400 ml-1" />
+          )}
         </button>
       </DropdownMenuTrigger>
+      {!isReadOnly && (
+        <DropdownMenuContent align="start" className="min-w-[100px]">
+          <DropdownMenuItem
+            onClick={() => updateStatus("sent")}
+            className="flex items-center gap-2"
+          >
+            Da firmare
+            <div className="w-3 h-3 flex items-center justify-center bg-sky-600 rounded-full">
+              <ChevronRight className="size-2 text-white" />
+            </div>
+          </DropdownMenuItem>
 
-      <DropdownMenuContent align="start" className="min-w-[100px]">
-        <DropdownMenuItem
-          onClick={() => updateStatus("sent")}
-          className="flex items-center gap-2"
-        >
-          Da firmare
-          <div className="w-3 h-3 flex items-center justify-center bg-sky-600 rounded-full">
-            <ChevronRight className="size-2 text-white" />
-          </div>
-        </DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={() => updateStatus("declined")}
+            className="flex items-center gap-2"
+          >
+            Rifiutato
+            <div className="w-3 h-3 flex items-center justify-center bg-red-600 rounded-full">
+              <X className="size-2 text-white" />
+            </div>
+          </DropdownMenuItem>
 
-        <DropdownMenuItem
-          onClick={() => updateStatus("declined")}
-          className="flex items-center gap-2"
-        >
-          Rifiutato
-          <div className="w-3 h-3 flex items-center justify-center bg-red-600 rounded-full">
-            <X className="size-2 text-white" />
-          </div>
-        </DropdownMenuItem>
-
-        <DropdownMenuItem
-          onClick={() => updateStatus("voided")}
-          className="flex items-center gap-2"
-        >
-          Archiviato
-          <div className="w-3 h-3 flex items-center justify-center rounded-full">
-            <PartyPopper className="size-3 text-zinc-600" />
-          </div>
-        </DropdownMenuItem>
-      </DropdownMenuContent>
+          <DropdownMenuItem
+            onClick={() => updateStatus("voided")}
+            className="flex items-center gap-2"
+          >
+            Archiviato
+            <div className="w-3 h-3 flex items-center justify-center rounded-full">
+              <PartyPopper className="size-3 text-zinc-600" />
+            </div>
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      )}
     </DropdownMenu>
   );
 }

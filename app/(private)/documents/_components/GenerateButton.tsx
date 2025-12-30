@@ -6,6 +6,7 @@ import { useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { format } from "date-fns";
 import { editContract } from "@/lib/server-actions/contracts/update-contract";
+import { useFormContext } from "react-hook-form";
 
 type Props = {
   payload: any;
@@ -14,21 +15,21 @@ type Props = {
 export default function GenerateButton({ payload }: Props) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
+  const { getValues } = useFormContext();
 
   const buildPerformanceTime = (
-    startDate?: string,
-    endDate?: string
+    startTime?: string,
+    endTime?: string
   ): string => {
-    if (!startDate || !endDate) return "";
-    return `${format(new Date(startDate), "HH:mm")} - ${format(
-      new Date(endDate),
-      "HH:mm"
-    )}`;
+    if (!startTime || !endTime) return "";
+    return `${startTime} - ${endTime}`;
   };
-  // const hasFile = Boolean(payload?.fileUrl);
 
   const handleGenerate = () => {
-    if (!payload?.event?.id) {
+    const values = getValues();
+    console.log(values, "values");
+
+    if (!values?.contractId) {
       toast.error("Event ID is missing.");
       return;
     }
@@ -38,33 +39,30 @@ export default function GenerateButton({ payload }: Props) {
       artistId: payload.artist.id,
       venueId: payload.venue.id,
       eventId: payload.event.id,
-      contractId: payload.id,
+      contractId: values.contractId,
 
       // Artist
-      artistName: `${payload.artist.name} ${payload.artist.surname}`,
-      artistStageName: payload.artist.stageName,
+      artistName: values.artistFullName,
+      artistStageName: values.artistStageName,
 
       // Venue
-      venueName: payload.venue.name,
-      venueCompanyName: payload.venue.company,
-      venueVatNumber: payload.venue.vatCode,
-      venueAddress: payload.venue.address,
+      venueName: values.venueName,
+      venueCompanyName: values.venueCompanyName,
+      venueVatNumber: values.venueVatNumber,
+      venueAddress: values.venueAddress,
 
       // Event
-      eventType: payload.event.eventType,
-      eventDate: format(new Date(payload.availability.startDate), "yyyy-MM-dd"),
+      eventType: values.eventType,
+      eventDate: values.eventDate,
       perfomanceTime: buildPerformanceTime(
-        payload.availability.startDate,
-        payload.availability.endDate
+        values.eventStartTime,
+        values.eventEndTime
       ),
 
       // Financials
-      transfortCost: payload.event.transportCost ?? "",
-      totalCost: payload.event.totalFee ?? "",
-      upfrontPayment: payload.event.depositCost ?? "",
-      paymentDate: payload.event.paymentDate
-        ? format(new Date(payload.event.paymentDate), "yyyy-MM-dd")
-        : "",
+      transportCost: values.transportationsCost ?? 0,
+      totalCost: values.totalCost ?? "",
+      upfrontPayment: values.upfrontPayment ?? "",
 
       // Meta
       contractDate: new Date().toISOString().split("T")[0],
@@ -77,7 +75,6 @@ export default function GenerateButton({ payload }: Props) {
         | "declined"
         | "voided",
     };
-
     startTransition(async () => {
       const response = await editContract(contractPayload);
 

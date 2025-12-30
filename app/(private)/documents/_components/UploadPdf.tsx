@@ -3,40 +3,22 @@
 import React, { useRef, useState } from "react";
 import { Upload, Download, Trash2 } from "lucide-react";
 import { cn, getFileMagicNumber, isValidPdfMagicNumber } from "@/lib/utils";
-import { EventFormSchema } from "@/lib/validation/event-form-schema";
 import { useFormContext } from "react-hook-form";
 import { toast } from "sonner";
 import { ApiResponse } from "@/lib/types";
 import { pdfUploadSchema } from "@/lib/validation/pdf-upload-schema";
 import { deleteContractFile } from "@/lib/server-actions/contracts/delete-contract-file";
+import { EventFormSchema } from "@/lib/validation/event-form-schema";
 
-
-type EventType = {
-  contract?: {
-    id: string;
-  };
-  id: string;
-  fileName: string;
-  fileUrl: string;
-
-};
-
-export default function UplodPdf({ payload }: {payload: EventType}) {
+export default function UploadPdf() {
   const [uploading, setUploading] = useState(false);
-    const { watch, setValue, resetField } = useFormContext<EventFormSchema>();
-  
+  const { watch, setValue, resetField } = useFormContext<EventFormSchema>();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
-  const formPdf = watch("contractDocument");
-
-  const displayPdf =
-  formPdf ??
-  (payload?.fileUrl
-    ? {
-        url: payload?.fileUrl,
-        name: payload?.fileName,
-      }
-    : null);
+  const displayPdf = watch("contractDocument");
+  const contractId = watch("contractId");
+  const contractStatus = watch("contractStatus");
+  const isVoided = contractStatus === "voided";
 
   /* ---------------- UPLOAD ---------------- */
   const onUpload = async (file: File) => {
@@ -49,6 +31,7 @@ export default function UplodPdf({ payload }: {payload: EventType}) {
         type: file.type,
       }),
     });
+
     const response: ApiResponse<{
       signedUrl: string;
       path: string;
@@ -78,10 +61,9 @@ export default function UplodPdf({ payload }: {payload: EventType}) {
     setValue(
       "contractDocument",
       { url, name: fileName },
-      { shouldDirty: true }
+      { shouldDirty: true, shouldTouch: true }
     );
   };
-
 
   /* ---------------- INPUT CHANGE ---------------- */
   const onChangeHandler = async (
@@ -119,46 +101,46 @@ export default function UplodPdf({ payload }: {payload: EventType}) {
     if (!displayPdf?.url) return;
     window.open(displayPdf.url, "_blank", "noopener,noreferrer");
   };
+
   /* ---------------- DELETE ---------------- */
   const onDeleteHandler = async () => {
     const contractId = watch("contractId");
-      if (!contractId) {
-        toast.error("Contract not found.");
-        return;
-      }
-
-      const response = await deleteContractFile({
-        contractId: contractId,
+  
+    if (!contractId) {
+      toast.error("Contract not found.");
+      return;
+    }
+  
+    const response = await deleteContractFile({ contractId });
+  
+    if (response.success) {
+      setValue("contractDocument", undefined, {
+        shouldDirty: true,
+        shouldTouch: true,
       });
   
-      if (response.success) {
-        resetField("contractDocument");
-        setValue("contractDocument", undefined);
-        if (fileInputRef.current) {
-          fileInputRef.current.value = "";
-        }
-        toast.success("File del contratto rimosso.");
-        // router.refresh();
-      } else {
-        toast.error(response.message ?? "Failed to remove contract file.");
-      }
-    };
-
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      } 
+      toast.success("File del contratto rimosso.");
+    } else {
+      toast.error(response.message ?? "Failed to remove contract file.");
+    }
+  };
+  
   return (
     <div className={cn("flex items-center gap-3 w-fit")}>
-      {/* Hidden input */}
       <input
         ref={fileInputRef}
         type="file"
         accept="application/pdf"
         className="hidden"
         onChange={onChangeHandler}
+        disabled={isVoided}
       />
 
-      {/* FILE EXISTS */}
       {displayPdf ? (
         <div className="flex items-center gap-3 w-fit">
-          {/* FILE CHIP */}
           <div className="flex items-center gap-2 bg-white border border-zinc-300 rounded-full px-4 py-1.5 shadow-sm">
             <Upload className="w-4 h-4 text-zinc-500" />
             <span className="text-sm font-medium truncate max-w-[220px]">
@@ -166,7 +148,6 @@ export default function UplodPdf({ payload }: {payload: EventType}) {
             </span>
           </div>
 
-          {/* DOWNLOAD */}
           <button
             type="button"
             onClick={onDownload}
@@ -175,20 +156,21 @@ export default function UplodPdf({ payload }: {payload: EventType}) {
             <Download className="w-4 h-4" />
           </button>
 
-          {/* DELETE */}
-          <button
-            type="button"
-            onClick={onDeleteHandler}
-            className="text-red-500 hover:text-red-700"
-          >
-            <Trash2 className="w-4 h-4" />
-          </button>
+          {!isVoided && (
+            <button
+              type="button"
+              onClick={onDeleteHandler}
+              className="text-red-500 hover:text-red-700"
+            >
+              <Trash2 className="w-4 h-4" />
+            </button>
+          )}
         </div>
       ) : (
         <button
           type="button"
           onClick={() => fileInputRef.current?.click()}
-          disabled={uploading}
+          disabled={uploading || isVoided}
           className="
             flex items-center gap-2
             bg-white

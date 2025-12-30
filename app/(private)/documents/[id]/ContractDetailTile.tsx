@@ -33,35 +33,38 @@ type HistoryItem = {
   type: "archived" | "success";
 };
 
- export default function ContractDetailTile({ payload }: Props) {
+export default function ContractDetailTile({ payload }: Props) {
   const methods = useForm({
     defaultValues: {
       contractId: payload.id,
       contractStatus: payload.status,
 
-          artistFullName: `${payload.artist.name} ${payload.artist.surname}`,
-          artistStageName: payload.artist.stageName,
-      
-          venueName: payload.venue.name,
-          venueCompanyName: payload.venue.company,
-          venueVatNumber: payload.venue.vatCode,
-          venueAddress: payload.venue.address,
-      
-          eventDate: format(payload.availability.startDate, "yyyy-MM-dd"),
-          eventStartTime: format(payload.availability.startDate, "HH:mm"),
-          eventEndTime: format(payload.availability.endDate, "HH:mm"),
-          eventType: payload?.event.eventType,
-      
-          transportationsCost: payload.event.transportCost ?? "",
-          totalCost: payload.event.totalFee ?? "",
-          upfrontPayment: payload.event.depositCost ?? "",
-          tourManager: payload.artist?.tourManagerName
-          ? `${payload.artist.tourManagerName} ${payload.artist.tourManagerSurname ?? ""}`
-          : "",
-          consultantEmail: payload.event?.payrollConsultantEmail ?? "",
-          adminEmail: payload.artist?.tourManagerEmail ?? "",
-      
-         contractDocument: payload?.fileUrl
+      artistFullName: `${payload.artist.name} ${payload.artist.surname}`,
+      artistStageName: payload.artist.stageName,
+
+      venueName: payload.venue.name,
+      venueCompanyName: payload.venue.company,
+      venueVatNumber: payload.venue.vatCode,
+      venueAddress: payload.venue.address,
+
+      eventDate: format(payload.availability.startDate, "yyyy-MM-dd"),
+      eventStartTime: format(payload.availability.startDate, "HH:mm"),
+      eventEndTime: format(payload.availability.endDate, "HH:mm"),
+      eventType: payload?.event.eventType,
+
+      transportationsCost: payload.event.transportCost ?? "",
+      totalCost: payload.event.totalFee ?? "",
+      upfrontPayment: payload.event.depositCost ?? "",
+      tourManager: payload.artist?.tourManagerName
+        ? `${payload.artist.tourManagerName} ${payload.artist.tourManagerSurname ?? ""}`
+        : "",
+      tourManagerEmail: payload.artist?.tourManagerEmail ?? "",
+      tourManagerName: payload.artist?.tourManagerName ?? "",
+
+      consultantEmail: payload.event?.payrollConsultantEmail ?? "",
+      adminEmail: payload.artist?.tourManagerEmail ?? "",
+
+      contractDocument: payload?.fileUrl
         ? {
             url: payload.fileUrl,
             name: payload.fileName,
@@ -120,6 +123,8 @@ type HistoryItem = {
           <BackButton />
 
           <div className="flex items-center gap-2">
+            {contractStatus === "signed" && <ViewContractButton />}
+
             {contractStatus === "declined" && (
               <>
                 <ResendDocuSignButton />
@@ -129,12 +134,14 @@ type HistoryItem = {
 
             {contractStatus === "voided" && <ViewContractButton />}
 
-            {contractStatus !== "declined" && contractStatus !== "voided" && (
-              <>
-                <GenerateButton payload={payload} />
-                <DocuSignButton payload={payload} />
-              </>
-            )}
+            {contractStatus !== "declined" &&
+              contractStatus !== "voided" &&
+              contractStatus !== "signed" && (
+                <>
+                  <GenerateButton payload={payload} />
+                  <DocuSignButton />
+                </>
+              )}
           </div>
         </div>
 
@@ -193,7 +200,7 @@ type HistoryItem = {
                 <div className="text-sm font-semibold text-zinc-800">
                   File del contratto
                 </div>
-                <UplodPdf payload={payload} />
+                <UplodPdf />
               </div>
 
               <Separator />
