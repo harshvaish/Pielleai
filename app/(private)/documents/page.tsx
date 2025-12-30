@@ -171,12 +171,12 @@ const STATUS_STYLES: Record<
   },
   "to-sign": {
     icon: (
-      <div className="w-3 h-3 flex justify-center items-center bg-amber-600 rounded-full">
-        <span className="text-[8px] text-white">?</span>
+      <div className="w-3 h-3 flex justify-center items-center bg-sky-600 rounded-full gap-1">
+        <ChevronRight className="size-2 text-white" />
       </div>
     ),
-    badgeBorder: "border-amber-200",
-    badgeBg: "bg-amber-50 text-amber-700",
+    badgeBorder: "border-sky-200",
+    badgeBg: "bg-sky-50 text-sky-600",
   },
   signed: {
     icon: (
@@ -255,7 +255,7 @@ function mapStatus(
   if (backendStatus === "draft") {
     return hasMissing ? "missing-info" : "to-sign";
   }
-  switch (backendStatus) {
+  switch (backendStatus) {   
     case "signed":
       return "signed";
     case "declined":
@@ -263,8 +263,7 @@ function mapStatus(
     case "voided":
       return "archived";
     case "sent":
-      return "sent";
-
+      return "to-sign";
     default:
       return "all";
   }
