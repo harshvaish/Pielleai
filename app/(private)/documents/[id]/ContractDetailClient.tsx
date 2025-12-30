@@ -40,7 +40,6 @@ export default function ContractDetailClient({ payload }: Props) {
       return val !== undefined && val !== null && val !== "" && val !== false;
     });
   }
-
   return (
     <div>
       <CardContent className="space-y-6">

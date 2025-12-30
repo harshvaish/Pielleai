@@ -65,7 +65,6 @@ export type ContractCard = {
   id: number;
   status: ContractCardStatus;
   backendStatus: BackendContractStatus; // Added this line
-  statusLabel: string;
   venueName: string;
   artistName: string;
   date: string;
@@ -249,10 +248,14 @@ const STATUS_STYLES: Record<
    BACKEND → UI STATUS MAPPER (FIX #1)
 --------------------------------------------------------*/
 
-function mapStatus(status: BackendContractStatus): ContractCardStatus {
-  switch (status) {
-    case "draft":
-      return "to-sign";
+function mapStatus(
+  backendStatus: BackendContractStatus,
+  hasMissing: boolean
+): ContractCardStatus {
+  if (backendStatus === "draft") {
+    return hasMissing ? "missing-info" : "to-sign";
+  }
+  switch (backendStatus) {
     case "signed":
       return "signed";
     case "declined":
@@ -307,8 +310,7 @@ function hasMissingDetails(c: any): boolean {
     c.availability?.startDate &&
     c.availability?.endDate &&
     c.event?.depositCost &&
-    c.event?.totalFee &&
-    c.event?.paymentDate;
+    c.event?.totalFee;
 
   return !(artistOk && venueOk && eventOk);
 }
@@ -318,20 +320,13 @@ function hasMissingDetails(c: any): boolean {
 --------------------------------------------------------*/
 function mapContract(c: any): ContractCard {
   const { date, time } = formatDateAndTime(c.availability);
-  const missing = hasMissingDetails(c);
 
   const backendStatus = c.status as BackendContractStatus;
-
-  const uiStatus: ContractCardStatus = missing
-    ? "missing-info"
-    : mapStatus(backendStatus);
-
   return {
     id: c.id,
 
-    status: uiStatus,
     backendStatus,
-    statusLabel: uiStatus,
+    status: mapStatus(backendStatus, hasMissingDetails(c)),
 
     venueName: c.venue.name,
     artistName: `${c.artist.name} ${c.artist.surname}`,
@@ -451,7 +446,7 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
   ): BackendContractStatus[] {
     switch (uiStatus) {
       case "to-sign":
-        return ["draft"];
+        return ["sent"];
       case "signed":
         return ["signed"];
       case "refused":

@@ -149,7 +149,7 @@ export default function ContractStatusButton({
             "border border-zinc-200 hover:border-zinc-300",
             "bg-white",
             current.text,
-            isPending && "opacity-60 cursor-not-allowed",
+            isPending && "opacity-60",
             className
           )}
         >
