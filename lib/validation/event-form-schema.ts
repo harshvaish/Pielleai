@@ -17,13 +17,13 @@ export const eventFormSchema = z.object({
   availability: z.object(
     {
       id: idValidation.optional(),
-      startDate: dateValidation,
-      endDate: dateValidation,
+      startDate: dateValidation.optional(),
+      endDate: dateValidation.optional(),
     },
     "Seleziona un'opzione valida.",
   ),
 
-  venueId: idValidation,
+  venueId: idValidation.optional(),
 
   /* ================= CONTRACT ================= */
 
@@ -41,7 +41,7 @@ venueCompanyName: z.string().optional(),
 venueVatNumber: z.string().optional(),
 venueAddress: z.string().optional(),
 
-eventType: z.enum(["live", "dj-set", "festival"]).optional(),
+eventType: z.enum(["live", "dj-set", "festival", ""]).optional(),
 eventDate: z.string().optional(),
 eventStartTime: z.string().optional(),
 eventEndTime: z.string().optional(),

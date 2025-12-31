@@ -131,7 +131,7 @@ export default function UpdateEventForm({
       postDateFeedback: event.postDateFeedback ?? false,
       bordereau: event.bordereau ?? false,
       eventId: event.id,
-      eventType: event.eventType,
+      eventType: event.eventType ?? '',
       eventDate: format(event.availability.startDate, 'yyyy-MM-dd'),
       ccEmails: buildDefaultCcBooleans(event.contract?.ccs),
       eventStartTime : format(event.availability.startDate, 'HH:mm', { locale: it }),
@@ -152,6 +152,7 @@ export default function UpdateEventForm({
   });
   const { handleSubmit } = methods;
   const onSubmit = async (data: EventFormSchema) => {
+    console.log("inside submit")
     startTransition(async () => {
       const response = await updateEvent(event.id, data);
 
