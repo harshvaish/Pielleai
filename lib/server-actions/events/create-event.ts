@@ -41,6 +41,14 @@ export const createEvent = async (data: EventFormSchema): Promise<ServerActionRe
 
     const { artistId, artistManagerProfileId, venueId, availability } = validation.data;
 
+    if (!artistId) {
+      throw new AppError('Artista selezionato non valido.');
+    }
+
+    if (!venueId) {
+      throw new AppError('Locale selezionato non valido.');
+    }
+
     let availabilityId = availability.id;
     const { startDate, endDate } = availability;
     const now = new Date();
@@ -73,6 +81,10 @@ export const createEvent = async (data: EventFormSchema): Promise<ServerActionRe
         throw new AppError('Disponibilità selezionata scaduta.');
       }
     } else {
+      if (!startDate || !endDate) {
+        throw new AppError('Seleziona una disponibilità valida.');
+      }
+
       if (isBefore(endDate, startDate)) {
         throw new AppError("L'orario di fine deve essere successivo all'orario di inizio.");
       }
@@ -129,6 +141,10 @@ export const createEvent = async (data: EventFormSchema): Promise<ServerActionRe
             .where(eq(artistAvailabilities.id, availabilityId));
         }
       } else {
+        if (!startDate || !endDate) {
+          throw new AppError('Seleziona una disponibilità valida.');
+        }
+
         const [newAvailability] = await tx
           .insert(artistAvailabilities)
           .values({

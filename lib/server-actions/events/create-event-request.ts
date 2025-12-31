@@ -36,6 +36,14 @@ export const createEventRequest = async (
     const { artistId, venueId, availability } = validation.data;
     const now = new Date();
 
+    if (!artistId) {
+      throw new AppError('Artista selezionato non valido.');
+    }
+
+    if (!venueId) {
+      throw new AppError('Locale selezionato non valido.');
+    }
+
     const [[availabilityCheck], [artistCheck], [venueCheck]] = await Promise.all([
       database
         .select({

@@ -49,6 +49,14 @@ export const updateEvent = async (
     } = validation.data;
     const now = new Date();
 
+    if (!artistId) {
+      throw new AppError('Artista selezionato non valido.');
+    }
+
+    if (!venueId) {
+      throw new AppError('Locale selezionato non valido.');
+    }
+
     // get old event
     const [oldEvent] = await database
       .select({
@@ -81,6 +89,10 @@ export const updateEvent = async (
 
     if (['rejected', 'ended'].includes(oldEvent.status)) {
       throw new AppError('Evento rifiutato o terminato, non puoi modificarlo.');
+    }
+
+    if (!newAvailability.startDate || !newAvailability.endDate) {
+      throw new AppError('Seleziona una disponibilità valida.');
     }
 
     if (isBefore(newAvailability.endDate, newAvailability.startDate)) {
@@ -179,6 +191,10 @@ export const updateEvent = async (
           .set({ status: newStatus === 'confirmed' ? 'booked' : 'available', updatedAt: now })
           .where(eq(artistAvailabilities.id, newAvailability.id));
       } else {
+        if (!newAvailability.startDate || !newAvailability.endDate) {
+          throw new AppError('Seleziona una disponibilità valida.');
+        }
+
         const [newAvail] = await tx
           .insert(artistAvailabilities)
           .values({
