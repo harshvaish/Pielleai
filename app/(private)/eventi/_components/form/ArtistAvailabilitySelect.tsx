@@ -57,7 +57,9 @@ export default function ArtistAvailabilitySelect() {
   };
 
   const label = useMemo(() => {
-    if (!selectedAvailability) return 'Seleziona data';
+    if (!selectedAvailability?.startDate || !selectedAvailability?.endDate) {
+      return 'Seleziona data';
+    }
     try {
       const start = formatInTimeZone(
         selectedAvailability.startDate,
