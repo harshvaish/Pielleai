@@ -142,7 +142,7 @@ export const updateArtistPersonalData = async (
           bio: validation.data.bio || '',
           email:
             validation.data.email?.trim() ||
-            `artist+${Date.now()}-${Math.random().toString(36).slice(2, 8)}@example.invalid`,
+            `artist+${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
           phone: validation.data.phone || '',
           birthDate: validation.data.birthDate || '1970-01-01',
           birthPlace: validation.data.birthPlace || '',

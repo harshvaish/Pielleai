@@ -54,7 +54,7 @@ export const createVenueManager = async (
     const fallbackName = name?.trim() || 'Utente';
     const fallbackEmail =
       signUpEmail?.trim() ||
-      `placeholder+${Date.now()}-${Math.random().toString(36).slice(2, 8)}@example.invalid`;
+      `placeholder+${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
     const fallbackPassword = signUpPassword?.trim() || 'TempPass1234!';
 
     const defaultCountry = await database.select({ id: countries.id }).from(countries).limit(1);
