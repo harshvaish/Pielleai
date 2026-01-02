@@ -53,6 +53,15 @@ export const createArtist = async (data: ArtistFormSchema): Promise<ServerAction
       zones,
       artistManagers,
     } = validation.data;
+    const safeLanguages = languages ?? [];
+    const safeZones = zones ?? [];
+    const safeArtistManagers = artistManagers ?? [];
+    const fallbackEmail = validation.data.email?.trim() || `artist+${Date.now()}@example.invalid`;
+    const fallbackName = validation.data.name?.trim() || 'Artista';
+    const fallbackSurname = validation.data.surname?.trim() || '';
+    const fallbackStageName = validation.data.stageName?.trim() || fallbackName;
+    const fallbackBirthDate = validation.data.birthDate || '1970-01-01';
+    const fallbackGender = validation.data.gender || 'male';
 
     const [
       languagesCheck,
@@ -62,10 +71,12 @@ export const createArtist = async (data: ArtistFormSchema): Promise<ServerAction
       billingSubdivisionCheck,
       zonesCheck,
     ] = await Promise.all([
-      database
-        .select({ id: languagesTable.id })
-        .from(languagesTable)
-        .where(inArray(languagesTable.id, languages)),
+      safeLanguages.length
+        ? database
+            .select({ id: languagesTable.id })
+            .from(languagesTable)
+            .where(inArray(languagesTable.id, safeLanguages))
+        : Promise.resolve([]),
 
       countryId
         ? database.select({ id: countries.id }).from(countries).where(eq(countries.id, countryId))
@@ -92,10 +103,12 @@ export const createArtist = async (data: ArtistFormSchema): Promise<ServerAction
             .where(eq(subdivisions.id, billingSubdivisionId))
         : null,
 
-      database.select({ id: zonesTable.id }).from(zonesTable).where(inArray(zonesTable.id, zones)),
+      safeZones.length
+        ? database.select({ id: zonesTable.id }).from(zonesTable).where(inArray(zonesTable.id, safeZones))
+        : Promise.resolve([]),
     ]);
 
-    if (languagesCheck.length !== languages.length) {
+    if (languagesCheck.length !== safeLanguages.length) {
       throw new AppError('Una o più lingue selezionate non valide.');
     }
 
@@ -127,18 +140,18 @@ export const createArtist = async (data: ArtistFormSchema): Promise<ServerAction
       throw new AppError('La provincia di fatturazione non appartiene alla nazione selezionata.');
     }
 
-    if (zonesCheck.length !== zones.length) {
+    if (zonesCheck.length !== safeZones.length) {
       throw new AppError('Una o più aree di interesse selezionate non valide.');
     }
 
-    if (artistManagers.length > 0) {
+    if (safeArtistManagers.length > 0) {
       const artistManagersCheck = await database
         .select({ id: users.id })
         .from(profiles)
         .innerJoin(users, eq(profiles.userId, users.id))
-        .where(and(eq(users.role, 'artist-manager'), inArray(profiles.id, artistManagers)));
+        .where(and(eq(users.role, 'artist-manager'), inArray(profiles.id, safeArtistManagers)));
 
-      if (artistManagersCheck.length !== artistManagers.length) {
+      if (artistManagersCheck.length !== safeArtistManagers.length) {
         throw new AppError('Una o più manager selezionati non validi.');
       }
 
@@ -153,25 +166,25 @@ export const createArtist = async (data: ArtistFormSchema): Promise<ServerAction
         .values({
           status: 'active',
 
-          avatarUrl: validation.data.avatarUrl,
-          name: validation.data.name,
-          surname: validation.data.surname,
-          stageName: validation.data.stageName,
-          bio: validation.data.bio,
-          email: validation.data.email,
-          phone: validation.data.phone,
-          birthDate: validation.data.birthDate,
-          birthPlace: validation.data.birthPlace,
-          gender: validation.data.gender,
+          avatarUrl: validation.data.avatarUrl || '',
+          name: validation.data.name || fallbackName,
+          surname: validation.data.surname || fallbackSurname,
+          stageName: validation.data.stageName || fallbackStageName,
+          bio: validation.data.bio || '',
+          email: fallbackEmail,
+          phone: validation.data.phone || '',
+          birthDate: fallbackBirthDate,
+          birthPlace: validation.data.birthPlace || '',
+          gender: fallbackGender,
           address: validation.data.address || null,
           countryId: validation.data.countryId || null,
           subdivisionId: validation.data.subdivisionId || null,
           city: validation.data.city || null,
           zipCode: validation.data.zipCode || null,
-          tourManagerName: validation.data.tourManagerName,
-          tourManagerSurname: validation.data.tourManagerSurname,
-          tourManagerEmail: validation.data.tourManagerEmail,
-          tourManagerPhone: validation.data.tourManagerPhone,
+          tourManagerName: validation.data.tourManagerName || '',
+          tourManagerSurname: validation.data.tourManagerSurname || '',
+          tourManagerEmail: validation.data.tourManagerEmail || '',
+          tourManagerPhone: validation.data.tourManagerPhone || '',
 
           company: validation.data.company || null,
           taxCode: validation.data.taxCode || null,
@@ -221,7 +234,7 @@ export const createArtist = async (data: ArtistFormSchema): Promise<ServerAction
       if (slug) revalidateTag(`artist:${slug}`, 'max');
       revalidateTag('artists', 'max');
 
-      const languageInserts = (data.languages || []).map((languageId: number) => ({
+      const languageInserts = safeLanguages.map((languageId: number) => ({
         artistId: newArtistId,
         languageId,
       }));
@@ -230,7 +243,7 @@ export const createArtist = async (data: ArtistFormSchema): Promise<ServerAction
         await tx.insert(artistLanguages).values(languageInserts);
       }
 
-      const managerArtistsInserts = (data.artistManagers || []).map((artistManagerId: number) => ({
+      const managerArtistsInserts = safeArtistManagers.map((artistManagerId: number) => ({
         managerProfileId: artistManagerId,
         artistId: newArtistId,
       }));
@@ -239,7 +252,7 @@ export const createArtist = async (data: ArtistFormSchema): Promise<ServerAction
         await tx.insert(managerArtists).values(managerArtistsInserts);
       }
 
-      const artistZonesInserts = (data.zones || []).map((zoneId: number) => ({
+      const artistZonesInserts = safeZones.map((zoneId: number) => ({
         artistId: newArtistId,
         zoneId: zoneId,
       }));

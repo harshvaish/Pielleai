@@ -50,22 +50,56 @@ export const createVenueManager = async (
 
     const { name, signUpEmail, signUpPassword, languages, countryId, subdivisionId } =
       validation.data;
+    const safeLanguages = languages ?? [];
+    const fallbackName = name?.trim() || 'Utente';
+    const fallbackEmail =
+      signUpEmail?.trim() ||
+      `placeholder+${Date.now()}-${Math.random().toString(36).slice(2, 8)}@example.invalid`;
+    const fallbackPassword = signUpPassword?.trim() || 'TempPass1234!';
+
+    const defaultCountry = await database.select({ id: countries.id }).from(countries).limit(1);
+    const defaultCountryId = defaultCountry[0]?.id;
+    if (!defaultCountryId) {
+      throw new AppError('Nessuna nazione disponibile.');
+    }
+
+    const getDefaultSubdivisionId = async (resolvedCountryId: number) => {
+      const rows = await database
+        .select({ id: subdivisions.id })
+        .from(subdivisions)
+        .where(eq(subdivisions.countryId, resolvedCountryId))
+        .limit(1);
+      const id = rows[0]?.id;
+      if (!id) {
+        throw new AppError('Nessuna provincia disponibile.');
+      }
+      return id;
+    };
+
+    const resolvedCountryId = countryId ?? defaultCountryId;
+    const resolvedSubdivisionId =
+      subdivisionId ?? (await getDefaultSubdivisionId(resolvedCountryId));
 
     const [languagesCheck, countryCheck, subdivisionCheck] = await Promise.all([
-      database
-        .select({ id: languagesTable.id })
-        .from(languagesTable)
-        .where(inArray(languagesTable.id, languages)),
+      safeLanguages.length
+        ? database
+            .select({ id: languagesTable.id })
+            .from(languagesTable)
+            .where(inArray(languagesTable.id, safeLanguages))
+        : Promise.resolve([]),
 
-      database.select({ id: countries.id }).from(countries).where(eq(countries.id, countryId)),
+      database
+        .select({ id: countries.id })
+        .from(countries)
+        .where(eq(countries.id, resolvedCountryId)),
 
       database
         .select({ id: subdivisions.id, countryId: subdivisions.countryId })
         .from(subdivisions)
-        .where(eq(subdivisions.id, subdivisionId)),
+        .where(eq(subdivisions.id, resolvedSubdivisionId)),
     ]);
 
-    if (languagesCheck.length !== languages.length) {
+    if (languagesCheck.length !== safeLanguages.length) {
       throw new AppError('Una o più lingue selezionate non valide.');
     }
 
@@ -77,7 +111,7 @@ export const createVenueManager = async (
       throw new AppError('Provincia selezionata non valida.');
     }
 
-    if (subdivisionCheck[0].countryId != countryId) {
+    if (subdivisionCheck[0].countryId != resolvedCountryId) {
       throw new AppError('La provincia selezionata non appartiene allo stato indicato.');
     }
 
@@ -85,9 +119,9 @@ export const createVenueManager = async (
       const { user } = await auth.api.createUser({
         headers: headersList,
         body: {
-          email: signUpEmail,
-          password: signUpPassword,
-          name,
+          email: fallbackEmail,
+          password: fallbackPassword,
+          name: fallbackName,
           role: 'venue-manager',
           data: {
             emailVerified: true,
@@ -107,17 +141,17 @@ export const createVenueManager = async (
         .values({
           userId: newUserId,
           avatarUrl: data.avatarUrl || null,
-          name: data.name,
-          surname: data.surname,
-          phone: data.phone,
-          birthDate: data.birthDate,
-          birthPlace: data.birthPlace,
-          gender: data.gender,
-          address: data.address,
-          countryId: data.countryId,
-          subdivisionId: data.subdivisionId,
-          city: data.city,
-          zipCode: data.zipCode,
+          name: data.name || fallbackName,
+          surname: data.surname || '',
+          phone: data.phone || '',
+          birthDate: data.birthDate || '1970-01-01',
+          birthPlace: data.birthPlace || '',
+          gender: data.gender || 'male',
+          address: data.address || '',
+          countryId: resolvedCountryId,
+          subdivisionId: resolvedSubdivisionId,
+          city: data.city || '',
+          zipCode: data.zipCode || '',
         })
         .returning({ id: profiles.id, userId: profiles.userId });
 
@@ -133,7 +167,7 @@ export const createVenueManager = async (
       }
       revalidateTag('venue-managers', 'max');
 
-      const languageInserts = (data.languages || []).map((languageId: number) => ({
+      const languageInserts = safeLanguages.map((languageId: number) => ({
         profileId,
         languageId,
       }));

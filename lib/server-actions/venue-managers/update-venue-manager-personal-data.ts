@@ -50,35 +50,49 @@ export const updateVenueManagerPersonalData = async (
     }
 
     const { languages, countryId, subdivisionId } = validation.data;
+    const safeLanguages = languages ?? [];
+    const resolvedCountryId = countryId ?? null;
+    const resolvedSubdivisionId = subdivisionId ?? null;
 
     const [languagesCheck, countryCheck, subdivisionCheck] = await Promise.all([
-      database
-        .select({ id: languagesTable.id })
-        .from(languagesTable)
-        .where(inArray(languagesTable.id, languages)),
+      safeLanguages.length
+        ? database
+            .select({ id: languagesTable.id })
+            .from(languagesTable)
+            .where(inArray(languagesTable.id, safeLanguages))
+        : Promise.resolve([]),
 
-      database.select({ id: countries.id }).from(countries).where(eq(countries.id, countryId)),
+      resolvedCountryId
+        ? database
+            .select({ id: countries.id })
+            .from(countries)
+            .where(eq(countries.id, resolvedCountryId))
+        : Promise.resolve([]),
 
-      database
-        .select({ id: subdivisions.id, countryId: subdivisions.countryId })
-        .from(subdivisions)
-        .where(eq(subdivisions.id, subdivisionId)),
+      resolvedSubdivisionId
+        ? database
+            .select({ id: subdivisions.id, countryId: subdivisions.countryId })
+            .from(subdivisions)
+            .where(eq(subdivisions.id, resolvedSubdivisionId))
+        : Promise.resolve([]),
     ]);
 
-    if (languagesCheck.length !== languages.length) {
+    if (languagesCheck.length !== safeLanguages.length) {
       throw new AppError('Una o più lingue selezionate non valide.');
     }
 
-    if (countryCheck.length !== 1) {
+    if (resolvedCountryId && countryCheck.length !== 1) {
       throw new AppError('Stato selezionato non valido');
     }
 
-    if (subdivisionCheck.length !== 1) {
+    if (resolvedSubdivisionId && subdivisionCheck.length !== 1) {
       throw new AppError('Provincia selezionata non valida.');
     }
 
-    if (subdivisionCheck[0].countryId != countryId) {
+    if (resolvedCountryId && resolvedSubdivisionId) {
+      if (subdivisionCheck[0]?.countryId != resolvedCountryId) {
       throw new AppError('La provincia selezionata non appartiene allo stato indicato.');
+      }
     }
 
     await database.transaction(async (tx) => {
@@ -86,17 +100,17 @@ export const updateVenueManagerPersonalData = async (
         .update(profiles)
         .set({
           avatarUrl: data.avatarUrl || null,
-          name: data.name,
-          surname: data.surname,
-          phone: data.phone,
-          birthDate: data.birthDate,
-          birthPlace: data.birthPlace,
-          gender: data.gender,
-          address: data.address,
-          countryId: data.countryId,
-          subdivisionId: data.subdivisionId,
-          city: data.city,
-          zipCode: data.zipCode,
+          name: data.name || 'Utente',
+          surname: data.surname || '',
+          phone: data.phone || '',
+          birthDate: data.birthDate || '1970-01-01',
+          birthPlace: data.birthPlace || '',
+          gender: data.gender || 'male',
+          address: data.address || '',
+          countryId: resolvedCountryId ?? data.countryId ?? 0,
+          subdivisionId: resolvedSubdivisionId ?? data.subdivisionId ?? 0,
+          city: data.city || '',
+          zipCode: data.zipCode || '',
           updatedAt: new Date(),
         })
         .where(eq(profiles.id, profileId))
@@ -110,7 +124,7 @@ export const updateVenueManagerPersonalData = async (
       await tx.delete(profileLanguages).where(eq(profileLanguages.profileId, profileId));
 
       // Then insert new ones
-      const languageInserts = (data.languages || []).map((languageId: number) => ({
+      const languageInserts = safeLanguages.map((languageId: number) => ({
         profileId,
         languageId,
       }));

@@ -25,34 +25,41 @@ import {
   sdiRecipientCodeValidation,
 } from './_general';
 
+const optionalString = <T extends z.ZodTypeAny>(schema: T) =>
+  z.union([schema, z.literal('')]).optional();
+
+const optionalArray = <T extends z.ZodTypeAny>(schema: T) =>
+  z.preprocess(
+    (val) => (Array.isArray(val) && val.length === 0 ? undefined : val),
+    schema.optional(),
+  );
+
 export const artistS1FormSchema = z.object({
-  avatarUrl: avatarUrlValidation,
+  avatarUrl: optionalString(avatarUrlValidation),
 
-  name: nameValidation,
+  name: optionalString(nameValidation),
 
-  surname: nameValidation,
+  surname: optionalString(nameValidation),
 
-  stageName: z
-    .string('Campo malformato.')
-    .min(2, 'Minimo 2 caratteri.')
-    .max(100, 'Massimo 100 caratteri.')
-    .trim(),
+  stageName: optionalString(
+    z.string('Campo malformato.').min(2, 'Minimo 2 caratteri.').max(100, 'Massimo 100 caratteri.').trim(),
+  ),
 
-  bio: bioValidation,
+  bio: optionalString(bioValidation),
 
-  phone: phoneValidation,
+  phone: optionalString(phoneValidation),
 
-  email: emailValidation,
+  email: optionalString(emailValidation),
 
-  birthDate: birthDateValidation,
+  birthDate: optionalString(birthDateValidation),
 
-  birthPlace: z
-    .string('Campo malformato.')
-    .min(2, 'Minimo 2 caratteri.')
-    .max(100, 'Massimo 100 caratteri.')
-    .trim(),
+  birthPlace: optionalString(
+    z.string('Campo malformato.').min(2, 'Minimo 2 caratteri.').max(100, 'Massimo 100 caratteri.').trim(),
+  ),
 
-  languages: z.array(idValidation, 'Campo malformato').min(1, 'Campo obbligatorio.'),
+  languages: optionalArray(
+    z.array(idValidation, 'Campo malformato').min(1, 'Campo obbligatorio.'),
+  ),
 
   address: z.preprocess(
     (val) => (typeof val === 'string' && val.trim() !== '' ? val : undefined),
@@ -79,19 +86,19 @@ export const artistS1FormSchema = z.object({
     zipCodeValidation.optional(),
   ),
 
-  gender: profileGendersEnumValidation,
+  gender: optionalString(profileGendersEnumValidation),
 
-  zones: z.array(idValidation, 'Campo malformato').min(1, 'Campo obbligatorio.'),
+  zones: optionalArray(z.array(idValidation, 'Campo malformato').min(1, 'Campo obbligatorio.')),
 
-  artistManagers: z.array(idValidation, 'Campo malformato'),
+  artistManagers: optionalArray(z.array(idValidation, 'Campo malformato')),
 
-  tourManagerName: nameValidation,
+  tourManagerName: optionalString(nameValidation),
 
-  tourManagerSurname: nameValidation,
+  tourManagerSurname: optionalString(nameValidation),
 
-  tourManagerPhone: phoneValidation,
+  tourManagerPhone: optionalString(phoneValidation),
 
-  tourManagerEmail: emailValidation,
+  tourManagerEmail: optionalString(emailValidation),
 });
 
 export type ArtistS1FormSchema = z.infer<typeof artistS1FormSchema>;
@@ -177,7 +184,9 @@ export const artistS2FormSchema = z
       .string('Campo malformato.')
       .refine((val) => val === 'true' || val === 'false', {
         message: "Seleziona un'opzione valida",
-      }),
+      })
+      .optional()
+      .or(z.literal('')),
   })
   .check((ctx) => {
     const { billingCountry, bicCode, abaRoutingNumber, sdiRecipientCode } = ctx.value;

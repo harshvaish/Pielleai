@@ -20,87 +20,109 @@ import {
   sdiRecipientCodeValidation,
 } from './_general';
 
+const optionalString = <T extends z.ZodTypeAny>(schema: T) =>
+  z.union([schema, z.literal('')]).optional();
+
+const optionalArray = <T extends z.ZodTypeAny>(schema: T) =>
+  z.preprocess(
+    (val) => (Array.isArray(val) && val.length === 0 ? undefined : val),
+    schema.optional(),
+  );
+
+const optionalId = z.preprocess((val) => {
+  if (typeof val === 'number' && Number.isFinite(val) && val > 0) return val;
+  if (typeof val === 'string' && val.trim() !== '' && Number.isFinite(Number(val))) {
+    const parsed = Number(val);
+    return parsed > 0 ? parsed : undefined;
+  }
+  return undefined;
+}, idValidation.optional());
+
 export const artistManagerS1FormSchema = z.object({
-  avatarUrl: avatarUrlValidation.optional(),
+  avatarUrl: optionalString(avatarUrlValidation),
 
-  name: nameValidation,
+  name: optionalString(nameValidation),
 
-  surname: nameValidation,
+  surname: optionalString(nameValidation),
 
-  phone: phoneValidation,
+  phone: optionalString(phoneValidation),
 
-  birthDate: birthDateValidation,
+  birthDate: optionalString(birthDateValidation),
 
-  birthPlace: z
-    .string('Campo malformato.')
-    .min(2, 'Minimo 2 caratteri.')
-    .max(100, 'Massimo 100 caratteri.')
-    .trim(),
+  birthPlace: optionalString(
+    z.string('Campo malformato.').min(2, 'Minimo 2 caratteri.').max(100, 'Massimo 100 caratteri.').trim(),
+  ),
 
-  languages: z.array(idValidation, 'Campo malformato').min(1, 'Campo obbligatorio.'),
+  languages: optionalArray(
+    z.array(idValidation, 'Campo malformato').min(1, 'Campo obbligatorio.'),
+  ),
 
-  address: addressValidation,
+  address: optionalString(addressValidation),
 
-  countryId: idValidation,
+  countryId: optionalId,
 
-  subdivisionId: idValidation,
+  subdivisionId: optionalId,
 
-  city: cityValidation,
+  city: optionalString(cityValidation),
 
-  zipCode: zipCodeValidation,
+  zipCode: optionalString(zipCodeValidation),
 
-  gender: profileGendersEnumValidation,
+  gender: optionalString(profileGendersEnumValidation),
 });
 
 export type ArtistManagerS1FormSchema = z.infer<typeof artistManagerS1FormSchema>;
 
 export const artistManagerS2FormSchema = z
   .object({
-    company: companyValidation,
+    company: optionalString(companyValidation),
 
-    taxCode: taxCodeValidation,
+    taxCode: optionalString(taxCodeValidation),
 
-    ipiCode: ipiCodeValidation,
+    ipiCode: optionalString(ipiCodeValidation),
 
-    bicCode: bicCodeValidation.optional(),
+    bicCode: optionalString(bicCodeValidation),
 
-    abaRoutingNumber: abaRoutingNumberValidation.optional(),
+    abaRoutingNumber: optionalString(abaRoutingNumberValidation),
 
-    iban: ibanValidation,
+    iban: optionalString(ibanValidation),
 
-    sdiRecipientCode: sdiRecipientCodeValidation.optional(),
+    sdiRecipientCode: optionalString(sdiRecipientCodeValidation),
 
-    billingAddress: addressValidation,
+    billingAddress: optionalString(addressValidation),
 
-    billingCountry: countryValidation,
+    billingCountry: countryValidation.optional(),
 
-    billingSubdivisionId: idValidation,
+    billingSubdivisionId: optionalId,
 
-    billingCity: z
-      .string('Campo malformato.')
-      .min(2, 'Minimo 2 caratteri.')
-      .max(100, 'Massimo 100 caratteri.')
-      .regex(/^[\p{L}\s'-]+$/u, 'Può contenere solo lettere, spazi, trattini o apostrofi.')
-      .trim(),
+    billingCity: optionalString(
+      z
+        .string('Campo malformato.')
+        .min(2, 'Minimo 2 caratteri.')
+        .max(100, 'Massimo 100 caratteri.')
+        .regex(/^[\p{L}\s'-]+$/u, 'Può contenere solo lettere, spazi, trattini o apostrofi.')
+        .trim(),
+    ),
 
-    billingZipCode: z
-      .string('Campo malformato.')
-      .min(3, 'Minimo 3 caratteri.')
-      .max(20, 'Massimo 20 caratteri.')
-      .regex(/^[A-Z0-9\- ]+$/, 'Può contenere solo lettere maiuscole, numeri, trattini o spazi.')
-      .trim(),
+    billingZipCode: optionalString(
+      z
+        .string('Campo malformato.')
+        .min(3, 'Minimo 3 caratteri.')
+        .max(20, 'Massimo 20 caratteri.')
+        .regex(/^[A-Z0-9\- ]+$/, 'Può contenere solo lettere maiuscole, numeri, trattini o spazi.')
+        .trim(),
+    ),
 
-    billingEmail: emailValidation,
+    billingEmail: optionalString(emailValidation),
 
-    billingPhone: phoneValidation,
+    billingPhone: optionalString(phoneValidation),
 
-    billingPec: emailValidation,
+    billingPec: optionalString(emailValidation),
 
-    taxableInvoice: z
-      .string('Campo malformato.')
-      .refine((val) => val === 'true' || val === 'false', {
+    taxableInvoice: optionalString(
+      z.string('Campo malformato.').refine((val) => val === 'true' || val === 'false', {
         message: "Seleziona un'opzione valida",
       }),
+    ),
   })
   .check((ctx) => {
     const { billingCountry, bicCode, abaRoutingNumber, sdiRecipientCode } = ctx.value;
@@ -145,12 +167,14 @@ export const artistManagerProfileFormSchema = z.object({
 export type ArtistManagerProfileFormSchema = z.infer<typeof artistManagerProfileFormSchema>;
 
 export const artistManagerS3FormSchema = z.object({
-  signUpEmail: emailValidation,
-  signUpPassword: z
-    .string('Campo malformato.')
-    .min(1, 'Campo obbligatorio.')
-    .min(8, 'Almeno 8 caratteri.')
-    .max(16, 'Massimo 16 caratteri.'),
+  signUpEmail: optionalString(emailValidation),
+  signUpPassword: optionalString(
+    z
+      .string('Campo malformato.')
+      .min(1, 'Campo obbligatorio.')
+      .min(8, 'Almeno 8 caratteri.')
+      .max(16, 'Massimo 16 caratteri.'),
+  ),
 });
 
 export type ArtistManagerS3FormSchema = z.infer<typeof artistManagerS3FormSchema>;

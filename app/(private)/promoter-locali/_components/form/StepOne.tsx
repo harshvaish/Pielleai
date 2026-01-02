@@ -206,7 +206,7 @@ export default function StepOne({ languages, countries }: StepOneProps) {
           render={({ field }) => (
             <LanguagesSelect
               languages={languages}
-              value={field.value}
+              value={field.value ?? []}
               onChange={field.onChange}
               hasError={!!errors.languages}
             />

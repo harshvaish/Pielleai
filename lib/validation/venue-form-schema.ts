@@ -21,36 +21,57 @@ import {
   sdiRecipientCodeValidation,
 } from './_general';
 
-export const venueS1FormSchema = z.object({
-  avatarUrl: avatarUrlValidation.optional(),
+const optionalString = <T extends z.ZodTypeAny>(schema: T) =>
+  z.union([schema, z.literal('')]).optional();
 
-  name: z
-    .string('Campo malformato.')
-    .min(2, 'Minimo 2 caratteri.')
-    .max(100, 'Massimo 100 caratteri.')
-    .trim(),
+const optionalNumber = <T extends z.ZodTypeAny>(schema: T) =>
+  z.preprocess((val) => {
+    if (typeof val === 'number' && Number.isFinite(val)) return val;
+    if (typeof val === 'string' && val.trim() !== '' && Number.isFinite(Number(val))) {
+      return Number(val);
+    }
+    return undefined;
+  }, schema.optional());
+
+const optionalId = z.preprocess((val) => {
+  if (typeof val === 'number' && Number.isFinite(val) && val > 0) return val;
+  if (typeof val === 'string' && val.trim() !== '' && Number.isFinite(Number(val))) {
+    const parsed = Number(val);
+    return parsed > 0 ? parsed : undefined;
+  }
+  return undefined;
+}, idValidation.optional());
+
+export const venueS1FormSchema = z.object({
+  avatarUrl: optionalString(avatarUrlValidation),
+
+  name: optionalString(
+    z.string('Campo malformato.').min(2, 'Minimo 2 caratteri.').max(100, 'Massimo 100 caratteri.').trim(),
+  ),
 
   bio: z.preprocess(
     (val) => (typeof val === 'string' && val.trim() !== '' ? val : undefined),
     bioValidation.optional(),
   ),
 
-  type: venueTypesEnumValidation,
+  type: optionalString(venueTypesEnumValidation),
 
-  capacity: z
-    .number('Campo malformato.')
-    .min(1, 'Campo obbligatorio.')
-    .positive('Può contenere solo numeri positivi.'),
+  capacity: optionalNumber(
+    z
+      .number('Campo malformato.')
+      .min(1, 'Campo obbligatorio.')
+      .positive('Può contenere solo numeri positivi.'),
+  ),
 
-  address: addressValidation,
+  address: optionalString(addressValidation),
 
-  countryId: idValidation,
+  countryId: optionalId,
 
-  subdivisionId: idValidation,
+  subdivisionId: optionalId,
 
-  city: cityValidation,
+  city: optionalString(cityValidation),
 
-  zipCode: zipCodeValidation,
+  zipCode: optionalString(zipCodeValidation),
 
   venueManagerId: z.preprocess(
     (val) => (typeof val === 'number' && !isNaN(val) ? val : undefined),
@@ -62,45 +83,51 @@ export type VenueS1FormSchema = z.infer<typeof venueS1FormSchema>;
 
 export const venueS2FormSchema = z
   .object({
-    company: companyValidation,
+    company: optionalString(companyValidation),
 
-    taxCode: taxCodeValidation,
+    taxCode: optionalString(taxCodeValidation),
 
-    vatCode: vatCodeValidation,
+    vatCode: optionalString(vatCodeValidation),
 
-    bicCode: bicCodeValidation.optional(),
+    bicCode: optionalString(bicCodeValidation),
 
-    abaRoutingNumber: abaRoutingNumberValidation.optional(),
+    abaRoutingNumber: optionalString(abaRoutingNumberValidation),
 
-    sdiRecipientCode: sdiRecipientCodeValidation.optional(),
+    sdiRecipientCode: optionalString(sdiRecipientCodeValidation),
 
-    billingAddress: addressValidation,
+    billingAddress: optionalString(addressValidation),
 
-    billingCountry: z.object(
-      {
-        id: idValidation,
-        name: z.string("Seleziona un'opzione valida."),
-        code: z.string().length(2, "Seleziona un'opzione valida."),
-        isEu: z.boolean("Seleziona un'opzione valida."),
-      },
-      "Seleziona un'opzione valida.",
+    billingCountry: z
+      .object(
+        {
+          id: idValidation,
+          name: z.string("Seleziona un'opzione valida."),
+          code: z.string().length(2, "Seleziona un'opzione valida."),
+          isEu: z.boolean("Seleziona un'opzione valida."),
+        },
+        "Seleziona un'opzione valida.",
+      )
+      .optional(),
+
+    billingSubdivisionId: optionalId,
+
+    billingCity: optionalString(
+      z
+        .string('Campo malformato.')
+        .min(2, 'Minimo 2 caratteri.')
+        .max(100, 'Massimo 100 caratteri.')
+        .regex(/^[\p{L}\s'-]+$/u, 'Può contenere solo lettere, spazi, trattini o apostrofi.')
+        .trim(),
     ),
 
-    billingSubdivisionId: idValidation,
-
-    billingCity: z
-      .string('Campo malformato.')
-      .min(2, 'Minimo 2 caratteri.')
-      .max(100, 'Massimo 100 caratteri.')
-      .regex(/^[\p{L}\s'-]+$/u, 'Può contenere solo lettere, spazi, trattini o apostrofi.')
-      .trim(),
-
-    billingZipCode: z
-      .string('Campo malformato.')
-      .min(3, 'Minimo 3 caratteri.')
-      .max(20, 'Massimo 20 caratteri.')
-      .regex(/^[A-Z0-9\- ]+$/, 'Può contenere solo lettere maiuscole, numeri, trattini o spazi.')
-      .trim(),
+    billingZipCode: optionalString(
+      z
+        .string('Campo malformato.')
+        .min(3, 'Minimo 3 caratteri.')
+        .max(20, 'Massimo 20 caratteri.')
+        .regex(/^[A-Z0-9\- ]+$/, 'Può contenere solo lettere maiuscole, numeri, trattini o spazi.')
+        .trim(),
+    ),
 
     billingEmail: z.preprocess(
       (val) => (typeof val === 'string' && val.trim() !== '' ? val : undefined),
@@ -112,7 +139,7 @@ export const venueS2FormSchema = z
       phoneValidation.optional(),
     ),
 
-    billingPec: emailValidation,
+    billingPec: optionalString(emailValidation),
   })
   .check((ctx) => {
     const { billingCountry, bicCode, abaRoutingNumber, sdiRecipientCode } = ctx.value;

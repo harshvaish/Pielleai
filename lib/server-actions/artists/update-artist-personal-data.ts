@@ -49,12 +49,17 @@ export const updateArtistPersonalData = async (
     }
 
     const { languages, countryId, subdivisionId, zones, artistManagers } = validation.data;
+    const safeLanguages = languages ?? [];
+    const safeZones = zones ?? [];
+    const safeArtistManagers = artistManagers ?? [];
 
     const [languagesCheck, countryCheck, subdivisionCheck, zonesCheck] = await Promise.all([
-      database
-        .select({ id: languagesTable.id })
-        .from(languagesTable)
-        .where(inArray(languagesTable.id, languages)),
+      safeLanguages.length
+        ? database
+            .select({ id: languagesTable.id })
+            .from(languagesTable)
+            .where(inArray(languagesTable.id, safeLanguages))
+        : Promise.resolve([]),
 
       countryId
         ? database.select({ id: countries.id }).from(countries).where(eq(countries.id, countryId))
@@ -67,10 +72,15 @@ export const updateArtistPersonalData = async (
             .where(eq(subdivisions.id, subdivisionId))
         : null,
 
-      database.select({ id: zonesTable.id }).from(zonesTable).where(inArray(zonesTable.id, zones)),
+      safeZones.length
+        ? database
+            .select({ id: zonesTable.id })
+            .from(zonesTable)
+            .where(inArray(zonesTable.id, safeZones))
+        : Promise.resolve([]),
     ]);
 
-    if (languagesCheck.length !== languages.length) {
+    if (languagesCheck.length !== safeLanguages.length) {
       throw new AppError('Una o più lingue selezionate non valide.');
     }
 
@@ -86,18 +96,18 @@ export const updateArtistPersonalData = async (
       throw new AppError('La provincia selezionata non appartiene allo stato indicato.');
     }
 
-    if (zonesCheck.length !== zones.length) {
+    if (zonesCheck.length !== safeZones.length) {
       throw new AppError('Una o più aree di interesse selezionate non valide.');
     }
 
-    if (artistManagers.length > 0) {
+    if (safeArtistManagers.length > 0) {
       const artistManagersCheck = await database
         .select({ id: profiles.id })
         .from(profiles)
         .innerJoin(users, eq(profiles.userId, users.id))
-        .where(and(eq(users.role, 'artist-manager'), inArray(profiles.id, artistManagers)));
+        .where(and(eq(users.role, 'artist-manager'), inArray(profiles.id, safeArtistManagers)));
 
-      if (artistManagersCheck.length !== artistManagers.length) {
+      if (artistManagersCheck.length !== safeArtistManagers.length) {
         throw new AppError('Una o più manager selezionati non validi.');
       }
     }
@@ -125,25 +135,27 @@ export const updateArtistPersonalData = async (
       const updateResult = await tx
         .update(artists)
         .set({
-          avatarUrl: validation.data.avatarUrl,
-          name: validation.data.name,
-          surname: validation.data.surname,
-          stageName: validation.data.stageName,
-          bio: validation.data.bio,
-          email: validation.data.email,
-          phone: validation.data.phone,
-          birthDate: validation.data.birthDate,
-          birthPlace: validation.data.birthPlace,
-          gender: validation.data.gender,
-          address: validation.data.address,
-          countryId: validation.data.countryId,
-          subdivisionId: validation.data.subdivisionId,
-          city: validation.data.city,
-          zipCode: validation.data.zipCode,
-          tourManagerName: validation.data.tourManagerName,
-          tourManagerSurname: validation.data.tourManagerSurname,
-          tourManagerEmail: validation.data.tourManagerEmail,
-          tourManagerPhone: validation.data.tourManagerPhone,
+          avatarUrl: validation.data.avatarUrl || '',
+          name: validation.data.name || 'Artista',
+          surname: validation.data.surname || '',
+          stageName: validation.data.stageName || validation.data.name || 'Artista',
+          bio: validation.data.bio || '',
+          email:
+            validation.data.email?.trim() ||
+            `artist+${Date.now()}-${Math.random().toString(36).slice(2, 8)}@example.invalid`,
+          phone: validation.data.phone || '',
+          birthDate: validation.data.birthDate || '1970-01-01',
+          birthPlace: validation.data.birthPlace || '',
+          gender: validation.data.gender || 'male',
+          address: validation.data.address || null,
+          countryId: validation.data.countryId || null,
+          subdivisionId: validation.data.subdivisionId || null,
+          city: validation.data.city || null,
+          zipCode: validation.data.zipCode || null,
+          tourManagerName: validation.data.tourManagerName || '',
+          tourManagerSurname: validation.data.tourManagerSurname || '',
+          tourManagerEmail: validation.data.tourManagerEmail || '',
+          tourManagerPhone: validation.data.tourManagerPhone || '',
           updatedAt: new Date(),
         })
         .where(eq(artists.id, artistId))
@@ -153,11 +165,11 @@ export const updateArtistPersonalData = async (
       if (slug) revalidateTag(`artist:${slug}`, 'max');
       revalidateTag('artists', 'max');
 
-      if (!areSame(existingLanguageIds, validation.data.languages)) {
+      if (!areSame(existingLanguageIds, safeLanguages)) {
         await tx.delete(artistLanguages).where(eq(artistLanguages.artistId, artistId));
-        if (validation.data.languages.length > 0) {
+        if (safeLanguages.length > 0) {
           await tx.insert(artistLanguages).values(
-            validation.data.languages.map((languageId) => ({
+            safeLanguages.map((languageId) => ({
               artistId,
               languageId,
             })),
@@ -165,20 +177,20 @@ export const updateArtistPersonalData = async (
         }
       }
 
-      if (!areSame(existingZoneIds, validation.data.zones)) {
+      if (!areSame(existingZoneIds, safeZones)) {
         await tx.delete(artistZones).where(eq(artistZones.artistId, artistId));
-        if (validation.data.zones.length > 0) {
+        if (safeZones.length > 0) {
           await tx
             .insert(artistZones)
-            .values(validation.data.zones.map((zoneId) => ({ artistId, zoneId })));
+            .values(safeZones.map((zoneId) => ({ artistId, zoneId })));
         }
       }
 
-      if (!areSame(existingManagerIds, artistManagers)) {
+      if (!areSame(existingManagerIds, safeArtistManagers)) {
         await tx.delete(managerArtists).where(eq(managerArtists.artistId, artistId));
-        if (artistManagers.length > 0) {
+        if (safeArtistManagers.length > 0) {
           await tx.insert(managerArtists).values(
-            artistManagers.map((managerProfileId) => ({
+            safeArtistManagers.map((managerProfileId) => ({
               artistId,
               managerProfileId,
             })),

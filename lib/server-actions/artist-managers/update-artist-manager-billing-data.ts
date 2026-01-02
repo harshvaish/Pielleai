@@ -44,29 +44,38 @@ export const updateArtistManagerBillingData = async (
     }
 
     const { billingCountry, billingSubdivisionId } = validation.data;
+    const billingCountryId = billingCountry?.id ?? null;
 
     const [billingCountryCheck, billingSubdivisionCheck] = await Promise.all([
-      database
-        .select({ id: countries.id })
-        .from(countries)
-        .where(eq(countries.id, billingCountry.id)),
+      billingCountryId
+        ? database
+            .select({ id: countries.id })
+            .from(countries)
+            .where(eq(countries.id, billingCountryId))
+        : Promise.resolve([]),
 
-      database
-        .select({ id: subdivisions.id, countryId: subdivisions.countryId })
-        .from(subdivisions)
-        .where(eq(subdivisions.id, billingSubdivisionId)),
+      billingSubdivisionId
+        ? database
+            .select({ id: subdivisions.id, countryId: subdivisions.countryId })
+            .from(subdivisions)
+            .where(eq(subdivisions.id, billingSubdivisionId))
+        : Promise.resolve([]),
     ]);
 
-    if (billingCountryCheck.length !== 1) {
+    if (billingCountryId && billingCountryCheck.length !== 1) {
       throw new AppError('Nazione selezionata non valida.');
     }
 
-    if (billingSubdivisionCheck.length !== 1) {
+    if (billingSubdivisionId && billingSubdivisionCheck.length !== 1) {
       throw new AppError('Provincia di fatturazione selezionata non valida.');
     }
 
-    if (billingSubdivisionCheck[0].countryId != billingCountry.id) {
-      throw new AppError('La provincia di fatturazione non appartiene alla nazione selezionata.');
+    if (billingCountryId && billingSubdivisionId) {
+      if (billingSubdivisionCheck[0]?.countryId != billingCountryId) {
+        throw new AppError(
+          'La provincia di fatturazione non appartiene alla nazione selezionata.',
+        );
+      }
     }
 
     const updateResult = await database
@@ -80,8 +89,8 @@ export const updateArtistManagerBillingData = async (
         iban: data.iban,
         sdiRecipientCode: data.sdiRecipientCode || null,
         billingAddress: data.billingAddress,
-        billingCountryId: data.billingCountry.id,
-        billingSubdivisionId: data.billingSubdivisionId,
+        billingCountryId: billingCountryId,
+        billingSubdivisionId: data.billingSubdivisionId || null,
         billingCity: data.billingCity,
         billingZipCode: data.billingZipCode,
         billingEmail: data.billingEmail,

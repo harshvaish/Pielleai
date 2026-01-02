@@ -17,13 +17,13 @@ export const eventFormSchema = z.object({
   availability: z.object(
     {
       id: idValidation.optional(),
-      startDate: dateValidation.optional(),
-      endDate: dateValidation.optional(),
+      startDate: dateValidation,
+      endDate: dateValidation,
     },
     "Seleziona un'opzione valida.",
   ),
 
-  venueId: idValidation.optional(),
+  venueId: idValidation,
 
   /* ================= CONTRACT ================= */
 
@@ -213,16 +213,16 @@ tourManagerName: z.string().optional(),
     .positive('Deve essere un valore positivo.')
     .optional(),
     
-  contractSigning: z.boolean("Seleziona un'opzione valida."),
-  depositInvoiceIssuing: z.boolean("Seleziona un'opzione valida."),
-  depositReceiptVerification: z.boolean("Seleziona un'opzione valida."),
-  techSheetSubmission: z.boolean("Seleziona un'opzione valida."),
-  artistEngagement: z.boolean("Seleziona un'opzione valida."),
-  professionalsEngagement: z.boolean("Seleziona un'opzione valida."),
-  accompanyingPersonsEngagement: z.boolean("Seleziona un'opzione valida."),
-  performance: z.boolean("Seleziona un'opzione valida."),
-  postDateFeedback: z.boolean("Seleziona un'opzione valida."),
-  bordereau: z.boolean("Seleziona un'opzione valida."),
+  contractSigning: z.boolean("Seleziona un'opzione valida.").optional(),
+  depositInvoiceIssuing: z.boolean("Seleziona un'opzione valida.").optional(),
+  depositReceiptVerification: z.boolean("Seleziona un'opzione valida.").optional(),
+  techSheetSubmission: z.boolean("Seleziona un'opzione valida.").optional(),
+  artistEngagement: z.boolean("Seleziona un'opzione valida.").optional(),
+  professionalsEngagement: z.boolean("Seleziona un'opzione valida.").optional(),
+  accompanyingPersonsEngagement: z.boolean("Seleziona un'opzione valida.").optional(),
+  performance: z.boolean("Seleziona un'opzione valida.").optional(),
+  postDateFeedback: z.boolean("Seleziona un'opzione valida.").optional(),
+  bordereau: z.boolean("Seleziona un'opzione valida.").optional(),
   contractDocument: z
     .object(
       {

@@ -61,28 +61,58 @@ export const createVenueManagerProfile = async (
     }
 
     const { name, languages, countryId, subdivisionId } = dataValidation.data;
+    const safeLanguages = languages ?? [];
+    const fallbackName = name?.trim() || 'Utente';
+
+    const defaultCountry = await database.select({ id: countries.id }).from(countries).limit(1);
+    const defaultCountryId = defaultCountry[0]?.id;
+    if (!defaultCountryId) {
+      throw new AppError('Nessuna nazione disponibile.');
+    }
+
+    const getDefaultSubdivisionId = async (resolvedCountryId: number) => {
+      const rows = await database
+        .select({ id: subdivisions.id })
+        .from(subdivisions)
+        .where(eq(subdivisions.countryId, resolvedCountryId))
+        .limit(1);
+      const id = rows[0]?.id;
+      if (!id) {
+        throw new AppError('Nessuna provincia disponibile.');
+      }
+      return id;
+    };
+
+    const resolvedCountryId = countryId ?? defaultCountryId;
+    const resolvedSubdivisionId =
+      subdivisionId ?? (await getDefaultSubdivisionId(resolvedCountryId));
 
     const [userCheck, languagesCheck, countryCheck, subdivisionCheck] = await Promise.all([
       database.select({ id: users.id }).from(users).where(eq(users.id, uid)).limit(1),
 
-      database
-        .select({ id: languagesTable.id })
-        .from(languagesTable)
-        .where(inArray(languagesTable.id, languages)),
+      safeLanguages.length
+        ? database
+            .select({ id: languagesTable.id })
+            .from(languagesTable)
+            .where(inArray(languagesTable.id, safeLanguages))
+        : Promise.resolve([]),
 
-      database.select({ id: countries.id }).from(countries).where(eq(countries.id, countryId)),
+      database
+        .select({ id: countries.id })
+        .from(countries)
+        .where(eq(countries.id, resolvedCountryId)),
 
       database
         .select({ id: subdivisions.id, countryId: subdivisions.countryId })
         .from(subdivisions)
-        .where(eq(subdivisions.id, subdivisionId)),
+        .where(eq(subdivisions.id, resolvedSubdivisionId)),
     ]);
 
     if (userCheck.length !== 1) {
       throw new AppError('Utenza non trovata.');
     }
 
-    if (languagesCheck.length !== languages.length) {
+    if (languagesCheck.length !== safeLanguages.length) {
       throw new AppError('Una o più lingue selezionate non valide.');
     }
 
@@ -94,29 +124,32 @@ export const createVenueManagerProfile = async (
       throw new AppError('Provincia selezionata non valida.');
     }
 
-    if (subdivisionCheck[0].countryId != countryId) {
+    if (subdivisionCheck[0].countryId != resolvedCountryId) {
       throw new AppError('La provincia selezionata non appartiene allo stato indicato.');
     }
 
     await database.transaction(async (tx) => {
-      await tx.update(users).set({ name: name, role: 'venue-manager' }).where(eq(users.id, uid));
+      await tx
+        .update(users)
+        .set({ name: fallbackName, role: 'venue-manager' })
+        .where(eq(users.id, uid));
 
       const profileResult = await tx
         .insert(profiles)
         .values({
           userId: uid,
           avatarUrl: data.avatarUrl || null,
-          name: data.name,
-          surname: data.surname,
-          phone: data.phone,
-          birthDate: data.birthDate,
-          birthPlace: data.birthPlace,
-          gender: data.gender,
-          address: data.address,
-          countryId: data.countryId,
-          subdivisionId: data.subdivisionId,
-          city: data.city,
-          zipCode: data.zipCode,
+          name: data.name || fallbackName,
+          surname: data.surname || '',
+          phone: data.phone || '',
+          birthDate: data.birthDate || '1970-01-01',
+          birthPlace: data.birthPlace || '',
+          gender: data.gender || 'male',
+          address: data.address || '',
+          countryId: resolvedCountryId,
+          subdivisionId: resolvedSubdivisionId,
+          city: data.city || '',
+          zipCode: data.zipCode || '',
         })
         .returning({ id: profiles.id, userId: profiles.userId });
 
@@ -132,7 +165,7 @@ export const createVenueManagerProfile = async (
       }
       revalidateTag('venue-managers', 'max');
 
-      const languageInserts = (data.languages || []).map((languageId: number) => ({
+      const languageInserts = safeLanguages.map((languageId: number) => ({
         profileId,
         languageId,
       }));

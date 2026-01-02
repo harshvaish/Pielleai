@@ -34,25 +34,57 @@ export const createVenue = async (data: VenueFormSchema): Promise<ServerActionRe
 
     const { countryId, subdivisionId, venueManagerId, billingCountry, billingSubdivisionId } =
       validation.data;
+    const fallbackName = validation.data.name?.trim() || 'Locale';
+    const fallbackType = validation.data.type || 'small';
+    const fallbackCapacity = validation.data.capacity ?? 0;
+
+    const defaultCountry = await database.select({ id: countries.id }).from(countries).limit(1);
+    const defaultCountryId = defaultCountry[0]?.id;
+    if (!defaultCountryId) {
+      throw new AppError('Nessuna nazione disponibile.');
+    }
+
+    const getDefaultSubdivisionId = async (resolvedCountryId: number) => {
+      const rows = await database
+        .select({ id: subdivisions.id })
+        .from(subdivisions)
+        .where(eq(subdivisions.countryId, resolvedCountryId))
+        .limit(1);
+      const id = rows[0]?.id;
+      if (!id) {
+        throw new AppError('Nessuna provincia disponibile.');
+      }
+      return id;
+    };
+
+    const resolvedCountryId = countryId ?? defaultCountryId;
+    const resolvedSubdivisionId =
+      subdivisionId ?? (await getDefaultSubdivisionId(resolvedCountryId));
+    const billingCountryId = billingCountry?.id ?? resolvedCountryId;
+    const resolvedBillingSubdivisionId =
+      billingSubdivisionId ?? (await getDefaultSubdivisionId(billingCountryId));
 
     const [countryCheck, subdivisionCheck, billingCountryCheck, billingSubdivisionCheck] =
       await Promise.all([
-        database.select({ id: countries.id }).from(countries).where(eq(countries.id, countryId)),
+        database
+          .select({ id: countries.id })
+          .from(countries)
+          .where(eq(countries.id, resolvedCountryId)),
 
         database
           .select({ id: subdivisions.id, countryId: subdivisions.countryId })
           .from(subdivisions)
-          .where(eq(subdivisions.id, subdivisionId)),
+          .where(eq(subdivisions.id, resolvedSubdivisionId)),
 
         database
           .select({ id: countries.id })
           .from(countries)
-          .where(eq(countries.id, billingCountry.id)),
+          .where(eq(countries.id, billingCountryId)),
 
         database
           .select({ id: subdivisions.id, countryId: subdivisions.countryId })
           .from(subdivisions)
-          .where(eq(subdivisions.id, billingSubdivisionId)),
+          .where(eq(subdivisions.id, resolvedBillingSubdivisionId)),
       ]);
 
     if (countryCheck.length !== 1) {
@@ -71,11 +103,11 @@ export const createVenue = async (data: VenueFormSchema): Promise<ServerActionRe
       throw new AppError('Provincia di fatturazione selezionata non valida.');
     }
 
-    if (subdivisionCheck[0].countryId != countryId) {
+    if (subdivisionCheck[0].countryId != resolvedCountryId) {
       throw new AppError('La provincia selezionata non appartiene allo stato indicato.');
     }
 
-    if (billingSubdivisionCheck[0].countryId != billingCountry.id) {
+    if (billingSubdivisionCheck[0].countryId != billingCountryId) {
       throw new AppError('La provincia di fatturazione non appartiene alla nazione selezionata.');
     }
 
@@ -101,32 +133,32 @@ export const createVenue = async (data: VenueFormSchema): Promise<ServerActionRe
       .values({
         status: 'active',
         avatarUrl: validation.data.avatarUrl || null,
-        name: validation.data.name,
+        name: validation.data.name || fallbackName,
         bio: validation.data.bio || null,
-        type: validation.data.type,
-        capacity: validation.data.capacity,
+        type: fallbackType,
+        capacity: fallbackCapacity,
         managerProfileId: validation.data.venueManagerId || null,
 
-        address: validation.data.address,
-        countryId: validation.data.countryId,
-        subdivisionId: validation.data.subdivisionId,
-        city: validation.data.city,
-        zipCode: validation.data.zipCode,
+        address: validation.data.address || '',
+        countryId: resolvedCountryId,
+        subdivisionId: resolvedSubdivisionId,
+        city: validation.data.city || '',
+        zipCode: validation.data.zipCode || '',
 
-        company: validation.data.company,
-        taxCode: validation.data.taxCode,
-        vatCode: validation.data.vatCode,
-        bicCode: validation.data.bicCode,
-        abaRoutingNumber: validation.data.abaRoutingNumber,
-        sdiRecipientCode: validation.data.sdiRecipientCode,
-        billingAddress: validation.data.billingAddress,
-        billingCountryId: validation.data.billingCountry.id,
-        billingSubdivisionId: validation.data.billingSubdivisionId,
-        billingCity: validation.data.billingCity,
-        billingZipCode: validation.data.billingZipCode,
+        company: validation.data.company || '',
+        taxCode: validation.data.taxCode || '',
+        vatCode: validation.data.vatCode || '',
+        bicCode: validation.data.bicCode || null,
+        abaRoutingNumber: validation.data.abaRoutingNumber || null,
+        sdiRecipientCode: validation.data.sdiRecipientCode || null,
+        billingAddress: validation.data.billingAddress || '',
+        billingCountryId: billingCountryId,
+        billingSubdivisionId: resolvedBillingSubdivisionId,
+        billingCity: validation.data.billingCity || '',
+        billingZipCode: validation.data.billingZipCode || '',
         billingEmail: validation.data.billingEmail || null,
         billingPhone: validation.data.billingPhone || null,
-        billingPec: validation.data.billingPec,
+        billingPec: validation.data.billingPec || '',
 
         tiktokUrl: validation.data.tiktokUrl || null,
         tiktokUsername: validation.data.tiktokUsername || null,

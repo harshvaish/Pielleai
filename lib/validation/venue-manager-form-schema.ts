@@ -12,47 +12,63 @@ import {
   zipCodeValidation,
 } from './_general';
 
+const optionalString = <T extends z.ZodTypeAny>(schema: T) =>
+  z.union([schema, z.literal('')]).optional();
+
+const optionalArray = <T extends z.ZodTypeAny>(schema: T) =>
+  z.preprocess(
+    (val) => (Array.isArray(val) && val.length === 0 ? undefined : val),
+    schema.optional(),
+  );
+
+const optionalId = z.preprocess((val) => {
+  if (typeof val === 'number' && Number.isFinite(val) && val > 0) return val;
+  if (typeof val === 'string' && val.trim() !== '' && Number.isFinite(Number(val))) {
+    const parsed = Number(val);
+    return parsed > 0 ? parsed : undefined;
+  }
+  return undefined;
+}, idValidation.optional());
+
 export const venueManagerS1FormSchema = z.object({
-  avatarUrl: avatarUrlValidation.optional(),
+  avatarUrl: optionalString(avatarUrlValidation),
 
-  name: nameValidation,
+  name: optionalString(nameValidation),
 
-  surname: nameValidation,
+  surname: optionalString(nameValidation),
 
-  phone: phoneValidation,
+  phone: optionalString(phoneValidation),
 
-  birthDate: birthDateValidation,
+  birthDate: optionalString(birthDateValidation),
 
-  birthPlace: z
-    .string('Campo malformato.')
-    .min(2, 'Minimo 2 caratteri.')
-    .max(100, 'Massimo 100 caratteri.')
-    .trim(),
+  birthPlace: optionalString(
+    z.string('Campo malformato.').min(2, 'Minimo 2 caratteri.').max(100, 'Massimo 100 caratteri.').trim(),
+  ),
 
-  languages: z.array(idValidation, 'Campo malformato').min(1, 'Campo obbligatorio.'),
+  languages: optionalArray(
+    z.array(idValidation, 'Campo malformato').min(1, 'Campo obbligatorio.'),
+  ),
 
-  address: z
-    .string('Campo malformato.')
-    .min(5, 'Minimo 5 caratteri.')
-    .max(150, 'Massimo 150 caratteri.')
-    .trim(),
+  address: optionalString(
+    z.string('Campo malformato.').min(5, 'Minimo 5 caratteri.').max(150, 'Massimo 150 caratteri.').trim(),
+  ),
 
-  countryId: idValidation,
+  countryId: optionalId,
 
-  subdivisionId: idValidation,
+  subdivisionId: optionalId,
 
-  city: cityValidation,
+  city: optionalString(cityValidation),
 
-  zipCode: zipCodeValidation,
+  zipCode: optionalString(zipCodeValidation),
 
-  gender: profileGendersEnumValidation,
+  gender: optionalString(profileGendersEnumValidation),
 });
 
 export type VenueManagerS1FormSchema = z.infer<typeof venueManagerS1FormSchema>;
 
 export const venueManagerS2FormSchema = z.object({
-  signUpEmail: emailValidation,
-  signUpPassword: passwordValidation,
+  signUpEmail: optionalString(emailValidation),
+  signUpPassword: optionalString(passwordValidation),
 });
 
 export type VenueManagerS2FormSchema = z.infer<typeof venueManagerS2FormSchema>;
