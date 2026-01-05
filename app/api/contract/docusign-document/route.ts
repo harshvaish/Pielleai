@@ -11,7 +11,7 @@ import { ApiResponse } from '@/lib/types';
 import { sanitizeFileName } from '@/lib/utils';
 import { database } from '@/lib/database/connection';
 
-import { contracts } from '../../../../drizzle/schema';
+import { contracts, contractHistory } from '../../../../drizzle/schema';
 import { supabaseServerClient } from '../../../../lib/supabase-server-client';
 
 import { sendPdfForSignature } from '../../../../docusign/docusignClient';
@@ -142,20 +142,14 @@ export async function POST(req: NextRequest): Promise<NextResponse<ApiResponse<R
       throw new Error('DocuSign did not return envelopeId');
     }
 
-    // ---- Update Contract (persist envelopeId & file) ----
-    const updatedRes = await database
-      .update(contracts)
-      .set({
-        fileUrl,
-        fileName: finalFileName,
-        recipientEmail: email,
-        status: 'sent',
-        envelopeId: envelopeId,
-      })
+    // ---- Fetch current contract for history ----
+    const existingContract = await database
+      .select({ status: contracts.status })
+      .from(contracts)
       .where(eq(contracts.id, contractId))
-      .returning({ id: contracts.id });
+      .limit(1);
 
-    if (!updatedRes.length) {
+    if (!existingContract.length) {
       await supabaseServerClient.storage.from(bucket).remove([storagePath]);
 
       return NextResponse.json(
@@ -163,6 +157,32 @@ export async function POST(req: NextRequest): Promise<NextResponse<ApiResponse<R
         { status: 404 },
       );
     }
+
+    const previousStatus = existingContract[0].status;
+
+    // ---- Update Contract (persist envelopeId & file) & Add History ----
+    await database.transaction(async (tx) => {
+      await tx
+        .update(contracts)
+        .set({
+          fileUrl,
+          fileName: finalFileName,
+          recipientEmail: email,
+          status: 'sent',
+          envelopeId: envelopeId,
+        })
+        .where(eq(contracts.id, contractId));
+
+      await tx.insert(contractHistory).values({
+        contractId,
+        fromStatus: previousStatus ?? null,
+        toStatus: 'sent',
+        fileUrl,
+        fileName: finalFileName,
+        changedByUserId: session.user.id,
+        note: 'Documento inviato a firma via DocuSign.',
+      });
+    });
     revalidatePath('/documents');
     revalidatePath(`/documents/${contractId}`);
 
