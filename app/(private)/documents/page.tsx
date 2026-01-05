@@ -17,7 +17,6 @@ import {
   X,
   Check,
   PartyPopper,
-  Dot,
 } from "lucide-react";
 import DatesFilterButton from "./_components/filters/DatesFilterButton";
 import { getContracts } from "@/lib/data/contracts/get-contracts";
@@ -255,7 +254,7 @@ function mapStatus(
   if (backendStatus === "draft") {
     return hasMissing ? "missing-info" : "to-sign";
   }
-  switch (backendStatus) {   
+  switch (backendStatus) {
     case "signed":
       return "signed";
     case "declined":
@@ -568,7 +567,7 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
               >
                 <div className="grid grid-cols-[180px_1fr_auto] items-start gap-6 p-4">
                   {/* LEFT */}
-                  <div className="flex flex-col gap-1.5">
+                  <div className="flex flex-col gap-1.5 border-r">
                     <span
                       className={`w-fit inline-flex gap-1.5 items-center rounded-md px-2 py-1.5 text-xs font-medium border ${s.badgeBorder} ${s.badgeBg}`}
                     >
@@ -598,9 +597,14 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
                       )}
 
                       <div className="flex flex-col leading-tight">
-                        <span className="font-semibold text-zinc-900">
+                        <a
+                          href={`/artisti`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="font-semibold text-zinc-900"
+                        >
                           {contract.stageName}
-                        </span>
+                        </a>
                         <span className="text-zinc-500 text-xs">
                           {contract.artistName}
                         </span>
@@ -630,7 +634,7 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
                       <span>Contratto</span>
                       <span>
                         {contract.fileUrl ? (
-                          <span className="flex items-center gap-2">
+                          <span className="flex items-center gap-2 gap-2 bg-white border border-zinc-300 rounded-sm px-4 py-1.5">
                             <FileText className="h-4 w-4 text-zinc-400" />
                             <a
                               href={contract.fileUrl}

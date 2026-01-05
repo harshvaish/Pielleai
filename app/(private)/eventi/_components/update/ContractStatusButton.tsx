@@ -19,6 +19,7 @@ import { editContract } from "@/lib/server-actions/contracts/update-contract";
 import { JSX } from "react";
 import { EventFormSchema } from "@/lib/validation/event-form-schema";
 import { useFormContext } from "react-hook-form";
+import { useRouter } from "next/navigation";
 
 type ContractStatus =
   | "draft"
@@ -91,6 +92,7 @@ export default function ContractStatusButton({
   status,
   className,
 }: Props) {
+  const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
   const form = useFormContext<EventFormSchema>();
@@ -135,6 +137,7 @@ export default function ContractStatusButton({
           shouldDirty: false,
           shouldTouch: false,
         });
+        startTransition(async () => router.refresh());
       } else {
         toast.error(response.message);
       }

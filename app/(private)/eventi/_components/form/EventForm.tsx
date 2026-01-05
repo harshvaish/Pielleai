@@ -6,6 +6,7 @@ import {
   SelectContent,
   SelectItem,
   SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -23,7 +24,7 @@ import { eventStatus } from "@/lib/database/schema";
 import { EventFormSchema } from "@/lib/validation/event-form-schema";
 import ArtistAvailabilitySelectWithCreate from "./ArtistAvailabilitySelectWithCreate";
 import EventStatusBadge from "@/app/(private)/_components/Badges/EventStatusBadge";
-import { useEffect, useMemo, useRef, useTransition } from "react";
+import { useEffect, useMemo, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { QUESTION_ICON, GREEN_TICK_ICON } from "@/lib/constants";
 import {
@@ -37,6 +38,8 @@ import { editContract } from "@/lib/server-actions/contracts/update-contract";
 import UploadPdf from "../create/UploadPdf";
 import DocuSignButton from "../create/DocuSignButton";
 import ContractStatusButton from "../update/ContractStatusButton";
+import { useRouter } from "next/navigation";
+import ViewContractButton from "../update/ViewContractButton";
 
 type EventForm = {
   artists: ArtistSelectData[];
@@ -72,7 +75,7 @@ export default function EventForm({
     getValues,
     formState: { errors },
   } = useFormContext<EventFormSchema>();
-
+  const router = useRouter();
   const selectedVenueId = watch("venueId");
   const selectedVenue = venues.find((venue) => venue.id == selectedVenueId);
   const contractId = watch("contractId");
@@ -284,17 +287,16 @@ export default function EventForm({
           shouldDirty: false,
           shouldTouch: false,
         });
-
+        // closeDialog?.();
         toast.success(
           hasContract ? "Contratto rigenerato!" : "Contratto generato!"
         );
-        //closeDialog?.();
+        startTransition(async () => router.refresh());
       } else {
         toast.error(response.message);
       }
     });
   };
-
   return (
     <>
       <div className="flex justify-between items-center gap-2">
@@ -1273,15 +1275,11 @@ export default function EventForm({
             <div className="flex flex-col gap-1">
               {!isDetailsComplete ? (
                 /* 🔒 MISSING DATA */
-                <div className="inline-flex items-center gap-2 rounded-md border border-amber-200 bg-amber-50 px-2.5 py-2 text-xs font-medium text-amber-600">
+                <div className="inline-flex items-center gap-2 rounded-md border border-amber-200 bg-amber-50 px-2.5 py-2 text-xs font-medium text-amber-600 max-w-min whitespace-nowrap">
                   Info mancanti{" "}
-                  <img
-                    src={QUESTION_ICON}
-                    alt="missing"
-                    width={14}
-                    height={14}
-                    className="opacity-80"
-                  />
+                  <div className="w-3 h-3 flex items-center justify-center bg-amber-600 rounded-full">
+                    <span className="text-[8px] text-white">?</span>
+                  </div>
                 </div>
               ) : (
                 <ContractStatusButton
@@ -1289,33 +1287,39 @@ export default function EventForm({
                   status={contractStatus ?? "draft"}
                 />
               )}
-              <span className="text-xs text-zinc-500">
-                Stato aggiornato il {historyData[0]?.date} da{" "}
-                {historyData[0]?.updatedBy}
-              </span>
+              {historyData.length > 0 && (
+                <span className="text-xs text-zinc-500">
+                  Stato aggiornato il {historyData[0]?.date} da{" "}
+                  {historyData[0]?.updatedBy}
+                </span>
+              )}
             </div>
-            <div className="flex items-center gap-2">
-              <Button
-                type="button"
-                size="sm"
-                variant="outline"
-                disabled={isPending || !isDetailsComplete}
-                onClick={handleUpsertContract}
-              >
-                {isPending
-                  ? hasContract
-                    ? "Rigenero..."
-                    : "Genero..."
-                  : hasContract
-                    ? "Rigenera"
-                    : "Genera"}
-              </Button>
+            {contractStatus === "voided" ? (
+              <ViewContractButton />
+            ) : (
+              <div className="flex items-center gap-2">
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  disabled={isPending || !isDetailsComplete}
+                  onClick={handleUpsertContract}
+                >
+                  {isPending
+                    ? hasContract
+                      ? "Rigenero..."
+                      : "Genero..."
+                    : hasContract
+                      ? "Rigenera"
+                      : "Genera"}
+                </Button>
 
-              <DocuSignButton
-                event={event}
-                isDetailsComplete={isDetailsComplete}
-              />
-            </div>
+                <DocuSignButton
+                  event={event}
+                  isDetailsComplete={isDetailsComplete}
+                />
+              </div>
+            )}
           </div>
           <div className="flex flex-col gap-2">
             <div className="text-sm font-semibold">File del contratto</div>
@@ -1413,19 +1417,11 @@ export default function EventForm({
                       <div className="flex items-center gap-2">
                         <img
                           src={
-                            isSectionComplete(watch(), [
-                              "venueName",
-                              "venueCompanyName",
-                              "venueVatNumber",
-                              "venueAddress",
-                            ])
-                              ? GREEN_TICK_ICON
-                              : QUESTION_ICON
+                            isVenueComplete ? GREEN_TICK_ICON : QUESTION_ICON
                           }
-                          width={16}
-                          height={16}
+                          width={isVenueComplete ? 16 : 19}
+                          height={isVenueComplete ? 16 : 19}
                         />
-
                         <span className="text-sm font-medium">Locale</span>
                       </div>
                     </AccordionTrigger>
@@ -1500,20 +1496,10 @@ export default function EventForm({
                       <div className="flex items-center gap-2">
                         <img
                           src={
-                            isSectionComplete(watch(), [
-                              "eventDate",
-                              "eventType",
-                              "eventStartTime",
-                              "eventEndTime",
-                              "transportationsCost",
-                              "totalCost",
-                              "upfrontPayment",
-                            ])
-                              ? GREEN_TICK_ICON
-                              : QUESTION_ICON
+                            isEventComplete ? GREEN_TICK_ICON : QUESTION_ICON
                           }
-                          width={16}
-                          height={16}
+                          width={isEventComplete ? 16 : 19}
+                          height={isEventComplete ? 16 : 19}
                         />
                         <span className="text-sm font-medium">Evento</span>
                       </div>
@@ -1539,7 +1525,7 @@ export default function EventForm({
                                   isVoided && "bg-zinc-100 text-zinc-500"
                                 )}
                               >
-                                {field.value ?? "Select"}
+                                <SelectValue placeholder="Select" />
                               </SelectTrigger>
                               <SelectContent>
                                 <SelectItem value="dj-set">DJ Set</SelectItem>

@@ -105,7 +105,7 @@ export default function LocalPdfUpload() {
   const onDeleteHandler = async () => {
     const contractId = watch("contractId");
     if (!contractId) {
-      toast.error("Contract not found.");
+      toast.error("Contratto non trovato.");
       return;
     }
 
@@ -117,7 +117,7 @@ export default function LocalPdfUpload() {
       resetField("contractDocument");
       setValue("contractDocument", undefined, { shouldDirty: true });
       if (fileInputRef.current) fileInputRef.current.value = "";
-      toast.success("Contract file removed.");
+      toast.success("File contratto rimosso.");
     } else {
       toast.error(response.message ?? "Failed to remove contract file.");
     }
