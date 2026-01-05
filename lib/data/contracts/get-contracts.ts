@@ -78,7 +78,7 @@ export async function getContracts(
   const offset = (safePage - 1) * limit;
 
   try {
-    if (!user || user.role !== 'admin') {
+    if (!user) {
       throw new Error('Non sei autorizzato.');
     }
 
