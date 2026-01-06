@@ -99,11 +99,11 @@ export async function getVenue(slug: string): Promise<VenueData | null> {
       .leftJoin(users, eq(profiles.userId, users.id))
       .innerJoin(country, eq(venues.countryId, country.id))
       .innerJoin(subdivision, eq(venues.subdivisionId, subdivision.id))
-      .innerJoin(billingCountry, eq(venues.billingCountryId, billingCountry.id))
-      .innerJoin(billingSubdivision, eq(venues.billingSubdivisionId, billingSubdivision.id))
+      .leftJoin(billingCountry, eq(venues.billingCountryId, billingCountry.id))
+      .leftJoin(billingSubdivision, eq(venues.billingSubdivisionId, billingSubdivision.id))
       .where(eq(venues.slug, slug))
       .limit(1);
-
+     
     if (!venueResult.length) return null;
 
     const normalizedVenue = {
@@ -111,6 +111,8 @@ export async function getVenue(slug: string): Promise<VenueData | null> {
       manager: venueResult[0].manager?.id
         ? (venueResult[0].manager as VenueManagerSelectData)
         : null,
+      billingCountry: venueResult[0].billingCountry?.id ? venueResult[0].billingCountry : null,
+      billingSubdivision: venueResult[0].billingSubdivision?.id ? venueResult[0].billingSubdivision : null,
     };
 
     return normalizedVenue;
