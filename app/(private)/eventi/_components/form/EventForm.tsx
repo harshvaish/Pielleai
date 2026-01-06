@@ -240,7 +240,6 @@ export default function EventForm({
 
   const handleUpsertContract = async () => {
     const values = getValues();
-
     if (!values.eventId) {
       toast.error("Event ID is required.");
       return;
@@ -265,20 +264,30 @@ export default function EventForm({
         values.eventStartTime,
         values.eventEndTime
       ),
-      paymentDate: values.paymentDate,
+      // paymentDate: values.paymentDate,
       contractDate: new Date().toISOString().split("T")[0],
       ccEmails: buildCcEmails(values),
     };
+    const payload = {
+      ...payloadBase,
+      ...(values.contractDocument?.url && values.contractDocument?.name
+        ? {
+            fileUrl: values.contractDocument.url,
+            fileName: values.contractDocument.name,
+          }
+        : {}),
+    };
+  
     startTransition(async () => {
       const response =
         hasContract && typeof contractId === "number"
           ? await editContract({
-              ...payloadBase,
+              ...payload,
               contractId,
               status: "draft",
             })
           : await createContract({
-              ...payloadBase,
+              ...payload,
               status: "draft",
             });
       if (response.success) {

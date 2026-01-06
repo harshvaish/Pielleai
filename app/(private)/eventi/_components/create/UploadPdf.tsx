@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useTransition } from "react";
 import { Upload, Download, Trash2 } from "lucide-react";
 import { cn, getFileMagicNumber, isValidPdfMagicNumber } from "@/lib/utils";
 import { useFormContext } from "react-hook-form";
@@ -9,8 +9,13 @@ import { EventFormSchema } from "@/lib/validation/event-form-schema";
 import { ApiResponse } from "@/lib/types";
 import { pdfUploadSchema } from "@/lib/validation/pdf-upload-schema";
 import { deleteContractFile } from "@/lib/server-actions/contracts/delete-contract-file";
+import { useRouter } from "next/navigation";
 
 export default function LocalPdfUpload() {
+  const router = useRouter();
+
+  const [isPending, startTransition] = useTransition();
+
   const [uploading, setUploading] = useState(false);
 
   const { watch, setValue, resetField  } = useFormContext<EventFormSchema>();
@@ -57,12 +62,13 @@ export default function LocalPdfUpload() {
 
     const url = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/${process.env.NEXT_PUBLIC_SUPABASE_BUCKET_NAME}/${path}`;
 
-    // 🔥 Replace or set instantly
+    // Replace or set instantly
     setValue(
       "contractDocument",
       { url, name: fileName },
       { shouldDirty: true }
     );
+    toast.success("PDF caricato con successo.");
   };
 
   /* ---------------- INPUT CHANGE ---------------- */
@@ -102,6 +108,8 @@ export default function LocalPdfUpload() {
 
   /* ---------------- DELETE ---------------- */
   const onDeleteHandler = async () => {
+    startTransition(async () => {
+
     const contractId = watch("contractId");
     if (!contractId) {
       resetField("contractDocument");
@@ -122,9 +130,12 @@ export default function LocalPdfUpload() {
       setValue("contractDocument", undefined, { shouldDirty: true });
       if (fileInputRef.current) fileInputRef.current.value = "";
       toast.success("File contratto rimosso.");
+      startTransition(async () => router.refresh());
     } else {
       toast.error(response.message ?? "Failed to remove contract file.");
     }
+  });
+
   };
 
   return (
@@ -170,7 +181,7 @@ export default function LocalPdfUpload() {
           className="flex items-center gap-2 bg-white border border-zinc-300 rounded-xl px-4 py-2 text-sm shadow-sm hover:bg-zinc-50 disabled:opacity-50"
         >
           <Upload className="w-4 h-4" />
-          Upload
+          {uploading ? "Caricamento..." : "Upload"}
         </button>
       )}
     </div>
