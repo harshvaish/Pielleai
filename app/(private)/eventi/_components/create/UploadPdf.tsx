@@ -37,7 +37,6 @@ export default function LocalPdfUpload() {
       path: string;
       fileName: string;
     }> = await fetchResponse.json();
-
     if (!response.success) {
       toast.error(response.message || "Caricamento pdf non riuscito.");
       return;
@@ -105,10 +104,15 @@ export default function LocalPdfUpload() {
   const onDeleteHandler = async () => {
     const contractId = watch("contractId");
     if (!contractId) {
-      toast.error("Contratto non trovato.");
+      resetField("contractDocument");
+      setValue("contractDocument", undefined, { shouldDirty: true });
+  
+      if (fileInputRef.current) fileInputRef.current.value = "";
+  
+      toast.success("File rimosso.");
       return;
     }
-
+  
     const response = await deleteContractFile({
       contractId: Number(contractId),
     });
