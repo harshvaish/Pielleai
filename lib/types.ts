@@ -391,8 +391,8 @@ export type VenueData = {
   abaRoutingNumber: string | null;
   sdiRecipientCode: string | null;
   billingAddress: string;
-  billingCountry: Country;
-  billingSubdivision: Subdivision;
+  billingCountry: Country | null;
+  billingSubdivision: Subdivision | null;
   billingCity: string;
   billingZipCode: string;
   billingEmail: string | null;
