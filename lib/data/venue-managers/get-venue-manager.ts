@@ -43,15 +43,19 @@ export async function getVenueManager(uid: string): Promise<VenueManagerData<Ven
       })
       .from(users)
       .innerJoin(profiles, eq(users.id, profiles.userId))
-      .innerJoin(country, eq(profiles.countryId, country.id))
-      .innerJoin(subdivision, eq(profiles.subdivisionId, subdivision.id))
+      .leftJoin(country, eq(profiles.countryId, country.id))
+      .leftJoin(subdivision, eq(profiles.subdivisionId, subdivision.id))
       .where(eq(users.id, uid))
       .orderBy(desc(profiles.createdAt))
       .limit(1);
 
     if (!userResult.length) return null;
 
-    const user = userResult[0];
+    const user = {
+      ...userResult[0],
+      country: userResult[0].country?.id ? userResult[0].country : null,
+      subdivision: userResult[0].subdivision?.id ? userResult[0].subdivision : null,
+    };
 
     const [languagesResult, venuesResult]: [Language[], VenueListData[]] = await Promise.all([
       database
