@@ -60,55 +60,57 @@ export const createVenue = async (data: VenueFormSchema): Promise<ServerActionRe
     const resolvedCountryId = countryId ?? defaultCountryId;
     const resolvedSubdivisionId =
       subdivisionId ?? (await getDefaultSubdivisionId(resolvedCountryId));
-    const billingCountryId = billingCountry?.id ?? resolvedCountryId;
-    const resolvedBillingSubdivisionId =
-      billingSubdivisionId ?? (await getDefaultSubdivisionId(billingCountryId));
+    const billingCountryId = billingCountry?.id ?? null;
+    const resolvedBillingSubdivisionId = billingSubdivisionId ?? null;
 
-    const [countryCheck, subdivisionCheck, billingCountryCheck, billingSubdivisionCheck] =
-      await Promise.all([
-        database
-          .select({ id: countries.id })
-          .from(countries)
-          .where(eq(countries.id, resolvedCountryId)),
+    const [countryCheck, subdivisionCheck] = await Promise.all([
+      database
+        .select({ id: countries.id })
+        .from(countries)
+        .where(eq(countries.id, resolvedCountryId)),
 
-        database
-          .select({ id: subdivisions.id, countryId: subdivisions.countryId })
-          .from(subdivisions)
-          .where(eq(subdivisions.id, resolvedSubdivisionId)),
-
-        database
-          .select({ id: countries.id })
-          .from(countries)
-          .where(eq(countries.id, billingCountryId)),
-
-        database
-          .select({ id: subdivisions.id, countryId: subdivisions.countryId })
-          .from(subdivisions)
-          .where(eq(subdivisions.id, resolvedBillingSubdivisionId)),
-      ]);
+      database
+        .select({ id: subdivisions.id, countryId: subdivisions.countryId })
+        .from(subdivisions)
+        .where(eq(subdivisions.id, resolvedSubdivisionId)),
+    ]);
 
     if (countryCheck.length !== 1) {
       throw new AppError('Stato selezionato non valido.');
-    }
-
-    if (billingCountryCheck.length !== 1) {
-      throw new AppError('Nazione selezionata non valida.');
     }
 
     if (subdivisionCheck.length !== 1) {
       throw new AppError('Provincia selezionata non valida.');
     }
 
-    if (billingSubdivisionCheck.length !== 1) {
-      throw new AppError('Provincia di fatturazione selezionata non valida.');
-    }
-
     if (subdivisionCheck[0].countryId != resolvedCountryId) {
       throw new AppError('La provincia selezionata non appartiene allo stato indicato.');
     }
 
-    if (billingSubdivisionCheck[0].countryId != billingCountryId) {
-      throw new AppError('La provincia di fatturazione non appartiene alla nazione selezionata.');
+    if (billingCountryId !== null) {
+      const billingCountryCheck = await database
+        .select({ id: countries.id })
+        .from(countries)
+        .where(eq(countries.id, billingCountryId));
+
+      if (billingCountryCheck.length !== 1) {
+        throw new AppError('Nazione selezionata non valida.');
+      }
+    }
+
+    if (resolvedBillingSubdivisionId !== null) {
+      const billingSubdivisionCheck = await database
+        .select({ id: subdivisions.id, countryId: subdivisions.countryId })
+        .from(subdivisions)
+        .where(eq(subdivisions.id, resolvedBillingSubdivisionId));
+
+      if (billingSubdivisionCheck.length !== 1) {
+        throw new AppError('Provincia di fatturazione selezionata non valida.');
+      }
+
+      if (billingCountryId !== null && billingSubdivisionCheck[0].countryId != billingCountryId) {
+        throw new AppError('La provincia di fatturazione non appartiene alla nazione selezionata.');
+      }
     }
 
     if (venueManagerId) {
