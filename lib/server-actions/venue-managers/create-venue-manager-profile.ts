@@ -64,30 +64,10 @@ export const createVenueManagerProfile = async (
     const safeLanguages = languages ?? [];
     const fallbackName = name?.trim() || 'Utente';
 
-    const defaultCountry = await database.select({ id: countries.id }).from(countries).limit(1);
-    const defaultCountryId = defaultCountry[0]?.id;
-    if (!defaultCountryId) {
-      throw new AppError('Nessuna nazione disponibile.');
-    }
+    const resolvedCountryId = countryId ?? null;
+    const resolvedSubdivisionId = subdivisionId ?? null;
 
-    const getDefaultSubdivisionId = async (resolvedCountryId: number) => {
-      const rows = await database
-        .select({ id: subdivisions.id })
-        .from(subdivisions)
-        .where(eq(subdivisions.countryId, resolvedCountryId))
-        .limit(1);
-      const id = rows[0]?.id;
-      if (!id) {
-        throw new AppError('Nessuna provincia disponibile.');
-      }
-      return id;
-    };
-
-    const resolvedCountryId = countryId ?? defaultCountryId;
-    const resolvedSubdivisionId =
-      subdivisionId ?? (await getDefaultSubdivisionId(resolvedCountryId));
-
-    const [userCheck, languagesCheck, countryCheck, subdivisionCheck] = await Promise.all([
+    const [userCheck, languagesCheck] = await Promise.all([
       database.select({ id: users.id }).from(users).where(eq(users.id, uid)).limit(1),
 
       safeLanguages.length
@@ -96,16 +76,6 @@ export const createVenueManagerProfile = async (
             .from(languagesTable)
             .where(inArray(languagesTable.id, safeLanguages))
         : Promise.resolve([]),
-
-      database
-        .select({ id: countries.id })
-        .from(countries)
-        .where(eq(countries.id, resolvedCountryId)),
-
-      database
-        .select({ id: subdivisions.id, countryId: subdivisions.countryId })
-        .from(subdivisions)
-        .where(eq(subdivisions.id, resolvedSubdivisionId)),
     ]);
 
     if (userCheck.length !== 1) {
@@ -116,16 +86,30 @@ export const createVenueManagerProfile = async (
       throw new AppError('Una o più lingue selezionate non valide.');
     }
 
-    if (countryCheck.length !== 1) {
-      throw new AppError('Stato selezionato non valido.');
+    if (resolvedCountryId !== null) {
+      const countryCheck = await database
+        .select({ id: countries.id })
+        .from(countries)
+        .where(eq(countries.id, resolvedCountryId));
+
+      if (countryCheck.length !== 1) {
+        throw new AppError('Stato selezionato non valido.');
+      }
     }
 
-    if (subdivisionCheck.length !== 1) {
-      throw new AppError('Provincia selezionata non valida.');
-    }
+    if (resolvedSubdivisionId !== null) {
+      const subdivisionCheck = await database
+        .select({ id: subdivisions.id, countryId: subdivisions.countryId })
+        .from(subdivisions)
+        .where(eq(subdivisions.id, resolvedSubdivisionId));
 
-    if (subdivisionCheck[0].countryId != resolvedCountryId) {
-      throw new AppError('La provincia selezionata non appartiene allo stato indicato.');
+      if (subdivisionCheck.length !== 1) {
+        throw new AppError('Provincia selezionata non valida.');
+      }
+
+      if (resolvedCountryId !== null && subdivisionCheck[0].countryId != resolvedCountryId) {
+        throw new AppError('La provincia selezionata non appartiene allo stato indicato.');
+      }
     }
 
     await database.transaction(async (tx) => {

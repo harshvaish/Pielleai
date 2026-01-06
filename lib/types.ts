@@ -326,8 +326,8 @@ export type VenueManagerData<T = VenueTableData | VenueListData | VenueBadgeData
   birthDate: string;
   birthPlace: string;
   address: string;
-  country: Country;
-  subdivision: Subdivision;
+  country: Country | null;
+  subdivision: Subdivision | null;
   city: string;
   zipCode: string;
   gender: Gender;
