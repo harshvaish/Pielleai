@@ -50,7 +50,6 @@ export default async function VenueDetailPage({ params }: VenueDetailPageProps) 
   ]);
 
   if (!venue) notFound();
-
   const isDisabled = venue.status === 'disabled';
 
   return (
@@ -191,7 +190,10 @@ export default async function VenueDetailPage({ params }: VenueDetailPageProps) 
           <span className='text-sm font-semibold text-zinc-600'>Numero di telefono</span>
           <span className='text-sm font-medium text-zinc-500'>{venue.billingPhone}</span>
           <span className='text-sm font-semibold text-zinc-600'>Capienza</span>
-          <span className='text-sm font-medium text-zinc-500'>{venue.capacity}</span>
+          <span className='text-sm font-medium text-zinc-500'>{venue.capacity !== 0 && (
+               <span>{venue.capacity}</span>
+              )}
+          </span>
           <span className='text-sm font-semibold text-zinc-600'>Indirizzo</span>
           <span className='text-sm font-medium text-zinc-500'>{venue.address}</span>
         </div>
