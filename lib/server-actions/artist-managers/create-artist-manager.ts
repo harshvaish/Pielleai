@@ -64,33 +64,7 @@ export const createArtistManager = async (
       signUpEmail?.trim() ||
       `placeholder+${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
     const fallbackPassword = signUpPassword?.trim() || 'TempPass1234!';
-
-    const defaultCountry = await database.select({ id: countries.id }).from(countries).limit(1);
-    const defaultCountryId = defaultCountry[0]?.id;
-    if (!defaultCountryId) {
-      throw new AppError('Nessuna nazione disponibile.');
-    }
-
-    const getDefaultSubdivisionId = async (resolvedCountryId: number) => {
-      const rows = await database
-        .select({ id: subdivisions.id })
-        .from(subdivisions)
-        .where(eq(subdivisions.countryId, resolvedCountryId))
-        .limit(1);
-      const id = rows[0]?.id;
-      if (!id) {
-        throw new AppError('Nessuna provincia disponibile.');
-      }
-      return id;
-    };
-
-    const resolvedCountryId = countryId ?? defaultCountryId;
-    const resolvedSubdivisionId =
-      subdivisionId ?? (await getDefaultSubdivisionId(resolvedCountryId));
-    const billingCountryId = billingCountry?.id ?? null;
-    const resolvedBillingSubdivisionId = billingCountryId
-      ? billingSubdivisionId ?? (await getDefaultSubdivisionId(billingCountryId))
-      : null;
+    const billingCountryId = billingCountry?.id;
 
     const [
       languagesCheck,
@@ -106,28 +80,32 @@ export const createArtistManager = async (
             .where(inArray(languagesTable.id, safeLanguages))
         : Promise.resolve([]),
 
-      database
-        .select({ id: countries.id })
-        .from(countries)
-        .where(eq(countries.id, resolvedCountryId)),
+      countryId !== undefined && countryId !== null
+        ? database
+            .select({ id: countries.id })
+            .from(countries)
+            .where(eq(countries.id, countryId))
+        : Promise.resolve([]),
 
-      database
-        .select({ id: subdivisions.id, countryId: subdivisions.countryId })
-        .from(subdivisions)
-        .where(eq(subdivisions.id, resolvedSubdivisionId)),
+      subdivisionId !== undefined && subdivisionId !== null
+        ? database
+            .select({ id: subdivisions.id, countryId: subdivisions.countryId })
+            .from(subdivisions)
+            .where(eq(subdivisions.id, subdivisionId))
+        : Promise.resolve([]),
 
-      billingCountryId
+      billingCountryId !== undefined && billingCountryId !== null
         ? database
             .select({ id: countries.id })
             .from(countries)
             .where(eq(countries.id, billingCountryId))
         : Promise.resolve([]),
 
-      resolvedBillingSubdivisionId
+      billingSubdivisionId !== undefined && billingSubdivisionId !== null
         ? database
             .select({ id: subdivisions.id, countryId: subdivisions.countryId })
             .from(subdivisions)
-            .where(eq(subdivisions.id, resolvedBillingSubdivisionId))
+            .where(eq(subdivisions.id, billingSubdivisionId))
         : Promise.resolve([]),
     ]);
 
@@ -135,27 +113,29 @@ export const createArtistManager = async (
       throw new AppError('Una o più lingue selezionate non valide.');
     }
 
-    if (countryCheck.length !== 1) {
+    if (countryId !== undefined && countryId !== null && countryCheck.length !== 1) {
       throw new AppError('Stato selezionato non valido.');
     }
 
-    if (billingCountryId && billingCountryCheck.length !== 1) {
+    if (billingCountryId !== undefined && billingCountryId !== null && billingCountryCheck.length !== 1) {
       throw new AppError('Nazione selezionata non valida.');
     }
 
-    if (subdivisionCheck.length !== 1) {
+    if (subdivisionId !== undefined && subdivisionId !== null && subdivisionCheck.length !== 1) {
       throw new AppError('Provincia selezionata non valida.');
     }
 
-    if (resolvedBillingSubdivisionId && billingSubdivisionCheck.length !== 1) {
+    if (billingSubdivisionId !== undefined && billingSubdivisionId !== null && billingSubdivisionCheck.length !== 1) {
       throw new AppError('Provincia di fatturazione selezionata non valida.');
     }
 
-    if (subdivisionCheck[0].countryId != resolvedCountryId) {
-      throw new AppError('La provincia selezionata non appartiene allo stato indicato.');
+    if (countryId !== undefined && countryId !== null && subdivisionId !== undefined && subdivisionId !== null) {
+      if (subdivisionCheck[0]?.countryId != countryId) {
+        throw new AppError('La provincia selezionata non appartiene allo stato indicato.');
+      }
     }
 
-    if (billingCountryId && resolvedBillingSubdivisionId) {
+    if (billingCountryId !== undefined && billingCountryId !== null && billingSubdivisionId !== undefined && billingSubdivisionId !== null) {
       if (billingSubdivisionCheck[0]?.countryId != billingCountryId) {
         throw new AppError(
           'La provincia di fatturazione non appartiene alla nazione selezionata.',
@@ -196,8 +176,8 @@ export const createArtistManager = async (
           birthPlace: data.birthPlace || '',
           gender: data.gender || 'male',
           address: data.address || '',
-          countryId: resolvedCountryId,
-          subdivisionId: resolvedSubdivisionId,
+          ...(countryId !== undefined && countryId !== null && { countryId }),
+          ...(subdivisionId !== undefined && subdivisionId !== null && { subdivisionId }),
           city: data.city || '',
           zipCode: data.zipCode || '',
 
@@ -209,8 +189,8 @@ export const createArtistManager = async (
           iban: data.iban || null,
           sdiRecipientCode: data.sdiRecipientCode || null,
           billingAddress: data.billingAddress || null,
-          billingCountryId: billingCountryId,
-          billingSubdivisionId: resolvedBillingSubdivisionId,
+          ...(billingCountryId !== undefined && billingCountryId !== null && { billingCountryId }),
+          ...(billingSubdivisionId !== undefined && billingSubdivisionId !== null && { billingSubdivisionId }),
           billingCity: data.billingCity || null,
           billingZipCode: data.billingZipCode || null,
           billingEmail: data.billingEmail || null,

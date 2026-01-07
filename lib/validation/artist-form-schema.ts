@@ -34,6 +34,15 @@ const optionalArray = <T extends z.ZodTypeAny>(schema: T) =>
     schema.optional(),
   );
 
+const optionalId = z.preprocess((val) => {
+  if (typeof val === 'number' && Number.isFinite(val) && val > 0) return val;
+  if (typeof val === 'string' && val.trim() !== '' && Number.isFinite(Number(val))) {
+    const parsed = Number(val);
+    return parsed > 0 ? parsed : undefined;
+  }
+  return undefined;
+}, idValidation.optional());
+
 export const artistS1FormSchema = z.object({
   avatarUrl: optionalString(avatarUrlValidation),
 
@@ -66,15 +75,9 @@ export const artistS1FormSchema = z.object({
     addressValidation.optional(),
   ),
 
-  countryId: z.preprocess(
-    (val) => (typeof val === 'number' && !isNaN(val) ? val : undefined),
-    idValidation.optional(),
-  ),
+  countryId: optionalId,
 
-  subdivisionId: z.preprocess(
-    (val) => (typeof val === 'number' && !isNaN(val) ? val : undefined),
-    idValidation.optional(),
-  ),
+  subdivisionId: optionalId,
 
   city: z.preprocess(
     (val) => (typeof val === 'string' && val.trim() !== '' ? val : undefined),

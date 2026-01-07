@@ -129,8 +129,8 @@ export type ArtistManagerData<T = ArtistListData | ArtistSelectData> = {
   birthDate: string;
   birthPlace: string;
   address: string;
-  country: Country;
-  subdivision: Subdivision;
+  country: Country | null;
+  subdivision: Subdivision | null;
   city: string;
   zipCode: string;
   gender: Gender;
@@ -145,8 +145,8 @@ export type ArtistManagerData<T = ArtistListData | ArtistSelectData> = {
   iban: string;
   sdiRecipientCode: string | null;
   billingAddress: string;
-  billingCountry: Country;
-  billingSubdivision: Subdivision;
+  billingCountry: Country | null;
+  billingSubdivision: Subdivision | null;
   billingCity: string;
   billingZipCode: string;
   billingEmail: string;
@@ -377,8 +377,8 @@ export type VenueData = {
   capacity: number;
 
   address: string;
-  country: Country;
-  subdivision: Subdivision;
+  country: Country | null;
+  subdivision: Subdivision | null;
   city: string;
   zipCode: string;
 

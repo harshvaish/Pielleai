@@ -37,57 +37,39 @@ export const createVenue = async (data: VenueFormSchema): Promise<ServerActionRe
     const fallbackName = validation.data.name?.trim() || 'Locale';
     const fallbackType = validation.data.type || 'small';
     const fallbackCapacity = validation.data.capacity ?? 0;
-
-    const defaultCountry = await database.select({ id: countries.id }).from(countries).limit(1);
-    const defaultCountryId = defaultCountry[0]?.id;
-    if (!defaultCountryId) {
-      throw new AppError('Nessuna nazione disponibile.');
-    }
-
-    const getDefaultSubdivisionId = async (resolvedCountryId: number) => {
-      const rows = await database
-        .select({ id: subdivisions.id })
-        .from(subdivisions)
-        .where(eq(subdivisions.countryId, resolvedCountryId))
-        .limit(1);
-      const id = rows[0]?.id;
-      if (!id) {
-        throw new AppError('Nessuna provincia disponibile.');
-      }
-      return id;
-    };
-
-    const resolvedCountryId = countryId ?? defaultCountryId;
-    const resolvedSubdivisionId =
-      subdivisionId ?? (await getDefaultSubdivisionId(resolvedCountryId));
-    const billingCountryId = billingCountry?.id ?? null;
-    const resolvedBillingSubdivisionId = billingSubdivisionId ?? null;
+    const billingCountryId = billingCountry?.id;
 
     const [countryCheck, subdivisionCheck] = await Promise.all([
-      database
-        .select({ id: countries.id })
-        .from(countries)
-        .where(eq(countries.id, resolvedCountryId)),
+      countryId !== undefined && countryId !== null
+        ? database
+            .select({ id: countries.id })
+            .from(countries)
+            .where(eq(countries.id, countryId))
+        : Promise.resolve([]),
 
-      database
-        .select({ id: subdivisions.id, countryId: subdivisions.countryId })
-        .from(subdivisions)
-        .where(eq(subdivisions.id, resolvedSubdivisionId)),
+      subdivisionId !== undefined && subdivisionId !== null
+        ? database
+            .select({ id: subdivisions.id, countryId: subdivisions.countryId })
+            .from(subdivisions)
+            .where(eq(subdivisions.id, subdivisionId))
+        : Promise.resolve([]),
     ]);
 
-    if (countryCheck.length !== 1) {
+    if (countryId !== undefined && countryId !== null && countryCheck.length !== 1) {
       throw new AppError('Stato selezionato non valido.');
     }
 
-    if (subdivisionCheck.length !== 1) {
+    if (subdivisionId !== undefined && subdivisionId !== null && subdivisionCheck.length !== 1) {
       throw new AppError('Provincia selezionata non valida.');
     }
 
-    if (subdivisionCheck[0].countryId != resolvedCountryId) {
-      throw new AppError('La provincia selezionata non appartiene allo stato indicato.');
+    if (countryId !== undefined && countryId !== null && subdivisionId !== undefined && subdivisionId !== null) {
+      if (subdivisionCheck[0]?.countryId != countryId) {
+        throw new AppError('La provincia selezionata non appartiene allo stato indicato.');
+      }
     }
 
-    if (billingCountryId !== null) {
+    if (billingCountryId !== undefined && billingCountryId !== null) {
       const billingCountryCheck = await database
         .select({ id: countries.id })
         .from(countries)
@@ -98,17 +80,17 @@ export const createVenue = async (data: VenueFormSchema): Promise<ServerActionRe
       }
     }
 
-    if (resolvedBillingSubdivisionId !== null) {
+    if (billingSubdivisionId !== undefined && billingSubdivisionId !== null) {
       const billingSubdivisionCheck = await database
         .select({ id: subdivisions.id, countryId: subdivisions.countryId })
         .from(subdivisions)
-        .where(eq(subdivisions.id, resolvedBillingSubdivisionId));
+        .where(eq(subdivisions.id, billingSubdivisionId));
 
       if (billingSubdivisionCheck.length !== 1) {
         throw new AppError('Provincia di fatturazione selezionata non valida.');
       }
 
-      if (billingCountryId !== null && billingSubdivisionCheck[0].countryId != billingCountryId) {
+      if (billingCountryId !== undefined && billingCountryId !== null && billingSubdivisionCheck[0].countryId != billingCountryId) {
         throw new AppError('La provincia di fatturazione non appartiene alla nazione selezionata.');
       }
     }
@@ -142,8 +124,8 @@ export const createVenue = async (data: VenueFormSchema): Promise<ServerActionRe
         managerProfileId: validation.data.venueManagerId || null,
 
         address: validation.data.address || '',
-        countryId: resolvedCountryId,
-        subdivisionId: resolvedSubdivisionId,
+        ...(countryId !== undefined && countryId !== null && { countryId }),
+        ...(subdivisionId !== undefined && subdivisionId !== null && { subdivisionId }),
         city: validation.data.city || '',
         zipCode: validation.data.zipCode || '',
 
@@ -154,8 +136,8 @@ export const createVenue = async (data: VenueFormSchema): Promise<ServerActionRe
         abaRoutingNumber: validation.data.abaRoutingNumber || null,
         sdiRecipientCode: validation.data.sdiRecipientCode || null,
         billingAddress: validation.data.billingAddress || '',
-        billingCountryId: billingCountryId,
-        billingSubdivisionId: resolvedBillingSubdivisionId,
+        ...(billingCountryId !== undefined && billingCountryId !== null && { billingCountryId }),
+        ...(billingSubdivisionId !== undefined && billingSubdivisionId !== null && { billingSubdivisionId }),
         billingCity: validation.data.billingCity || '',
         billingZipCode: validation.data.billingZipCode || '',
         billingEmail: validation.data.billingEmail || null,

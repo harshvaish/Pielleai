@@ -38,35 +38,33 @@ export const updateVenueGeneralData = async (
     }
 
     const { countryId, subdivisionId, venueManagerId } = validation.data;
-    const resolvedCountryId = countryId ?? null;
-    const resolvedSubdivisionId = subdivisionId ?? null;
 
     const [countryCheck, subdivisionCheck] = await Promise.all([
-      resolvedCountryId
+      countryId !== undefined && countryId !== null
         ? database
             .select({ id: countries.id })
             .from(countries)
-            .where(eq(countries.id, resolvedCountryId))
+            .where(eq(countries.id, countryId))
         : Promise.resolve([]),
 
-      resolvedSubdivisionId
+      subdivisionId !== undefined && subdivisionId !== null
         ? database
             .select({ id: subdivisions.id, countryId: subdivisions.countryId })
             .from(subdivisions)
-            .where(eq(subdivisions.id, resolvedSubdivisionId))
+            .where(eq(subdivisions.id, subdivisionId))
         : Promise.resolve([]),
     ]);
 
-    if (resolvedCountryId && countryCheck.length !== 1) {
+    if (countryId !== undefined && countryId !== null && countryCheck.length !== 1) {
       throw new AppError('Stato selezionato non valido.');
     }
 
-    if (resolvedSubdivisionId && subdivisionCheck.length !== 1) {
+    if (subdivisionId !== undefined && subdivisionId !== null && subdivisionCheck.length !== 1) {
       throw new AppError('Provincia selezionata non valida.');
     }
 
-    if (resolvedCountryId && resolvedSubdivisionId) {
-      if (subdivisionCheck[0]?.countryId != resolvedCountryId) {
+    if (countryId !== undefined && countryId !== null && subdivisionId !== undefined && subdivisionId !== null) {
+      if (subdivisionCheck[0]?.countryId != countryId) {
       throw new AppError('La provincia selezionata non appartiene allo stato indicato.');
       }
     }
@@ -92,8 +90,8 @@ export const updateVenueGeneralData = async (
         type: validation.data.type || 'small',
         capacity: validation.data.capacity ?? 0,
         address: validation.data.address || '',
-        countryId: resolvedCountryId ?? undefined,
-        subdivisionId: resolvedSubdivisionId ?? undefined,
+        ...(countryId !== undefined && countryId !== null && { countryId }),
+        ...(subdivisionId !== undefined && subdivisionId !== null && { subdivisionId }),
         city: validation.data.city || '',
         zipCode: validation.data.zipCode || '',
         managerProfileId: venueManagerId || null,

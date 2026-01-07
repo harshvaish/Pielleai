@@ -70,17 +70,23 @@ export async function getArtistManager(uid: string): Promise<ArtistManagerData<A
       })
       .from(users)
       .innerJoin(profiles, eq(users.id, profiles.userId))
-      .innerJoin(country, eq(profiles.countryId, country.id))
-      .innerJoin(subdivision, eq(profiles.subdivisionId, subdivision.id))
-      .innerJoin(billingCountry, eq(profiles.billingCountryId, billingCountry.id))
-      .innerJoin(billingSubdivision, eq(profiles.billingSubdivisionId, billingSubdivision.id))
+      .leftJoin(country, eq(profiles.countryId, country.id))
+      .leftJoin(subdivision, eq(profiles.subdivisionId, subdivision.id))
+      .leftJoin(billingCountry, eq(profiles.billingCountryId, billingCountry.id))
+      .leftJoin(billingSubdivision, eq(profiles.billingSubdivisionId, billingSubdivision.id))
       .orderBy(desc(profiles.createdAt))
       .where(eq(users.id, uid))
       .limit(1);
 
     if (!userResult.length) return null;
 
-    const user = userResult[0];
+    const user = {
+      ...userResult[0],
+      country: userResult[0].country?.id ? userResult[0].country : null,
+      subdivision: userResult[0].subdivision?.id ? userResult[0].subdivision : null,
+      billingCountry: userResult[0].billingCountry?.id ? userResult[0].billingCountry : null,
+      billingSubdivision: userResult[0].billingSubdivision?.id ? userResult[0].billingSubdivision : null,
+    };
 
     const [languagesResult, artistsResult]: [Language[], ArtistListData[]] = await Promise.all([
       database
@@ -126,7 +132,7 @@ export async function getArtistManager(uid: string): Promise<ArtistManagerData<A
       billingPhone: user.billingPhone || '',
       billingPec: user.billingPec || '',
       taxableInvoice: user.taxableInvoice || false,
-    }; // nullable fields in the database have guard protection
+    };
   } catch (error) {
     console.error('[getArtistManagerData] - Error:', error);
     throw new Error('Recupero dati manager artisti non riuscito.');

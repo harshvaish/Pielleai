@@ -57,29 +57,6 @@ export const createVenueManager = async (
       `placeholder+${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
     const fallbackPassword = signUpPassword?.trim() || 'TempPass1234!';
 
-    const defaultCountry = await database.select({ id: countries.id }).from(countries).limit(1);
-    const defaultCountryId = defaultCountry[0]?.id;
-    if (!defaultCountryId) {
-      throw new AppError('Nessuna nazione disponibile.');
-    }
-
-    const getDefaultSubdivisionId = async (resolvedCountryId: number) => {
-      const rows = await database
-        .select({ id: subdivisions.id })
-        .from(subdivisions)
-        .where(eq(subdivisions.countryId, resolvedCountryId))
-        .limit(1);
-      const id = rows[0]?.id;
-      if (!id) {
-        throw new AppError('Nessuna provincia disponibile.');
-      }
-      return id;
-    };
-
-    const resolvedCountryId = countryId ?? defaultCountryId;
-    const resolvedSubdivisionId =
-      subdivisionId ?? (await getDefaultSubdivisionId(resolvedCountryId));
-
     const [languagesCheck, countryCheck, subdivisionCheck] = await Promise.all([
       safeLanguages.length
         ? database
@@ -88,31 +65,37 @@ export const createVenueManager = async (
             .where(inArray(languagesTable.id, safeLanguages))
         : Promise.resolve([]),
 
-      database
-        .select({ id: countries.id })
-        .from(countries)
-        .where(eq(countries.id, resolvedCountryId)),
+      countryId !== undefined && countryId !== null
+        ? database
+            .select({ id: countries.id })
+            .from(countries)
+            .where(eq(countries.id, countryId))
+        : Promise.resolve([]),
 
-      database
-        .select({ id: subdivisions.id, countryId: subdivisions.countryId })
-        .from(subdivisions)
-        .where(eq(subdivisions.id, resolvedSubdivisionId)),
+      subdivisionId !== undefined && subdivisionId !== null
+        ? database
+            .select({ id: subdivisions.id, countryId: subdivisions.countryId })
+            .from(subdivisions)
+            .where(eq(subdivisions.id, subdivisionId))
+        : Promise.resolve([]),
     ]);
 
     if (languagesCheck.length !== safeLanguages.length) {
       throw new AppError('Una o più lingue selezionate non valide.');
     }
 
-    if (countryCheck.length !== 1) {
+    if (countryId !== undefined && countryId !== null && countryCheck.length !== 1) {
       throw new AppError('Stato selezionato non valido.');
     }
 
-    if (subdivisionCheck.length !== 1) {
+    if (subdivisionId !== undefined && subdivisionId !== null && subdivisionCheck.length !== 1) {
       throw new AppError('Provincia selezionata non valida.');
     }
 
-    if (subdivisionCheck[0].countryId != resolvedCountryId) {
-      throw new AppError('La provincia selezionata non appartiene allo stato indicato.');
+    if (countryId !== undefined && countryId !== null && subdivisionId !== undefined && subdivisionId !== null) {
+      if (subdivisionCheck[0]?.countryId != countryId) {
+        throw new AppError('La provincia selezionata non appartiene allo stato indicato.');
+      }
     }
 
     await database.transaction(async (tx) => {
@@ -148,8 +131,8 @@ export const createVenueManager = async (
           birthPlace: data.birthPlace || '',
           gender: data.gender || 'male',
           address: data.address || '',
-          countryId: resolvedCountryId,
-          subdivisionId: resolvedSubdivisionId,
+          ...(countryId !== undefined && countryId !== null && { countryId }),
+          ...(subdivisionId !== undefined && subdivisionId !== null && { subdivisionId }),
           city: data.city || '',
           zipCode: data.zipCode || '',
         })

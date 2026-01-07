@@ -64,9 +64,6 @@ export const createVenueManagerProfile = async (
     const safeLanguages = languages ?? [];
     const fallbackName = name?.trim() || 'Utente';
 
-    const resolvedCountryId = countryId ?? null;
-    const resolvedSubdivisionId = subdivisionId ?? null;
-
     const [userCheck, languagesCheck] = await Promise.all([
       database.select({ id: users.id }).from(users).where(eq(users.id, uid)).limit(1),
 
@@ -86,28 +83,28 @@ export const createVenueManagerProfile = async (
       throw new AppError('Una o più lingue selezionate non valide.');
     }
 
-    if (resolvedCountryId !== null) {
+    if (countryId !== undefined && countryId !== null) {
       const countryCheck = await database
         .select({ id: countries.id })
         .from(countries)
-        .where(eq(countries.id, resolvedCountryId));
+        .where(eq(countries.id, countryId));
 
       if (countryCheck.length !== 1) {
         throw new AppError('Stato selezionato non valido.');
       }
     }
 
-    if (resolvedSubdivisionId !== null) {
+    if (subdivisionId !== undefined && subdivisionId !== null) {
       const subdivisionCheck = await database
         .select({ id: subdivisions.id, countryId: subdivisions.countryId })
         .from(subdivisions)
-        .where(eq(subdivisions.id, resolvedSubdivisionId));
+        .where(eq(subdivisions.id, subdivisionId));
 
       if (subdivisionCheck.length !== 1) {
         throw new AppError('Provincia selezionata non valida.');
       }
 
-      if (resolvedCountryId !== null && subdivisionCheck[0].countryId != resolvedCountryId) {
+      if (countryId !== undefined && countryId !== null && subdivisionCheck[0].countryId != countryId) {
         throw new AppError('La provincia selezionata non appartiene allo stato indicato.');
       }
     }
@@ -130,8 +127,8 @@ export const createVenueManagerProfile = async (
           birthPlace: data.birthPlace || '',
           gender: data.gender || 'male',
           address: data.address || '',
-          countryId: resolvedCountryId,
-          subdivisionId: resolvedSubdivisionId,
+          ...(countryId !== undefined && countryId !== null && { countryId }),
+          ...(subdivisionId !== undefined && subdivisionId !== null && { subdivisionId }),
           city: data.city || '',
           zipCode: data.zipCode || '',
         })
