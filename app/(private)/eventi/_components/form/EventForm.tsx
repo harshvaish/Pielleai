@@ -192,6 +192,7 @@ export default function EventForm({
     "transportationsCost",
     "totalCost",
     "upfrontPayment",
+    "paymentDate",
   ]);
 
   const isDetailsComplete =
@@ -264,7 +265,7 @@ export default function EventForm({
         values.eventStartTime,
         values.eventEndTime
       ),
-      // paymentDate: values.paymentDate,
+      paymentDate: values.paymentDate,
       contractDate: new Date().toISOString().split("T")[0],
       ccEmails: buildCcEmails(values),
     };
@@ -277,7 +278,7 @@ export default function EventForm({
           }
         : {}),
     };
-  
+
     startTransition(async () => {
       const response =
         hasContract && typeof contractId === "number"
@@ -1647,6 +1648,16 @@ export default function EventForm({
                               "h-10",
                               isVoided && "bg-zinc-100 text-zinc-500"
                             )}
+                          />
+                        </div>
+                        <div className="flex flex-col">
+                        <label className="text-sm text-zinc-600">
+                        Data pagamento saldo{" "}
+                          </label>
+                          <Input
+                            type="date"
+                            {...register("paymentDate")}
+                            className="h-10"
                           />
                         </div>
                       </div>
