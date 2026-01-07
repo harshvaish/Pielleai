@@ -285,11 +285,11 @@ export default function EventForm({
           ? await editContract({
               ...payload,
               contractId,
-              status: "draft",
+              // status: "draft",
             })
           : await createContract({
               ...payload,
-              status: "draft",
+              // status: "draft",
             });
       if (response.success) {
         setValue("contractId", response.data.id);
@@ -1305,9 +1305,14 @@ export default function EventForm({
               )}
             </div>
             {contractStatus === "voided" ? (
-              <ViewContractButton />
+              (watch("contractDocument")?.url || event?.contract?.fileUrl) && (
+                <ViewContractButton />
+              )
             ) : (
               <div className="flex items-center gap-2">
+                {(watch("contractDocument")?.url ||
+                  event?.contract?.fileUrl) && <ViewContractButton />}
+
                 <Button
                   type="button"
                   size="sm"
@@ -1651,8 +1656,8 @@ export default function EventForm({
                           />
                         </div>
                         <div className="flex flex-col">
-                        <label className="text-sm text-zinc-600">
-                        Data pagamento saldo{" "}
+                          <label className="text-sm text-zinc-600">
+                            Data pagamento saldo{" "}
                           </label>
                           <Input
                             type="date"
