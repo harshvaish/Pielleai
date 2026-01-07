@@ -41,7 +41,6 @@ export default function ArtistAvailabilitySelectWithCreate() {
     startTime: '',
     endTime: '',
   });
-
   const [availabilities, setAvailabilities] = useState<ArtistAvailability[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
 
@@ -103,6 +102,7 @@ export default function ArtistAvailabilitySelectWithCreate() {
     });
 
     setNewTimeRange({ startTime: '', endTime: '' });
+    setVisible(false);
     setLoading(false);
     setOpen(false);
   };
@@ -123,6 +123,7 @@ export default function ArtistAvailabilitySelectWithCreate() {
       startDate: fromZonedTime(availability.startDate, TIME_ZONE),
       endDate: fromZonedTime(availability.endDate, TIME_ZONE),
     });
+    setVisible(false);
     setOpen(false);
   };
 
@@ -192,8 +193,13 @@ export default function ArtistAvailabilitySelectWithCreate() {
 
       <Dialog
         open={open}
-        onOpenChange={setOpen}
-      >
+        onOpenChange={(isOpen) => {
+          setOpen(isOpen);
+          if (!isOpen) {
+            setVisible(false);
+          }
+        }}
+            >
         <DialogContent className='h-dvh md:max-h-[420px] w-dvw grid grid-rows-[auto_1fr] p-4 pt-12 rounded-none md:rounded-2xl'>
           <DialogHeader>
             <DialogTitle>Seleziona data e ora dell&apos;evento</DialogTitle>
