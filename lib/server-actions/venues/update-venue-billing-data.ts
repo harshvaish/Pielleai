@@ -38,17 +38,17 @@ export const updateVenueBillingData = async (
     }
 
     const { billingCountry, billingSubdivisionId } = validation.data;
-    const billingCountryId = billingCountry?.id ?? null;
+    const billingCountryId = billingCountry?.id;
 
     const [billingCountryCheck, billingSubdivisionCheck] = await Promise.all([
-      billingCountryId
+      billingCountryId !== undefined && billingCountryId !== null
         ? database
             .select({ id: countries.id })
             .from(countries)
             .where(eq(countries.id, billingCountryId))
         : Promise.resolve([]),
 
-      billingSubdivisionId
+      billingSubdivisionId !== undefined && billingSubdivisionId !== null
         ? database
             .select({ id: subdivisions.id, countryId: subdivisions.countryId })
             .from(subdivisions)
@@ -56,15 +56,15 @@ export const updateVenueBillingData = async (
         : Promise.resolve([]),
     ]);
 
-    if (billingCountryId && billingCountryCheck.length !== 1) {
+    if (billingCountryId !== undefined && billingCountryId !== null && billingCountryCheck.length !== 1) {
       throw new AppError('Nazione selezionata non valida.');
     }
 
-    if (billingSubdivisionId && billingSubdivisionCheck.length !== 1) {
+    if (billingSubdivisionId !== undefined && billingSubdivisionId !== null && billingSubdivisionCheck.length !== 1) {
       throw new AppError('Provincia di fatturazione selezionata non valida.');
     }
 
-    if (billingCountryId && billingSubdivisionId) {
+    if (billingCountryId !== undefined && billingCountryId !== null && billingSubdivisionId !== undefined && billingSubdivisionId !== null) {
       if (billingSubdivisionCheck[0]?.countryId != billingCountryId) {
         throw new AppError(
           'La provincia di fatturazione non appartiene alla nazione selezionata.',
@@ -82,8 +82,8 @@ export const updateVenueBillingData = async (
         abaRoutingNumber: validation.data.abaRoutingNumber || null,
         sdiRecipientCode: validation.data.sdiRecipientCode || null,
         billingAddress: validation.data.billingAddress,
-        billingCountryId: billingCountryId ?? undefined,
-        billingSubdivisionId: validation.data.billingSubdivisionId ?? undefined,
+        ...(billingCountryId !== undefined && billingCountryId !== null && { billingCountryId }),
+        ...(billingSubdivisionId !== undefined && billingSubdivisionId !== null && { billingSubdivisionId }),
         billingCity: validation.data.billingCity,
         billingZipCode: validation.data.billingZipCode,
         billingEmail: validation.data.billingEmail || null,

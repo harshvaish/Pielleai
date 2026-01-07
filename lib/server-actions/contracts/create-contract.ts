@@ -31,6 +31,8 @@ export type CreateContractInput = {
   status?: ContractStatus; // defaults to 'draft'
   note?: string;
   ccEmails?: string[];
+  fileUrl?: string;
+  fileName?: string;
 
   // write-through payload fields
   artistName?: string;
@@ -245,8 +247,8 @@ export const createContract = async (
           contractDate,
           status,
           recipientEmail,
-          fileUrl: null,
-          fileName: null,
+          fileUrl: cleanStr(data.fileUrl) ?? null,
+          fileName: cleanStr(data.fileName) ?? null,
         })
         .returning({ id: contracts.id });
 

@@ -119,7 +119,13 @@ export async function getArtist(slug: string): Promise<ArtistData | null> {
 
     if (!userResult.length) return null;
 
-    const user = userResult[0];
+    const user = {
+      ...userResult[0],
+      country: userResult[0].country?.id ? userResult[0].country : null,
+      subdivision: userResult[0].subdivision?.id ? userResult[0].subdivision : null,
+      billingCountry: userResult[0].billingCountry?.id ? userResult[0].billingCountry : null,
+      billingSubdivision: userResult[0].billingSubdivision?.id ? userResult[0].billingSubdivision : null,
+    };
 
     const [zonesResult, languagesResult, managersResult] = await Promise.all([
       database

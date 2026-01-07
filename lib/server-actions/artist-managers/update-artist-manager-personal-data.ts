@@ -51,8 +51,6 @@ export const updateArtistManagerPersonalData = async (
 
     const { languages, countryId, subdivisionId } = validation.data;
     const safeLanguages = languages ?? [];
-    const resolvedCountryId = countryId ?? null;
-    const resolvedSubdivisionId = subdivisionId ?? null;
 
     const [languagesCheck, countryCheck, subdivisionCheck] = await Promise.all([
       safeLanguages.length
@@ -62,33 +60,35 @@ export const updateArtistManagerPersonalData = async (
             .where(inArray(languagesTable.id, safeLanguages))
         : Promise.resolve([]),
 
-      resolvedCountryId
+      countryId !== undefined && countryId !== null
         ? database
             .select({ id: countries.id })
             .from(countries)
-            .where(eq(countries.id, resolvedCountryId))
+            .where(eq(countries.id, countryId))
         : Promise.resolve([]),
 
-      database
-        .select({ id: subdivisions.id, countryId: subdivisions.countryId })
-        .from(subdivisions)
-        .where(eq(subdivisions.id, resolvedSubdivisionId ?? 0)),
+      subdivisionId !== undefined && subdivisionId !== null
+        ? database
+            .select({ id: subdivisions.id, countryId: subdivisions.countryId })
+            .from(subdivisions)
+            .where(eq(subdivisions.id, subdivisionId))
+        : Promise.resolve([]),
     ]);
 
     if (languagesCheck.length !== safeLanguages.length) {
       throw new AppError('Una o più lingue selezionate non valide.');
     }
 
-    if (resolvedCountryId && countryCheck.length !== 1) {
+    if (countryId !== undefined && countryId !== null && countryCheck.length !== 1) {
       throw new AppError('Stato selezionato non valido.');
     }
 
-    if (resolvedSubdivisionId && subdivisionCheck.length !== 1) {
+    if (subdivisionId !== undefined && subdivisionId !== null && subdivisionCheck.length !== 1) {
       throw new AppError('Provincia selezionata non valida.');
     }
 
-    if (resolvedCountryId && resolvedSubdivisionId) {
-      if (subdivisionCheck[0]?.countryId != resolvedCountryId) {
+    if (countryId !== undefined && countryId !== null && subdivisionId !== undefined && subdivisionId !== null) {
+      if (subdivisionCheck[0]?.countryId != countryId) {
       throw new AppError('La provincia selezionata non appartiene allo stato indicato.');
       }
     }
@@ -105,8 +105,8 @@ export const updateArtistManagerPersonalData = async (
           birthPlace: data.birthPlace || '',
           gender: data.gender || 'male',
           address: data.address || '',
-          countryId: resolvedCountryId ?? data.countryId ?? 0,
-          subdivisionId: resolvedSubdivisionId ?? data.subdivisionId ?? 0,
+          ...(countryId !== undefined && countryId !== null && { countryId }),
+          ...(subdivisionId !== undefined && subdivisionId !== null && { subdivisionId }),
           city: data.city || '',
           zipCode: data.zipCode || '',
           updatedAt: new Date(),
