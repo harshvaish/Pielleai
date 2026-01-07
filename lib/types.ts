@@ -126,8 +126,8 @@ export type ArtistManagerData<T = ArtistListData | ArtistSelectData> = {
   phone: string;
   email: string;
   languages: Language[];
-  birthDate: string;
-  birthPlace: string;
+  birthDate: string | null;
+  birthPlace: string | null;
   address: string;
   country: Country | null;
   subdivision: Subdivision | null;
@@ -199,8 +199,8 @@ export type ArtistData = {
   phone: string;
   email: string;
   languages: Language[];
-  birthDate: string;
-  birthPlace: string;
+  birthDate: string | null;
+  birthPlace: string | null;
   address: string | null;
   country: Country | null;
   subdivision: Subdivision | null;
@@ -323,8 +323,8 @@ export type VenueManagerData<T = VenueTableData | VenueListData | VenueBadgeData
 
   venues: T[];
 
-  birthDate: string;
-  birthPlace: string;
+  birthDate: string | null;
+  birthPlace: string | null;
   address: string;
   country: Country | null;
   subdivision: Subdivision | null;

@@ -123,7 +123,7 @@ export const createVenueManagerProfile = async (
           name: data.name || fallbackName,
           surname: data.surname || '',
           phone: data.phone || '',
-          birthDate: data.birthDate || '1970-01-01',
+          birthDate: data.birthDate || null,
           birthPlace: data.birthPlace || '',
           gender: data.gender || 'male',
           address: data.address || '',

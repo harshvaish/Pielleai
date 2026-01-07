@@ -60,7 +60,7 @@ export const createArtist = async (data: ArtistFormSchema): Promise<ServerAction
     const fallbackName = validation.data.name?.trim() || 'Artista';
     const fallbackSurname = validation.data.surname?.trim() || '';
     const fallbackStageName = validation.data.stageName?.trim() || fallbackName;
-    const fallbackBirthDate = validation.data.birthDate || '1970-01-01';
+    const fallbackBirthDate = validation.data.birthDate || null;
     const fallbackGender = validation.data.gender || 'male';
 
     const [
