@@ -55,7 +55,7 @@ export default function CreateArtistManagerForm({
       name: '',
       surname: '',
       phone: '',
-      birthDate: '',
+      birthDate: undefined,
       birthPlace: '',
       languages: [],
       address: '',
@@ -106,6 +106,7 @@ export default function CreateArtistManagerForm({
 
   const onSubmit = async (data: ArtistManagerFormSchema) => {
     startTransition(async () => {
+      console.log(data, "data-----------")
       const response = await createArtistManager(data);
 
       if (response.success) {
