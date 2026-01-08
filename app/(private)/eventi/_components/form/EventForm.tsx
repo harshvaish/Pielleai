@@ -40,6 +40,7 @@ import DocuSignButton from "../create/DocuSignButton";
 import ContractStatusButton from "../update/ContractStatusButton";
 import { useRouter } from "next/navigation";
 import ViewContractButton from "../update/ViewContractButton";
+import ViewContractDetail from "../update/ViewContractDetail";
 
 type EventForm = {
   artists: ArtistSelectData[];
@@ -1305,13 +1306,13 @@ export default function EventForm({
               )}
             </div>
             {contractStatus === "voided" ? (
-              (watch("contractDocument")?.url || event?.contract?.fileUrl) && (
                 <ViewContractButton />
-              )
             ) : (
               <div className="flex items-center gap-2">
-                {(watch("contractDocument")?.url ||
-                  event?.contract?.fileUrl) && <ViewContractButton />}
+                <ViewContractDetail 
+                  event={event}
+                  isDetailsComplete={isDetailsComplete}
+                />
 
                 <Button
                   type="button"
