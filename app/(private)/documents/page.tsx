@@ -27,6 +27,8 @@ import { getVenuesCached } from "@/lib/cache/venues";
 import ExportButton from "./_components/ExportButton";
 import { JSX } from "react";
 import ResendDocuSignButton from "./_components/ResendDocuSignButton";
+import DocumentVenuesBadge from "../_components/Badges/DocumentVenuesBadge";
+import ArtistsBadge from "../_components/Badges/ArtistsBadge";
 
 type EventsPageProps = {
   searchParams?: Promise<{
@@ -588,32 +590,17 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
                   <div className="flex flex-col gap-2">
                     {/* Row 1 */}
                     <div className="flex flex-wrap items-center gap-2 text-sm">
-                      {contract?.artist?.avatarUrl && (
-                        <img
-                          src={contract.artist.avatarUrl}
-                          alt={contract.artistName}
-                          className="h-8 w-8 rounded-full object-cover"
-                        />
-                      )}
-
                       <div className="flex flex-col leading-tight">
-                        <a
-                          href={`/artisti`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="font-semibold text-zinc-900"
-                        >
-                          {contract.stageName}
-                        </a>
-                        <span className="text-zinc-500 text-xs">
-                          {contract.artistName}
-                        </span>
+                        <ArtistsBadge
+                          artists={[contract.artist]}
+                          userRole={user.role}
+                        />
                       </div>
                       <div className="flex flex-col leading-tight">
-                        <span className="inline-flex items-center gap-1.5 rounded-md w-fit bg-zinc-100 px-2 py-1.5 text-xs text-zinc-700">
-                          <span className="w-3 h-3 flex shrink-0 justify-center items-center bg-zinc-600 rounded-full" />
-                          <span>Club "{contract.venueName}"</span>
-                        </span>
+                        <DocumentVenuesBadge
+                          userRole={user.role}
+                          venues={[contract.venue]}
+                        />
                         <div className="flex items-center gap-4 text-xs py-0.5 text-zinc-500">
                           <span className="flex items-center gap-1">
                             <CalendarDays className="h-4 w-4 text-zinc-400" />
@@ -634,7 +621,7 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
                       <span>Contratto</span>
                       <span>
                         {contract.fileUrl ? (
-                          <span className="flex items-center gap-2 gap-2 bg-white border border-zinc-300 rounded-sm px-4 py-1.5">
+                          <span className="flex items-center bg-white border border-zinc-300 rounded-lg px-2 py-1.5">
                             <FileText className="h-4 w-4 text-zinc-400" />
                             <a
                               href={contract.fileUrl}
