@@ -125,7 +125,6 @@ export default function ArtistAvailabilitySelectWithCreate() {
     });
     setOpen(false);
   };
-
   const label = useMemo(() => {
     if (!selectedAvailability?.startDate || !selectedAvailability?.endDate) {
       return 'Seleziona data';
@@ -143,6 +142,21 @@ export default function ArtistAvailabilitySelectWithCreate() {
     }
   }, [selectedAvailability]);
 
+  const defaultTimeRange = useMemo(() => {
+    if (!selectedAvailability?.startDate || !selectedAvailability?.endDate) {
+      return null;
+    }
+  
+    const startLocal = toZonedTime(selectedAvailability.startDate, TIME_ZONE);
+    const endLocal = toZonedTime(selectedAvailability.endDate, TIME_ZONE);
+  
+    return {
+      startTime: format(startLocal, 'HH:mm'),
+      endTime: format(endLocal, 'HH:mm'),
+    };
+  }, [selectedAvailability]);
+  
+
   const startDateUTC = useMemo(() => {
     if (!selectedDate) return null;
     const startLocal = startOfDay(selectedDate);
@@ -155,7 +169,6 @@ export default function ArtistAvailabilitySelectWithCreate() {
   }, [selectedArtistId, startDateUTC]);
 
   const { data: response, isLoading } = useSWR(fetchUrl, fetcher);
-
   useEffect(() => {
     if (!response) return;
 
@@ -208,7 +221,14 @@ export default function ArtistAvailabilitySelectWithCreate() {
               mode='single'
               className='h-max p-0 self-center'
               selected={selectedDate}
-              onSelect={setSelectedDate}
+              onSelect={(date) => {
+                setSelectedDate(date);
+                setNewTimeRange({
+                  startTime: '',
+                  endTime: '',
+                });
+                setVisible(false);
+              }}
               disabled={isLoading ? true : { before: new Date() }}
             />
 
@@ -230,7 +250,7 @@ export default function ArtistAvailabilitySelectWithCreate() {
                   <div className='flex gap-2 items-center text-zinc-700 pb-2 border-b'>
                     <Input
                       type='time'
-                      value={newTimeRange.startTime}
+                      value={defaultTimeRange?.startTime ?? newTimeRange.startTime}
                       onChange={(e) =>
                         setNewTimeRange((prev) => ({
                           ...prev,
@@ -245,7 +265,7 @@ export default function ArtistAvailabilitySelectWithCreate() {
                     <span className='text-zinc-400'>-</span>
                     <Input
                       type='time'
-                      value={newTimeRange.endTime}
+                      value={defaultTimeRange?.endTime ?? newTimeRange.endTime}
                       onChange={(e) =>
                         setNewTimeRange((prev) => ({
                           ...prev,
