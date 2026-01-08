@@ -112,58 +112,72 @@ export const createVenue = async (data: VenueFormSchema): Promise<ServerActionRe
       }
     }
 
+    const insertValues: any = {
+      status: 'active',
+      avatarUrl: validation.data.avatarUrl || null,
+      name: validation.data.name || fallbackName,
+      bio: validation.data.bio || null,
+      type: fallbackType,
+      capacity: fallbackCapacity,
+      managerProfileId: validation.data.venueManagerId || null,
+
+      address: validation.data.address || '',
+      city: validation.data.city || '',
+      zipCode: validation.data.zipCode || '',
+
+      company: validation.data.company || '',
+      taxCode: validation.data.taxCode || '',
+      vatCode: validation.data.vatCode || '',
+      bicCode: validation.data.bicCode || null,
+      abaRoutingNumber: validation.data.abaRoutingNumber || null,
+      sdiRecipientCode: validation.data.sdiRecipientCode || null,
+      billingAddress: validation.data.billingAddress || '',
+      billingCity: validation.data.billingCity || '',
+      billingZipCode: validation.data.billingZipCode || '',
+      billingEmail: validation.data.billingEmail || null,
+      billingPhone: validation.data.billingPhone || null,
+      billingPec: validation.data.billingPec || '',
+
+      tiktokUrl: validation.data.tiktokUrl || null,
+      tiktokUsername: validation.data.tiktokUsername || null,
+      tiktokFollowers: validation.data.tiktokFollowers || null,
+      tiktokCreatedAt: validation.data.tiktokCreatedAt || null,
+
+      facebookUrl: validation.data.facebookUrl || null,
+      facebookUsername: validation.data.facebookUsername || null,
+      facebookFollowers: validation.data.facebookFollowers || null,
+      facebookCreatedAt: validation.data.facebookCreatedAt || null,
+
+      instagramUrl: validation.data.instagramUrl || null,
+      instagramUsername: validation.data.instagramUsername || null,
+      instagramFollowers: validation.data.instagramFollowers || null,
+      instagramCreatedAt: validation.data.instagramCreatedAt || null,
+
+      xUrl: validation.data.xUrl || null,
+      xUsername: validation.data.xUsername || null,
+      xFollowers: validation.data.xFollowers || null,
+      xCreatedAt: validation.data.xCreatedAt || null,
+    };
+
+    if (countryId !== undefined && countryId !== null) {
+      insertValues.countryId = countryId;
+    }
+
+    if (subdivisionId !== undefined && subdivisionId !== null) {
+      insertValues.subdivisionId = subdivisionId;
+    }
+
+    if (billingCountryId !== undefined && billingCountryId !== null) {
+      insertValues.billingCountryId = billingCountryId;
+    }
+
+    if (billingSubdivisionId !== undefined && billingSubdivisionId !== null) {
+      insertValues.billingSubdivisionId = billingSubdivisionId;
+    }
+
     const venueResult = await database
       .insert(venues)
-      .values({
-        status: 'active',
-        avatarUrl: validation.data.avatarUrl || null,
-        name: validation.data.name || fallbackName,
-        bio: validation.data.bio || null,
-        type: fallbackType,
-        capacity: fallbackCapacity,
-        managerProfileId: validation.data.venueManagerId || null,
-
-        address: validation.data.address || '',
-        ...(countryId !== undefined && countryId !== null && { countryId }),
-        ...(subdivisionId !== undefined && subdivisionId !== null && { subdivisionId }),
-        city: validation.data.city || '',
-        zipCode: validation.data.zipCode || '',
-
-        company: validation.data.company || '',
-        taxCode: validation.data.taxCode || '',
-        vatCode: validation.data.vatCode || '',
-        bicCode: validation.data.bicCode || null,
-        abaRoutingNumber: validation.data.abaRoutingNumber || null,
-        sdiRecipientCode: validation.data.sdiRecipientCode || null,
-        billingAddress: validation.data.billingAddress || '',
-        ...(billingCountryId !== undefined && billingCountryId !== null && { billingCountryId }),
-        ...(billingSubdivisionId !== undefined && billingSubdivisionId !== null && { billingSubdivisionId }),
-        billingCity: validation.data.billingCity || '',
-        billingZipCode: validation.data.billingZipCode || '',
-        billingEmail: validation.data.billingEmail || null,
-        billingPhone: validation.data.billingPhone || null,
-        billingPec: validation.data.billingPec || '',
-
-        tiktokUrl: validation.data.tiktokUrl || null,
-        tiktokUsername: validation.data.tiktokUsername || null,
-        tiktokFollowers: validation.data.tiktokFollowers || null,
-        tiktokCreatedAt: validation.data.tiktokCreatedAt || null,
-
-        facebookUrl: validation.data.facebookUrl || null,
-        facebookUsername: validation.data.facebookUsername || null,
-        facebookFollowers: validation.data.facebookFollowers || null,
-        facebookCreatedAt: validation.data.facebookCreatedAt || null,
-
-        instagramUrl: validation.data.instagramUrl || null,
-        instagramUsername: validation.data.instagramUsername || null,
-        instagramFollowers: validation.data.instagramFollowers || null,
-        instagramCreatedAt: validation.data.instagramCreatedAt || null,
-
-        xUrl: validation.data.xUrl || null,
-        xUsername: validation.data.xUsername || null,
-        xFollowers: validation.data.xFollowers || null,
-        xCreatedAt: validation.data.xCreatedAt || null,
-      })
+      .values(insertValues)
       .returning({ slug: venues.slug });
 
     const slug = venueResult[0]?.slug;

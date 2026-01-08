@@ -43,7 +43,7 @@ export default function PersonalDataTab({ tabValue, userData }: PersonalDataTabP
         <span className='text-sm font-medium text-zinc-500'>{userData?.country?.name}</span>
 
         <span className='text-sm font-semibold text-zinc-600'>Sesso</span>
-        <span className='text-sm font-medium text-zinc-500'>{GENDERS_LABELS[userData.gender]}</span>
+        <span className='text-sm font-medium text-zinc-500'>{userData.gender ? GENDERS_LABELS[userData.gender] : '-'}</span>
 
         <span className='text-sm font-semibold text-zinc-600'>Lingue</span>
         <span className='text-sm font-medium text-zinc-500'>{languagesString}</span>

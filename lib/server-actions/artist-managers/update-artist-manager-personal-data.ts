@@ -103,7 +103,7 @@ export const updateArtistManagerPersonalData = async (
           phone: data.phone || '',
           birthDate: data.birthDate || null,
           birthPlace: data.birthPlace || '',
-          gender: data.gender || 'male',
+          ...(data.gender && { gender: data.gender }),
           address: data.address || '',
           ...(countryId !== undefined && countryId !== null && { countryId }),
           ...(subdivisionId !== undefined && subdivisionId !== null && { subdivisionId }),

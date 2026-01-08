@@ -144,9 +144,9 @@ export const updateArtistPersonalData = async (
             validation.data.email?.trim() ||
             `artist+${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
           phone: validation.data.phone || '',
-          birthDate: validation.data.birthDate || null,
+          birthDate: validation.data.birthDate ?? undefined,
           birthPlace: validation.data.birthPlace || '',
-          gender: validation.data.gender || 'male',
+          ...(validation.data.gender && { gender: validation.data.gender }),
           address: validation.data.address || null,
           ...(validation.data.countryId !== undefined && validation.data.countryId !== null && { countryId: validation.data.countryId }),
           ...(validation.data.subdivisionId !== undefined && validation.data.subdivisionId !== null && { subdivisionId: validation.data.subdivisionId }),

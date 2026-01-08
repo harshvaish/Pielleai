@@ -133,7 +133,7 @@ export type ArtistManagerData<T = ArtistListData | ArtistSelectData> = {
   subdivision: Subdivision | null;
   city: string;
   zipCode: string;
-  gender: Gender;
+  gender: Gender | null;
 
   artists: T[];
 
@@ -330,7 +330,7 @@ export type VenueManagerData<T = VenueTableData | VenueListData | VenueBadgeData
   subdivision: Subdivision | null;
   city: string;
   zipCode: string;
-  gender: Gender;
+  gender: Gender | null;
 };
 
 export type VenueManagerTableData = Pick<
