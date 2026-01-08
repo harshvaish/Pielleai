@@ -29,6 +29,7 @@ import { JSX } from "react";
 import ResendDocuSignButton from "./_components/ResendDocuSignButton";
 import DocumentVenuesBadge from "../_components/Badges/DocumentVenuesBadge";
 import ArtistsBadge from "../_components/Badges/ArtistsBadge";
+import { AVATAR_FALLBACK } from "@/lib/constants";
 
 type EventsPageProps = {
   searchParams?: Promise<{
@@ -91,9 +92,9 @@ export type ContractCard = {
     name: string;
     surname: string;
     stageName: string;
-    avatarUrl: string | null;
+    avatarUrl: string;
     slug: string;
-    status: string;
+    status: "active" | "waiting-for-approval" | "disabled" | "banned";
     tourManagerEmail: string | null;
     tourManagerName: string | null;
     tourManagerSurname: string | null;
@@ -108,7 +109,7 @@ export type ContractCard = {
     vatCode: string | null;
     avatarUrl: string | null;
     slug: string;
-    status: string;
+    status: "active" | "waiting-for-approval" | "disabled" | "banned";
   };
 
   event: {
@@ -350,7 +351,7 @@ function mapContract(c: any): ContractCard {
       name: c.artist.name,
       surname: c.artist.surname,
       stageName: c.artist.stageName,
-      avatarUrl: c.artist.avatarUrl ?? null,
+      avatarUrl: c.artist.avatarUrl || AVATAR_FALLBACK,
       slug: c.artist.slug,
       status: c.artist.status,
       tourManagerEmail: c.artist.tourManagerEmail ?? null,
