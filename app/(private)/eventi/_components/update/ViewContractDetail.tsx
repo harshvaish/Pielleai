@@ -86,13 +86,17 @@ export async function generateFilledContractHtml(
   data: ContractData
 ): Promise<string> {
   const res = await fetch("/contract/contract-template.html");
-  console.log(res, "res-------")
   if (!res.ok) {
     throw new Error("Failed to load contract template");
   }
 
   let html = await res.text();
 
+  html = html.replace(
+    "<head>",
+    `<head><base href="${window.location.origin}/">`
+  );
+  
   const replacements: Record<string, string> = {
     ARTIST_NAME: data.artistName,
     ARTIST_STAGE_NAME: data.artistStageName ?? "",
