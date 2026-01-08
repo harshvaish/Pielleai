@@ -506,7 +506,7 @@ export const artists = pgTable(
     subdivisionId: integer('subdivision_id'),
     city: text(),
     zipCode: varchar('zip_code', { length: 10 }),
-    gender: profileGenders().notNull(),
+    gender: profileGenders(),
     tourManagerName: text('tour_manager_name').notNull(),
     tourManagerSurname: text('tour_manager_surname').notNull(),
     tourManagerEmail: text('tour_manager_email').notNull(),

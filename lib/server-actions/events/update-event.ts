@@ -230,7 +230,7 @@ export const updateEvent = async (
           bookingPercentage: validation.data.bookingPercentage?.toString() ?? null,
           moArtistAdvancedExpenses: validation.data.moArtistAdvancedExpenses?.toString() ?? null,
           artistNetCost: validation.data.artistNetCost?.toString() ?? null,
-          artistUpfrontCost: validation.data.artistUpfrontCost?.toString() ?? null,
+          artistUpfrontCost: validation.data.upfrontPayment?.toString() ?? null,
 
           hotel: validation.data.hotel || null,
           hotelCost: validation.data.hotelCost?.toString() ?? null,
@@ -249,6 +249,7 @@ export const updateEvent = async (
           tecnicalRiderUrl: validTecnicalRider ? tecnicalRiderDocument!.url : null,
           tecnicalRiderName: validTecnicalRider ? tecnicalRiderDocument!.name : null,
           paymentDate: validation.data.paymentDate || null,
+          eventType: validation.data.eventType || null,
 
           contractSigning: validation.data.contractSigning,
           depositInvoiceIssuing: validation.data.depositInvoiceIssuing,
