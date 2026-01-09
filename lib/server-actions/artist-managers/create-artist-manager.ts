@@ -61,8 +61,7 @@ export const createArtistManager = async (
     const safeLanguages = languages ?? [];
     const fallbackName = name?.trim() || 'Utente';
     const fallbackEmail =
-      signUpEmail?.trim() ||
-      `placeholder+${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+      signUpEmail?.trim() || '';
     const fallbackPassword = signUpPassword?.trim() || 'TempPass1234!';
     const billingCountryId = billingCountry?.id;
 
