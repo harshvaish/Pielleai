@@ -24,7 +24,7 @@ import { eventStatus } from "@/lib/database/schema";
 import { EventFormSchema } from "@/lib/validation/event-form-schema";
 import ArtistAvailabilitySelectWithCreate from "./ArtistAvailabilitySelectWithCreate";
 import EventStatusBadge from "@/app/(private)/_components/Badges/EventStatusBadge";
-import { useEffect, useMemo, useTransition } from "react";
+import { useEffect, useMemo, useRef, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { QUESTION_ICON, GREEN_TICK_ICON } from "@/lib/constants";
 import {
@@ -79,8 +79,14 @@ export default function EventForm({
   const router = useRouter();
   const selectedVenueId = watch("venueId");
   const selectedVenue = venues.find((venue) => venue.id == selectedVenueId);
+  const selectedArtistId = watch("artistId");
+  const selectedArtist = useMemo(
+    () => artists.find((artist) => artist.id === selectedArtistId),
+    [artists, selectedArtistId]
+  );
   const contractId = watch("contractId");
   const hasContract = Boolean(contractId);
+  const contractDocument = watch("contractDocument");
   const moCost = watch("moCost");
   const bookingPercentage = watch("bookingPercentage");
   const moArtistAdvancedExpenses = watch("moArtistAdvancedExpenses");
@@ -94,6 +100,7 @@ export default function EventForm({
     control,
     name: "contractStatus",
   });
+  const lastArtistIdRef = useRef<number | undefined>(undefined);
 
   // Calculate artistNetCost
   const artistNetCost = useMemo(() => {
@@ -158,6 +165,39 @@ export default function EventForm({
     setValue("cashBalanceCost", cashBalanceCost);
   }, [cashBalanceCost, setValue]);
 
+  useEffect(() => {
+    if (!selectedArtistId || !selectedArtist) {
+      lastArtistIdRef.current = selectedArtistId;
+      return;
+    }
+
+    const isArtistChange = lastArtistIdRef.current !== selectedArtistId;
+    const shouldHydrate =
+      mode === "create"
+        ? isArtistChange
+        : lastArtistIdRef.current !== undefined && isArtistChange;
+
+    if (!shouldHydrate) {
+      lastArtistIdRef.current = selectedArtistId;
+      return;
+    }
+
+    const artistFullName = `${selectedArtist.name} ${selectedArtist.surname}`.trim();
+    const tourManagerFullName = [
+      selectedArtist.tourManagerName,
+      selectedArtist.tourManagerSurname,
+    ]
+      .filter(Boolean)
+      .join(" ");
+
+    setValue("artistFullName", artistFullName);
+    setValue("artistStageName", selectedArtist.stageName ?? "");
+    setValue("tourManagerName", tourManagerFullName);
+    setValue("tourManagerEmail", selectedArtist.tourManagerEmail ?? "");
+
+    lastArtistIdRef.current = selectedArtistId;
+  }, [mode, selectedArtist, selectedArtistId, setValue]);
+
   const ccEmails = [
     "Tour Manager",
     "Admin",
@@ -176,6 +216,8 @@ export default function EventForm({
   const isArtistComplete = isSectionComplete(formValues, [
     "artistFullName",
     "artistStageName",
+    "tourManagerName",
+    "tourManagerEmail",
   ]);
 
   const isVenueComplete = isSectionComplete(formValues, [
@@ -1306,13 +1348,15 @@ export default function EventForm({
               )}
             </div>
             {contractStatus === "voided" ? (
-                <ViewContractButton />
+              hasContract && contractDocument?.url ? <ViewContractButton /> : null
             ) : (
               <div className="flex items-center gap-2">
-                <ViewContractDetail 
-                  event={event}
-                  isDetailsComplete={isDetailsComplete}
-                />
+                {hasContract && (
+                  <ViewContractDetail
+                    event={event}
+                    isDetailsComplete={isDetailsComplete}
+                  />
+                )}
 
                 <Button
                   type="button"
@@ -1368,6 +1412,8 @@ export default function EventForm({
                             isSectionComplete(watch(), [
                               "artistFullName",
                               "artistStageName",
+                              "tourManagerName",
+                              "tourManagerEmail",
                             ])
                               ? GREEN_TICK_ICON
                               : QUESTION_ICON
@@ -1420,6 +1466,27 @@ export default function EventForm({
                             {errors.artistStageName && (
                               <p className="text-xs text-destructive">
                                 {errors.artistStageName.message as string}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div className="flex flex-col gap-1">
+                            <label className="text-sm text-zinc-600">
+                              Tour Manager{" "}
+                            </label>
+                            <Input
+                              {...register("tourManagerName")}
+                              placeholder="Inserisci il nome del tour manager"
+                              readOnly={isVoided}
+                              className={cn(
+                                "h-10",
+                                isVoided && "bg-zinc-100 text-zinc-500"
+                              )}
+                            />
+                            {errors.tourManagerName && (
+                              <p className="text-xs text-destructive">
+                                {errors.tourManagerName.message as string}
                               </p>
                             )}
                           </div>

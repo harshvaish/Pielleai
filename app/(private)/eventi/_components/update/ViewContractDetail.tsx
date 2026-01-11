@@ -82,6 +82,19 @@ type EventType = {
    HTML TEMPLATE FILLER
 -------------------------------- */
 
+const formatEventType = (value?: string) => {
+  switch (value) {
+    case "dj-set":
+      return "DJ Set";
+    case "live":
+      return "Live";
+    case "festival":
+      return "Festival";
+    default:
+      return value ?? "";
+  }
+};
+
 export async function generateFilledContractHtml(
   data: ContractData
 ): Promise<string> {
@@ -163,9 +176,9 @@ export default function ViewContractDetail({
     venueVatNumber: event.venue?.vatCode,
     venueCity: event.venue?.city ?? "",
 
-    eventType: event.eventType,
+    eventType: formatEventType(event.eventType),
     eventDate: event.availability?.startDate
-      ? format(new Date(event.availability.startDate), "yyyy-MM-dd")
+      ? format(new Date(event.availability.startDate), "dd/MM/yyyy")
       : "",
     eventTime: getTimeRange(
       event.availability?.startDate,

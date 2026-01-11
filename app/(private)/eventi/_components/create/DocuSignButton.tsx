@@ -83,6 +83,19 @@ type EventType = {
    HTML TEMPLATE FILLER
 -------------------------------- */
 
+const formatEventType = (value?: string) => {
+  switch (value) {
+    case "dj-set":
+      return "DJ Set";
+    case "live":
+      return "Live";
+    case "festival":
+      return "Festival";
+    default:
+      return value ?? "";
+  }
+};
+
 export async function generateFilledContractHtml(
   data: ContractData
 ): Promise<string> {
@@ -160,9 +173,9 @@ export default function DocuSignButton({
     venueVatNumber: event.venue?.vatCode,
     venueCity: event.venue?.city ?? "",
 
-    eventType: event.eventType,
+    eventType: formatEventType(event.eventType),
     eventDate: event.availability?.startDate
-      ? format(new Date(event.availability.startDate), "yyyy-MM-dd")
+      ? format(new Date(event.availability.startDate), "dd/MM/yyyy")
       : "",
     eventTime: getTimeRange(
       event.availability?.startDate,
@@ -230,9 +243,7 @@ export default function DocuSignButton({
         formData.append("contractId", String(contractId));
         formData.append("name", CONTRACT_DATA.artistManagerFullName);
         formData.append("email", event?.tourManagerEmail);
-        formData.append("pageNumber", "5");
-        formData.append("x", "450");
-        formData.append("y", "650");
+        formData.append("anchorString", "DOCUSIGN_SIGNATURE");
   
         const res = await fetch("/api/contract/docusign-document", {
           method: "POST",

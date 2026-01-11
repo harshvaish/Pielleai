@@ -296,7 +296,13 @@ export type ArtistListData = Pick<
 export type ArtistSelectData = Pick<
   ArtistData,
   'id' | 'slug' | 'status' | 'avatarUrl' | 'name' | 'surname' | 'stageName'
->;
+> &
+  Partial<
+    Pick<
+      ArtistData,
+      'tourManagerEmail' | 'tourManagerName' | 'tourManagerSurname' | 'tourManagerPhone'
+    >
+  >;
 
 // venue manager
 export type VenueManagersTableFilters = {

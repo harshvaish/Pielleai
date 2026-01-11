@@ -38,7 +38,7 @@ export default function CreateEventForm({
 
       artistManagerProfileId: undefined,
       tourManagerEmail: '',
-      payrollConsultantEmail: '',
+      payrollConsultantEmail: 'riccardo.gulisano@gmail.com',
       notes: [],
 
       moCost: undefined,
