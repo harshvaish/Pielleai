@@ -54,6 +54,7 @@ export default function ContractDetailClient({ payload }: Props) {
                       "artistFullName",
                       "artistStageName",
                       "tourManager",
+                      "tourManagerEmail",
                       // "consultantEmail",
                       "adminEmail",
                     ])
@@ -119,27 +120,59 @@ export default function ContractDetailClient({ payload }: Props) {
                     </label>
                     <Input
                       {...register("tourManager")}
-                      placeholder="Enter full name"
+                      placeholder="Inserisci il nome del tour manager"
+                      readOnly={isVoided}
                       className={cn(
                         "h-10",
                         isVoided && "bg-zinc-100 text-zinc-500"
                       )}
                     />
+                    {errors.tourManager && (
+                      <p className="text-xs text-destructive">
+                        {errors.tourManager.message as string}
+                      </p>
+                    )}
                   </div>
 
-                  <div className="flex flex-col gap-1">
-                    <label className="text-sm text-zinc-600">
-                      Consulente paghe e contributi
-                    </label>
+                  <div className="flex flex-col">
+                    <div className="text-sm font-semibold mb-2">
+                      Tour manager
+                    </div>
                     <Input
-                      {...register("consultantEmail")}
-                      placeholder="Email"
+                      type="email"
+                      {...register("tourManagerEmail", {
+                        pattern: {
+                          value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                          message:
+                            "Formato non valido. (Es. info@eaglebooking.it)",
+                        },
+                      })}
+                      placeholder="Inserisci l'email del tour manager"
                       className={cn(
-                        "h-10",
+                        errors.tourManagerEmail &&
+                          "border-destructive text-destructive",
                         isVoided && "bg-zinc-100 text-zinc-500"
                       )}
                     />
+                    {errors.tourManagerEmail && (
+                      <p className="text-xs text-destructive mt-2">
+                        {errors.tourManagerEmail.message as string}
+                      </p>
+                    )}
                   </div>
+                </div>
+                <div className="flex flex-col gap-1">
+                  <label className="text-sm text-zinc-600">
+                    Consulente paghe e contributi
+                  </label>
+                  <Input
+                    {...register("consultantEmail")}
+                    placeholder="Email"
+                    className={cn(
+                      "h-10",
+                      isVoided && "bg-zinc-100 text-zinc-500"
+                    )}
+                  />
                 </div>
                 <div className="flex flex-col gap-2 md:col-span-2">
                   <label className="text-sm text-zinc-600">
@@ -405,4 +438,3 @@ export default function ContractDetailClient({ payload }: Props) {
     </div>
   );
 }
-
