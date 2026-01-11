@@ -95,10 +95,10 @@ export type ContractCard = {
     avatarUrl: string;
     slug: string;
     status: "active" | "waiting-for-approval" | "disabled" | "banned";
-    tourManagerEmail: string | null;
-    tourManagerName: string | null;
-    tourManagerSurname: string | null;
-    tourManagerPhone: string | null;
+    tourManagerEmail: string | undefined;
+    tourManagerName: string | undefined;
+    tourManagerSurname: string | undefined;
+    tourManagerPhone: string | undefined;
   };
 
   venue: {
@@ -354,10 +354,10 @@ function mapContract(c: any): ContractCard {
       avatarUrl: c.artist.avatarUrl || AVATAR_FALLBACK,
       slug: c.artist.slug,
       status: c.artist.status,
-      tourManagerEmail: c.artist.tourManagerEmail ?? null,
-      tourManagerName: c.artist.tourManagerName ?? null,
-      tourManagerSurname: c.artist.tourManagerSurname ?? null,
-      tourManagerPhone: c.artist.tourManagerPhone ?? null,
+      tourManagerEmail: c.artist.tourManagerEmail ?? undefined,
+      tourManagerName: c.artist.tourManagerName ?? undefined,
+      tourManagerSurname: c.artist.tourManagerSurname ?? undefined,
+      tourManagerPhone: c.artist.tourManagerPhone ?? undefined,
     },
     availability: c.availability
       ? {
