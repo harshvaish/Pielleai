@@ -41,7 +41,7 @@ export type UserToApprove = {
   role: UserRole;
   name: string;
   surname: string;
-  email: string;
+  email: string | null;
 };
 
 // search bar
@@ -124,7 +124,7 @@ export type ArtistManagerData<T = ArtistListData | ArtistSelectData> = {
   name: string;
   surname: string;
   phone: string;
-  email: string;
+  email: string | null;
   languages: Language[];
   birthDate: string | null;
   birthPlace: string | null;
@@ -324,7 +324,7 @@ export type VenueManagerData<T = VenueTableData | VenueListData | VenueBadgeData
   name: string;
   surname: string;
   phone: string;
-  email: string;
+  email: string | null;
   languages: Language[];
 
   venues: T[];
