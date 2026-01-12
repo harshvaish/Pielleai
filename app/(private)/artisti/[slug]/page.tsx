@@ -4,6 +4,7 @@ import { format } from 'date-fns';
 import Image from 'next/image';
 import { notFound, redirect } from 'next/navigation';
 import { cn, hasRole, resolveNextPath } from '@/lib/utils';
+import { AVATAR_FALLBACK } from '@/lib/constants';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { getArtistNotes } from '@/lib/data/notes/get-artist-notes';
@@ -131,7 +132,7 @@ export default async function ArtistDetailPage({ params }: ArtistDetailPageProps
           <div className='flex flex-col xl:flex-row xl:justify-between gap-4 lg:gap-2 mb-4'>
             <div className='flex items-center gap-4'>
               <Image
-                src={userData.avatarUrl}
+                src={userData.avatarUrl || AVATAR_FALLBACK}
                 alt='Icona profilo artista'
                 width={60}
                 height={60}
