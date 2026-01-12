@@ -36,7 +36,7 @@ type EventType = {
   id: string;
   totalCost: string;
   depositCost: string;
-  transportCost: string;
+  transportationsCost: string;
   paymentDate: string;
   artistManagerFullName: string;
   tourManagerEmail: string;
@@ -71,7 +71,7 @@ type EventType = {
     totalCost?: string;
     depositCost?: string;
     paymentDate?: string;
-    transportCost?: string;
+    transportationsCost?: string;
   };
 
   contract: {
@@ -183,7 +183,7 @@ export default function DocuSignButton({
     ),
     totalCost: event?.totalCost ?? "0",
     upfrontPayment: event?.depositCost ?? "0",
-    transportationsCost: event?.transportCost ?? "0",
+    transportationsCost: event?.transportationsCost ?? "0",
     paymentDate: event?.paymentDate
       ? format(new Date(event?.paymentDate), "dd/MM/yyyy")
       : "",
