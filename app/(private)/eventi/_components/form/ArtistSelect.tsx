@@ -70,7 +70,11 @@ export default function ArtistSelect({ artists, value, setValue, hasError }: Art
       <div className='mt-4 border-t'>
         <Command>
           <CommandInput placeholder='Ricerca artista' />
-          <CommandList>
+          <CommandList
+            className='max-h-60 overflow-y-auto overscroll-contain'
+            onWheel={(event) => event.stopPropagation()}
+            onTouchMove={(event) => event.stopPropagation()}
+          >
             <CommandEmpty>Nessun risultato.</CommandEmpty>
             <CommandGroup>
               {artists.map((artist) => {
