@@ -86,9 +86,11 @@ export default function UpdateEventForm({
       venueVatNumber: event.venue.vatCode || '',
       venueCompanyName: event.venue.company || '',
       artistManagerFullName: `${event?.artistManager?.name} ${event?.artistManager?.surname}`,
-      tourManagerEmail: event.tourManagerEmail || '',
+      tourManagerEmail:
+        event.tourManagerEmail || event.artist?.tourManagerEmail || '',
       tourManagerName: event.tourManagerName || '',
-      payrollConsultantEmail: event.payrollConsultantEmail || '',
+      payrollConsultantEmail:
+        event.payrollConsultantEmail || 'riccardo.gulisano@gmail.com',
       notes: event.notes.flatMap((note) => note.content) || [],
      
       moCost: parseFloat(event.moCost || '') || undefined,
