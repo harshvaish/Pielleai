@@ -123,6 +123,7 @@ export default function ArtistAvailabilitySelect() {
       <Dialog
         open={open}
         onOpenChange={setOpen}
+        modal={false}
       >
         <DialogContent className='h-dvh md:max-h-[420px] w-dvw grid grid-rows-[auto_1fr] p-4 pt-12 rounded-none md:rounded-2xl'>
           <DialogHeader>

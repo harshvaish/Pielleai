@@ -24,7 +24,7 @@ import { eventStatus } from "@/lib/database/schema";
 import { EventFormSchema } from "@/lib/validation/event-form-schema";
 import ArtistAvailabilitySelectWithCreate from "./ArtistAvailabilitySelectWithCreate";
 import EventStatusBadge from "@/app/(private)/_components/Badges/EventStatusBadge";
-import { useEffect, useMemo, useTransition } from "react";
+import { useEffect, useMemo, useRef, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { QUESTION_ICON, GREEN_TICK_ICON } from "@/lib/constants";
 import {
@@ -40,6 +40,7 @@ import DocuSignButton from "../create/DocuSignButton";
 import ContractStatusButton from "../update/ContractStatusButton";
 import { useRouter } from "next/navigation";
 import ViewContractButton from "../update/ViewContractButton";
+import ViewContractDetail from "../update/ViewContractDetail";
 
 type EventForm = {
   artists: ArtistSelectData[];
@@ -78,8 +79,14 @@ export default function EventForm({
   const router = useRouter();
   const selectedVenueId = watch("venueId");
   const selectedVenue = venues.find((venue) => venue.id == selectedVenueId);
+  const selectedArtistId = watch("artistId");
+  const selectedArtist = useMemo(
+    () => artists.find((artist) => artist.id === selectedArtistId),
+    [artists, selectedArtistId]
+  );
   const contractId = watch("contractId");
   const hasContract = Boolean(contractId);
+  const contractDocument = watch("contractDocument");
   const moCost = watch("moCost");
   const bookingPercentage = watch("bookingPercentage");
   const moArtistAdvancedExpenses = watch("moArtistAdvancedExpenses");
@@ -93,6 +100,7 @@ export default function EventForm({
     control,
     name: "contractStatus",
   });
+  const lastArtistIdRef = useRef<number | undefined>(undefined);
 
   // Calculate artistNetCost
   const artistNetCost = useMemo(() => {
@@ -157,9 +165,42 @@ export default function EventForm({
     setValue("cashBalanceCost", cashBalanceCost);
   }, [cashBalanceCost, setValue]);
 
+  useEffect(() => {
+    if (!selectedArtistId || !selectedArtist) {
+      lastArtistIdRef.current = selectedArtistId;
+      return;
+    }
+
+    const isArtistChange = lastArtistIdRef.current !== selectedArtistId;
+    const shouldHydrate =
+      mode === "create"
+        ? isArtistChange
+        : lastArtistIdRef.current !== undefined && isArtistChange;
+
+    if (!shouldHydrate) {
+      lastArtistIdRef.current = selectedArtistId;
+      return;
+    }
+
+    const artistFullName = `${selectedArtist.name} ${selectedArtist.surname}`.trim();
+    const tourManagerFullName = [
+      selectedArtist.tourManagerName,
+      selectedArtist.tourManagerSurname,
+    ]
+      .filter(Boolean)
+      .join(" ");
+
+    setValue("artistFullName", artistFullName);
+    setValue("artistStageName", selectedArtist.stageName ?? "");
+    setValue("tourManagerName", tourManagerFullName);
+    setValue("tourManagerEmail", selectedArtist.tourManagerEmail ?? "");
+
+    lastArtistIdRef.current = selectedArtistId;
+  }, [mode, selectedArtist, selectedArtistId, setValue]);
+
   const ccEmails = [
-    "Tour Manager",
-    "Admin",
+    "Tour manager",
+    "Amministrazione",
     "team@agency.com",
     "finance@agency.com",
     "admin@agency.com",
@@ -175,6 +216,7 @@ export default function EventForm({
   const isArtistComplete = isSectionComplete(formValues, [
     "artistFullName",
     "artistStageName",
+    "tourManagerEmail",
   ]);
 
   const isVenueComplete = isSectionComplete(formValues, [
@@ -203,22 +245,22 @@ export default function EventForm({
     event?.contract?.latestHistory
   )
     ? event?.contract?.latestHistory.map((h: any) => {
-        const createdAt = new Date(h.createdAt);
-        return {
-          date: createdAt.toLocaleDateString("it-IT"),
-          time: createdAt.toLocaleTimeString("en-US", {
-            hour: "2-digit",
-            minute: "2-digit",
-            hour12: true,
-          }),
-          updatedBy: h?.changedByUserId,
-          title: h.fromStatus
-            ? `Stato modificato a "${h.fromStatus}" to "${h.toStatus}"`
-            : "Contratti creati",
-          description: h.note ?? "Nessuna descrizione disponibile.",
-          type: h.toStatus === "voided" ? "archived" : "success",
-        };
-      })
+      const createdAt = new Date(h.createdAt);
+      return {
+        date: createdAt.toLocaleDateString("it-IT"),
+        time: createdAt.toLocaleTimeString("en-US", {
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: true,
+        }),
+        updatedBy: h?.changedByUserId,
+        title: h.fromStatus
+          ? `Stato modificato da "${h.fromStatus}" a "${h.toStatus}"`
+          : "Contratti creati",
+        description: h.note ?? "Nessuna descrizione disponibile.",
+        type: h.toStatus === "voided" ? "archived" : "success",
+      };
+    })
     : [];
   const isVoided = contractStatus === "voided";
 
@@ -242,7 +284,7 @@ export default function EventForm({
   const handleUpsertContract = async () => {
     const values = getValues();
     if (!values.eventId) {
-      toast.error("Event ID is required.");
+      toast.error("ID evento obbligatorio.");
       return;
     }
 
@@ -273,9 +315,9 @@ export default function EventForm({
       ...payloadBase,
       ...(values.contractDocument?.url && values.contractDocument?.name
         ? {
-            fileUrl: values.contractDocument.url,
-            fileName: values.contractDocument.name,
-          }
+          fileUrl: values.contractDocument.url,
+          fileName: values.contractDocument.name,
+        }
         : {}),
     };
 
@@ -283,14 +325,14 @@ export default function EventForm({
       const response =
         hasContract && typeof contractId === "number"
           ? await editContract({
-              ...payload,
-              contractId,
-              // status: "draft",
-            })
+            ...payload,
+            contractId,
+            // status: "draft",
+          })
           : await createContract({
-              ...payload,
-              // status: "draft",
-            });
+            ...payload,
+            // status: "draft",
+          });
       if (response.success) {
         setValue("contractId", response.data.id);
         setValue("contractStatus", "draft", {
@@ -377,7 +419,7 @@ export default function EventForm({
 
       <div className="grid sm:grid-cols-2 gap-4">
         <div className="flex flex-col">
-          <div className="text-sm font-semibold mb-2">Location</div>
+          <div className="text-sm font-semibold mb-2">Località</div>
           <VenueSelect venues={venues} />
           {errors.venueId && (
             <p className="text-xs text-destructive mt-2">
@@ -402,7 +444,7 @@ export default function EventForm({
       <Tabs defaultValue="a" className="bg-zinc-50 p-1 rounded-2xl border">
         <TabsList className="w-full justify-start gap-4 bg-white p-1 rounded-xl overflow-x-auto">
           <TabsTrigger value="a">Contatti</TabsTrigger>
-          <TabsTrigger value="b">Financial</TabsTrigger>
+          <TabsTrigger value="b">Finanze</TabsTrigger>
           <TabsTrigger value="c">Scheda tecnica</TabsTrigger>
           <TabsTrigger value="d">Attività</TabsTrigger>
           {mode == "update" && <TabsTrigger value="e">Contratto</TabsTrigger>}
@@ -764,7 +806,7 @@ export default function EventForm({
                       className={cn(
                         "w-full",
                         errors.moCoordinatorId &&
-                          "border-destructive text-destructive"
+                        "border-destructive text-destructive"
                       )}
                       size="sm"
                     >
@@ -1204,7 +1246,7 @@ export default function EventForm({
                       field.onChange(checked === true)
                     }
                   />
-                  Performance
+                  Esibizione
                 </label>
               )}
             />
@@ -1305,13 +1347,15 @@ export default function EventForm({
               )}
             </div>
             {contractStatus === "voided" ? (
-              (watch("contractDocument")?.url || event?.contract?.fileUrl) && (
-                <ViewContractButton />
-              )
+              hasContract && contractDocument?.url ? <ViewContractButton /> : null
             ) : (
               <div className="flex items-center gap-2">
-                {(watch("contractDocument")?.url ||
-                  event?.contract?.fileUrl) && <ViewContractButton />}
+                {hasContract && (
+                  <ViewContractDetail
+                    event={event}
+                    isDetailsComplete={isDetailsComplete}
+                  />
+                )}
 
                 <Button
                   type="button"
@@ -1367,6 +1411,7 @@ export default function EventForm({
                             isSectionComplete(watch(), [
                               "artistFullName",
                               "artistStageName",
+                              "tourManagerEmail",
                             ])
                               ? GREEN_TICK_ICON
                               : QUESTION_ICON
@@ -1389,7 +1434,7 @@ export default function EventForm({
                             </label>
                             <Input
                               {...register("artistFullName")}
-                              placeholder="Enter full name"
+                              placeholder="Inserisci il nome completo"
                               readOnly={isVoided}
                               className={cn(
                                 "h-10",
@@ -1409,7 +1454,7 @@ export default function EventForm({
                             </label>
                             <Input
                               {...register("artistStageName")}
-                              placeholder="Enter stage name"
+                              placeholder="Inserisci il nome d'arte"
                               readOnly={isVoided}
                               className={cn(
                                 "h-10",
@@ -1419,6 +1464,34 @@ export default function EventForm({
                             {errors.artistStageName && (
                               <p className="text-xs text-destructive">
                                 {errors.artistStageName.message as string}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div className="flex flex-col gap-1">
+                            <label className="text-sm text-zinc-600">
+                              Tour manager{" "}
+                            </label>
+                            <Input
+                              type="email"
+                              {...register("tourManagerEmail", {
+                                pattern: {
+                                  value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                                  message:
+                                    "Formato non valido. (Es. info@eaglebooking.it)",
+                                },
+                              })}
+                              placeholder="Inserisci l'email del tour manager"
+                              className={cn(
+                                errors.tourManagerEmail &&
+                                "border-destructive text-destructive",
+                                isVoided && "bg-zinc-100 text-zinc-500"
+                              )}
+                            />
+                            {errors.tourManagerEmail && (
+                              <p className="text-xs text-destructive">
+                                {errors.tourManagerEmail.message as string}
                               </p>
                             )}
                           </div>
@@ -1449,7 +1522,7 @@ export default function EventForm({
                           </label>
                           <Input
                             {...register("venueName")}
-                            placeholder="Venue name"
+                            placeholder="Nome locale"
                             readOnly={isVoided}
                             className={cn(
                               "h-10",
@@ -1463,7 +1536,7 @@ export default function EventForm({
                           </label>
                           <Input
                             {...register("venueCompanyName")}
-                            placeholder="Venue Company name"
+                            placeholder="Ragione sociale locale"
                             readOnly={isVoided}
                             className={cn(
                               "h-10",
@@ -1479,7 +1552,7 @@ export default function EventForm({
                           </label>
                           <Input
                             {...register("venueVatNumber")}
-                            placeholder="Venue VAT number"
+                            placeholder="P.IVA locale"
                             readOnly={isVoided}
                             className={cn(
                               "h-10",
@@ -1494,7 +1567,7 @@ export default function EventForm({
                           </label>
                           <Input
                             {...register("venueAddress")}
-                            placeholder="Venue address"
+                            placeholder="Indirizzo locale"
                             readOnly={isVoided}
                             className={cn(
                               "h-10",
@@ -1540,11 +1613,11 @@ export default function EventForm({
                                   isVoided && "bg-zinc-100 text-zinc-500"
                                 )}
                               >
-                                <SelectValue placeholder="Select" />
+                              <SelectValue placeholder="Seleziona" />
                               </SelectTrigger>
                               <SelectContent>
-                                <SelectItem value="dj-set">DJ Set</SelectItem>
-                                <SelectItem value="live">Live</SelectItem>
+                                <SelectItem value="dj-set">DJ set</SelectItem>
+                                <SelectItem value="live">Dal vivo</SelectItem>
                                 <SelectItem value="festival">
                                   Festival
                                 </SelectItem>

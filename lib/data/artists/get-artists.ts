@@ -27,6 +27,10 @@ export async function getArtists(managerProfileId?: number): Promise<ArtistSelec
         name: artists.name,
         surname: artists.surname,
         stageName: artists.stageName,
+        tourManagerEmail: artists.tourManagerEmail,
+        tourManagerName: artists.tourManagerName,
+        tourManagerSurname: artists.tourManagerSurname,
+        tourManagerPhone: artists.tourManagerPhone,
       })
       .from(artists)
       .where(managedArtistIds ? inArray(artists.id, managedArtistIds) : undefined)

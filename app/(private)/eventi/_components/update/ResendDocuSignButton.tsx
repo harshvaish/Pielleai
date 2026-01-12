@@ -22,6 +22,7 @@ export default function ResendDocuSignButton({ contractId }: Props) {
         },
         body: JSON.stringify({
           contractId,
+          anchorString: "DOCUSIGN_SIGNATURE",
         }),
       });
 

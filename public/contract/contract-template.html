@@ -162,23 +162,6 @@ h2 {
   break-inside: avoid;
 }
 
-/* DATE */
-.date-row {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 50px;
-}
-
-.date-line {
-  width: 200px;
-  border-bottom: 1px solid #000;
-}
-
-.date-label {
-  font-size: 12pt;
-}
-
-
 /* SIGNATURE ROW */
 .signature-row {
   display: flex;
@@ -191,7 +174,7 @@ h2 {
 }
 
 .signature-name {
-  margin: 0 0 40px 0;        /* 🔑 aligns with right top line */
+  margin: 0 0 12px 0;
   font-size: 12pt;
 }
 
@@ -208,18 +191,22 @@ h2 {
 /* RIGHT */
 .signature-right {
   width: 40%;
-  padding-top: 35px;        /* 🔑 vertical offset */
-}
-
-.right-line {
-  width: 240px;
-  margin-bottom: 24px;      /* 🔑 spacing between two lines */
+  min-height: 90px;
+  position: relative;
 }
 
 /* COMMON */
 .signature-line {
   border-bottom: 1px solid #000;
   height: 0;
+}
+
+.signature-anchor {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  font-size: 1px;
+  color: #fff;
 }
 
 
@@ -263,7 +250,7 @@ h2 {
   <p><strong>E</strong></p>
 
   <p>
-    <strong>{{VENUE_NAME}}</strong>, con sede legale in <strong>{{VENUE_ADDRESS}},</strong>
+    <strong>{{VENUE_NAME}}</strong> con sede legale in <strong>{{VENUE_ADDRESS}},</strong>
     P. IVA <strong>{{VENUE_VAT}}</strong>
   </p>
 
@@ -311,7 +298,7 @@ h2 {
     a) in data <strong>{{EVENT_DATE}}</strong>
     </p>
     <p>
-    b) presso il locale <strong>{{VENUE_NAME}}, {{VENUE_CITY}}</strong>(di seguito denominata la “VENUE”)
+    b) presso il locale <strong>{{VENUE_NAME}} {{VENUE_CITY}}</strong> (di seguito denominata la “VENUE”)
   </p>
   <p>
     c) con inizio alle ore <strong>{{EVENT_TIME}}</strong> circa
@@ -441,7 +428,7 @@ h2 {
   
       <p >
         i) a sostenere i costi di viaggio per l’ARTISTA ed eventuali
-        accompagnatori, per spese stimate in euro
+        accompagnatori, per spese stimate in <strong>euro</strong>
         <strong>{{TRANSPORTATION_COST}}</strong>, da corrispondere in serata.
         Vitto e alloggio restano a carico del locale previo accordo con il tour
         manager.
@@ -482,11 +469,11 @@ L’ORGANIZZATORE  accetta altresì sin d’ora, senza alcuna eccezione, che la 
 <h2>Art. 4 - Corrispettivo dovuto. Termini e modalità di pagamento
 </h2>
 <p >
-  A fronte delle obbligazioni assunte, del diritto di rappresentazione dello SPETTACOLO concesso dalla SOCIETÀ e delle attività e/o garanzie prestate da quest’ultima ai sensi del presente accordo, l’ORGANIZZATORE si obbliga a pagare alla SOCIETÀ la somma complessiva di euro<strong>{{TOTAL_COST}}</strong>, oltre IVA se dovuta, dietro presentazione della relativa documentazione fiscale da parte della SOCIETÀ, secondo le seguenti modalità:
+  A fronte delle obbligazioni assunte, del diritto di rappresentazione dello SPETTACOLO concesso dalla SOCIETÀ e delle attività e/o garanzie prestate da quest’ultima ai sensi del presente accordo, l’ORGANIZZATORE si obbliga a pagare alla SOCIETÀ la somma complessiva di <strong>euro</strong> <strong>{{TOTAL_COST}}</strong>, oltre IVA se dovuta, dietro presentazione della relativa documentazione fiscale da parte della SOCIETÀ, secondo le seguenti modalità:
 </p>
 <ul class="legal-list">
   <p >
-    a) in data di sottoscrizione del contratto euro <strong>{{UPFRONT_PAYMENT}}</strong> al momento della sottoscrizione del presente contratto, mediante il pagamento tramite piattaforma Eagle Booking (https://www.eaglebooking.it/) o tramite bonifico bancario da effettuarsi sulle coordinate bancarie che saranno comunicate dalla SOCIETÀ;
+    a) in data di sottoscrizione del contratto <strong>euro</strong> <strong>{{UPFRONT_PAYMENT}}</strong> al momento della sottoscrizione del presente contratto, mediante il pagamento tramite piattaforma Eagle Booking (https://www.eaglebooking.it/) o tramite bonifico bancario da effettuarsi sulle coordinate bancarie che saranno comunicate dalla SOCIETÀ;
 </p>
 <p >
   b) il saldo verrà effettuato in data <strong> {{PAYMENT_DATE}}</strong> 
@@ -612,23 +599,18 @@ i) nell’ipotesi in cui, per malattia, infortunio o altra causa di forza maggio
   </p> 
 
   <div class="signing-section">
-    <!-- DATE -->
-    <div class="date-row">
-      <span>Milano,</span>
-      <span class="date-line"></span>
-    </div>
     <!-- SIGNATURES -->
     <div class="signature-row">
       <!-- LEFT -->
       <div class="signature-left">
         <p class="signature-name"><strong>Milano Ovest S.r.l.</strong></p>
+        <div class="signature-mark">Milano Ovest S.r.l.</div>
         <div class="signature-line left-line"></div>
       </div>
   
       <!-- RIGHT -->
       <div class="signature-right">
-        <div class="signature-line right-line"></div>
-        <div class="signature-line right-line"></div>
+        <span class="signature-anchor">DOCUSIGN_SIGNATURE</span>
       </div>
     </div>
   </div>

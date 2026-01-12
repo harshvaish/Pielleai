@@ -157,7 +157,6 @@ export default function UpdateEventForm({
       const response = await updateEvent(event.id, data);
 
       if (response.success) {
-        closeDialog();
         toast.success('Evento aggiornato!');
         startTransition(async () => router.refresh());
       } else {
@@ -198,7 +197,7 @@ export default function UpdateEventForm({
               type='submit'
               disabled={isPending}
             >
-              {isPending ? 'Aggiornamento...' : 'Modifica'}
+              {isPending ? 'Salvataggio...' : 'Salva'}
             </Button>
           </div>
         </form>

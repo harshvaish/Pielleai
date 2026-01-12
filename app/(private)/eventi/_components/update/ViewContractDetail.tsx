@@ -7,7 +7,6 @@ import { format } from "date-fns";
 import { toast } from "sonner";
 import { useFormContext } from "react-hook-form";
 import { EventFormSchema } from "@/lib/validation/event-form-schema";
-import { useRouter } from "next/navigation";
 
 type ContractData = {
   artistName: string;
@@ -106,6 +105,11 @@ export async function generateFilledContractHtml(
 
   let html = await res.text();
 
+  html = html.replace(
+    "<head>",
+    `<head><base href="${window.location.origin}/">`
+  );
+  
   const replacements: Record<string, string> = {
     ARTIST_NAME: data.artistName,
     ARTIST_STAGE_NAME: data.artistStageName ?? "",
@@ -138,14 +142,13 @@ export async function generateFilledContractHtml(
    COMPONENT
 -------------------------------- */
 
-export default function DocuSignButton({
+export default function ViewContractDetail({
   event,
   isDetailsComplete,
 }: {
   event: EventType;
   isDetailsComplete: boolean;
 }) {
-  const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
   const [loading, setLoading] = useState(false);
@@ -196,94 +199,24 @@ export default function DocuSignButton({
   const handleClick = async () => {
     startTransition(async () => {
       try {
-        if (!event?.tourManagerEmail) {
-          toast.error("Il Tour Manager è obbligatorio.");
-          return;
-        }
+        // if (!event?.tourManagerEmail) {
+        //   toast.error("Il Tour Manager è obbligatorio.");
+        //   return;
+        // }
   
-        setLoading(true);
+        setLoading(true);  
+        const html = await generateFilledContractHtml(CONTRACT_DATA);
+
+        const blob = new Blob([html], { type: "text/html" });
+        const url = URL.createObjectURL(blob);
   
-        const { default: html2pdf } = await import("html2pdf.js");
-  
-        const filledHtml = await generateFilledContractHtml(CONTRACT_DATA);
-  
-        const preview = window.open("", "_blank");
-        if (!preview) throw new Error("Popup blocked");
-        preview.document.write(filledHtml);
-        preview.document.close();
-  
-        const container = document.createElement("div");
-        container.innerHTML = filledHtml;
-  
-        const pdfBlob = await html2pdf()
-          .set({
-            margin: 10,
-            html2canvas: {
-              scale: 2,
-              onclone: (doc: Document) => {
-                const style = doc.createElement("style");
-                style.innerHTML = `
-                  * {
-                    color: #000 !important;
-                    background: #fff !important;
-                    border-color: #000 !important;
-                    box-shadow: none !important;
-                  }
-                `;
-                doc.head.appendChild(style);
-              },
-            },
-            jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
-          })
-          .from(container)
-          .outputPdf("blob");
-  
-        const formData = new FormData();
-        formData.append("file", pdfBlob, "contract.pdf");
-        formData.append("contractId", String(contractId));
-        formData.append("name", CONTRACT_DATA.artistManagerFullName);
-        formData.append("email", event?.tourManagerEmail);
-        formData.append("anchorString", "DOCUSIGN_SIGNATURE");
-  
-        const res = await fetch("/api/contract/docusign-document", {
-          method: "POST",
-          body: formData,
-          credentials: "include",
-        });
-  
-        if (!res.ok) {
-          const text = await res.text();
-          throw new Error(text);
-        }
-  
-        const json = await res.json();
-  
-        toast.success("DocuSign generato!");
-  
-        setValue(
-          "contractDocument",
-          {
-            url: json?.data?.fileUrl,
-            name: json?.data?.fileName,
-          },
-          {
-            shouldDirty: false,
-            shouldTouch: false,
-          }
-        );
-  
-        setValue("contractStatus", "sent" as const, {
-          shouldDirty: false,
-          shouldTouch: false,
-        });
-  
-        startTransition(async () => router.refresh());
+        window.open(url, "_blank", "noopener,noreferrer");
+      
       } catch (err) {
         console.error("❌ FINAL ERROR:", err);
         toast.error("Errore durante la generazione DocuSign.");
       } finally {
         setLoading(false);
-        console.log("🏁 DocuSign flow finished");
       }
     });
   };
@@ -293,10 +226,10 @@ export default function DocuSignButton({
       type="button"
       size="sm"
       className="max-w-max"
-      disabled={!contractId || loading || !isDetailsComplete || isPending}
+      disabled={!isDetailsComplete}
       onClick={handleClick}
     >
-    {loading || isPending ? "Invio..." : "Invia a DocuSign"}
-  </Button>
+      Visualizza contratto
+      </Button>
   );
 }

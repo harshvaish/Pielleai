@@ -20,7 +20,9 @@ export default function ResendDocuSignButton({ contractId }: Props) {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          contractId        }),
+          contractId,
+          anchorString: "DOCUSIGN_SIGNATURE",
+        }),
       });
 
       const json = await res.json();

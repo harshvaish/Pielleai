@@ -30,6 +30,19 @@ type ContractData = {
   tourManagerName: string;
 };
 
+const formatEventType = (value?: string) => {
+  switch (value) {
+    case "dj-set":
+      return "DJ Set";
+    case "live":
+      return "Live";
+    case "festival":
+      return "Festival";
+    default:
+      return value ?? "";
+  }
+};
+
 export async function generateFilledContractHtml(
   data: ContractData
 ): Promise<string> {
@@ -89,8 +102,10 @@ export default function DocuSignButton() {
         venueVatNumber: values.venueVatNumber,
         venueCity: values.venueAddress ?? "",
 
-        eventType: values.eventType,
-        eventDate: values.eventDate ?? "",
+        eventType: formatEventType(values.eventType),
+        eventDate: values.eventDate
+          ? format(new Date(values.eventDate), "dd/MM/yyyy", { locale: it })
+          : "",
         eventTime: buildEventTime(values.eventStartTime, values.eventEndTime),
 
         totalFee: String(values.totalCost ?? ""),
@@ -145,6 +160,7 @@ export default function DocuSignButton() {
       formData.append("contractId", String(contractId));
       formData.append("name", CONTRACT_DATA.tourManagerName);
       formData.append("email", CONTRACT_DATA.tourManagerEmail);
+      formData.append("anchorString", "DOCUSIGN_SIGNATURE");
 
       const res = await fetch("/api/contract/docusign-document", {
         method: "POST",

@@ -11,9 +11,13 @@ export default async function PrivateLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const { session, user } = await getSession();
+  const { session, user } = await getSession(true);
 
-  if (!session || !user || user.banned) {
+  if (!session || !user) {
+    redirect('/accedi');
+  }
+
+  if (user.banned) {
     redirect('/logout');
   }
 
