@@ -1,6 +1,7 @@
 import BackButton from '@/app/_components/BackButton';
 import { Separator } from '@/components/ui/separator';
 import { format } from 'date-fns';
+import { toZonedTime } from 'date-fns-tz';
 import Image from 'next/image';
 import { notFound, redirect } from 'next/navigation';
 import { cn, hasRole, resolveNextPath } from '@/lib/utils';
@@ -19,7 +20,7 @@ import UserBadge from '../../_components/Badges/UserBadge';
 import BillingDataTab from '../../_components/Tabs/BillingDataTab';
 import SocialDataTab from '../../_components/Tabs/SocialDataTab';
 import { ManagerBadgeFallback } from '../../_components/Badges/ManagersBadge';
-import { AVATAR_FALLBACK } from '@/lib/constants';
+import { AVATAR_FALLBACK, TIME_ZONE } from '@/lib/constants';
 
 type VenueDetailPageProps = { params: Promise<{ slug: string }> };
 
@@ -51,6 +52,8 @@ export default async function VenueDetailPage({ params }: VenueDetailPageProps) 
 
   if (!venue) notFound();
   const isDisabled = venue.status === 'disabled';
+  const createdAtZoned = format(toZonedTime(venue.createdAt, TIME_ZONE), 'dd/MM/yyyy, HH:mm');
+  const updatedAtZoned = format(toZonedTime(venue.updatedAt, TIME_ZONE), 'dd/MM/yyyy, HH:mm');
 
   return (
     <div className='max-w-full overflow-x-hidden'>
@@ -174,10 +177,10 @@ export default async function VenueDetailPage({ params }: VenueDetailPageProps) 
               ID: {venue.id}
             </div>
             <div className='text-xs font-semibold text-zinc-400'>
-              Data di creazione {format(venue.createdAt, 'dd/MM/yyyy, HH:mm')}
+              Data di creazione {createdAtZoned}
             </div>
             <div className='text-xs font-semibold text-zinc-400'>
-              Data di aggiornamento {format(venue.updatedAt, 'dd/MM/yyyy, HH:mm')}
+              Data di aggiornamento {updatedAtZoned}
             </div>
           </div>
         </div>

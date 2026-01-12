@@ -1,6 +1,7 @@
 import BackButton from '@/app/_components/BackButton';
 import { Separator } from '@/components/ui/separator';
 import { format } from 'date-fns';
+import { toZonedTime } from 'date-fns-tz';
 import Image from 'next/image';
 import { notFound, redirect } from 'next/navigation';
 import { getProfileNotes } from '@/lib/data/notes/get-profile-notes';
@@ -20,7 +21,7 @@ import getSession from '@/lib/data/auth/get-session';
 import { getUserProfileIdCached } from '@/lib/cache/users';
 import StatusBadge from '../../_components/Badges/StatusBadge';
 import NotesSection from '../../_components/Notes/NotesSection';
-import { AVATAR_FALLBACK } from '@/lib/constants';
+import { AVATAR_FALLBACK, TIME_ZONE } from '@/lib/constants';
 
 type VenueManagerDetailPageProps = { params: Promise<{ uid: string }> };
 
@@ -57,6 +58,8 @@ export default async function VenueManagerDetailPage({ params }: VenueManagerDet
   });
 
   const isDisabled = userData.status === 'disabled';
+  const createdAtZoned = format(toZonedTime(userData.createdAt, TIME_ZONE), 'dd/MM/yyyy, HH:mm');
+  const updatedAtZoned = format(toZonedTime(userData.updatedAt, TIME_ZONE), 'dd/MM/yyyy, HH:mm');
 
   return (
     <div className='max-w-full overflow-x-hidden'>
@@ -125,10 +128,10 @@ export default async function VenueManagerDetailPage({ params }: VenueManagerDet
                 ID: {userData.id}
               </div>
               <div className='text-xs font-semibold text-zinc-400'>
-                Data di creazione {format(userData.createdAt, 'dd/MM/yyyy, HH:mm')}
+                Data di creazione {createdAtZoned}
               </div>
               <div className='text-xs font-semibold text-zinc-400'>
-                Data di aggiornamento {format(userData.updatedAt, 'dd/MM/yyyy, HH:mm')}
+                Data di aggiornamento {updatedAtZoned}
               </div>
             </div>
           </div>
