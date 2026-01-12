@@ -11,6 +11,7 @@ import {
   countries,
   languages as languagesTable,
   subdivisions,
+  users,
 } from '@/lib/database/schema';
 import { APIError } from 'better-auth/api';
 import { getBetterAuthErrorMessage } from '@/lib/utils';
@@ -52,10 +53,8 @@ export const createVenueManager = async (
       validation.data;
     const safeLanguages = languages ?? [];
     const fallbackName = name?.trim() || 'Utente';
-    const fallbackEmail =
-      signUpEmail?.trim() ||
-      `placeholder+${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-    const fallbackPassword = signUpPassword?.trim() || 'TempPass1234!';
+    const finalEmail = signUpEmail?.trim() || null;
+    const finalPassword = signUpPassword?.trim() || null;
 
     const [languagesCheck, countryCheck, subdivisionCheck] = await Promise.all([
       safeLanguages.length
@@ -99,25 +98,50 @@ export const createVenueManager = async (
     }
 
     await database.transaction(async (tx) => {
-      const { user } = await auth.api.createUser({
-        headers: headersList,
-        body: {
-          email: fallbackEmail,
-          password: fallbackPassword,
-          name: fallbackName,
-          role: 'venue-manager',
-          data: {
-            emailVerified: true,
-            status: 'active',
-          },
-        },
-      });
+      let userId: string;
 
-      if (!user || !user.id) {
-        throw new AppError("Errore durante la creazione dell'account.");
+      // If both email and password provided, use Better Auth (user can login)
+      if (finalEmail && finalPassword) {
+        const { user } = await auth.api.createUser({
+          headers: headersList,
+          body: {
+            email: finalEmail,
+            password: finalPassword,
+            name: fallbackName,
+            role: 'venue-manager',
+            data: {
+              emailVerified: true,
+              status: 'active',
+            },
+          },
+        });
+
+        if (!user || !user.id) {
+          throw new AppError("Errore durante la creazione dell'account.");
+        }
+
+        userId = user.id;
+      } else {
+        // Create user directly with NULL email/password (cannot login)
+        const userResult = await tx.insert(users).values({
+          id: crypto.randomUUID(),
+          name: fallbackName,
+          email: finalEmail,
+          emailVerified: false,
+          role: 'venue-manager',
+          status: 'active',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        }).returning({ id: users.id });
+
+        if (!userResult[0]?.id) {
+          throw new AppError("Errore durante la creazione dell'account.");
+        }
+
+        userId = userResult[0].id;
       }
 
-      newUserId = user.id;
+      newUserId = userId;
 
       const profileResult = await tx
         .insert(profiles)

@@ -16,7 +16,7 @@ export default function StepThree() {
           htmlFor='signUpEmail'
           className='block text-sm font-semibold mb-2'
         >
-          Email di accesso
+          Email di accesso <span className='text-muted-foreground font-normal'>(opzionale)</span>
         </label>
         <Input
           id='signUpEmail'
@@ -33,7 +33,7 @@ export default function StepThree() {
           htmlFor='signUpPassword'
           className='block text-sm font-semibold mb-2'
         >
-          Password di accesso
+          Password di accesso <span className='text-muted-foreground font-normal'>(opzionale)</span>
         </label>
         <Input
           id='signUpPassword'

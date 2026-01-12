@@ -114,7 +114,7 @@ export async function getEventsToApprove(): Promise<{ data: Event[] }> {
       .leftJoin(users, eq(profiles.userId, users.id))
       .leftJoin(moCoordinators, eq(events.moCoordinatorId, moCoordinators.id))
       .where(eq(events.status, 'proposed'))
-      .orderBy(desc(events.createdAt));
+      .orderBy(artistAvailabilities.startDate);
 
     const eventIds = eventsResult.map((e) => e.id);
     const notesByEvent: Record<number, EventNote[]> = {};

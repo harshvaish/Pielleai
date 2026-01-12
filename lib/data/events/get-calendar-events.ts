@@ -76,7 +76,7 @@ export async function getCalendarEvents({
       .leftJoin(profiles, eq(events.artistManagerProfileId, profiles.id))
       .leftJoin(users, eq(profiles.userId, users.id))
       .where(filters)
-      .orderBy(desc(events.createdAt));
+      .orderBy(artistAvailabilities.startDate);
 
     //
     const parsedResult: CalendarEvent[] = eventsResult.map((event) => {

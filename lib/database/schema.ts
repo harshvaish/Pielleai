@@ -219,7 +219,7 @@ export const users = pgTable(
   {
     id: text().primaryKey().notNull(),
     name: text().notNull(),
-    email: text().notNull(),
+    email: text(),
     emailVerified: boolean('email_verified').notNull(),
     image: text(),
     role: userRoles().default('user').notNull(),
@@ -239,7 +239,7 @@ export const users = pgTable(
       table.status.asc().nullsLast().op('enum_ops'),
     ),
     index('idx_users_status').using('btree', table.status.asc().nullsLast().op('enum_ops')),
-    unique('users_email_unique').on(table.email),
+    uniqueIndex('users_email_unique').on(table.email).where(sql`${table.email} IS NOT NULL`),
   ],
 );
 

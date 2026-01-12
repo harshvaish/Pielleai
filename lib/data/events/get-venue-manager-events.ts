@@ -129,7 +129,7 @@ export async function getVenueManagerEvents(profileId: number): Promise<{ data: 
       .leftJoin(moCoordinators, eq(events.moCoordinatorId, moCoordinators.id))
       .where(filters)
       .limit(limit)
-      .orderBy(desc(events.createdAt));
+      .orderBy(artistAvailabilities.startDate);
 
     // Merge and nullify missing relations
     const mergedResult: Event[] = eventsResult.map((event) => {

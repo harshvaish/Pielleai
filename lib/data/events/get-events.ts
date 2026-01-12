@@ -212,7 +212,7 @@ export async function getEvents(
       .leftJoin(venueManagerProfile, eq(venues.managerProfileId, venueManagerProfile.id))
       .leftJoin(venueManagerUser, eq(venueManagerProfile.userId, venueManagerUser.id))
       .where(filters)
-      .orderBy(desc(events.createdAt));
+      .orderBy(artistAvailabilities.startDate);
 
     // Apply pagination only if requested
     if (isPaginated) {
