@@ -255,39 +255,39 @@ export function UpdateAvailabilitiesButton() {
                       />
                     </div>
 
-                    {!isAllDay && (
-                      <div className='flex gap-2 items-center'>
-                        <Input
-                          type='time'
-                          value={newTimeRange.startTime}
-                          onChange={(e) =>
-                            setNewTimeRange((prev) => ({
-                              ...prev,
-                              startTime: e.target.value,
-                            }))
-                          }
-                          className={cn(
-                            'w-min appearance-none [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none shadow-none',
-                          )}
-                          disabled={isLoading}
-                        />
-                        <span className='text-zinc-400'>-</span>
-                        <Input
-                          type='time'
-                          value={newTimeRange.endTime}
-                          onChange={(e) =>
-                            setNewTimeRange((prev) => ({
-                              ...prev,
-                              endTime: e.target.value,
-                            }))
-                          }
-                          className={cn(
-                            'w-min appearance-none [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none shadow-none',
-                          )}
-                          disabled={isLoading}
-                        />
-                      </div>
-                    )}
+                    <div className='flex gap-2 items-center'>
+                      <Input
+                        type='time'
+                        value={newTimeRange.startTime}
+                        onChange={(e) =>
+                          setNewTimeRange((prev) => ({
+                            ...prev,
+                            startTime: e.target.value,
+                          }))
+                        }
+                        onFocus={() => setIsAllDay(false)}
+                        className={cn(
+                          'w-min appearance-none [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none shadow-none',
+                        )}
+                        disabled={isLoading || isAllDay}
+                      />
+                      <span className='text-zinc-400'>-</span>
+                      <Input
+                        type='time'
+                        value={newTimeRange.endTime}
+                        onChange={(e) =>
+                          setNewTimeRange((prev) => ({
+                            ...prev,
+                            endTime: e.target.value,
+                          }))
+                        }
+                        onFocus={() => setIsAllDay(false)}
+                        className={cn(
+                          'w-min appearance-none [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none shadow-none',
+                        )}
+                        disabled={isLoading || isAllDay}
+                      />
+                    </div>
 
                     <Button
                       size='sm'
