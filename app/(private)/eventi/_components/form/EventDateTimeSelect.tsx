@@ -186,11 +186,15 @@ export default function EventDateTimeSelect() {
       return;
     }
 
-    setValue("availability", {
-      id: selectedAvailability?.id,
-      startDate: startUTC,
-      endDate: endUTC,
-    });
+    setValue(
+      "availability",
+      {
+        id: selectedAvailability?.id,
+        startDate: startUTC,
+        endDate: endUTC,
+      },
+      { shouldDirty: true, shouldTouch: true, shouldValidate: true }
+    );
     setOpen(false);
   };
 
@@ -289,7 +293,7 @@ export default function EventDateTimeSelect() {
                       )}
                     />
                   </div>
-                  <Button size="sm" onClick={onConfirm}>
+                  <Button type="button" size="sm" onClick={onConfirm}>
                     <Check className="mr-1 h-4 w-4" /> Conferma
                   </Button>
                 </div>
