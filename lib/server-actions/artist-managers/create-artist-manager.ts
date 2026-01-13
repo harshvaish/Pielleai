@@ -80,6 +80,10 @@ export const createArtistManager = async (
     const placeholderText = 'Non disponibile';
     const placeholderZipCode = 'ND0';
     const placeholderGender = 'non-binary';
+    const resolvedGender =
+      validation.data.gender
+        ? validation.data.gender
+        : placeholderGender;
     const [
       languagesCheck,
       countryCheck,
@@ -207,35 +211,35 @@ export const createArtistManager = async (
         .insert(profiles)
         .values({
           userId: newUserId,
-          avatarUrl: data.avatarUrl ?? null,
-          name: data.name ?? fallbackName,
-          surname: data.surname ?? '',
-          phone: data.phone ?? '',
-          birthDate: data.birthDate ?? null,
-          birthPlace: data.birthPlace?.trim() || placeholderText,
-          gender: (data.gender ?? placeholderGender),
-          address: data.address?.trim() || placeholderText,
+          avatarUrl: validation.data.avatarUrl ?? null,
+          name: validation.data.name ?? fallbackName,
+          surname: validation.data.surname ?? '',
+          phone: validation.data.phone ?? '',
+          birthDate: validation.data.birthDate ?? null,
+          birthPlace: validation.data.birthPlace?.trim() || placeholderText,
+          gender: resolvedGender,
+          address: validation.data.address?.trim() || placeholderText,
           ...(countryId !== undefined && countryId !== null && { countryId }),
           ...(subdivisionId !== undefined && subdivisionId !== null && { subdivisionId }),
-          city: data.city?.trim() || placeholderText,
-          zipCode: data.zipCode?.trim() || placeholderZipCode,
+          city: validation.data.city?.trim() || placeholderText,
+          zipCode: validation.data.zipCode?.trim() || placeholderZipCode,
 
-          company: data.company ?? null,
-          taxCode: data.taxCode ?? null,
-          ipiCode: data.ipiCode ?? null,
-          bicCode: data.bicCode ?? null,
-          abaRoutingNumber: data.abaRoutingNumber ?? null,
-          iban: data.iban ?? null,
-          sdiRecipientCode: data.sdiRecipientCode ?? null,
-          billingAddress: data.billingAddress ?? null,
+          company: validation.data.company ?? null,
+          taxCode: validation.data.taxCode ?? null,
+          ipiCode: validation.data.ipiCode ?? null,
+          bicCode: validation.data.bicCode ?? null,
+          abaRoutingNumber: validation.data.abaRoutingNumber ?? null,
+          iban: validation.data.iban ?? null,
+          sdiRecipientCode: validation.data.sdiRecipientCode ?? null,
+          billingAddress: validation.data.billingAddress ?? null,
           ...(billingCountryId !== undefined && billingCountryId !== null && { billingCountryId }),
           ...(billingSubdivisionId !== undefined && billingSubdivisionId !== null && { billingSubdivisionId }),
-          ...(data.billingCity && { billingCity: data.billingCity }),
-          ...(data.billingZipCode && { billingZipCode: data.billingZipCode }),
-          ...(data.billingEmail && { billingEmail: data.billingEmail }),
-          ...(data.billingPhone && { billingPhone: data.billingPhone }),
-          ...(data.billingPec && { billingPec: data.billingPec }),
-          taxableInvoice: data.taxableInvoice === 'true',
+          ...(validation.data.billingCity && { billingCity: validation.data.billingCity }),
+          ...(validation.data.billingZipCode && { billingZipCode: validation.data.billingZipCode }),
+          ...(validation.data.billingEmail && { billingEmail: validation.data.billingEmail }),
+          ...(validation.data.billingPhone && { billingPhone: validation.data.billingPhone }),
+          ...(validation.data.billingPec && { billingPec: validation.data.billingPec }),
+          taxableInvoice: validation.data.taxableInvoice === 'true',
         })
         .returning({ id: profiles.id, userId: profiles.userId });
 

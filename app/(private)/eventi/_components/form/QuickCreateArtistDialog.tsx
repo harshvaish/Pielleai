@@ -40,6 +40,7 @@ export default function QuickCreateArtistDialog({ onCreated }: QuickCreateArtist
         stageName: stageName.trim(),
         name: sanitizedName,
         surname: sanitizedSurname,
+        taxableInvoice: undefined
       });
 
       if (response.success) {

@@ -402,7 +402,7 @@ export default function EventForm({
                     shouldTouch: true,
                   });
                   setValue("artistManagerProfileId", undefined);
-                  setValue("availability", { startDate: undefined, endDate: undefined });
+                  setValue("availability", { startDate: null, endDate: null } as any);
                 }}
               />
             )}

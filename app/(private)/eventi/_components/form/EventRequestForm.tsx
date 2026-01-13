@@ -67,7 +67,7 @@ export default function EventRequestForm({ artists, venues, userRole }: EventReq
                   shouldTouch: true,
                 });
                 setValue('artistManagerProfileId', undefined);
-                setValue('availability', { startDate: undefined, endDate: undefined });
+                setValue('availability', { startDate: null as any, endDate: null as any });
               }}
             />
           )}

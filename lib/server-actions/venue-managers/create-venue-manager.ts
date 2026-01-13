@@ -71,6 +71,10 @@ export const createVenueManager = async (
     const placeholderText = 'Non disponibile';
     const placeholderZipCode = 'ND0';
     const placeholderGender = 'non-binary';
+    const resolvedGender =
+      validation.data.gender
+        ? validation.data.gender
+        : placeholderGender;
     const [languagesCheck, countryCheck, subdivisionCheck] = await Promise.all([
       safeLanguages.length
         ? database
@@ -162,18 +166,18 @@ export const createVenueManager = async (
         .insert(profiles)
         .values({
           userId: newUserId,
-          avatarUrl: data.avatarUrl || null,
-          name: data.name || fallbackName,
-          surname: data.surname || '',
-          phone: data.phone || '',
-          birthDate: data.birthDate || null,
-          birthPlace: data.birthPlace?.trim() || placeholderText,
-          gender: data.gender ?? placeholderGender,
-          address: data.address?.trim() || placeholderText,
+          avatarUrl: validation.data.avatarUrl ?? null,
+          name: validation.data.name ?? fallbackName,
+          surname: validation.data.surname ?? '',
+          phone: validation.data.phone ?? '',
+          birthDate: validation.data.birthDate ?? null,
+          birthPlace: validation.data.birthPlace?.trim() || placeholderText,
+          gender: resolvedGender,
+          address: validation.data.address?.trim() || placeholderText,
           ...(countryId !== undefined && countryId !== null && { countryId }),
           ...(subdivisionId !== undefined && subdivisionId !== null && { subdivisionId }),
-          city: data.city?.trim() || placeholderText,
-          zipCode: data.zipCode?.trim() || placeholderZipCode,
+          city: validation.data.city?.trim() || placeholderText,
+          zipCode: validation.data.zipCode?.trim() || placeholderZipCode,
         })
         .returning({ id: profiles.id, userId: profiles.userId });
 
