@@ -15,7 +15,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { ArtistAvailability, TimeRange } from '@/lib/types';
 import { toast } from 'sonner';
 import { useEffect, useMemo, useState } from 'react';
-import { format, startOfDay } from 'date-fns';
+import { addDays, format, isBefore, startOfDay } from 'date-fns';
 import useSWR from 'swr';
 import { checkAvailabilities, cn, fetcher } from '@/lib/utils';
 import { notFound, useParams } from 'next/navigation';
@@ -26,6 +26,7 @@ import { createArtistAvailability } from '@/lib/server-actions/artists/create-ar
 import { deleteArtistAvailability } from '@/lib/server-actions/artists/delete-artist-availability';
 import { z } from 'zod/v4';
 import { timeValidation } from '@/lib/validation/_general';
+import { Checkbox } from '@/components/ui/checkbox';
 
 export function UpdateAvailabilitiesButton() {
   const { slug } = useParams();
@@ -33,6 +34,8 @@ export function UpdateAvailabilitiesButton() {
 
   const [open, setOpen] = useState<boolean>(false);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
+  const [endDate, setEndDate] = useState<Date | undefined>(undefined);
+  const [isAllDay, setIsAllDay] = useState<boolean>(true);
 
   const [visible, setVisible] = useState<boolean>(false);
   const [newTimeRange, setNewTimeRange] = useState<TimeRange>({
@@ -77,33 +80,57 @@ export function UpdateAvailabilitiesButton() {
     if (!selectedDate) return;
     setLoading(true);
 
-    const schema = z.object({
-      startTime: timeValidation,
-      endTime: timeValidation,
-    });
+    const endDateValue = endDate ?? selectedDate;
 
-    const validation = schema.safeParse({
-      startTime: newTimeRange.startTime,
-      endTime: newTimeRange.endTime,
-    });
-
-    if (!validation.success) {
-      toast.error('Orari nuova disponibilità non validi.');
+    if (isBefore(endDateValue, selectedDate)) {
+      toast.error('La data di fine deve essere successiva o uguale alla data di inizio.');
       setLoading(false);
       return;
     }
 
-    const startTimeFragments = newTimeRange.startTime.split(':');
-    const endTimeFragments = newTimeRange.endTime.split(':');
+    let startLocal = new Date(selectedDate);
+    let endLocal = new Date(endDateValue);
 
-    const start = new Date(selectedDate);
-    start.setHours(parseInt(startTimeFragments[0], 10), parseInt(startTimeFragments[1], 10), 0, 0);
-    const end = new Date(selectedDate);
-    end.setHours(parseInt(endTimeFragments[0], 10), parseInt(endTimeFragments[1], 10), 0, 0);
+    if (isAllDay) {
+      startLocal = startOfDay(selectedDate);
+      endLocal = startOfDay(addDays(endDateValue, 1));
+    } else {
+      const schema = z.object({
+        startTime: timeValidation,
+        endTime: timeValidation,
+      });
+
+      const validation = schema.safeParse({
+        startTime: newTimeRange.startTime,
+        endTime: newTimeRange.endTime,
+      });
+
+      if (!validation.success) {
+        toast.error('Orari nuova indisponibilità non validi.');
+        setLoading(false);
+        return;
+      }
+
+      const startTimeFragments = newTimeRange.startTime.split(':');
+      const endTimeFragments = newTimeRange.endTime.split(':');
+
+      startLocal.setHours(
+        parseInt(startTimeFragments[0], 10),
+        parseInt(startTimeFragments[1], 10),
+        0,
+        0,
+      );
+      endLocal.setHours(
+        parseInt(endTimeFragments[0], 10),
+        parseInt(endTimeFragments[1], 10),
+        0,
+        0,
+      );
+    }
 
     const newAvailability = {
-      startDate: fromZonedTime(start, TIME_ZONE),
-      endDate: fromZonedTime(end, TIME_ZONE),
+      startDate: fromZonedTime(startLocal, TIME_ZONE),
+      endDate: fromZonedTime(endLocal, TIME_ZONE),
     };
 
     const check = checkAvailabilities([...availabilities, newAvailability]);
@@ -125,8 +152,10 @@ export function UpdateAvailabilitiesButton() {
     await mutate();
 
     setNewTimeRange({ startTime: '', endTime: '' });
+    setEndDate(undefined);
+    setIsAllDay(true);
     setLoading(false);
-    toast.success('Disponibilità aggiunta!');
+    toast.success('Indisponibilità aggiunta!');
   };
 
   const removeAvailability = async (id: number) => {
@@ -165,9 +194,9 @@ export function UpdateAvailabilitiesButton() {
       >
         <DialogContent className='h-dvh w-dvw md:max-h-[460px] grid grid-rows-[max-content_1fr_max-content] rounded-none md:rounded-2xl gap-2 md:gap-4'>
           <DialogHeader>
-            <DialogTitle>Seleziona le disponibilità e l&apos;orario dell&apos;artista</DialogTitle>
+            <DialogTitle>Seleziona le indisponibilità dell&apos;artista</DialogTitle>
             <DialogDescription className='hidden'>
-              Tramite questo dialog l&apos;utente può inserire o modificare le disponibilità
+              Tramite questo dialog l&apos;utente può inserire o modificare le indisponibilità
               dell&apos;artista.
             </DialogDescription>
           </DialogHeader>
@@ -177,7 +206,10 @@ export function UpdateAvailabilitiesButton() {
               locale={it}
               mode='single'
               selected={selectedDate}
-              onSelect={setSelectedDate}
+              onSelect={(date) => {
+                setSelectedDate(date);
+                setEndDate(date);
+              }}
               disabled={loading || isLoading ? true : { before: new Date() }}
               className='h-max p-0 self-center'
             />
@@ -185,7 +217,7 @@ export function UpdateAvailabilitiesButton() {
             {selectedDate ? (
               <div className='flex flex-col overflow-y-auto'>
                 <div className='flex justify-between items-center shrink-0'>
-                  <div className='font-semibold text-zinc-700'>Orario</div>
+                  <div className='font-semibold text-zinc-700'>Blocco</div>
                   <Button
                     variant='ghost'
                     size='icon'
@@ -197,36 +229,65 @@ export function UpdateAvailabilitiesButton() {
                 </div>
 
                 {visible && (
-                  <div className='flex gap-2 items-center text-zinc-700 pb-2 border-b'>
-                    <Input
-                      type='time'
-                      value={newTimeRange.startTime}
-                      onChange={(e) =>
-                        setNewTimeRange((prev) => ({
-                          ...prev,
-                          startTime: e.target.value,
-                        }))
-                      }
-                      className={cn(
-                        'w-min appearance-none [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none shadow-none',
-                      )}
-                      disabled={isLoading}
-                    />
-                    <span className='text-zinc-400'>-</span>
-                    <Input
-                      type='time'
-                      value={newTimeRange.endTime}
-                      onChange={(e) =>
-                        setNewTimeRange((prev) => ({
-                          ...prev,
-                          endTime: e.target.value,
-                        }))
-                      }
-                      className={cn(
-                        'w-min appearance-none [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none shadow-none',
-                      )}
-                      disabled={isLoading}
-                    />
+                  <div className='flex flex-col gap-3 text-zinc-700 pb-2 border-b'>
+                    <label className='flex items-center gap-2 text-sm font-medium'>
+                      <Checkbox
+                        checked={isAllDay}
+                        onCheckedChange={(checked) => setIsAllDay(checked === true)}
+                      />
+                      Giornata intera
+                    </label>
+
+                    <div className='flex flex-col gap-2'>
+                      <span className='text-xs text-zinc-400 font-medium'>Data fine</span>
+                      <Input
+                        type='date'
+                        value={endDate instanceof Date ? format(endDate, 'yyyy-MM-dd') : ''}
+                        onChange={(e) => {
+                          if (!e.target.value) {
+                            setEndDate(undefined);
+                            return;
+                          }
+                          setEndDate(new Date(`${e.target.value}T00:00:00`));
+                        }}
+                        className='w-full shadow-none'
+                        disabled={isLoading}
+                      />
+                    </div>
+
+                    {!isAllDay && (
+                      <div className='flex gap-2 items-center'>
+                        <Input
+                          type='time'
+                          value={newTimeRange.startTime}
+                          onChange={(e) =>
+                            setNewTimeRange((prev) => ({
+                              ...prev,
+                              startTime: e.target.value,
+                            }))
+                          }
+                          className={cn(
+                            'w-min appearance-none [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none shadow-none',
+                          )}
+                          disabled={isLoading}
+                        />
+                        <span className='text-zinc-400'>-</span>
+                        <Input
+                          type='time'
+                          value={newTimeRange.endTime}
+                          onChange={(e) =>
+                            setNewTimeRange((prev) => ({
+                              ...prev,
+                              endTime: e.target.value,
+                            }))
+                          }
+                          className={cn(
+                            'w-min appearance-none [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none shadow-none',
+                          )}
+                          disabled={isLoading}
+                        />
+                      </div>
+                    )}
 
                     <Button
                       size='sm'
@@ -248,7 +309,7 @@ export function UpdateAvailabilitiesButton() {
                   )}
                   {!isLoading && availabilities.length === 0 && (
                     <div className='text-sm text-zinc-500'>
-                      Nessuna disponibilità. Aggiungine una per vederla nella lista.
+                      Nessuna indisponibilità. Aggiungine una per vederla nella lista.
                     </div>
                   )}
                   {!isLoading &&
@@ -262,9 +323,9 @@ export function UpdateAvailabilitiesButton() {
                           className='h-10 flex gap-2 justify-between items-center bg-zinc-50 px-2 rounded-xl'
                         >
                           <span>
-                            {format(av.startDate, 'HH:mm')}
+                            {format(av.startDate, 'dd/MM/yyyy, HH:mm')}
                             <span className='text-zinc-400 mx-1'>-</span>
-                            {format(av.endDate, 'HH:mm')}
+                            {format(av.endDate, 'dd/MM/yyyy, HH:mm')}
                           </span>
                           {canDelete && (
                             <Button

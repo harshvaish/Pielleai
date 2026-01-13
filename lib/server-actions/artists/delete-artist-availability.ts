@@ -7,7 +7,7 @@ import { artistAvailabilities, events } from '@/lib/database/schema';
 import { ServerActionResponse } from '@/lib/types';
 import { hasRole } from '@/lib/utils';
 import { idValidation } from '@/lib/validation/_general';
-import { eq, inArray } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 
 export async function deleteArtistAvailability(
   availabilityId: number,
@@ -46,32 +46,14 @@ export async function deleteArtistAvailability(
         throw new AppError('Disponibilità non trovata.');
       }
 
-      // Block delete if availability is booked
-      if (found.status === 'booked') {
-        throw new AppError('Disponibilità prenotata.');
-      }
-
-      // Load events attached to this availability
+      // Block delete if availability is linked to events
       const eventsAttached = await tx
-        .select({
-          id: events.id,
-          status: events.status,
-        })
+        .select({ id: events.id })
         .from(events)
         .where(eq(events.availabilityId, availabilityId));
 
-      // Block delete if any protected event is present
-      const hasProtected = eventsAttached.some(
-        (e) => e.status === 'pre-confirmed' || e.status === 'confirmed',
-      );
-      if (hasProtected) {
-        throw new AppError('Disponibilità collegata ad un evento approvato.');
-      }
-
-      // Delete dependent events first (if any), then the availability
-      const deletableEventIds = eventsAttached.map((e) => e.id);
-      if (deletableEventIds.length > 0) {
-        await tx.delete(events).where(inArray(events.id, deletableEventIds));
+      if (eventsAttached.length > 0) {
+        throw new AppError('Impossibile rimuovere un blocco collegato ad un evento.');
       }
 
       await tx.delete(artistAvailabilities).where(eq(artistAvailabilities.id, availabilityId));

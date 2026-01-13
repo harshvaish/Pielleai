@@ -17,6 +17,7 @@ import { getLanguagesCached } from '@/lib/cache/languages';
 import { getCountriesCached } from '@/lib/cache/countries';
 import { getZonesCached } from '@/lib/cache/zones';
 import { getArtistManagersCached } from '@/lib/cache/artist-managers';
+import { getVenuesCached } from '@/lib/cache/venues';
 import { getArtistCached } from '@/lib/cache/artists';
 import getSession from '@/lib/data/auth/get-session';
 import { toast } from 'sonner';
@@ -28,14 +29,22 @@ import PersonalDataTab from './_components/Tabs/PersonalDataTab';
 import BillingDataTab from '../../_components/Tabs/BillingDataTab';
 import AvailabilitiesTab from './_components/Tabs/AvailabilitiesTab';
 import SocialDataTab from '../../_components/Tabs/SocialDataTab';
+import ArtistEventsTab from './_components/Tabs/ArtistEventsTab';
 
 type ArtistDetailPageProps = {
   params: Promise<{ slug: string }>;
+  searchParams?: Promise<{
+    page?: string;
+    status?: string;
+    venue?: string;
+    start?: string;
+    end?: string;
+  }>;
 };
 
 export const dynamic = 'force-dynamic';
 
-export default async function ArtistDetailPage({ params }: ArtistDetailPageProps) {
+export default async function ArtistDetailPage({ params, searchParams }: ArtistDetailPageProps) {
   const { session, user } = await getSession();
 
   if (!session || !user || user.banned) {
@@ -55,12 +64,13 @@ export default async function ArtistDetailPage({ params }: ArtistDetailPageProps
   const p = await params;
   const { slug } = p;
 
-  const [userData, languages, countries, zones, artistManagers] = await Promise.all([
+  const [userData, languages, countries, zones, artistManagers, venues] = await Promise.all([
     getArtistCached(slug),
     getLanguagesCached(),
     getCountriesCached(),
     getZonesCached(),
     getArtistManagersCached(),
+    getVenuesCached(),
   ]);
 
   if (!userData) notFound();
@@ -83,6 +93,8 @@ export default async function ArtistDetailPage({ params }: ArtistDetailPageProps
   const isDisabled = userData.status === 'disabled';
   const createdAtZoned = format(toZonedTime(userData.createdAt, TIME_ZONE), 'dd/MM/yyyy, HH:mm');
   const updatedAtZoned = format(toZonedTime(userData.updatedAt, TIME_ZONE), 'dd/MM/yyyy, HH:mm');
+
+  const sp = searchParams ? await searchParams : {};
 
   return (
     <div className='max-w-full overflow-x-hidden'>
@@ -212,6 +224,7 @@ export default async function ArtistDetailPage({ params }: ArtistDetailPageProps
             <TabsTrigger value='b'>Dati di fatturazione</TabsTrigger>
             <TabsTrigger value='c'>Disponibilità</TabsTrigger>
             <TabsTrigger value='d'>Social</TabsTrigger>
+            <TabsTrigger value='e'>Eventi</TabsTrigger>
           </TabsList>
         </div>
 
@@ -231,6 +244,12 @@ export default async function ArtistDetailPage({ params }: ArtistDetailPageProps
         <SocialDataTab
           tabValue='d'
           data={userData}
+        />
+        <ArtistEventsTab
+          tabValue='e'
+          artistId={userData.id}
+          venues={venues}
+          searchParams={sp ?? {}}
         />
       </Tabs>
     </div>

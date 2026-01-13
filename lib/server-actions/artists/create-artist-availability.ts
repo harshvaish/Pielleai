@@ -3,11 +3,11 @@
 import { AppError } from '@/lib/classes/AppError';
 import getSession from '@/lib/data/auth/get-session';
 import { database } from '@/lib/database/connection';
-import { artistAvailabilities, artists } from '@/lib/database/schema';
+import { artistAvailabilities, artists, events } from '@/lib/database/schema';
 import { ServerActionResponse, Availability } from '@/lib/types';
 import { hasRole } from '@/lib/utils';
 import { dateValidation } from '@/lib/validation/_general';
-import { eq, and, sql, count } from 'drizzle-orm';
+import { eq, and, sql, count, inArray } from 'drizzle-orm';
 import { z } from 'zod/v4';
 
 export async function createArtistAvailability(
@@ -52,26 +52,45 @@ export async function createArtistAvailability(
 
     if (!artistId) throw new AppError('Artista non trovato.');
 
-    console.log(newAvailability.startDate, newAvailability.endDate);
+    if (newAvailability.startDate >= newAvailability.endDate) {
+      throw new AppError('La data di fine deve essere successiva alla data di inizio.');
+    }
 
     const availabilityWindow = sql`tstzrange(
                                 ${newAvailability.startDate}::timestamptz,
-                                ${newAvailability.startDate}::timestamptz,
+                                ${newAvailability.endDate}::timestamptz,
                                 '[)')`;
 
-    // check if cross another availability
-    const [check] = await database
+    const [availabilityCheck] = await database
       .select({ count: count() })
       .from(artistAvailabilities)
+      .leftJoin(events, eq(events.availabilityId, artistAvailabilities.id))
       .where(
         and(
           eq(artistAvailabilities.artistId, artistId),
           sql`${artistAvailabilities.timeRange} && ${availabilityWindow}`,
+          sql`${events.id} is null`,
         ),
       );
 
-    if (check.count > 0) {
-      throw new AppError('La nuova disponibilità è in conflitto con una già presente.');
+    if (availabilityCheck.count > 0) {
+      throw new AppError('Il blocco selezionato è in conflitto con uno già presente.');
+    }
+
+    const [eventCheck] = await database
+      .select({ count: count() })
+      .from(events)
+      .innerJoin(artistAvailabilities, eq(events.availabilityId, artistAvailabilities.id))
+      .where(
+        and(
+          eq(events.artistId, artistId),
+          inArray(events.status, ['proposed', 'pre-confirmed', 'confirmed']),
+          sql`${artistAvailabilities.timeRange} && ${availabilityWindow}`,
+        ),
+      );
+
+    if (eventCheck.count > 0) {
+      throw new AppError('Il blocco selezionato è in conflitto con un evento esistente.');
     }
 
     // Insert new availabilities
@@ -79,6 +98,7 @@ export async function createArtistAvailability(
       artistId,
       startDate: newAvailability.startDate,
       endDate: newAvailability.endDate,
+      status: 'available',
     });
 
     return {

@@ -9,7 +9,7 @@ import { EventStatus, ServerActionResponse } from '@/lib/types';
 import { hasRole } from '@/lib/utils';
 import { eventStatusEnumValidation, idValidation } from '@/lib/validation/_general';
 import { isBefore } from 'date-fns';
-import { and, eq, ne, count, inArray } from 'drizzle-orm';
+import { and, eq, ne, count, inArray, sql } from 'drizzle-orm';
 import { z } from 'zod/v4';
 import { sendEventConfirmedEmail } from '../send-event-confirmed-email';
 
@@ -49,6 +49,7 @@ export async function updateEventStatus(
       .select({
         id: events.id,
         status: events.status,
+        artistId: events.artistId,
 
         artist: {
           name: artists.name,
@@ -78,46 +79,30 @@ export async function updateEventStatus(
     if (!oldEvent) throw new AppError('Evento non trovato.');
     if (isBefore(oldEvent.availability.endDate, now)) throw new AppError('Evento scaduto.');
 
-    // Block activating on a booked availability
-    if (
-      ['confirmed', 'proposed', 'pre-confirmed'].includes(newStatus) &&
-      oldEvent.availability.status === 'booked' &&
-      oldEvent.status !== 'confirmed'
-    ) {
-      throw new AppError('Questa disponibilità è già prenotata da un evento confermato.');
-    }
+    const rangeWindow = sql`tstzrange(${oldEvent.availability.startDate}::timestamptz, ${oldEvent.availability.endDate}::timestamptz, '[)')`;
 
-    if (oldEvent.status !== newStatus) {
-      // If confirming, friendly pre-check (DB index will enforce anyway)
-      if (newStatus === 'confirmed') {
-        const [alreadyConfirmed] = await database
-          .select({ count: count() })
-          .from(events)
-          .where(
-            and(
-              ne(events.id, eventId),
-              eq(events.availabilityId, oldEvent.availability.id),
-              eq(events.status, 'confirmed'),
-            ),
-          )
-          .limit(1);
+    if (oldEvent.status !== newStatus && newStatus === 'confirmed') {
+      const [alreadyConfirmed] = await database
+        .select({ count: count() })
+        .from(events)
+        .innerJoin(artistAvailabilities, eq(events.availabilityId, artistAvailabilities.id))
+        .where(
+          and(
+            ne(events.id, eventId),
+            eq(events.artistId, oldEvent.artistId),
+            eq(events.status, 'confirmed'),
+            sql`${artistAvailabilities.timeRange} && ${rangeWindow}`,
+          ),
+        )
+        .limit(1);
 
-        if (alreadyConfirmed.count > 0) {
-          throw new AppError('Un altro evento è già confermato per questa disponibilità.');
-        }
+      if (alreadyConfirmed.count > 0) {
+        throw new AppError('Un altro evento è già confermato per questa disponibilità.');
       }
     }
 
     await database.transaction(async (tx) => {
-      // STEP 1: HANDLE AVAILABILITY --------------------------------------------------------
-      if (newStatus === 'confirmed' && oldEvent.availability.status !== 'booked') {
-        await tx
-          .update(artistAvailabilities)
-          .set({ status: 'booked', updatedAt: now })
-          .where(eq(artistAvailabilities.id, oldEvent.availability.id));
-      }
-
-      // STEP 2: HANDLE EVENT --------------------------------------------------------
+      // STEP 1: HANDLE EVENT --------------------------------------------------------
       await tx
         .update(events)
         .set({ status: newStatus, updatedAt: now })
@@ -132,14 +117,15 @@ export async function updateEventStatus(
           .where(
             and(
               ne(events.id, eventId),
-              eq(events.availabilityId, oldEvent.availability.id),
               inArray(events.status, ['proposed', 'pre-confirmed']),
+              eq(events.artistId, oldEvent.artistId),
+              sql`${events.availabilityId} in (select id from artist_availabilities where time_range && ${rangeWindow})`,
             ),
           );
       }
 
       // Always recompute conflicts after any status change
-      await recomputeConflicts(tx, oldEvent.availability.id);
+      await recomputeConflicts(tx, oldEvent.artistId);
     });
 
     // STEP 4: SEND EMAIL NOTIFICATION IF STATUS IS NOW CONFIRMED --------------------------------

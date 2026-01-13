@@ -4,7 +4,7 @@ import { database } from '@/lib/database/connection';
 import { artistAvailabilities, artists, events } from '@/lib/database/schema';
 import { ArtistAvailability } from '@/lib/types';
 import { addDays } from 'date-fns';
-import { and, count, eq, inArray, sql } from 'drizzle-orm';
+import { and, eq, sql } from 'drizzle-orm';
 
 type getArtistDateAvailabilitiesParams = {
   artistId: number | null;
@@ -41,7 +41,7 @@ export async function getArtistDateAvailabilities({
                             ${addDays(new Date(startDate), 1).toISOString()}::timestamptz,
                             '[)')`;
 
-    // 3) Fetch availabilities for the day
+    // 3) Fetch unavailability blocks for the day (availabilities not linked to events)
     const rows = await database
       .select({
         id: artistAvailabilities.id,
@@ -51,44 +51,22 @@ export async function getArtistDateAvailabilities({
         status: artistAvailabilities.status,
       })
       .from(artistAvailabilities)
+      .leftJoin(events, eq(events.availabilityId, artistAvailabilities.id))
       .where(
         and(
           eq(artistAvailabilities.artistId, id),
           sql`${artistAvailabilities.timeRange} && ${dayWindow}`,
+          sql`${events.id} is null`,
         ),
       )
       .orderBy(artistAvailabilities.startDate);
 
     if (rows.length === 0) return [];
 
-    // 4) Fetch counts of "protected" events per availability (pre-confirmed/confirmed or previous pre-confirmed)
-    const availabilityIds = rows.map((r) => r.id);
-
-    const protectedCounts = await database
-      .select({
-        availabilityId: events.availabilityId,
-        count: count(),
-      })
-      .from(events)
-      .where(
-        and(
-          inArray(events.availabilityId, availabilityIds),
-          inArray(events.status, ['pre-confirmed', 'confirmed']),
-        ),
-      )
-      .groupBy(events.availabilityId);
-
-    const protectedMap = new Map<number, number>();
-    for (const r of protectedCounts) protectedMap.set(r.availabilityId, Number(r.count));
-
-    // 5) Compute canDelete
-    const result: ArtistAvailability[] = rows.map((r) => {
-      const protectedCount = protectedMap.get(r.id) ?? 0;
-      const canDelete = r.status !== 'booked' && protectedCount === 0;
-      return { ...r, canDelete };
-    });
-
-    return result;
+    return rows.map((row) => ({
+      ...row,
+      canDelete: true,
+    }));
   } catch (error) {
     console.error('[getArtistAvailabilitiesFromDate] - Error:', error);
     throw new Error('Recupero disponibilità artista non riuscito.');

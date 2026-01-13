@@ -1,22 +1,35 @@
 'server only';
 
 import { database } from '@/lib/database/connection';
-import { artistAvailabilities, artists } from '@/lib/database/schema';
+import { artistAvailabilities, artists, events } from '@/lib/database/schema';
 import { ArtistAvailability } from '@/lib/types';
 import { and, eq, sql } from 'drizzle-orm';
 
-export async function getArtistRangeAvailabilities({ artistSlug, startDate, endDate }: { artistSlug: string; startDate: string; endDate: string }): Promise<ArtistAvailability[]> {
+export async function getArtistRangeAvailabilities({
+  artistSlug,
+  artistId,
+  startDate,
+  endDate,
+}: {
+  artistSlug?: string;
+  artistId?: number | null;
+  startDate: string;
+  endDate: string;
+}): Promise<ArtistAvailability[]> {
   try {
-    const artistResult = await database
-      .select({
-        id: artists.id,
-      })
-      .from(artists)
-      .where(and(eq(artists.slug, artistSlug)));
+    let resolvedArtistId = artistId ?? null;
+    if (!resolvedArtistId) {
+      const artistResult = await database
+        .select({
+          id: artists.id,
+        })
+        .from(artists)
+        .where(and(eq(artists.slug, artistSlug)));
 
-    const artistId = artistResult[0]?.id;
+      resolvedArtistId = artistResult[0]?.id ?? null;
+    }
 
-    if (!artistId) {
+    if (!resolvedArtistId) {
       throw new Error('Recupero artista non riuscito.');
     }
 
@@ -34,7 +47,14 @@ export async function getArtistRangeAvailabilities({ artistSlug, startDate, endD
         status: artistAvailabilities.status,
       })
       .from(artistAvailabilities)
-      .where(and(eq(artistAvailabilities.artistId, artistId), sql`${artistAvailabilities.timeRange} && ${rangeWindow}`))
+      .leftJoin(events, eq(events.availabilityId, artistAvailabilities.id))
+      .where(
+        and(
+          eq(artistAvailabilities.artistId, resolvedArtistId),
+          sql`${artistAvailabilities.timeRange} && ${rangeWindow}`,
+          sql`${events.id} is null`,
+        ),
+      )
       .orderBy(artistAvailabilities.startDate);
 
     if (!availabilitiesResult.length) return [];

@@ -2,7 +2,7 @@
 
 import { ServerActionResponse } from '@/lib/types';
 import { database } from '@/lib/database/connection';
-import { and, count, eq, inArray, ne } from 'drizzle-orm';
+import { and, count, eq, inArray, ne, sql } from 'drizzle-orm';
 import {
   profiles,
   users,
@@ -92,7 +92,7 @@ export const updateEvent = async (
     }
 
     if (!newAvailability.startDate || !newAvailability.endDate) {
-      throw new AppError('Seleziona una disponibilità valida.');
+      throw new AppError('Seleziona una data e un orario validi.');
     }
 
     if (isBefore(newAvailability.endDate, newAvailability.startDate)) {
@@ -102,59 +102,61 @@ export const updateEvent = async (
       throw new AppError('Nuova disponibilità inserita già iniziata e quindi scaduta.');
     }
 
-    if (newAvailability.id) {
-      // if the availability is different from the old one, we need to check it exists and is available
-      if (newAvailability.id != oldEvent.availability.id) {
-        const [availabilityCheck] = await database
-          .select({
-            id: artistAvailabilities.id,
-            status: artistAvailabilities.status,
-            startDate: artistAvailabilities.startDate,
-            endDate: artistAvailabilities.endDate,
-          })
-          .from(artistAvailabilities)
-          .where(
-            and(
-              eq(artistAvailabilities.id, newAvailability.id),
-              eq(artistAvailabilities.artistId, artistId),
-            ),
-          )
-          .limit(1);
+    if (newAvailability.id && newAvailability.id !== oldEvent.availability.id) {
+      throw new AppError('Non puoi riutilizzare una disponibilità diversa per questo evento.');
+    }
 
-        if (availabilityCheck.status != 'available') {
-          throw new AppError('Disponibilità selezionata già prenotata o scaduta.');
-        }
+    const rangeWindow = sql`tstzrange(${newAvailability.startDate}::timestamptz, ${newAvailability.endDate}::timestamptz, '[)')`;
+    const [[blockedCount], [overlapCount], [confirmedOverlap]] = await Promise.all([
+      database
+        .select({ count: count() })
+        .from(artistAvailabilities)
+        .leftJoin(events, eq(events.availabilityId, artistAvailabilities.id))
+        .where(
+          and(
+            eq(artistAvailabilities.artistId, artistId),
+            sql`${artistAvailabilities.timeRange} && ${rangeWindow}`,
+            sql`${events.id} is null`,
+          ),
+        ),
+      database
+        .select({ count: count() })
+        .from(events)
+        .innerJoin(artistAvailabilities, eq(events.availabilityId, artistAvailabilities.id))
+        .where(
+          and(
+            eq(events.artistId, artistId),
+            ne(events.id, eventId),
+            inArray(events.status, ['proposed', 'pre-confirmed', 'confirmed']),
+            sql`${artistAvailabilities.timeRange} && ${rangeWindow}`,
+          ),
+        ),
+      database
+        .select({ count: count() })
+        .from(events)
+        .innerJoin(artistAvailabilities, eq(events.availabilityId, artistAvailabilities.id))
+        .where(
+          and(
+            eq(events.artistId, artistId),
+            ne(events.id, eventId),
+            eq(events.status, 'confirmed'),
+            sql`${artistAvailabilities.timeRange} && ${rangeWindow}`,
+          ),
+        ),
+    ]);
 
-        if (isBefore(availabilityCheck.startDate, now)) {
-          throw new AppError('Disponibilità selezionata già iniziata e quindi scaduta.');
-        }
+    if (blockedCount.count > 0) {
+      throw new AppError('Il periodo selezionato è in conflitto con un blocco di indisponibilità.');
+    }
 
-        if (isBefore(availabilityCheck.endDate, now)) {
-          throw new AppError('Disponibilità selezionata scaduta.');
-        }
-      }
+    if (overlapCount.count > 0) {
+      throw new AppError('Il periodo selezionato è in conflitto con un altro evento.');
+    }
 
-      if (newStatus !== oldEvent.status) {
-        if (['proposed', 'pre-confirmed', 'confirmed'].includes(newStatus)) {
-          const [already] = await database
-            .select({ count: count() })
-            .from(events)
-            .where(
-              and(
-                ne(events.id, eventId),
-                eq(events.availabilityId, newAvailability.id),
-                eq(events.status, 'confirmed'),
-              ),
-            )
-            .limit(1);
-
-          if (already.count > 0) {
-            throw new AppError(
-              'Un altro evento è già confermato per questa disponibilità, puoi solo rifiutare o cancellare questo evento.',
-            );
-          }
-        }
-      }
+    if (newStatus === 'confirmed' && confirmedOverlap.count > 0) {
+      throw new AppError(
+        'Un altro evento è già confermato nello stesso periodo, puoi solo rifiutare o cancellare questo evento.',
+      );
     }
 
     // Validate foreign keys exist
@@ -185,29 +187,17 @@ export const updateEvent = async (
 
     await database.transaction(async (tx) => {
       // STEP 1: HANDLE AVAILABILITY --------------------------------------------------------
-      if (newAvailability.id) {
-        await tx
-          .update(artistAvailabilities)
-          .set({ status: newStatus === 'confirmed' ? 'booked' : 'available', updatedAt: now })
-          .where(eq(artistAvailabilities.id, newAvailability.id));
-      } else {
-        if (!newAvailability.startDate || !newAvailability.endDate) {
-          throw new AppError('Seleziona una disponibilità valida.');
-        }
+      await tx
+        .update(artistAvailabilities)
+        .set({
+          startDate: newAvailability.startDate,
+          endDate: newAvailability.endDate,
+          status: 'booked',
+          updatedAt: now,
+        })
+        .where(eq(artistAvailabilities.id, oldEvent.availability.id));
 
-        const [newAvail] = await tx
-          .insert(artistAvailabilities)
-          .values({
-            artistId,
-            startDate: newAvailability.startDate,
-            endDate: newAvailability.endDate,
-            status: newStatus === 'confirmed' ? 'booked' : 'available',
-          })
-          .returning({ id: artistAvailabilities.id });
-
-        if (!newAvail?.id) throw new AppError('Inserimento nuova disponibilità non riuscito.');
-        newAvailability.id = newAvail.id;
-      }
+      newAvailability.id = oldEvent.availability.id;
 
       // STEP 2: HANDLE EVENT --------------------------------------------------------
       await tx
@@ -289,19 +279,15 @@ export const updateEvent = async (
           .where(
             and(
               ne(events.id, eventId),
-              eq(events.availabilityId, newAvailability.id),
               inArray(events.status, ['proposed', 'pre-confirmed']),
+              eq(events.artistId, artistId),
+              sql`${events.availabilityId} in (select id from artist_availabilities where time_range && ${rangeWindow})`,
             ),
           );
       }
 
       // Recompute conflicts for the new availability
-      await recomputeConflicts(tx, newAvailability.id);
-
-      // If availability changed, also recompute for the old availability
-      if (newAvailability.id !== oldEvent.availability.id) {
-        await recomputeConflicts(tx, oldEvent.availability.id);
-      }
+      await recomputeConflicts(tx, artistId);
     });
 
     // STEP 4: SEND EMAIL NOTIFICATION IF STATUS CHANGED TO CONFIRMED ----------------

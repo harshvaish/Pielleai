@@ -250,7 +250,7 @@ export const eventRequestFormSchema = eventFormSchema
   .extend({
     availability: z.object(
       {
-        id: idValidation,
+        id: idValidation.optional(),
         startDate: dateValidation,
         endDate: dateValidation,
       },

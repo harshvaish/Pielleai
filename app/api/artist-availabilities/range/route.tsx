@@ -23,10 +23,13 @@ export async function GET(
     const url = new URL(request.url);
 
     const artistSlug = url.searchParams.get('s');
+    const artistIdParam = url.searchParams.get('i');
     const startDate = url.searchParams.get('sd');
     const endDate = url.searchParams.get('ed');
 
-    if (!artistSlug) {
+    const artistId = artistIdParam ? parseInt(artistIdParam) : null;
+
+    if (!artistSlug && !artistId) {
       return NextResponse.json(
         { success: false, message: 'Dati artista mancanti.', data: null },
         { status: 400 },
@@ -41,12 +44,18 @@ export async function GET(
     }
 
     const schema = z.object({
-      artistSlug: z.uuid(),
+      artistSlug: z.uuid().nullable().optional(),
+      artistId: z.number().int().positive().nullable().optional(),
       startDate: stringDateValidation,
       endDate: stringDateValidation,
     });
 
-    const validation = schema.safeParse({ artistSlug, startDate, endDate });
+    const validation = schema.safeParse({
+      artistSlug: artistSlug ?? null,
+      artistId,
+      startDate,
+      endDate,
+    });
 
     if (!validation.success) {
       return NextResponse.json(
@@ -56,7 +65,8 @@ export async function GET(
     }
 
     const availabilities = await getArtistRangeAvailabilities({
-      artistSlug,
+      artistSlug: artistSlug ?? undefined,
+      artistId,
       startDate,
       endDate,
     });

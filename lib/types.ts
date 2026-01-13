@@ -565,12 +565,53 @@ export type Event = {
   notes: EventNote[];
 };
 
+export type ArtistEventListItem = {
+  id: number;
+  startDate: Date;
+  endDate: Date;
+  status: EventStatus;
+  eventType: EventType | null;
+  venue: {
+    id: number;
+    name: string;
+    city: string | null;
+  };
+};
+
+export type EventSummary = {
+  id: number;
+  status: EventStatus;
+  eventType: EventType | null;
+  startDate: Date;
+  endDate: Date;
+  artist: {
+    id: number;
+    name: string;
+    surname: string;
+    stageName: string | null;
+  };
+  venue: {
+    id: number;
+    name: string;
+    city: string | null;
+    address: string | null;
+  };
+};
+
 export type EventsTableFilters = {
   currentPage: number | null;
   status: EventStatus[];
   conflict: boolean;
   artistIds: string[];
   artistManagerIds: string[];
+  venueIds: string[];
+  startDate: Date | null;
+  endDate: Date | null;
+};
+
+export type ArtistEventsTableFilters = {
+  currentPage: number | null;
+  status: EventStatus[];
   venueIds: string[];
   startDate: Date | null;
   endDate: Date | null;

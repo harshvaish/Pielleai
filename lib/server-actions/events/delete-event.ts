@@ -38,6 +38,7 @@ export async function deleteEvent(eventId: number): Promise<ServerActionResponse
       .select({
         id: events.id,
         status: events.status,
+        artistId: events.artistId,
         availability: {
           id: artistAvailabilities.id,
           status: artistAvailabilities.status,
@@ -53,21 +54,15 @@ export async function deleteEvent(eventId: number): Promise<ServerActionResponse
     if (!oldEvent) throw new AppError('Evento non trovato.');
 
     await database.transaction(async (tx) => {
-      // STEP 1: HANDLE AVAILABILITY --------------------------------------------------------
-      if (oldEvent.status === 'confirmed' && oldEvent.availability.status === 'booked') {
-        await tx
-          .update(artistAvailabilities)
-          .set({ status: 'available', updatedAt: now })
-          .where(eq(artistAvailabilities.id, oldEvent.availability.id));
-      }
+      // STEP 1: HANDLE EVENT --------------------------------------------------------
+      await tx.delete(events).where(eq(events.id, eventId));
 
-      // STEP 2: HANDLE EVENT --------------------------------------------------------
-      await database.delete(events).where(eq(events.id, eventId));
+      // STEP 2: CLEANUP AVAILABILITY -----------------------------------------------------
+      await tx.delete(artistAvailabilities).where(eq(artistAvailabilities.id, oldEvent.availability.id));
 
       // STEP 3: HANDLE CONFLICTS --------------------------------------------------------
-      // Recompute conflicts if the deleted event was active
       if (['proposed', 'pre-confirmed'].includes(oldEvent.status)) {
-        await recomputeConflicts(tx, oldEvent.availability.id);
+        await recomputeConflicts(tx, oldEvent.artistId);
       }
     });
 
