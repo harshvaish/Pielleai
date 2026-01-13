@@ -62,7 +62,7 @@
 /* === Availability styling === */
 .rbc-event.available,
 .available {
-  background-color: var(--color-blue-600);
+  background-color: var(--color-red-600);
   opacity: 0.6;
   border: none;
 }

@@ -25,6 +25,7 @@ import { toast } from "sonner";
 import useSWR from "swr";
 import { z } from "zod/v4";
 import { timeValidation } from "@/lib/validation/_general";
+import { type DateRange } from "react-day-picker";
 
 type FormValues = EventFormSchema | EventRequestFormSchema;
 
@@ -39,6 +40,7 @@ export default function EventDateTimeSelect() {
   const [month, setMonth] = useState<Date>(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [endDate, setEndDate] = useState<Date | undefined>(undefined);
+  const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
   const [startTime, setStartTime] = useState("");
   const [endTime, setEndTime] = useState("");
 
@@ -70,6 +72,7 @@ export default function EventDateTimeSelect() {
     const endLocal = toZonedTime(selectedAvailability.endDate, TIME_ZONE);
     setSelectedDate(startLocal);
     setEndDate(endLocal);
+    setDateRange({ from: startLocal, to: endLocal });
     setMonth(startLocal);
     setStartTime(format(startLocal, "HH:mm"));
     setEndTime(format(endLocal, "HH:mm"));
@@ -228,16 +231,17 @@ export default function EventDateTimeSelect() {
           <div className="h-full grid grid-rows-[max-content_1fr] md:grid-rows-none md:grid-cols-2 justify-items-center gap-4 py-4 border-t overflow-hidden">
             <Calendar
               locale={it}
-              mode="single"
+              mode="range"
               className="h-max p-0 self-center"
-              selected={selectedDate}
+              selected={dateRange}
               month={month}
               onMonthChange={setMonth}
-              onSelect={(date) => {
-                setSelectedDate(date);
-                setEndDate(date ?? undefined);
-                if (date) {
-                  setMonth(date);
+              onSelect={(range) => {
+                setDateRange(range);
+                setSelectedDate(range?.from);
+                setEndDate(range?.to ?? range?.from);
+                if (range?.from) {
+                  setMonth(range.from);
                 }
               }}
               disabled={(date) =>
@@ -259,9 +263,12 @@ export default function EventDateTimeSelect() {
                           ? new Date(`${e.target.value}T00:00:00`)
                           : undefined;
                         setSelectedDate(nextDate);
-                        if (!endDate || (nextDate && isBefore(endDate, nextDate))) {
-                          setEndDate(nextDate);
-                        }
+                        const nextEnd =
+                          !endDate || (nextDate && isBefore(endDate, nextDate))
+                            ? nextDate
+                            : endDate;
+                        setEndDate(nextEnd);
+                        setDateRange(nextDate ? { from: nextDate, to: nextEnd } : undefined);
                       }}
                     />
                     <Input
@@ -282,6 +289,9 @@ export default function EventDateTimeSelect() {
                           ? new Date(`${e.target.value}T00:00:00`)
                           : undefined;
                         setEndDate(nextDate);
+                        setDateRange(
+                          selectedDate ? { from: selectedDate, to: nextDate } : undefined
+                        );
                       }}
                     />
                     <Input
