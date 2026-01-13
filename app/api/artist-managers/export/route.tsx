@@ -68,7 +68,7 @@ export async function GET(): Promise<NextResponse> {
       id: manager.id,
       nome: manager.name,
       cognome: manager.surname,
-      email: manager.email,
+      email: manager.email ?? '',
       telefono: manager.phone ?? '',
       stato: manager.status ?? '',
       ragione_sociale: manager.company ?? '',
