@@ -11,7 +11,7 @@ export async function getEventSummary(eventId: number): Promise<EventSummary | n
       .select({
         id: events.id,
         status: events.status,
-        eventType: events.eventType,
+        eventType: events.eventType as any,
         startDate: artistAvailabilities.startDate,
         endDate: artistAvailabilities.endDate,
         artist: {

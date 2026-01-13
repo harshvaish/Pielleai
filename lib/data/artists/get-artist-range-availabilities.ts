@@ -19,6 +19,9 @@ export async function getArtistRangeAvailabilities({
   try {
     let resolvedArtistId = artistId ?? null;
     if (!resolvedArtistId) {
+      if (!artistSlug) {
+        throw new Error('Dati artista mancanti.');
+      }
       const artistResult = await database
         .select({
           id: artists.id,
