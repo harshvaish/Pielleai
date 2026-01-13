@@ -1,6 +1,12 @@
 "use client";
 
-import { ArtistSelectData, MoCoordinator, VenueSelectData } from "@/lib/types";
+import {
+  ArtistManagerSelectData,
+  ArtistSelectData,
+  MoCoordinator,
+  UserRole,
+  VenueSelectData,
+} from "@/lib/types";
 import {
   Select,
   SelectContent,
@@ -20,11 +26,14 @@ import ArtistManagerSelect from "./ArtistManagerSelect";
 import EventNotesInput from "./EventNotesInput";
 import { Controller, useFormContext, useWatch } from "react-hook-form";
 import ArtistSelect from "./ArtistSelect";
+import QuickCreateArtistDialog from "./QuickCreateArtistDialog";
+import QuickCreateArtistManagerDialog from "./QuickCreateArtistManagerDialog";
+import QuickCreateVenueDialog from "./QuickCreateVenueDialog";
 import { eventStatus } from "@/lib/database/schema";
 import { EventFormSchema } from "@/lib/validation/event-form-schema";
 import ArtistAvailabilitySelectWithCreate from "./ArtistAvailabilitySelectWithCreate";
 import EventStatusBadge from "@/app/(private)/_components/Badges/EventStatusBadge";
-import { useEffect, useMemo, useRef, useTransition } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { QUESTION_ICON, GREEN_TICK_ICON } from "@/lib/constants";
 import {
@@ -48,6 +57,7 @@ type EventForm = {
   moCoordinators: MoCoordinator[];
   event?: any;
   mode: "create" | "update";
+  userRole: UserRole;
   closeDialog?: () => void;
 };
 
@@ -66,6 +76,7 @@ export default function EventForm({
   moCoordinators,
   mode,
   event,
+  userRole,
   closeDialog,
 }: EventForm) {
   const {
@@ -77,12 +88,37 @@ export default function EventForm({
     formState: { errors },
   } = useFormContext<EventFormSchema>();
   const router = useRouter();
+  const [extraArtists, setExtraArtists] = useState<ArtistSelectData[]>([]);
+  const [extraVenues, setExtraVenues] = useState<VenueSelectData[]>([]);
+  const [extraArtistManagers, setExtraArtistManagers] = useState<ArtistManagerSelectData[]>([]);
+  const canCreateArtist = userRole === "admin" || userRole === "artist-manager";
+  const canCreateArtistManager = userRole === "admin";
+  const canCreateVenue = userRole === "admin" || userRole === "venue-manager";
+
+  const artistOptions = useMemo(() => {
+    const merged = [...artists, ...extraArtists];
+    const byId = new Map<number, ArtistSelectData>();
+    for (const artist of merged) {
+      byId.set(artist.id, artist);
+    }
+    return Array.from(byId.values());
+  }, [artists, extraArtists]);
+
+  const venueOptions = useMemo(() => {
+    const merged = [...venues, ...extraVenues];
+    const byId = new Map<number, VenueSelectData>();
+    for (const venue of merged) {
+      byId.set(venue.id, venue);
+    }
+    return Array.from(byId.values());
+  }, [venues, extraVenues]);
+
   const selectedVenueId = watch("venueId");
-  const selectedVenue = venues.find((venue) => venue.id == selectedVenueId);
+  const selectedVenue = venueOptions.find((venue) => venue.id == selectedVenueId);
   const selectedArtistId = watch("artistId");
   const selectedArtist = useMemo(
-    () => artists.find((artist) => artist.id === selectedArtistId),
-    [artists, selectedArtistId]
+    () => artistOptions.find((artist) => artist.id === selectedArtistId),
+    [artistOptions, selectedArtistId]
   );
   const contractId = watch("contractId");
   const hasContract = Boolean(contractId);
@@ -353,13 +389,30 @@ export default function EventForm({
     <>
       <div className="flex justify-between items-center gap-2">
         <div className="flex flex-col">
-          <div className="text-sm font-semibold mb-2">Artista</div>
+          <div className="flex items-center justify-between gap-2 mb-2">
+            <div className="text-sm font-semibold">Artista</div>
+            {canCreateArtist && (
+              <QuickCreateArtistDialog
+                onCreated={(artist) => {
+                  setExtraArtists((prev) =>
+                    prev.some((item) => item.id === artist.id) ? prev : [...prev, artist]
+                  );
+                  setValue("artistId", artist.id, {
+                    shouldDirty: true,
+                    shouldTouch: true,
+                  });
+                  setValue("artistManagerProfileId", undefined);
+                  setValue("availability", { startDate: undefined, endDate: undefined });
+                }}
+              />
+            )}
+          </div>
           <Controller
             control={control}
             name="artistId"
             render={({ field }) => (
               <ArtistSelect
-                artists={artists}
+                artists={artistOptions}
                 value={field.value}
                 setValue={field.onChange}
                 hasError={!!errors.artistId}
@@ -419,8 +472,24 @@ export default function EventForm({
 
       <div className="grid sm:grid-cols-2 gap-4">
         <div className="flex flex-col">
-          <div className="text-sm font-semibold mb-2">Località</div>
-          <VenueSelect venues={venues} />
+          <div className="flex items-center justify-between gap-2 mb-2">
+            <div className="text-sm font-semibold">Località</div>
+            {canCreateVenue && (
+              <QuickCreateVenueDialog
+                userRole={userRole}
+                onCreated={(venue) => {
+                  setExtraVenues((prev) =>
+                    prev.some((item) => item.id === venue.id) ? prev : [...prev, venue]
+                  );
+                  setValue("venueId", venue.id, {
+                    shouldDirty: true,
+                    shouldTouch: true,
+                  });
+                }}
+              />
+            )}
+          </div>
+          <VenueSelect venues={venueOptions} />
           {errors.venueId && (
             <p className="text-xs text-destructive mt-2">
               {errors.venueId.message as string}
@@ -451,8 +520,25 @@ export default function EventForm({
         </TabsList>
         <TabsContent value="a" className="flex flex-col gap-4 p-2">
           <div className="flex flex-col">
-            <div className="text-sm font-semibold mb-2">Manager artista</div>
-            <ArtistManagerSelect />
+            <div className="flex items-center justify-between gap-2 mb-2">
+              <div className="text-sm font-semibold">Manager artista</div>
+              {canCreateArtistManager && (
+                <QuickCreateArtistManagerDialog
+                  onCreated={(manager) => {
+                    setExtraArtistManagers((prev) =>
+                      prev.some((item) => item.profileId === manager.profileId)
+                        ? prev
+                        : [...prev, manager]
+                    );
+                    setValue("artistManagerProfileId", manager.profileId, {
+                      shouldDirty: true,
+                      shouldTouch: true,
+                    });
+                  }}
+                />
+              )}
+            </div>
+            <ArtistManagerSelect extraManagers={extraArtistManagers} />
             {errors.artistManagerProfileId && (
               <p className="text-xs text-destructive mt-2">
                 {errors.artistManagerProfileId.message as string}

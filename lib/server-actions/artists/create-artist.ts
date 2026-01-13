@@ -1,6 +1,6 @@
 'use server';
 
-import { ServerActionResponse } from '@/lib/types';
+import { ArtistSelectData, ServerActionResponse } from '@/lib/types';
 import { database } from '@/lib/database/connection';
 import { and, eq, inArray } from 'drizzle-orm';
 import {
@@ -21,7 +21,9 @@ import { revalidateTag } from 'next/cache';
 import { hasRole } from '@/lib/utils';
 import getSession from '@/lib/data/auth/get-session';
 
-export const createArtist = async (data: ArtistFormSchema): Promise<ServerActionResponse<null>> => {
+export const createArtist = async (
+  data: ArtistFormSchema,
+): Promise<ServerActionResponse<ArtistSelectData>> => {
   try {
     const { session, user } = await getSession();
 
@@ -37,7 +39,16 @@ export const createArtist = async (data: ArtistFormSchema): Promise<ServerAction
 
     const isAdmin = user.role === 'admin';
 
-    const validation = artistFormSchema.safeParse(data);
+    const sanitizeName = (value?: string | null) => {
+      if (typeof value !== 'string') return value;
+      return value.replace(/[^\p{L}\s'-]/gu, '').trim();
+    };
+
+    const validation = artistFormSchema.safeParse({
+      ...data,
+      name: sanitizeName(data.name),
+      surname: sanitizeName(data.surname),
+    });
 
     if (!validation.success) {
       console.error('[createArtist] - Error: validation failed', validation.error.issues[0]);
@@ -60,8 +71,8 @@ export const createArtist = async (data: ArtistFormSchema): Promise<ServerAction
     const fallbackName = validation.data.name?.trim() || 'Artista';
     const fallbackSurname = validation.data.surname?.trim() || '';
     const fallbackStageName = validation.data.stageName?.trim() || fallbackName;
-    const fallbackBirthDate = validation.data.birthDate || undefined;
-    const fallbackGender = validation.data.gender || undefined;
+    const fallbackBirthDate = validation.data.birthDate || '1970-01-01';
+    const fallbackGender = validation.data.gender || 'non-binary';
 
     const [
       languagesCheck,
@@ -160,6 +171,8 @@ export const createArtist = async (data: ArtistFormSchema): Promise<ServerAction
       }
     }
 
+    let createdArtist: ArtistSelectData | null = null;
+
     await database.transaction(async (tx) => {
       const insertValues: any = {
         status: 'active',
@@ -198,6 +211,8 @@ export const createArtist = async (data: ArtistFormSchema): Promise<ServerAction
         billingPhone: validation.data.billingPhone || null,
         billingPec: validation.data.billingPec || null,
         taxableInvoice: validation.data.taxableInvoice === 'true',
+        birthDate: fallbackBirthDate,
+        gender: fallbackGender,
 
         tiktokUrl: validation.data.tiktokUrl || null,
         tiktokUsername: validation.data.tiktokUsername || null,
@@ -220,14 +235,6 @@ export const createArtist = async (data: ArtistFormSchema): Promise<ServerAction
         xCreatedAt: validation.data.xCreatedAt || null,
       };
 
-      if (fallbackBirthDate) {
-        insertValues.birthDate = fallbackBirthDate;
-      }
-
-      if (fallbackGender) {
-        insertValues.gender = fallbackGender;
-      }
-
       const artistResult = await tx
         .insert(artists)
         .values(insertValues)
@@ -241,6 +248,20 @@ export const createArtist = async (data: ArtistFormSchema): Promise<ServerAction
       const slug = artistResult[0]?.slug;
       if (slug) revalidateTag(`artist:${slug}`, 'max');
       revalidateTag('artists', 'max');
+
+      createdArtist = {
+        id: newArtistId,
+        slug: slug ?? '',
+        status: 'active',
+        avatarUrl: insertValues.avatarUrl ?? '',
+        name: insertValues.name ?? '',
+        surname: insertValues.surname ?? '',
+        stageName: insertValues.stageName ?? '',
+        tourManagerEmail: insertValues.tourManagerEmail ?? undefined,
+        tourManagerName: insertValues.tourManagerName ?? undefined,
+        tourManagerSurname: insertValues.tourManagerSurname ?? undefined,
+        tourManagerPhone: insertValues.tourManagerPhone ?? undefined,
+      };
 
       const languageInserts = safeLanguages.map((languageId: number) => ({
         artistId: newArtistId,
@@ -270,10 +291,14 @@ export const createArtist = async (data: ArtistFormSchema): Promise<ServerAction
       }
     });
 
+    if (!createdArtist) {
+      throw new AppError('Recupero artista non riuscito.');
+    }
+
     return {
       success: true,
       message: null,
-      data: null,
+      data: createdArtist,
     };
   } catch (error) {
     console.error('[createArtist] transaction failed:', error);

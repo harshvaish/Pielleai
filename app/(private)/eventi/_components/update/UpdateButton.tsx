@@ -9,7 +9,7 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Pencil } from 'lucide-react';
-import { ArtistSelectData, Event, MoCoordinator, VenueSelectData } from '@/lib/types';
+import { ArtistSelectData, Event, MoCoordinator, UserRole, VenueSelectData } from '@/lib/types';
 import { useState } from 'react';
 import UpdateEventForm from './UpdateEventForm';
 
@@ -18,6 +18,7 @@ type UpdateButtonProps = {
   artists: ArtistSelectData[];
   venues: VenueSelectData[];
   moCoordinators: MoCoordinator[];
+  userRole: UserRole;
 };
 
 export default function UpdateButton({
@@ -25,6 +26,7 @@ export default function UpdateButton({
   artists,
   venues,
   moCoordinators,
+  userRole,
 }: UpdateButtonProps) {
   const [open, setOpen] = useState<boolean>(false);
   return (
@@ -55,6 +57,7 @@ export default function UpdateButton({
           artists={artists}
           venues={venues}
           moCoordinators={moCoordinators}
+          userRole={userRole}
           closeDialog={() => setOpen(false)}
         />
       </DialogContent>

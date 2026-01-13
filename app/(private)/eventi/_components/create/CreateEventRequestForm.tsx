@@ -4,7 +4,7 @@ import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
 import { X } from 'lucide-react';
-import { ArtistSelectData, VenueSelectData } from '@/lib/types';
+import { ArtistSelectData, UserRole, VenueSelectData } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
 import { eventRequestFormSchema, EventRequestFormSchema } from '@/lib/validation/event-form-schema';
@@ -15,12 +15,14 @@ import { useTransition } from 'react';
 type CreateEventFormProps = {
   artists: ArtistSelectData[];
   venues: VenueSelectData[];
+  userRole: UserRole;
   closeDialog: () => void;
 };
 
 export default function CreateEventRequestForm({
   artists,
   venues,
+  userRole,
   closeDialog,
 }: CreateEventFormProps) {
   const router = useRouter();
@@ -64,6 +66,7 @@ export default function CreateEventRequestForm({
           <EventRequestForm
             artists={artists}
             venues={venues}
+            userRole={userRole}
           />
 
           <div className='flex justify-between'>

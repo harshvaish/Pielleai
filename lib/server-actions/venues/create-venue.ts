@@ -1,6 +1,6 @@
 'use server';
 
-import { ServerActionResponse } from '@/lib/types';
+import { ServerActionResponse, VenueSelectData, VenueManagerSelectData } from '@/lib/types';
 import { database } from '@/lib/database/connection';
 import { and, eq } from 'drizzle-orm';
 import { profiles, countries, subdivisions, users, venues } from '@/lib/database/schema';
@@ -10,7 +10,9 @@ import { revalidateTag } from 'next/cache';
 import getSession from '@/lib/data/auth/get-session';
 import { hasRole } from '@/lib/utils';
 
-export const createVenue = async (data: VenueFormSchema): Promise<ServerActionResponse<null>> => {
+export const createVenue = async (
+  data: VenueFormSchema,
+): Promise<ServerActionResponse<VenueSelectData>> => {
   try {
     const { session, user } = await getSession();
 
@@ -25,11 +27,34 @@ export const createVenue = async (data: VenueFormSchema): Promise<ServerActionRe
     }
     const isAdmin = user.role === 'admin';
 
-    const validation = venueFormSchema.safeParse(data);
+    const sanitizeText = (value?: string | null) => {
+      if (typeof value !== 'string') return value;
+      const trimmed = value.trim();
+      return trimmed.length > 0 ? trimmed : undefined;
+    };
+
+    const validation = venueFormSchema.safeParse({
+      ...data,
+      name: sanitizeText(data.name),
+      address: sanitizeText(data.address),
+      city: sanitizeText(data.city),
+      company: sanitizeText(data.company),
+      taxCode: sanitizeText(data.taxCode),
+      vatCode: sanitizeText(data.vatCode),
+      sdiRecipientCode: sanitizeText(data.sdiRecipientCode),
+      billingAddress: sanitizeText(data.billingAddress),
+      billingCity: sanitizeText(data.billingCity),
+      billingZipCode: sanitizeText(data.billingZipCode),
+      billingEmail: sanitizeText(data.billingEmail),
+      billingPhone: sanitizeText(data.billingPhone),
+      billingPec: sanitizeText(data.billingPec),
+    });
 
     if (!validation.success) {
       console.error('[createVenue] - Error: validation failed', validation.error.issues[0]);
-      throw new AppError('I dati inviati non sono corretti.');
+      const issue = validation.error.issues[0];
+      const message = issue?.message || 'I dati inviati non sono corretti.';
+      throw new AppError(message);
     }
 
     const { countryId, subdivisionId, venueManagerId, billingCountry, billingSubdivisionId } =
@@ -178,16 +203,49 @@ export const createVenue = async (data: VenueFormSchema): Promise<ServerActionRe
     const venueResult = await database
       .insert(venues)
       .values(insertValues)
-      .returning({ slug: venues.slug });
+      .returning({ id: venues.id, slug: venues.slug });
 
     const slug = venueResult[0]?.slug;
     if (slug) revalidateTag(`venue:${slug}`, 'max');
     revalidateTag('venues', 'max');
 
+    const venueId = venueResult[0]?.id;
+    if (!venueId) {
+      throw new AppError('Recupero id locale non riuscito.');
+    }
+
+    let manager: VenueManagerSelectData | null = null;
+    if (venueManagerId) {
+      const managerResult = await database
+        .select({
+          id: users.id,
+          profileId: profiles.id,
+          avatarUrl: profiles.avatarUrl,
+          name: profiles.name,
+          surname: profiles.surname,
+          status: users.status,
+        })
+        .from(profiles)
+        .innerJoin(users, eq(profiles.userId, users.id))
+        .where(eq(profiles.id, venueManagerId));
+
+      manager = managerResult[0] ?? null;
+    }
+
     return {
       success: true,
       message: null,
-      data: null,
+      data: {
+        id: venueId,
+        slug: slug ?? '',
+        status: 'active',
+        avatarUrl: insertValues.avatarUrl ?? null,
+        name: insertValues.name ?? '',
+        address: insertValues.address ?? '',
+        manager,
+        company: insertValues.company ?? '',
+        vatCode: insertValues.vatCode ?? '',
+      },
     };
   } catch (error) {
     console.error('[createVenue] transaction failed:', error);

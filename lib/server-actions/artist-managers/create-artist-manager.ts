@@ -1,7 +1,7 @@
 'use server';
 
 import { auth } from '@/lib/auth';
-import { ServerActionResponse } from '@/lib/types';
+import { ArtistManagerSelectData, ServerActionResponse } from '@/lib/types';
 import {
   artistManagerFormSchema,
   ArtistManagerFormSchema,
@@ -25,9 +25,10 @@ import { headers } from 'next/headers';
 
 export const createArtistManager = async (
   data: ArtistManagerFormSchema,
-): Promise<ServerActionResponse<null>> => {
+): Promise<ServerActionResponse<ArtistManagerSelectData>> => {
   const headersList = await headers();
   let newUserId: string | undefined;
+  let createdManager: ArtistManagerSelectData | null = null;
 
   try {
     const { session, user } = await getSession();
@@ -42,11 +43,22 @@ export const createArtistManager = async (
       throw new AppError('Non sei autorizzato.');
     }
 
-    const validation = artistManagerFormSchema.safeParse(data);
+    const sanitizeName = (value?: string | null) => {
+      if (typeof value !== 'string') return value;
+      return value.replace(/[^\p{L}\s'-]/gu, '').trim();
+    };
+
+    const validation = artistManagerFormSchema.safeParse({
+      ...data,
+      name: sanitizeName(data.name),
+      surname: sanitizeName(data.surname),
+    });
 
     if (!validation.success) {
       console.error('[createArtistManager] - Error: validation failed', validation.error.issues[0]);
-      throw new AppError('Dati inviati non validi.');
+      const issue = validation.error.issues[0];
+      const message = issue?.message || 'Dati inviati non validi.';
+      throw new AppError(message);
     }
 
     const {
@@ -65,6 +77,9 @@ export const createArtistManager = async (
     const finalPassword = signUpPassword?.trim() || null;
     const billingCountryId = billingCountry?.id;
 
+    const placeholderText = 'Non disponibile';
+    const placeholderZipCode = 'ND0';
+    const placeholderGender = 'non-binary';
     const [
       languagesCheck,
       countryCheck,
@@ -197,13 +212,13 @@ export const createArtistManager = async (
           surname: data.surname ?? '',
           phone: data.phone ?? '',
           birthDate: data.birthDate ?? null,
-          birthPlace: data.birthPlace ?? '',
-          ...(data.gender && { gender: data.gender }),
-          address: data.address ?? '',
+          birthPlace: data.birthPlace?.trim() || placeholderText,
+          gender: (data.gender ?? placeholderGender),
+          address: data.address?.trim() || placeholderText,
           ...(countryId !== undefined && countryId !== null && { countryId }),
           ...(subdivisionId !== undefined && subdivisionId !== null && { subdivisionId }),
-          city: data.city ?? '',
-          zipCode: data.zipCode ?? '',
+          city: data.city?.trim() || placeholderText,
+          zipCode: data.zipCode?.trim() || placeholderZipCode,
 
           company: data.company ?? null,
           taxCode: data.taxCode ?? null,
@@ -230,6 +245,15 @@ export const createArtistManager = async (
         throw new AppError('Recupero id utente non riuscito.');
       }
 
+      createdManager = {
+        id: newUserId,
+        profileId,
+        avatarUrl: data.avatarUrl ?? null,
+        name: data.name ?? fallbackName,
+        surname: data.surname ?? '',
+        status: 'active',
+      };
+
       const uid = profileResult[0]?.userId;
       if (uid) {
         revalidateTag(`profile:${uid}`,'max');
@@ -247,10 +271,14 @@ export const createArtistManager = async (
       }
     });
 
+    if (!createdManager) {
+      throw new AppError('Recupero utente non riuscito.');
+    }
+
     return {
       success: true,
       message: null,
-      data: null,
+      data: createdManager,
     };
   } catch (error) {
     if (newUserId) {

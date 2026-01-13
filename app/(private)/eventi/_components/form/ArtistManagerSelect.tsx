@@ -11,7 +11,11 @@ import { useEffect, useState } from 'react';
 import { EventFormSchema } from '@/lib/validation/event-form-schema';
 import { AVATAR_FALLBACK } from '@/lib/constants';
 
-export default function ArtistManagerSelect() {
+type ArtistManagerSelectProps = {
+  extraManagers?: ArtistManagerSelectData[];
+};
+
+export default function ArtistManagerSelect({ extraManagers = [] }: ArtistManagerSelectProps) {
   const { watch, control, formState } = useFormContext<EventFormSchema>();
   const [managers, setManagers] = useState<ArtistManagerSelectData[]>([]);
 
@@ -33,6 +37,13 @@ export default function ArtistManagerSelect() {
     setManagers(response.data);
   }, [response]);
 
+  const availableManagers = [
+    ...managers,
+    ...extraManagers.filter(
+      (manager) => !managers.some((existing) => existing.profileId === manager.profileId),
+    ),
+  ];
+
   return (
     <Controller
       control={control}
@@ -41,7 +52,7 @@ export default function ArtistManagerSelect() {
         <Select
           value={field.value ? field.value.toString() : undefined}
           onValueChange={(v) => field.onChange(parseInt(v))}
-          disabled={isLoading || !managers.length}
+          disabled={isLoading || !availableManagers.length}
         >
           <SelectTrigger
             id='artistManagerProfileId'
@@ -52,12 +63,12 @@ export default function ArtistManagerSelect() {
             size='sm'
           >
             {(() => {
-              const selected = managers.find((m) => m.profileId === field.value);
+              const selected = availableManagers.find((m) => m.profileId === field.value);
               return selected ? `${selected.name} ${selected.surname}` : 'Seleziona un manager';
             })()}
           </SelectTrigger>
           <SelectContent>
-            {managers.map((manager) => (
+            {availableManagers.map((manager) => (
               <SelectItem
                 key={manager.id}
                 value={manager.profileId.toString()}
@@ -75,7 +86,7 @@ export default function ArtistManagerSelect() {
                 </div>
               </SelectItem>
             ))}
-            {managers.length === 0 && 'Nessun manager disponibile'}
+            {availableManagers.length === 0 && 'Nessun manager disponibile'}
           </SelectContent>
         </Select>
       )}

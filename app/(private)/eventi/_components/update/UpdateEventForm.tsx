@@ -6,7 +6,7 @@ import { toast } from 'sonner';
 import { X } from 'lucide-react';
 import { it } from 'date-fns/locale';
 import { format } from 'date-fns';
-import { ArtistSelectData,   Event as DomainEvent, MoCoordinator, VenueSelectData } from '@/lib/types';
+import { ArtistSelectData, Event as DomainEvent, MoCoordinator, UserRole, VenueSelectData } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
 import { eventFormSchema } from '@/lib/validation/event-form-schema';
@@ -20,6 +20,7 @@ type UpdateEventFormProps = {
   artists: ArtistSelectData[];
   venues: VenueSelectData[];
   moCoordinators: MoCoordinator[];
+  userRole: UserRole;
   closeDialog: () => void;
 };
 
@@ -48,6 +49,7 @@ export default function UpdateEventForm({
   artists,
   venues,
   moCoordinators,
+  userRole,
   closeDialog,
 }: UpdateEventFormProps) {
   const router = useRouter();
@@ -182,6 +184,7 @@ export default function UpdateEventForm({
             moCoordinators={moCoordinators}
             event={event}
             mode="update"
+            userRole={userRole}
             closeDialog={closeDialog}
           />
 

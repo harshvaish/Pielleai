@@ -59,12 +59,14 @@ export default function CreateButton({
             artists={artists}
             venues={venues}
             moCoordinators={moCoordinators}
+            userRole={userRole}
             closeDialog={() => setOpen(false)}
           />
         ) : (
           <CreateEventRequestForm
             artists={artists}
             venues={venues}
+            userRole={userRole}
             closeDialog={() => setOpen(false)}
           />
         )}

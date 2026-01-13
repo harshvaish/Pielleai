@@ -77,6 +77,7 @@ export default function EventTile({
                   artists={artists}
                   venues={venues}
                   moCoordinators={moCoordinators}
+                  userRole={userRole}
                 />
                 <DeleteEventButton event={event} />
               </PopoverContent>
@@ -388,6 +389,7 @@ export default function EventTile({
                   artists={artists}
                   venues={venues}
                   moCoordinators={moCoordinators}
+                  userRole={userRole}
                 />
                 <DeleteEventButton event={event} />
               </PopoverContent>

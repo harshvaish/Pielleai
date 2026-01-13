@@ -2,7 +2,7 @@
 
 import { auth } from '@/lib/auth';
 import { headers } from 'next/headers';
-import { ServerActionResponse } from '@/lib/types';
+import { ServerActionResponse, VenueManagerSelectData } from '@/lib/types';
 import { database } from '@/lib/database/connection';
 import { eq, inArray } from 'drizzle-orm';
 import {
@@ -25,9 +25,10 @@ import getSession from '@/lib/data/auth/get-session';
 
 export const createVenueManager = async (
   data: VenueManagerFormSchema,
-): Promise<ServerActionResponse<null>> => {
+): Promise<ServerActionResponse<VenueManagerSelectData>> => {
   const headersList = await headers();
   let newUserId: string | undefined;
+  let createdManager: VenueManagerSelectData | null = null;
 
   try {
     const { session, user } = await getSession();
@@ -42,11 +43,22 @@ export const createVenueManager = async (
       throw new AppError('Non sei autorizzato.');
     }
 
-    const validation = venueManagerFormSchema.safeParse(data);
+    const sanitizeName = (value?: string | null) => {
+      if (typeof value !== 'string') return value;
+      return value.replace(/[^\p{L}\s'-]/gu, '').trim();
+    };
+
+    const validation = venueManagerFormSchema.safeParse({
+      ...data,
+      name: sanitizeName(data.name),
+      surname: sanitizeName(data.surname),
+    });
 
     if (!validation.success) {
       console.error('[createVenueManager] - Error: validation failed', validation.error.issues[0]);
-      throw new AppError('Dati inviati non corretti.');
+      const issue = validation.error.issues[0];
+      const message = issue?.message || 'Dati inviati non corretti.';
+      throw new AppError(message);
     }
 
     const { name, signUpEmail, signUpPassword, languages, countryId, subdivisionId } =
@@ -56,6 +68,9 @@ export const createVenueManager = async (
     const finalEmail = signUpEmail?.trim() || null;
     const finalPassword = signUpPassword?.trim() || null;
 
+    const placeholderText = 'Non disponibile';
+    const placeholderZipCode = 'ND0';
+    const placeholderGender = 'non-binary';
     const [languagesCheck, countryCheck, subdivisionCheck] = await Promise.all([
       safeLanguages.length
         ? database
@@ -152,13 +167,13 @@ export const createVenueManager = async (
           surname: data.surname || '',
           phone: data.phone || '',
           birthDate: data.birthDate || null,
-          birthPlace: data.birthPlace || '',
-          ...(data.gender && { gender: data.gender }),
-          address: data.address || '',
+          birthPlace: data.birthPlace?.trim() || placeholderText,
+          gender: data.gender ?? placeholderGender,
+          address: data.address?.trim() || placeholderText,
           ...(countryId !== undefined && countryId !== null && { countryId }),
           ...(subdivisionId !== undefined && subdivisionId !== null && { subdivisionId }),
-          city: data.city || '',
-          zipCode: data.zipCode || '',
+          city: data.city?.trim() || placeholderText,
+          zipCode: data.zipCode?.trim() || placeholderZipCode,
         })
         .returning({ id: profiles.id, userId: profiles.userId });
 
@@ -166,6 +181,15 @@ export const createVenueManager = async (
       if (!profileId) {
         throw new AppError('Recupero id utente non riuscito.');
       }
+
+      createdManager = {
+        id: newUserId,
+        profileId,
+        avatarUrl: data.avatarUrl ?? null,
+        name: data.name ?? fallbackName,
+        surname: data.surname ?? '',
+        status: 'active',
+      };
 
       const uid = profileResult[0]?.userId;
       if (uid) {
@@ -184,10 +208,14 @@ export const createVenueManager = async (
       }
     });
 
+    if (!createdManager) {
+      throw new AppError('Recupero utente non riuscito.');
+    }
+
     return {
       success: true,
       message: null,
-      data: null,
+      data: createdManager,
     };
   } catch (error) {
     if (newUserId) {
