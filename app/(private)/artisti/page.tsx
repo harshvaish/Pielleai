@@ -26,6 +26,7 @@ import StatusBadge from '../_components/Badges/StatusBadge';
 import ManagersBadge from '../_components/Badges/ManagersBadge';
 import ZonesBadge from '../_components/Badges/ZonesBadge';
 import ArtistCard from './_components/ArtistCard';
+import ExportButton from '../_components/ExportButton';
 
 export const dynamic = 'force-dynamic';
 
@@ -99,6 +100,12 @@ export default async function ArtistsPage({ searchParams }: ArtistsPageProps) {
         <h1 className='text-2xl font-bold'>Artisti</h1>
         {!isVenueManager && (
           <div className='flex items-center gap-2 mt-2 md:mt-0'>
+            {isAdmin && (
+              <ExportButton
+                endpoint='/api/artists/export'
+                filename='export-artisti.csv'
+              />
+            )}
             <FiltersButton
               isAdmin={isAdmin}
               filters={filters}

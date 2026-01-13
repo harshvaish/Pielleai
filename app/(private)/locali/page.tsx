@@ -24,6 +24,7 @@ import StatusBadge from '../_components/Badges/StatusBadge';
 import VenueTypeBadge from '../_components/Badges/VenueTypeBadge';
 import ManagersBadge from '../_components/Badges/ManagersBadge';
 import VenueCard from './_components/VenueCard';
+import ExportButton from '../_components/ExportButton';
 
 type VenuesPageProps = {
   searchParams?: Promise<{
@@ -98,6 +99,12 @@ export default async function VenuesPage({ searchParams }: VenuesPageProps) {
         <h1 className='text-2xl font-bold'>Locali</h1>
         {!isArtistManager && (
           <div className='flex items-center gap-2 md:gap-4 mt-2 md:mt-0'>
+            {isAdmin && (
+              <ExportButton
+                endpoint='/api/venues/export'
+                filename='export-locali.csv'
+              />
+            )}
             <FiltersButton
               userRole={user.role}
               filters={filters}

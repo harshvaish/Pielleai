@@ -23,6 +23,7 @@ import { getPaginatedArtistManagers } from '@/lib/data/artist-managers/get-pagin
 import UserBadge from '../_components/Badges/UserBadge';
 import StatusBadge from '../_components/Badges/StatusBadge';
 import ArtistsBadge from '../_components/Badges/ArtistsBadge';
+import ExportButton from '../_components/ExportButton';
 
 type ArtistManagersPageProps = {
   searchParams?: Promise<{
@@ -82,6 +83,10 @@ export default async function ArtistManagersPage({ searchParams }: ArtistManager
       <div className='md:flex justify-between items-center gap-2'>
         <h1 className='text-2xl font-bold'>Manager Artisti</h1>
         <div className='flex items-center gap-2 mt-2 md:mt-0'>
+          <ExportButton
+            endpoint='/api/artist-managers/export'
+            filename='export-manager-artisti.csv'
+          />
           <FiltersButton
             filters={filters}
             artists={artists}

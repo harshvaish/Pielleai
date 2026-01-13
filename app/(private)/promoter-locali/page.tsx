@@ -23,6 +23,7 @@ import { getVenuesCached } from '@/lib/cache/venues';
 import UserBadge from '../_components/Badges/UserBadge';
 import StatusBadge from '../_components/Badges/StatusBadge';
 import VenuesBadge from '../_components/Badges/VenuesBadge';
+import ExportButton from '../_components/ExportButton';
 
 type VenueManagersPageProps = {
   searchParams?: Promise<{
@@ -81,6 +82,10 @@ export default async function VenueManagersPage({ searchParams }: VenueManagersP
       <div className='md:flex justify-between items-center gap-2'>
         <h1 className='text-2xl font-bold'>Promoter locali</h1>
         <div className='flex items-center gap-2 mt-2 md:mt-0'>
+          <ExportButton
+            endpoint='/api/venue-managers/export'
+            filename='export-promoter-locali.csv'
+          />
           <FiltersButton
             filters={filters}
             venues={venues}
