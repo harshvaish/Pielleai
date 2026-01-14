@@ -18,6 +18,7 @@ import getSession from '@/lib/data/auth/get-session';
 import { isBefore } from 'date-fns';
 import { recomputeConflicts } from '@/lib/data/events/recompute-conflicts';
 import { sendEventConfirmedEmail } from '../send-event-confirmed-email';
+import { generateEventTitle } from '@/lib/utils/generate-event-title';
 
 export const updateEvent = async (
   eventId: number,
@@ -177,6 +178,40 @@ export const updateEvent = async (
     if (managerCheck.count === 0) throw new AppError('Manager artista selezionato non valido.');
     if (venueCheck.count === 0) throw new AppError('Locale selezionato non valido.');
 
+    // Fetch artist and venue details for title generation
+    const [[artistDetails], [venueDetails]] = await Promise.all([
+      database
+        .select({
+          name: artists.name,
+          surname: artists.surname,
+          stageName: artists.stageName,
+        })
+        .from(artists)
+        .where(eq(artists.id, artistId))
+        .limit(1),
+      database
+        .select({
+          name: venues.name,
+        })
+        .from(venues)
+        .where(eq(venues.id, venueId))
+        .limit(1),
+    ]);
+
+    if (!artistDetails || !venueDetails) {
+      throw new AppError('Impossibile recuperare i dettagli per generare il titolo.');
+    }
+
+    // Generate event title
+    const artistName =
+      artistDetails.stageName || `${artistDetails.name} ${artistDetails.surname}`.trim();
+    const eventTitle = generateEventTitle(
+      artistName,
+      venueDetails.name,
+      newAvailability.startDate,
+      newAvailability.endDate,
+    );
+
     // Tech rider integrity
     const validTecnicalRider =
       !!tecnicalRiderDocument &&
@@ -203,6 +238,7 @@ export const updateEvent = async (
       await tx
         .update(events)
         .set({
+          title: eventTitle,
           artistId,
           availabilityId: newAvailability.id,
           venueId,

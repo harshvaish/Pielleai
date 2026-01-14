@@ -537,6 +537,7 @@ export const events = pgTable(
   'events',
   {
     id: serial().primaryKey().notNull(),
+    title: text(),
     artistId: integer('artist_id').notNull(),
     artistManagerProfileId: integer('artist_manager_profile_id'),
     availabilityId: integer('availability_id').notNull(),

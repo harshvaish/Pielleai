@@ -17,6 +17,7 @@ import { isBefore } from 'date-fns';
 import { AppError } from '@/lib/classes/AppError';
 import getSession from '@/lib/data/auth/get-session';
 import { recomputeConflicts } from '@/lib/data/events/recompute-conflicts';
+import { generateEventTitle } from '@/lib/utils/generate-event-title';
 
 export const createEvent = async (data: EventFormSchema): Promise<ServerActionResponse<null>> => {
   try {
@@ -91,6 +92,35 @@ export const createEvent = async (data: EventFormSchema): Promise<ServerActionRe
       throw new AppError('Locale selezionato non valido.');
     }
 
+    // Fetch artist and venue details for title generation
+    const [[artistDetails], [venueDetails]] = await Promise.all([
+      database
+        .select({
+          name: artists.name,
+          surname: artists.surname,
+          stageName: artists.stageName,
+        })
+        .from(artists)
+        .where(eq(artists.id, artistId))
+        .limit(1),
+      database
+        .select({
+          name: venues.name,
+        })
+        .from(venues)
+        .where(eq(venues.id, venueId))
+        .limit(1),
+    ]);
+
+    if (!artistDetails || !venueDetails) {
+      throw new AppError('Impossibile recuperare i dettagli per generare il titolo.');
+    }
+
+    // Generate event title
+    const artistName =
+      artistDetails.stageName || `${artistDetails.name} ${artistDetails.surname}`.trim();
+    const eventTitle = generateEventTitle(artistName, venueDetails.name, startDate, endDate);
+
     const rangeWindow = sql`tstzrange(${startDate}::timestamptz, ${endDate}::timestamptz, '[)')`;
     const [[blockedCount], [overlapCount]] = await Promise.all([
       database
@@ -152,6 +182,7 @@ export const createEvent = async (data: EventFormSchema): Promise<ServerActionRe
       const [eventResult] = await tx
         .insert(events)
         .values({
+          title: eventTitle,
           artistId: artistId,
           availabilityId: availabilityId,
           venueId: venueId,
