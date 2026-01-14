@@ -23,6 +23,14 @@ import { getUserProfileIdCached } from '@/lib/cache/users';
 import StatusBadge from '../../_components/Badges/StatusBadge';
 import NotesSection from '../../_components/Notes/NotesSection';
 import BillingDataTab from '../../_components/Tabs/BillingDataTab';
+import CreateEventButton from '../../eventi/_components/create/CreateButton';
+import CreateArtistButton from '../../artisti/_components/create/CreateButton';
+import { getArtistsCached } from '@/lib/cache/artists';
+import { getVenuesCached } from '@/lib/cache/venues';
+import { getMoCoordinatorsCached } from '@/lib/cache/mo-coordinators';
+import { getZonesCached } from '@/lib/cache/zones';
+import { getArtistManagersCached } from '@/lib/cache/artist-managers';
+import ManageArtistsButton from './_components/ManageArtistsButton';
 
 type ArtistManagerDetailPageProps = { params: Promise<{ uid: string }> };
 
@@ -44,10 +52,24 @@ export default async function ArtistManagerDetailPage({ params }: ArtistManagerD
   const p = await params;
   const { uid } = p;
 
-  const [userData, languages, countries] = await Promise.all([
+  const [
+    userData,
+    languages,
+    countries,
+    artists,
+    venues,
+    moCoordinators,
+    zones,
+    artistManagers,
+  ] = await Promise.all([
     getArtistManagerCached(uid),
     getLanguagesCached(),
     getCountriesCached(),
+    getArtistsCached(),
+    getVenuesCached(),
+    getMoCoordinatorsCached(),
+    getZonesCached(),
+    getArtistManagersCached(),
   ]);
 
   if (!userData) notFound();
@@ -154,6 +176,46 @@ export default async function ArtistManagerDetailPage({ params }: ArtistManagerD
           receiverProfileId={userData.profileId}
         />
       </div>
+
+      <section className='bg-white py-6 px-6 rounded-2xl mb-6'>
+        <div className='text-lg font-semibold mb-4'>Azioni rapide</div>
+        <div className='flex flex-wrap gap-2'>
+          <CreateEventButton
+            userRole={user.role}
+            artists={artists}
+            venues={venues}
+            moCoordinators={moCoordinators}
+            buttonLabel='Crea evento'
+            buttonVariant='outline'
+            buttonSize='sm'
+          />
+          <CreateArtistButton
+            userRole={user.role}
+            userProfileId={profileId as number}
+            languages={languages}
+            countries={countries}
+            zones={zones}
+            artistManagers={artistManagers}
+            buttonLabel='Crea artista'
+            buttonVariant='outline'
+            buttonSize='sm'
+          />
+          <ManageArtistsButton
+            managerProfileId={userData.profileId}
+            artists={artists}
+            initialArtistIds={userData.artists.map((artist) => artist.id)}
+          />
+          <UpdateButton
+            userData={userData}
+            languages={languages}
+            countries={countries}
+          />
+          <ToggleBlockButton
+            userId={userData.id}
+            userInitialStatus={userData.status}
+          />
+        </div>
+      </section>
 
       <Tabs defaultValue='a'>
         <div className='flex justify-between items-center mb-2 overflow-hidden'>

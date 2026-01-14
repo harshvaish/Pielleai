@@ -7,7 +7,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
+import { VariantProps } from 'class-variance-authority';
 import { Plus } from 'lucide-react';
 import { ArtistSelectData, MoCoordinator, UserRole, VenueSelectData } from '@/lib/types';
 import { useState } from 'react';
@@ -19,6 +20,9 @@ type CreateButtonProps = {
   artists: ArtistSelectData[];
   venues: VenueSelectData[];
   moCoordinators: MoCoordinator[];
+  buttonLabel?: string;
+  buttonVariant?: VariantProps<typeof buttonVariants>['variant'];
+  buttonSize?: VariantProps<typeof buttonVariants>['size'];
 };
 
 export default function CreateButton({
@@ -26,6 +30,9 @@ export default function CreateButton({
   artists,
   venues,
   moCoordinators,
+  buttonLabel = 'Aggiungi',
+  buttonVariant,
+  buttonSize = 'sm',
 }: CreateButtonProps) {
   const [open, setOpen] = useState<boolean>(false);
 
@@ -38,9 +45,12 @@ export default function CreateButton({
       modal
     >
       <DialogTrigger asChild>
-        <Button size='sm'>
+        <Button
+          size={buttonSize}
+          variant={buttonVariant}
+        >
           <Plus />
-          Aggiungi
+          {buttonLabel}
         </Button>
       </DialogTrigger>
       <DialogContent

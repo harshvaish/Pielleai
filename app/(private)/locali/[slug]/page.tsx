@@ -10,7 +10,7 @@ import ToggleVenueBlockButton from './_components/ToggleVenueBlockButton';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Ellipsis } from 'lucide-react';
 import UpdateButton from './_components/update/UpdateButton';
-import { getVenueCached } from '@/lib/cache/venues';
+import { getVenueCached, getVenuesCached } from '@/lib/cache/venues';
 import { getCountriesCached } from '@/lib/cache/countries';
 import { getVenueManagersCached } from '@/lib/cache/venue-managers';
 import getSession from '@/lib/data/auth/get-session';
@@ -21,6 +21,12 @@ import BillingDataTab from '../../_components/Tabs/BillingDataTab';
 import SocialDataTab from '../../_components/Tabs/SocialDataTab';
 import { ManagerBadgeFallback } from '../../_components/Badges/ManagersBadge';
 import { AVATAR_FALLBACK, TIME_ZONE } from '@/lib/constants';
+import CreateEventButton from '../../eventi/_components/create/CreateButton';
+import CreateVenueManagerButton from '../../promoter-locali/_components/create/CreateButton';
+import { getArtistsCached } from '@/lib/cache/artists';
+import { getMoCoordinatorsCached } from '@/lib/cache/mo-coordinators';
+import { getLanguagesCached } from '@/lib/cache/languages';
+import ManageVenueManagerButton from './_components/ManageVenueManagerButton';
 
 type VenueDetailPageProps = { params: Promise<{ slug: string }> };
 
@@ -44,11 +50,21 @@ export default async function VenueDetailPage({ params }: VenueDetailPageProps) 
   const p = await params;
   const { slug } = p;
 
-  const [venue, countries, venueManagers] = await Promise.all([
-    getVenueCached(slug),
-    getCountriesCached(),
-    getVenueManagersCached(),
-  ]);
+  const venuesListPromise =
+    user.role === 'venue-manager'
+      ? getVenuesCached(profileId as number)
+      : getVenuesCached();
+
+  const [venue, countries, venueManagers, artists, moCoordinators, languages, venuesList] =
+    await Promise.all([
+      getVenueCached(slug),
+      getCountriesCached(),
+      getVenueManagersCached(),
+      getArtistsCached(),
+      getMoCoordinatorsCached(),
+      getLanguagesCached(),
+      venuesListPromise,
+    ]);
 
   if (!venue) notFound();
   const isDisabled = venue.status === 'disabled';
@@ -199,6 +215,49 @@ export default async function VenueDetailPage({ params }: VenueDetailPageProps) 
           </span>
           <span className='text-sm font-semibold text-zinc-600'>Indirizzo</span>
           <span className='text-sm font-medium text-zinc-500'>{venue.address}</span>
+        </div>
+      </section>
+
+      <section className='bg-white py-6 px-6 rounded-2xl mb-6'>
+        <div className='text-lg font-semibold mb-4'>Azioni rapide</div>
+        <div className='flex flex-wrap gap-2'>
+          {hasRole(user, ['admin', 'venue-manager']) && (
+            <CreateEventButton
+              userRole={user.role}
+              artists={artists}
+              venues={venuesList}
+              moCoordinators={moCoordinators}
+              buttonLabel='Crea evento'
+              buttonVariant='outline'
+              buttonSize='sm'
+            />
+          )}
+          {user.role === 'admin' && (
+            <CreateVenueManagerButton
+              languages={languages}
+              countries={countries}
+              buttonLabel='Crea promoter'
+              buttonVariant='outline'
+              buttonSize='sm'
+            />
+          )}
+          {user.role === 'admin' && (
+            <ManageVenueManagerButton
+              venueId={venue.id}
+              venueManagers={venueManagers}
+              initialManagerProfileId={venue.manager?.profileId}
+            />
+          )}
+          <UpdateButton
+            userRole={user.role}
+            venueData={venue}
+            countries={countries}
+            venueManagers={venueManagers}
+          />
+          <ToggleVenueBlockButton
+            venueId={venue.id}
+            initialStatus={venue.status}
+          />
         </div>
       </section>
 

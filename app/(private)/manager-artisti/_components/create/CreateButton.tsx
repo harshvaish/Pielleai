@@ -7,19 +7,26 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
 
 import { Country, Language } from '@/lib/types';
 import { useState } from 'react';
 import CreateArtistManagerForm from './CreateArtistManagerForm';
+import { VariantProps } from 'class-variance-authority';
 
 export default function CreateButton({
   languages,
   countries,
+  buttonLabel = 'Aggiungi',
+  buttonVariant,
+  buttonSize = 'sm',
 }: {
   languages: Language[];
   countries: Country[];
+  buttonLabel?: string;
+  buttonVariant?: VariantProps<typeof buttonVariants>['variant'];
+  buttonSize?: VariantProps<typeof buttonVariants>['size'];
 }) {
   const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
 
@@ -30,9 +37,12 @@ export default function CreateButton({
       modal
     >
       <DialogTrigger asChild>
-        <Button size='sm'>
+        <Button
+          size={buttonSize}
+          variant={buttonVariant}
+        >
           <Plus />
-          Aggiungi
+          {buttonLabel}
         </Button>
       </DialogTrigger>
       <DialogContent

@@ -30,6 +30,11 @@ import BillingDataTab from '../../_components/Tabs/BillingDataTab';
 import AvailabilitiesTab from './_components/Tabs/AvailabilitiesTab';
 import SocialDataTab from '../../_components/Tabs/SocialDataTab';
 import ArtistEventsTab from './_components/Tabs/ArtistEventsTab';
+import CreateEventButton from '../../eventi/_components/create/CreateButton';
+import CreateArtistManagerButton from '../../manager-artisti/_components/create/CreateButton';
+import { getArtistsCached } from '@/lib/cache/artists';
+import { getMoCoordinatorsCached } from '@/lib/cache/mo-coordinators';
+import ManageArtistManagersButton from './_components/ManageArtistManagersButton';
 
 type ArtistDetailPageProps = {
   params: Promise<{ slug: string }>;
@@ -64,14 +69,17 @@ export default async function ArtistDetailPage({ params, searchParams }: ArtistD
   const p = await params;
   const { slug } = p;
 
-  const [userData, languages, countries, zones, artistManagers, venues] = await Promise.all([
-    getArtistCached(slug),
-    getLanguagesCached(),
-    getCountriesCached(),
-    getZonesCached(),
-    getArtistManagersCached(),
-    getVenuesCached(),
-  ]);
+  const [userData, languages, countries, zones, artistManagers, venues, artists, moCoordinators] =
+    await Promise.all([
+      getArtistCached(slug),
+      getLanguagesCached(),
+      getCountriesCached(),
+      getZonesCached(),
+      getArtistManagersCached(),
+      getVenuesCached(),
+      isAdmin ? getArtistsCached() : Promise.resolve([]),
+      isAdmin ? getMoCoordinatorsCached() : Promise.resolve([]),
+    ]);
 
   if (!userData) notFound();
 
@@ -215,6 +223,51 @@ export default async function ArtistDetailPage({ params, searchParams }: ArtistD
           />
         )}
       </div>
+
+      {hasRole(user, ['admin', 'artist-manager']) && (
+        <section className='bg-white py-6 px-6 rounded-2xl mb-6'>
+          <div className='text-lg font-semibold mb-4'>Azioni rapide</div>
+          <div className='flex flex-wrap gap-2'>
+            {isAdmin && (
+              <CreateEventButton
+                userRole={user.role}
+                artists={artists}
+                venues={venues}
+                moCoordinators={moCoordinators}
+                buttonLabel='Crea evento'
+                buttonVariant='outline'
+                buttonSize='sm'
+              />
+            )}
+            {isAdmin && (
+              <CreateArtistManagerButton
+                languages={languages}
+                countries={countries}
+                buttonLabel='Crea manager artista'
+                buttonVariant='outline'
+                buttonSize='sm'
+              />
+            )}
+            <ManageArtistManagersButton
+              artistId={userData.id}
+              artistManagers={artistManagers}
+              initialManagerIds={userData.managers.map((manager) => manager.profileId)}
+            />
+            <EditArtistButton
+              userRole={user.role}
+              userData={userData}
+              languages={languages}
+              countries={countries}
+              zones={zones}
+              artistManagers={artistManagers}
+            />
+            <ToggleArtistBlockButton
+              artistId={userData.id}
+              initialStatus={userData.status}
+            />
+          </div>
+        </section>
+      )}
 
       <Tabs defaultValue='a'>
         <div className='flex justify-between items-center mb-2 overflow-hidden'>
