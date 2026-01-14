@@ -1,5 +1,5 @@
 import { z } from 'zod/v4';
-import { contractStatus, eventStatus, profileGenders, userStatus, venueTypes } from '../database/schema';
+import { contractStatus, eventStatus, profileGenders, userStatus, venueTypes, paymentStatus, paymentMethod } from '../database/schema';
 
 export const avatarUrlValidation = z
   .url('Campo obbligatorio.')
@@ -254,5 +254,15 @@ export const venueTypesEnumValidation = z.enum(
 
 export const contractStatusEnumValidation = z.enum(
   contractStatus.enumValues,
+  "Seleziona un'opzione valida.",
+);
+
+export const paymentStatusEnumValidation = z.enum(
+  paymentStatus.enumValues,
+  "Seleziona un'opzione valida.",
+);
+
+export const paymentMethodEnumValidation = z.enum(
+  paymentMethod.enumValues,
   "Seleziona un'opzione valida.",
 );

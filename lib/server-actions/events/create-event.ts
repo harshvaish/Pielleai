@@ -18,6 +18,11 @@ import { AppError } from '@/lib/classes/AppError';
 import getSession from '@/lib/data/auth/get-session';
 import { recomputeConflicts } from '@/lib/data/events/recompute-conflicts';
 import { generateEventTitle } from '@/lib/utils/generate-event-title';
+import {
+  canActivateUpfrontPayment,
+  createPaymentStatusTimestamps,
+  createEventStatusTimestamps,
+} from '@/lib/utils/payment-flow';
 
 export const createEvent = async (data: EventFormSchema): Promise<ServerActionResponse<null>> => {
   try {
@@ -175,9 +180,23 @@ export const createEvent = async (data: EventFormSchema): Promise<ServerActionRe
 
       // STEP 2: HANDLE EVENT --------------------------------------------------------
 
-      // tecnical rider has both url & name check
+      // Tech rider has both url & name check
       const tr = validation.data.tecnicalRiderDocument;
       const validTecnicalRider = tr && tr.url.trim() !== '' && tr.name.trim() !== '';
+
+      // Determine initial payment status based on contract signing
+      const contractSigned = validation.data.contractSigning || false;
+      const contractDocUrl = validation.data.contractDocumentUrl;
+      const contractSigDate = validation.data.contractSignedDate;
+      
+      let initialPaymentStatus: 'pending' | 'upfront-required' = 'pending';
+      if (canActivateUpfrontPayment(contractSigned, contractDocUrl, contractSigDate)) {
+        initialPaymentStatus = 'upfront-required';
+      }
+
+      // Get timestamps for initial status
+      const paymentTimestamps = createPaymentStatusTimestamps(initialPaymentStatus);
+      const eventTimestamps = createEventStatusTimestamps(validation.data.status);
 
       const [eventResult] = await tx
         .insert(events)
@@ -218,6 +237,40 @@ export const createEvent = async (data: EventFormSchema): Promise<ServerActionRe
             ? validation.data.tecnicalRiderDocument!.name
             : null,
           paymentDate: validation.data.paymentDate || null,
+
+          // Payment flow initialization
+          paymentStatus: initialPaymentStatus,
+          contractSignedDate: validation.data.contractSignedDate ? new Date(validation.data.contractSignedDate) : null,
+          contractDocumentUrl: validation.data.contractDocumentUrl || null,
+          upfrontPaymentAmount: validation.data.upfrontPaymentAmount?.toString() ?? null,
+          upfrontPaymentMethod: validation.data.upfrontPaymentMethod || null,
+          upfrontPaymentDate: validation.data.upfrontPaymentDate ? new Date(validation.data.upfrontPaymentDate) : null,
+          upfrontPaymentReference: validation.data.upfrontPaymentReference || null,
+          upfrontPaymentNotes: validation.data.upfrontPaymentNotes || null,
+          upfrontPaymentSender: validation.data.upfrontPaymentSender || null,
+          upfrontPaymentStripeId: validation.data.upfrontPaymentStripeId || null,
+          upfrontInvoiceUrl: validation.data.upfrontInvoiceUrl || null,
+          upfrontInvoiceName: validation.data.upfrontInvoiceName || null,
+          upfrontConfirmationUrl: validation.data.upfrontConfirmationUrl || null,
+          upfrontConfirmationName: validation.data.upfrontConfirmationName || null,
+          finalBalanceAmount: validation.data.finalBalanceAmount?.toString() ?? null,
+          finalBalanceMethod: validation.data.finalBalanceMethod || null,
+          finalBalanceDate: validation.data.finalBalanceDate ? new Date(validation.data.finalBalanceDate) : null,
+          finalBalanceReference: validation.data.finalBalanceReference || null,
+          finalBalanceNotes: validation.data.finalBalanceNotes || null,
+          finalBalanceSender: validation.data.finalBalanceSender || null,
+          finalBalanceStripeId: validation.data.finalBalanceStripeId || null,
+          finalBalanceDeadline: validation.data.finalBalanceDeadline ? new Date(validation.data.finalBalanceDeadline) : null,
+          finalInvoiceUrl: validation.data.finalInvoiceUrl || null,
+          finalInvoiceName: validation.data.finalInvoiceName || null,
+          finalConfirmationUrl: validation.data.finalConfirmationUrl || null,
+          finalConfirmationName: validation.data.finalConfirmationName || null,
+
+          // Payment status timestamps
+          ...paymentTimestamps,
+          
+          // Event status timestamps
+          ...eventTimestamps,
 
           contractSigning: validation.data.contractSigning,
           depositInvoiceIssuing: validation.data.depositInvoiceIssuing,

@@ -4,6 +4,8 @@ import {
   emailValidation,
   eventStatusEnumValidation,
   idValidation,
+  paymentStatusEnumValidation,
+  paymentMethodEnumValidation,
 } from './_general';
 
 export const eventFormSchema = z.object({
@@ -223,6 +225,44 @@ tourManagerName: z.string().optional(),
   performance: z.boolean("Seleziona un'opzione valida.").optional(),
   postDateFeedback: z.boolean("Seleziona un'opzione valida.").optional(),
   bordereau: z.boolean("Seleziona un'opzione valida.").optional(),
+  
+  // Payment flow fields
+  paymentStatus: paymentStatusEnumValidation.optional(),
+  
+  upfrontPaymentAmount: z
+    .number('Campo malformato.')
+    .positive('Deve essere un valore positivo.')
+    .optional(),
+  upfrontPaymentMethod: paymentMethodEnumValidation.optional(),
+  upfrontPaymentDate: z.string('Campo malformato.').optional(),
+  upfrontPaymentReference: z.string('Campo malformato.').optional(),
+  upfrontPaymentNotes: z.string('Campo malformato.').optional(),
+  upfrontPaymentSender: z.string('Campo malformato.').optional(),
+  upfrontPaymentStripeId: z.string('Campo malformato.').optional(),
+  upfrontInvoiceUrl: z.string('Campo malformato.').optional(),
+  upfrontInvoiceName: z.string('Campo malformato.').optional(),
+  upfrontConfirmationUrl: z.string('Campo malformato.').optional(),
+  upfrontConfirmationName: z.string('Campo malformato.').optional(),
+  
+  finalBalanceAmount: z
+    .number('Campo malformato.')
+    .positive('Deve essere un valore positivo.')
+    .optional(),
+  finalBalanceMethod: paymentMethodEnumValidation.optional(),
+  finalBalanceDate: z.string('Campo malformato.').optional(),
+  finalBalanceReference: z.string('Campo malformato.').optional(),
+  finalBalanceNotes: z.string('Campo malformato.').optional(),
+  finalBalanceSender: z.string('Campo malformato.').optional(),
+  finalBalanceStripeId: z.string('Campo malformato.').optional(),
+  finalBalanceDeadline: z.string('Campo malformato.').optional(),
+  finalInvoiceUrl: z.string('Campo malformato.').optional(),
+  finalInvoiceName: z.string('Campo malformato.').optional(),
+  finalConfirmationUrl: z.string('Campo malformato.').optional(),
+  finalConfirmationName: z.string('Campo malformato.').optional(),
+  
+  contractSignedDate: z.string('Campo malformato.').optional(),
+  contractDocumentUrl: z.string('Campo malformato.').optional(),
+  
   contractDocument: z
     .object(
       {

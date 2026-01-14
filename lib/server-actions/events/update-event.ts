@@ -19,6 +19,15 @@ import { isBefore } from 'date-fns';
 import { recomputeConflicts } from '@/lib/data/events/recompute-conflicts';
 import { sendEventConfirmedEmail } from '../send-event-confirmed-email';
 import { generateEventTitle } from '@/lib/utils/generate-event-title';
+import {
+  canActivateUpfrontPayment,
+  canActivateFinalBalance,
+  getNextPaymentStatus,
+  calculateFinalBalanceDeadline,
+  createPaymentStatusTimestamps,
+  createEventStatusTimestamps,
+  type PaymentStatus,
+} from '@/lib/utils/payment-flow';
 
 export const updateEvent = async (
   eventId: number,
@@ -220,6 +229,66 @@ export const updateEvent = async (
       typeof tecnicalRiderDocument.name === 'string' &&
       tecnicalRiderDocument.name.trim() !== '';
 
+    // Payment flow logic
+    const currentPaymentStatus = (validation.data.paymentStatus || 'pending') as PaymentStatus;
+    let newPaymentStatus = currentPaymentStatus;
+    const paymentStatusChanged: boolean[] = [];
+
+    // Check if contract was just signed
+    const contractJustSigned =
+      (validation.data.contractSigning || validation.data.contractDocumentUrl || validation.data.contractSignedDate) &&
+      canActivateUpfrontPayment(
+        validation.data.contractSigning ?? false,
+        validation.data.contractDocumentUrl,
+        validation.data.contractSignedDate,
+      );
+
+    // Check if upfront payment was just completed
+    const upfrontJustPaid =
+      validation.data.upfrontPaymentDate && validation.data.upfrontPaymentAmount;
+
+    // Check if final balance was just completed
+    const balanceJustPaid =
+      validation.data.finalBalanceDate && validation.data.finalBalanceAmount;
+
+    // Update payment status based on actions
+    if (contractJustSigned && currentPaymentStatus === 'pending') {
+      newPaymentStatus = getNextPaymentStatus(currentPaymentStatus, 'contract-signed');
+      paymentStatusChanged.push(true);
+    }
+
+    if (upfrontJustPaid && (currentPaymentStatus === 'upfront-required' || currentPaymentStatus === 'pending')) {
+      newPaymentStatus = getNextPaymentStatus(currentPaymentStatus, 'upfront-paid');
+      paymentStatusChanged.push(true);
+      
+      // Auto-calculate final balance deadline if not set
+      if (!validation.data.finalBalanceDeadline) {
+        const deadline = calculateFinalBalanceDeadline(newAvailability.startDate);
+        validation.data.finalBalanceDeadline = deadline.toISOString();
+      }
+    }
+
+    let updatedStatus = newStatus;
+    if (balanceJustPaid && currentPaymentStatus === 'balance-required') {
+      newPaymentStatus = getNextPaymentStatus(currentPaymentStatus, 'balance-paid');
+      paymentStatusChanged.push(true);
+      
+      // Auto-confirm event when fully paid
+      if (updatedStatus !== 'confirmed') {
+        updatedStatus = 'confirmed';
+      }
+    }
+
+    // Get timestamp updates for status changes
+    const paymentTimestamps = paymentStatusChanged.length > 0
+      ? createPaymentStatusTimestamps(newPaymentStatus)
+      : {};
+    
+    const eventStatusChanged = updatedStatus !== oldEvent.status;
+    const eventTimestamps = eventStatusChanged
+      ? createEventStatusTimestamps(updatedStatus)
+      : {};
+
     await database.transaction(async (tx) => {
       // STEP 1: HANDLE AVAILABILITY --------------------------------------------------------
       await tx
@@ -243,7 +312,7 @@ export const updateEvent = async (
           availabilityId: newAvailability.id,
           venueId,
 
-          status: newStatus,
+          status: updatedStatus,
 
           artistManagerProfileId: artistManagerProfileId || null,
           tourManagerEmail: validation.data.tourManagerEmail || null,
@@ -276,6 +345,38 @@ export const updateEvent = async (
           tecnicalRiderName: validTecnicalRider ? tecnicalRiderDocument!.name : null,
           paymentDate: validation.data.paymentDate || null,
           eventType: validation.data.eventType || null,
+
+          // Payment flow fields
+          paymentStatus: newPaymentStatus,
+          contractSignedDate: validation.data.contractSignedDate ? new Date(validation.data.contractSignedDate) : null,
+          contractDocumentUrl: validation.data.contractDocumentUrl || null,
+          upfrontPaymentAmount: validation.data.upfrontPaymentAmount?.toString() ?? null,
+          upfrontPaymentMethod: validation.data.upfrontPaymentMethod || null,
+          upfrontPaymentDate: validation.data.upfrontPaymentDate ? new Date(validation.data.upfrontPaymentDate) : null,
+          upfrontPaymentReference: validation.data.upfrontPaymentReference || null,
+          upfrontPaymentNotes: validation.data.upfrontPaymentNotes || null,
+          upfrontPaymentSender: validation.data.upfrontPaymentSender || null,
+          upfrontPaymentStripeId: validation.data.upfrontPaymentStripeId || null,
+          upfrontInvoiceUrl: validation.data.upfrontInvoiceUrl || null,
+          upfrontInvoiceName: validation.data.upfrontInvoiceName || null,
+          upfrontConfirmationUrl: validation.data.upfrontConfirmationUrl || null,
+          upfrontConfirmationName: validation.data.upfrontConfirmationName || null,
+          finalBalanceAmount: validation.data.finalBalanceAmount?.toString() ?? null,
+          finalBalanceMethod: validation.data.finalBalanceMethod || null,
+          finalBalanceDate: validation.data.finalBalanceDate ? new Date(validation.data.finalBalanceDate) : null,
+          finalBalanceReference: validation.data.finalBalanceReference || null,
+          finalBalanceNotes: validation.data.finalBalanceNotes || null,
+          finalBalanceSender: validation.data.finalBalanceSender || null,
+          finalBalanceStripeId: validation.data.finalBalanceStripeId || null,
+          finalBalanceDeadline: validation.data.finalBalanceDeadline ? new Date(validation.data.finalBalanceDeadline) : null,
+          finalInvoiceUrl: validation.data.finalInvoiceUrl || null,
+          finalInvoiceName: validation.data.finalInvoiceName || null,
+          finalConfirmationUrl: validation.data.finalConfirmationUrl || null,
+          finalConfirmationName: validation.data.finalConfirmationName || null,
+
+          // Timestamps for status changes
+          ...paymentTimestamps,
+          ...eventTimestamps,
 
           contractSigning: validation.data.contractSigning,
           depositInvoiceIssuing: validation.data.depositInvoiceIssuing,

@@ -48,6 +48,26 @@ export const contractStatus = pgEnum('contract_status', [
   'archived',
 ]);
 
+export const paymentStatus = pgEnum('payment_status', [
+  'pending',
+  'upfront-required',
+  'upfront-paid',
+  'balance-required',
+  'balance-paid',
+  'fully-paid',
+  'expired',
+  'failed',
+]);
+
+export const paymentMethod = pgEnum('payment_method', [
+  'stripe',
+  'bank-transfer-sepa',
+  'bank-transfer-instant',
+  'bank-transfer-other',
+  'cash',
+  'other',
+]);
+
 export const sessions = pgTable(
   'sessions',
   {
@@ -582,7 +602,57 @@ export const events = pgTable(
     hasConflict: boolean('has_conflict').default(false).notNull(),
     status: eventStatus().default('proposed').notNull(),
     eventType:text('event_type'),
-    paymentDate:timestamp('payment_date', { precision: 6, withTimezone: true, mode: 'string' })
+    paymentDate:timestamp('payment_date', { precision: 6, withTimezone: true, mode: 'string' }),
+    
+    // Payment flow fields
+    paymentStatus: paymentStatus('payment_status').default('pending'),
+    
+    // Upfront payment (50%)
+    upfrontPaymentAmount: numeric('upfront_payment_amount'),
+    upfrontPaymentMethod: paymentMethod('upfront_payment_method'),
+    upfrontPaymentDate: timestamp('upfront_payment_date', { withTimezone: true }),
+    upfrontPaymentReference: text('upfront_payment_reference'),
+    upfrontPaymentNotes: text('upfront_payment_notes'),
+    upfrontPaymentSender: text('upfront_payment_sender'),
+    upfrontPaymentStripeId: text('upfront_payment_stripe_id'),
+    upfrontInvoiceUrl: text('upfront_invoice_url'),
+    upfrontInvoiceName: text('upfront_invoice_name'),
+    upfrontConfirmationUrl: text('upfront_confirmation_url'),
+    upfrontConfirmationName: text('upfront_confirmation_name'),
+    
+    // Final balance payment (50%)
+    finalBalanceAmount: numeric('final_balance_amount'),
+    finalBalanceMethod: paymentMethod('final_balance_method'),
+    finalBalanceDate: timestamp('final_balance_date', { withTimezone: true }),
+    finalBalanceReference: text('final_balance_reference'),
+    finalBalanceNotes: text('final_balance_notes'),
+    finalBalanceSender: text('final_balance_sender'),
+    finalBalanceStripeId: text('final_balance_stripe_id'),
+    finalBalanceDeadline: timestamp('final_balance_deadline', { withTimezone: true }),
+    finalInvoiceUrl: text('final_invoice_url'),
+    finalInvoiceName: text('final_invoice_name'),
+    finalConfirmationUrl: text('final_confirmation_url'),
+    finalConfirmationName: text('final_confirmation_name'),
+    
+    // Payment status timestamps
+    paymentPendingAt: timestamp('payment_pending_at', { withTimezone: true }).defaultNow(),
+    upfrontRequiredAt: timestamp('upfront_required_at', { withTimezone: true }),
+    upfrontPaidAt: timestamp('upfront_paid_at', { withTimezone: true }),
+    balanceRequiredAt: timestamp('balance_required_at', { withTimezone: true }),
+    balancePaidAt: timestamp('balance_paid_at', { withTimezone: true }),
+    fullyPaidAt: timestamp('fully_paid_at', { withTimezone: true }),
+    paymentExpiredAt: timestamp('payment_expired_at', { withTimezone: true }),
+    
+    // Contract tracking
+    contractSignedDate: timestamp('contract_signed_date', { withTimezone: true }),
+    contractDocumentUrl: text('contract_document_url'),
+    
+    // Event status timestamps (timeline)
+    proposedAt: timestamp('proposed_at', { withTimezone: true }).defaultNow(),
+    preConfirmedAt: timestamp('pre_confirmed_at', { withTimezone: true }),
+    confirmedAt: timestamp('confirmed_at', { withTimezone: true }),
+    rejectedAt: timestamp('rejected_at', { withTimezone: true }),
+    endedAt: timestamp('ended_at', { withTimezone: true }),
   },
   (table) => [
     index('idx_events_artist_id').using('btree', table.artistId.asc().nullsLast().op('int4_ops')),
