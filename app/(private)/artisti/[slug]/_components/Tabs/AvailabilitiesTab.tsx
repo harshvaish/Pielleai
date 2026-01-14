@@ -1,5 +1,5 @@
 import { TabsContent } from '@/components/ui/tabs';
-import AvailabilitiesCalendar from '../AvailabilitiesCalendar/AvailabilitiesCalendar';
+import AvailabilitiesView from '../AvailabilitiesCalendar/AvailabilitiesView';
 import { UserRole } from '@/lib/types';
 
 type AvailabilitiesTabProps = { userRole: UserRole; tabValue: string };
@@ -10,7 +10,7 @@ export default function AvailabilitiesTab({ userRole, tabValue }: Availabilities
       value={tabValue}
       className='w-full bg-white py-4 px-6 rounded-2xl overflow-hidden'
     >
-      <AvailabilitiesCalendar userRole={userRole} />
+      <AvailabilitiesView userRole={userRole} />
     </TabsContent>
   );
 }

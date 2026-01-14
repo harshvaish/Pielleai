@@ -99,9 +99,12 @@ export default async function ArtistEventsTab({
                 {events.map((event) => {
                   const startLabel = format(toZonedTime(event.startDate, TIME_ZONE), 'dd/MM/yyyy, HH:mm');
                   const endLabel = format(toZonedTime(event.endDate, TIME_ZONE), 'dd/MM/yyyy, HH:mm');
-                  const eventLabel = event.eventType
-                    ? EVENT_TYPE_LABELS[event.eventType]
-                    : `Evento #${event.id}`;
+                  const eventTitle = event.title?.trim();
+                  const eventLabel = eventTitle
+                    ? eventTitle
+                    : event.eventType
+                      ? EVENT_TYPE_LABELS[event.eventType]
+                      : `Evento #${event.id}`;
                   const isOngoing = event.startDate <= now && event.endDate >= now;
 
                   return (

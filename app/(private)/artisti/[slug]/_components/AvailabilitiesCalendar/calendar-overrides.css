@@ -69,7 +69,7 @@
 
 .rbc-event.booked,
 .booked {
-  background-color: var(--color-zinc-600);
+  background-color: var(--color-blue-600);
   opacity: 0.6;
   border: none;
 }

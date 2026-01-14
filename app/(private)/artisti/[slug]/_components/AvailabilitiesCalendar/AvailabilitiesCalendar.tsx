@@ -38,27 +38,43 @@ export const localizer = dateFnsLocalizer({
 
 type AvailabilitiesCalendarProps = {
   userRole: UserRole;
+  calendarDate?: Date;
+  calendarRange?: { start: Date; end: Date };
+  view?: View;
+  onNavigate?: (newDate: Date) => void;
+  onView?: (nextView: View) => void;
 };
 
-export default function AvailabilitiesCalendar({ userRole }: AvailabilitiesCalendarProps) {
+export default function AvailabilitiesCalendar({
+  userRole,
+  calendarDate,
+  calendarRange,
+  view,
+  onNavigate,
+  onView,
+}: AvailabilitiesCalendarProps) {
   const { slug } = useParams();
   if (!slug || typeof slug !== 'string') notFound();
 
-  const [calendarDate, setCalendarDate] = useState<Date>(new Date());
-  const [calendarRange, setCalendarRange] = useState<{ start: Date; end: Date }>(() =>
+  const [internalDate, setInternalDate] = useState<Date>(new Date());
+  const [internalRange, setInternalRange] = useState<{ start: Date; end: Date }>(() =>
     calculateRange(new Date(), 'week'),
   );
-  const [view, setView] = useState<View>('week');
+  const [internalView, setInternalView] = useState<View>('week');
 
   const [availabilities, setAvailabilities] = useState<CalendarAvailability[]>([]);
 
+  const resolvedDate = calendarDate ?? internalDate;
+  const resolvedView = view ?? internalView;
+  const resolvedRange = calendarRange ?? internalRange;
+
   const startDateUTC = fromZonedTime(
-    startOfDay(calendarRange.start), // set to 00:00 in local TZ
+    startOfDay(resolvedRange.start), // set to 00:00 in local TZ
     TIME_ZONE, // your app’s locale time zone, e.g. 'Europe/Rome'
   ).toISOString(); // convert to UTC string
 
   const endDateUTC = fromZonedTime(
-    endOfDay(calendarRange.end), // set to 23:59 in local TZ
+    endOfDay(resolvedRange.end), // set to 23:59 in local TZ
     TIME_ZONE, // your app’s locale time zone, e.g. 'Europe/Rome'
   ).toISOString(); // convert to UTC string
 
@@ -67,13 +83,21 @@ export default function AvailabilitiesCalendar({ userRole }: AvailabilitiesCalen
   const { data: response, isLoading } = useSWR(fetchUrl, fetcher);
 
   const onNavigateHandler = (newDate: Date) => {
-    setCalendarDate(newDate);
-    setCalendarRange(calculateRange(newDate, view));
+    if (onNavigate) {
+      onNavigate(newDate);
+      return;
+    }
+    setInternalDate(newDate);
+    setInternalRange(calculateRange(newDate, resolvedView));
   };
 
   const onViewHandler = (nextView: View) => {
-    setView(nextView);
-    setCalendarRange(calculateRange(calendarDate, nextView));
+    if (onView) {
+      onView(nextView);
+      return;
+    }
+    setInternalView(nextView);
+    setInternalRange(calculateRange(resolvedDate, nextView));
   };
 
   const eventPropGetter = ({ status }: CalendarAvailability) => {
@@ -105,10 +129,10 @@ export default function AvailabilitiesCalendar({ userRole }: AvailabilitiesCalen
       <BigCalendar
         localizer={localizer}
         culture='it'
-        date={calendarDate}
+        date={resolvedDate}
         onNavigate={onNavigateHandler}
         onView={onViewHandler}
-        view={view}
+        view={resolvedView}
         views={CALENDAR_VIEWS}
         defaultView='week'
         toolbar={true}

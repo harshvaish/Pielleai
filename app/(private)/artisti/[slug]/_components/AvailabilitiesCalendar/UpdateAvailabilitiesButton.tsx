@@ -12,10 +12,10 @@ import { CalendarCheck2, Minus, Plus, Trash } from 'lucide-react';
 import { Calendar } from '@/components/ui/calendar';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ArtistAvailability, TimeRange } from '@/lib/types';
+import { ArtistAvailability, EventType, TimeRange } from '@/lib/types';
 import { toast } from 'sonner';
 import { useEffect, useMemo, useState } from 'react';
-import { addDays, format, isBefore, startOfDay } from 'date-fns';
+import { addDays, endOfMonth, endOfDay, format, isBefore, startOfDay, startOfMonth } from 'date-fns';
 import useSWR from 'swr';
 import { checkAvailabilities, cn, fetcher } from '@/lib/utils';
 import { notFound, useParams } from 'next/navigation';
@@ -27,14 +27,23 @@ import { deleteArtistAvailability } from '@/lib/server-actions/artists/delete-ar
 import { z } from 'zod/v4';
 import { timeValidation } from '@/lib/validation/_general';
 import { Checkbox } from '@/components/ui/checkbox';
+import { type DateRange } from 'react-day-picker';
+
+const EVENT_TYPE_LABELS: Record<EventType, string> = {
+  'dj-set': 'DJ set',
+  live: 'Live',
+  festival: 'Festival',
+};
 
 export function UpdateAvailabilitiesButton() {
   const { slug } = useParams();
   if (!slug && typeof slug != 'string') notFound();
 
   const [open, setOpen] = useState<boolean>(false);
+  const [month, setMonth] = useState<Date>(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [endDate, setEndDate] = useState<Date | undefined>(undefined);
+  const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
   const [isAllDay, setIsAllDay] = useState<boolean>(true);
 
   const [visible, setVisible] = useState<boolean>(false);
@@ -58,6 +67,44 @@ export function UpdateAvailabilitiesButton() {
   }, [slug, startDateUTC]);
 
   const { data: response, isLoading, mutate } = useSWR(fetchUrl, fetcher);
+
+  const monthRange = useMemo(() => {
+    const monthStart = startOfMonth(month);
+    const monthEnd = endOfMonth(month);
+    return {
+      start: fromZonedTime(startOfDay(monthStart), TIME_ZONE).toISOString(),
+      end: fromZonedTime(endOfDay(monthEnd), TIME_ZONE).toISOString(),
+    };
+  }, [month]);
+
+  const rangeFetchUrl = useMemo(() => {
+    return `/api/artist-availabilities/range?s=${slug}&sd=${monthRange.start}&ed=${monthRange.end}`;
+  }, [slug, monthRange]);
+
+  const { data: rangeResponse, isLoading: isRangeLoading } = useSWR(rangeFetchUrl, fetcher);
+
+  const unavailableDays = useMemo(() => {
+    if (!rangeResponse?.success) return [];
+    const seen = new Set<string>();
+    const days: Date[] = [];
+
+    (rangeResponse.data as ArtistAvailability[]).forEach((block) => {
+      const startLocal = toZonedTime(block.startDate, TIME_ZONE);
+      const endLocal = toZonedTime(block.endDate, TIME_ZONE);
+      let cursor = startOfDay(startLocal);
+
+      while (cursor < endLocal) {
+        const key = format(cursor, 'yyyy-MM-dd');
+        if (!seen.has(key)) {
+          seen.add(key);
+          days.push(cursor);
+        }
+        cursor = addDays(cursor, 1);
+      }
+    });
+
+    return days;
+  }, [rangeResponse]);
 
   useEffect(() => {
     if (!response) return;
@@ -153,6 +200,7 @@ export function UpdateAvailabilitiesButton() {
 
     setNewTimeRange({ startTime: '', endTime: '' });
     setEndDate(undefined);
+    setDateRange(selectedDate ? { from: selectedDate, to: selectedDate } : undefined);
     setIsAllDay(true);
     setLoading(false);
     toast.success('Indisponibilità aggiunta!');
@@ -204,13 +252,19 @@ export function UpdateAvailabilitiesButton() {
           <div className='h-full grid grid-rows-[max-content_1fr] md:grid-rows-none md:grid-cols-2 gap-4 py-4 border-t border-b overflow-hidden'>
             <Calendar
               locale={it}
-              mode='single'
-              selected={selectedDate}
-              onSelect={(date) => {
-                setSelectedDate(date);
-                setEndDate(date);
+              mode='range'
+              month={month}
+              onMonthChange={setMonth}
+              selected={dateRange}
+              onSelect={(range) => {
+                setDateRange(range);
+                setSelectedDate(range?.from);
+                setEndDate(range?.to ?? range?.from);
+                if (range?.from) setMonth(range.from);
               }}
-              disabled={loading || isLoading ? true : { before: new Date() }}
+              modifiers={{ unavailability: unavailableDays }}
+              modifiersClassNames={{ unavailability: 'bg-rose-100 text-rose-700' }}
+              disabled={loading || isLoading || isRangeLoading ? true : { before: new Date() }}
               className='h-max p-0 self-center'
             />
 
@@ -239,6 +293,28 @@ export function UpdateAvailabilitiesButton() {
                     </label>
 
                     <div className='flex flex-col gap-2'>
+                      <span className='text-xs text-zinc-400 font-medium'>Data inizio</span>
+                      <Input
+                        type='date'
+                        value={selectedDate instanceof Date ? format(selectedDate, 'yyyy-MM-dd') : ''}
+                        onChange={(e) => {
+                          if (!e.target.value) {
+                            setSelectedDate(undefined);
+                            setDateRange(undefined);
+                            return;
+                          }
+                          const nextStart = new Date(`${e.target.value}T00:00:00`);
+                          const nextEnd = endDate && isBefore(endDate, nextStart) ? nextStart : endDate;
+                          setSelectedDate(nextStart);
+                          setEndDate(nextEnd);
+                          setDateRange({ from: nextStart, to: nextEnd ?? nextStart });
+                        }}
+                        className='w-full shadow-none'
+                        disabled={isLoading}
+                      />
+                    </div>
+
+                    <div className='flex flex-col gap-2'>
                       <span className='text-xs text-zinc-400 font-medium'>Data fine</span>
                       <Input
                         type='date'
@@ -248,7 +324,12 @@ export function UpdateAvailabilitiesButton() {
                             setEndDate(undefined);
                             return;
                           }
-                          setEndDate(new Date(`${e.target.value}T00:00:00`));
+                          const nextEnd = new Date(`${e.target.value}T00:00:00`);
+                          const nextStart =
+                            selectedDate && isBefore(nextEnd, selectedDate) ? nextEnd : selectedDate;
+                          setSelectedDate(nextStart);
+                          setEndDate(nextEnd);
+                          setDateRange({ from: nextStart ?? nextEnd, to: nextEnd });
                         }}
                         className='w-full shadow-none'
                         disabled={isLoading}
@@ -316,18 +397,33 @@ export function UpdateAvailabilitiesButton() {
                     availabilities.length > 0 &&
                     availabilities.map((av) => {
                       const canDelete = !('canDelete' in av) || av?.canDelete;
+                      const eventTitle = av.event?.title?.trim();
+                      const eventLabel = av.event
+                        ? eventTitle
+                          ? eventTitle
+                          : av.event.eventType
+                            ? EVENT_TYPE_LABELS[av.event.eventType]
+                            : `Evento #${av.event.id}`
+                        : 'Indisponibilita';
+                      const venueLabel = av.event?.venue.name ?? null;
 
                       return (
                         <div
                           key={av.id}
-                          className='h-10 flex gap-2 justify-between items-center bg-zinc-50 px-2 rounded-xl'
+                          className='min-h-10 flex gap-2 justify-between items-center bg-zinc-50 px-2 py-2 rounded-xl'
                         >
-                          <span>
-                            {format(av.startDate, 'dd/MM/yyyy, HH:mm')}
-                            <span className='text-zinc-400 mx-1'>-</span>
-                            {format(av.endDate, 'dd/MM/yyyy, HH:mm')}
-                          </span>
-                          {canDelete && (
+                          <div className='flex flex-col'>
+                            <span>
+                              {format(av.startDate, 'dd/MM/yyyy, HH:mm')}
+                              <span className='text-zinc-400 mx-1'>-</span>
+                              {format(av.endDate, 'dd/MM/yyyy, HH:mm')}
+                            </span>
+                            <span className='text-xs text-zinc-500'>
+                              {eventLabel}
+                              {venueLabel ? ` • ${venueLabel}` : ''}
+                            </span>
+                          </div>
+                          {canDelete ? (
                             <Button
                               variant='ghost'
                               size='icon'
@@ -337,6 +433,8 @@ export function UpdateAvailabilitiesButton() {
                             >
                               <Trash />
                             </Button>
+                          ) : (
+                            <span className='text-xs font-medium text-zinc-400'>Bloccato</span>
                           )}
                         </div>
                       );

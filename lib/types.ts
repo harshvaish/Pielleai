@@ -475,6 +475,17 @@ export type ArtistAvailability = {
   startDate: Date;
   endDate: Date;
   status: AvailabilityStatus;
+  event?: {
+    id: number;
+    title: string | null;
+    status: EventStatus;
+    eventType: EventType | null;
+    venue: {
+      id: number;
+      name: string;
+      city: string | null;
+    };
+  } | null;
   canDelete?: boolean;
 };
 
@@ -492,6 +503,7 @@ export type TimeRange = {
 export interface CalendarAvailability extends RbcEvent {
   id: number;
   status: AvailabilityStatus;
+  event?: ArtistAvailability['event'];
 
   start: Date;
   end: Date;
@@ -567,6 +579,7 @@ export type Event = {
 
 export type ArtistEventListItem = {
   id: number;
+  title: string | null;
   startDate: Date;
   endDate: Date;
   status: EventStatus;
