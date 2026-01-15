@@ -79,6 +79,14 @@ export const NAVBAR_LINKS: NavbarLink[] = [
     visibleTo: ['admin', 'venue-manager', 'artist-manager'],
     separator: false,
   },
+  {
+    label: 'Finanze',
+    href: '/finanze',
+    iconSrc: '/images/navbar-icons/finances.svg',
+    iconAlt: 'icona Finanze',
+    visibleTo: ['admin'],
+    separator: false,
+  },
 ];
 
 // avatar upload
