@@ -74,6 +74,15 @@ export default function ContractDetailTile({ payload }: Props) {
   });
   const { watch } = methods;
   const contractStatus = watch("contractStatus");
+  const artistFullName = [
+    payload?.artist?.name,
+    payload?.artist?.surname,
+  ]
+    .filter(Boolean)
+    .join(" ");
+  const artistHandle = payload?.artist?.stageName
+    ? `@${payload.artist.stageName}`
+    : "";
 
   const { date, time } = useMemo(() => {
     if (!payload?.availability) return { date: "—", time: "—" };
@@ -92,6 +101,26 @@ export default function ContractDetailTile({ payload }: Props) {
       })}`,
     };
   }, [payload]);
+  const isMissingInfo = useMemo(() => {
+    const artistOk =
+      payload?.artist?.name && payload?.artist?.surname && payload?.artist?.stageName;
+    const venueOk =
+      payload?.venue?.name &&
+      payload?.venue?.company &&
+      payload?.venue?.vatCode &&
+      payload?.venue?.address;
+    const eventOk =
+      payload?.availability?.startDate &&
+      payload?.availability?.endDate &&
+      payload?.event?.depositCost &&
+      payload?.event?.totalFee;
+    return !(artistOk && venueOk && eventOk);
+  }, [payload]);
+  const showMissingInfo = isMissingInfo && contractStatus === "draft";
+  const statusUpdatedAt = payload?.contractDate || payload?.updatedAt || payload?.createdAt;
+  const statusUpdatedLabel = statusUpdatedAt
+    ? new Date(statusUpdatedAt).toLocaleDateString("it-IT")
+    : "—";
 
   /* ---------------- HISTORY ---------------- */
   const historyData: HistoryItem[] = Array.isArray(payload.history)
@@ -154,14 +183,14 @@ export default function ContractDetailTile({ payload }: Props) {
                     <img
                       src={payload?.artist?.avatarUrl}
                       alt="Avatar"
-                      className="size-11 rounded-full object-cover bg-zinc-200"
+                      className="size-12 rounded-full object-cover bg-zinc-200"
                     />
                     <div className="flex flex-col">
                       <div className="font-semibold text-lg">
-                        {payload.stageName}
+                        {artistFullName || payload?.artist?.stageName || "—"}
                       </div>
                       <div className="text-sm text-zinc-500">
-                        {payload.artistName}
+                        {artistHandle || "\u00A0"}
                       </div>
                     </div>
                   </div>
@@ -186,15 +215,39 @@ export default function ContractDetailTile({ payload }: Props) {
                   <ContractStatusButton
                     contractId={payload.id}
                     status={contractStatus}
+                    labelOverride={showMissingInfo ? "Info mancanti" : undefined}
+                    iconOverride={
+                      showMissingInfo ? (
+                        <div className="w-3 h-3 flex items-center justify-center bg-amber-600 rounded-full">
+                          <span className="text-[8px] text-white">?</span>
+                        </div>
+                      ) : undefined
+                    }
+                    className={
+                      showMissingInfo
+                        ? "bg-amber-50 border-amber-200 text-amber-700"
+                        : undefined
+                    }
                   />
 
                   <div className="text-xs text-zinc-500">
-                    Stato aggiornato il {payload.contractDate}
+                    Stato aggiornato il {statusUpdatedLabel}
                   </div>
                 </div>
               </div>
 
               <Separator />
+
+              {showMissingInfo && (
+                <div className="flex items-center gap-2 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">
+                  <div className="w-4 h-4 flex items-center justify-center rounded-full bg-amber-600 text-white text-[10px]">
+                    ?
+                  </div>
+                  <span>
+                    Il contratto non pu\u00F2 essere generato perch\u00E9 mancano dei dati.
+                  </span>
+                </div>
+              )}
 
               <div className="flex flex-col gap-3">
                 <div className="text-sm font-semibold text-zinc-800">

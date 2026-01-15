@@ -21,6 +21,8 @@ type Props = {
   contractId: number;
   status: ContractStatus;
   className?: string;
+  labelOverride?: string;
+  iconOverride?: JSX.Element;
 };
 
 const STATUS_STYLES: Record<
@@ -92,6 +94,8 @@ export default function ContractStatusButton({
   contractId,
   status,
   className,
+  labelOverride,
+  iconOverride,
 }: Props) {
   const [isPending, startTransition] = useTransition();
   const form = useFormContext<EventFormSchema>();
@@ -99,6 +103,8 @@ export default function ContractStatusButton({
   const isReadOnly = status == "signed";
 
   const current = STATUS_STYLES[status];
+  const label = labelOverride ?? current.label;
+  const icon = iconOverride ?? current.icon;
 
   const STATUS_TOAST: Partial<
     Record<ContractStatus, { success: string; error?: string }>
@@ -153,8 +159,8 @@ export default function ContractStatusButton({
             className
           )}
         >
-          {current.label}
-          <span className="truncate"> {current.icon} </span>
+          {label}
+          <span className="truncate"> {icon} </span>
 
           {!isReadOnly && (
             <ChevronDown className="h-3 w-3 text-zinc-400 ml-1" />
