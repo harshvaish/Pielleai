@@ -153,6 +153,7 @@ export default function DocuSignButton({
   const { watch, setValue } = useFormContext<EventFormSchema>();
 
   const contractId = watch("contractId");
+  const formTourManagerEmail = watch("tourManagerEmail");
 
   const getTimeRange = (start?: Date | string, end?: Date | string): string => {
     if (!start || !end) return "";
@@ -190,14 +191,21 @@ export default function DocuSignButton({
 
     totalFee: event.event?.totalCost ?? "€0",
     artistManagerFullName: `${event?.artistManager?.name} ${event?.artistManager?.surname}`,
-    tourManagerEmail: event?.tourManagerEmail ?? event?.artist?.tourManagerEmail ?? "",
+    tourManagerEmail:
+      formTourManagerEmail ??
+      event?.tourManagerEmail ??
+      event?.artist?.tourManagerEmail ??
+      "",
   };
 
   const handleClick = async () => {
     startTransition(async () => {
       try {
         const tourManagerEmail =
-          event?.tourManagerEmail ?? event?.artist?.tourManagerEmail ?? "";
+          formTourManagerEmail ??
+          event?.tourManagerEmail ??
+          event?.artist?.tourManagerEmail ??
+          "";
 
         if (!tourManagerEmail) {
           toast.error("Il Tour Manager è obbligatorio.");

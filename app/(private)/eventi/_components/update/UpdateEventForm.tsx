@@ -69,6 +69,16 @@ export default function UpdateEventForm({
       contractCcs?.includes(email) ?? false
     );
   
+  const toDate = (value: Date | string | null | undefined): Date | undefined => {
+    if (!value) return undefined;
+    const parsed = value instanceof Date ? value : new Date(value);
+    return Number.isNaN(parsed.getTime()) ? undefined : parsed;
+  };
+
+  const availabilityStart = toDate(event.availability.startDate);
+  const availabilityEnd = toDate(event.availability.endDate);
+  const paymentDate = toDate(event.paymentDate ?? null);
+
   const methods = useForm({
     resolver: zodResolver(eventFormSchema),
     defaultValues: {
@@ -79,8 +89,8 @@ export default function UpdateEventForm({
       artistManagerProfileId: event.artistManager?.profileId || undefined,
       availability: {
         id: event.availability.id || undefined,
-        startDate: event.availability.startDate || undefined,
-        endDate: event.availability.endDate || undefined,
+        startDate: availabilityStart,
+        endDate: availabilityEnd,
       },
       venueId: event.venue.id,
       venueName: event.venue.name || '',
@@ -136,10 +146,10 @@ export default function UpdateEventForm({
       bordereau: event.bordereau ?? false,
       eventId: event.id,
       eventType: event.eventType ?? '',
-      eventDate: format(event.availability.startDate, 'yyyy-MM-dd'),
+      eventDate: availabilityStart ? format(availabilityStart, 'yyyy-MM-dd') : '',
       ccEmails: buildDefaultCcBooleans(event.contract?.ccs),
-      eventStartTime : format(event.availability.startDate, 'HH:mm', { locale: it }),
-      eventEndTime : format(event.availability.endDate, 'HH:mm', { locale: it }),
+      eventStartTime : availabilityStart ? format(availabilityStart, 'HH:mm', { locale: it }) : '',
+      eventEndTime : availabilityEnd ? format(availabilityEnd, 'HH:mm', { locale: it }) : '',
       contractDocument:
       event.contract?.fileUrl && event.contract?.fileName
         ? {
@@ -148,9 +158,7 @@ export default function UpdateEventForm({
           }
         : undefined,
 
-      paymentDate: event.paymentDate
-      ? format(event.paymentDate, "yyyy-MM-dd")
-      : "",
+      paymentDate: paymentDate ? format(paymentDate, "yyyy-MM-dd") : "",
           upfrontPayment: parseFloat(event.artistUpfrontCost || '') || undefined,
     },
   });
