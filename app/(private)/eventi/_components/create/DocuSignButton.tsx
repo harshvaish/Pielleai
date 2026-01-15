@@ -190,13 +190,16 @@ export default function DocuSignButton({
 
     totalFee: event.event?.totalCost ?? "€0",
     artistManagerFullName: `${event?.artistManager?.name} ${event?.artistManager?.surname}`,
-    tourManagerEmail: event?.tourManagerEmail ?? "",
+    tourManagerEmail: event?.tourManagerEmail ?? event?.artist?.tourManagerEmail ?? "",
   };
 
   const handleClick = async () => {
     startTransition(async () => {
       try {
-        if (!event?.tourManagerEmail) {
+        const tourManagerEmail =
+          event?.tourManagerEmail ?? event?.artist?.tourManagerEmail ?? "";
+
+        if (!tourManagerEmail) {
           toast.error("Il Tour Manager è obbligatorio.");
           return;
         }
@@ -242,7 +245,7 @@ export default function DocuSignButton({
         formData.append("file", pdfBlob, "contract.pdf");
         formData.append("contractId", String(contractId));
         formData.append("name", CONTRACT_DATA.artistManagerFullName);
-        formData.append("email", event?.tourManagerEmail);
+        formData.append("email", tourManagerEmail);
         formData.append("anchorString", "DOCUSIGN_SIGNATURE");
   
         const res = await fetch("/api/contract/docusign-document", {
