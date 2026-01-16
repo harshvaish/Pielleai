@@ -1,66 +1,24 @@
 'use client';
 
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
+import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Pencil } from 'lucide-react';
-import { ArtistSelectData, Event, MoCoordinator, UserRole, VenueSelectData } from '@/lib/types';
-import { useState } from 'react';
-import UpdateEventForm from './UpdateEventForm';
+import { Event } from '@/lib/types';
 
 type UpdateButtonProps = {
   event: Event;
-  artists: ArtistSelectData[];
-  venues: VenueSelectData[];
-  moCoordinators: MoCoordinator[];
-  userRole: UserRole;
 };
 
-export default function UpdateButton({
-  event,
-  artists,
-  venues,
-  moCoordinators,
-  userRole,
-}: UpdateButtonProps) {
-  const [open, setOpen] = useState<boolean>(false);
+export default function UpdateButton({ event }: UpdateButtonProps) {
   return (
-    <Dialog
-      open={open}
-      onOpenChange={setOpen}
-      modal
+    <Button
+      asChild
+      variant='secondary'
+      size='sm'
     >
-      <DialogTrigger asChild>
-        <Button
-          variant='secondary'
-          size='sm'
-        >
-          <Pencil /> Modifica
-        </Button>
-      </DialogTrigger>
-      <DialogContent
-        onInteractOutside={(e) => {
-          e.preventDefault();
-        }}
-        className='h-dvh md:max-h-[94dvh] w-dvw grid grid-rows-[auto_1fr] p-4 pt-12 rounded-none md:rounded-2xl'
-      >
-        <DialogTitle className='hidden'>Form per aggiornamento evento</DialogTitle>
-        <DialogDescription className='hidden'>Modifica i dell&apos;evento.</DialogDescription>
-
-        <UpdateEventForm
-          event={event}
-          artists={artists}
-          venues={venues}
-          moCoordinators={moCoordinators}
-          userRole={userRole}
-          closeDialog={() => setOpen(false)}
-        />
-      </DialogContent>
-    </Dialog>
+      <Link href={`/eventi/${event.id}/modifica`}>
+        <Pencil /> Modifica
+      </Link>
+    </Button>
   );
 }

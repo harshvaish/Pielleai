@@ -1,6 +1,6 @@
 'use client';
 
-import { ArtistSelectData, Event, MoCoordinator, UserRole, VenueSelectData } from '@/lib/types';
+import { ArtistSelectData, Event, UserRole, VenueSelectData } from '@/lib/types';
 import { it } from 'date-fns/locale';
 import { format } from 'date-fns';
 import Image from 'next/image';
@@ -22,7 +22,6 @@ type EventTileProps = {
   event: Event;
   artists: ArtistSelectData[];
   venues: VenueSelectData[];
-  moCoordinators: MoCoordinator[];
 };
 
 export default function EventTile({
@@ -30,7 +29,6 @@ export default function EventTile({
   event,
   artists,
   venues,
-  moCoordinators,
 }: EventTileProps) {
   const isAdmin = userRole === 'admin';
   const isArtistManager = userRole === 'artist-manager';
@@ -72,13 +70,7 @@ export default function EventTile({
                 align='end'
                 className='w-48 space-y-2'
               >
-                <UpdateButton
-                  event={event}
-                  artists={artists}
-                  venues={venues}
-                  moCoordinators={moCoordinators}
-                  userRole={userRole}
-                />
+                <UpdateButton event={event} />
                 <DeleteEventButton event={event} />
               </PopoverContent>
             </Popover>
@@ -384,13 +376,7 @@ export default function EventTile({
                 align='end'
                 className='max-w-max flex flex-col items-start gap-2'
               >
-                <UpdateButton
-                  event={event}
-                  artists={artists}
-                  venues={venues}
-                  moCoordinators={moCoordinators}
-                  userRole={userRole}
-                />
+                <UpdateButton event={event} />
                 <DeleteEventButton event={event} />
               </PopoverContent>
             </Popover>

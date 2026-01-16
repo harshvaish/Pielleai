@@ -13,7 +13,7 @@ import { eventFormSchema } from '@/lib/validation/event-form-schema';
 import type { EventFormSchema } from '@/lib/validation/event-form-schema';
 import { updateEvent } from '@/lib/server-actions/events/update-event';
 import EventForm from '../form/EventForm';
-import { useTransition } from 'react';
+import { useState } from 'react';
 
 type UpdateEventFormProps = {
   event: DomainEvent;
@@ -21,7 +21,7 @@ type UpdateEventFormProps = {
   venues: VenueSelectData[];
   moCoordinators: MoCoordinator[];
   userRole: UserRole;
-  closeDialog: () => void;
+  closeDialog?: () => void;
 };
 
 type FormContractStatus = EventFormSchema['contractStatus'];
@@ -53,7 +53,7 @@ export default function UpdateEventForm({
   closeDialog,
 }: UpdateEventFormProps) {
   const router = useRouter();
-  const [isPending, startTransition] = useTransition();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const ALL_CC_EMAILS = [
     "Tour Manager",
     "Admin",
@@ -165,16 +165,30 @@ export default function UpdateEventForm({
   const { handleSubmit } = methods;
   const onSubmit = async (data: EventFormSchema) => {
     console.log("inside submit")
-    startTransition(async () => {
+    setIsSubmitting(true);
+    try {
       const response = await updateEvent(event.id, data);
 
       if (response.success) {
         toast.success('Evento aggiornato!');
-        startTransition(async () => router.refresh());
+        if (closeDialog) {
+          closeDialog();
+        }
+        router.refresh();
       } else {
         toast.error(response.message);
       }
-    });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleCancel = () => {
+    if (closeDialog) {
+      closeDialog();
+      return;
+    }
+    router.back();
   };
   return (
     <section className='max-h-full overflow-y-auto'>
@@ -199,18 +213,18 @@ export default function UpdateEventForm({
           <div className='flex justify-between'>
             <Button
               type='button'
-              onClick={closeDialog}
+              onClick={handleCancel}
               variant='ghost'
               className='text-destructive'
-              disabled={isPending}
+              disabled={isSubmitting}
             >
               <X /> Annulla
             </Button>
             <Button
               type='submit'
-              disabled={isPending}
+              disabled={isSubmitting}
             >
-              {isPending ? 'Salvataggio...' : 'Salva'}
+              {isSubmitting ? 'Salvataggio...' : 'Salva'}
             </Button>
           </div>
         </form>

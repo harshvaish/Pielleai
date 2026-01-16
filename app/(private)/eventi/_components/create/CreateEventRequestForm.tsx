@@ -10,13 +10,13 @@ import { useRouter } from 'next/navigation';
 import { eventRequestFormSchema, EventRequestFormSchema } from '@/lib/validation/event-form-schema';
 import EventRequestForm from '../form/EventRequestForm';
 import { createEventRequest } from '@/lib/server-actions/events/create-event-request';
-import { useTransition } from 'react';
+import { useState } from 'react';
 
 type CreateEventFormProps = {
   artists: ArtistSelectData[];
   venues: VenueSelectData[];
   userRole: UserRole;
-  closeDialog: () => void;
+  closeDialog?: () => void;
 };
 
 export default function CreateEventRequestForm({
@@ -26,7 +26,7 @@ export default function CreateEventRequestForm({
   closeDialog,
 }: CreateEventFormProps) {
   const router = useRouter();
-  const [isPending, startTransition] = useTransition();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const methods = useForm({
     resolver: zodResolver(eventRequestFormSchema),
@@ -40,17 +40,30 @@ export default function CreateEventRequestForm({
   const { handleSubmit } = methods;
 
   const onSubmit = async (data: EventRequestFormSchema) => {
-    startTransition(async () => {
+    setIsSubmitting(true);
+    try {
       const response = await createEventRequest(data);
 
       if (response.success) {
-        closeDialog();
         toast.success('Evento creato!');
-        startTransition(async () => router.refresh());
+        if (closeDialog) {
+          closeDialog();
+        }
+        router.refresh();
       } else {
         toast.error(response.message);
       }
-    });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleCancel = () => {
+    if (closeDialog) {
+      closeDialog();
+      return;
+    }
+    router.back();
   };
 
   return (
@@ -72,18 +85,18 @@ export default function CreateEventRequestForm({
           <div className='flex justify-between'>
             <Button
               type='button'
-              onClick={closeDialog}
+              onClick={handleCancel}
               variant='ghost'
               className='text-destructive'
-              disabled={isPending}
+              disabled={isSubmitting}
             >
               <X /> Annulla
             </Button>
             <Button
               type='submit'
-              disabled={isPending}
+              disabled={isSubmitting}
             >
-              {isPending ? 'Creazione evento...' : 'Crea evento'}
+              {isSubmitting ? 'Creazione evento...' : 'Crea evento'}
             </Button>
           </div>
         </form>
