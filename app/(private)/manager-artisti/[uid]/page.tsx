@@ -9,8 +9,6 @@ import { Badge } from '@/components/ui/badge';
 import UpdateButton from './_components/update/UpdateButton';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import ToggleBlockButton from '../../_components/ToggleBlockButton';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Ellipsis } from 'lucide-react';
 import { toZonedTime } from 'date-fns-tz';
 import { AVATAR_FALLBACK, TIME_ZONE } from '@/lib/constants';
 import { getLanguagesCached } from '@/lib/cache/languages';
@@ -86,35 +84,6 @@ export default async function ArtistManagerDetailPage({ params }: ArtistManagerD
     <div className='max-w-full overflow-x-hidden'>
       <div className='flex justify-between items-center'>
         <BackButton />
-
-        <Popover>
-          <PopoverTrigger className='lg:hidden'>
-            <Ellipsis />
-          </PopoverTrigger>
-          <PopoverContent className='w-48 flex flex-col justify-start lg:hidden'>
-            <UpdateButton
-              userData={userData}
-              languages={languages}
-              countries={countries}
-            />
-            <ToggleBlockButton
-              userId={userData.id}
-              userInitialStatus={userData.status}
-            />
-          </PopoverContent>
-        </Popover>
-
-        <div className='hidden lg:flex items-center gap-4'>
-          <ToggleBlockButton
-            userId={userData.id}
-            userInitialStatus={userData.status}
-          />
-          <UpdateButton
-            userData={userData}
-            languages={languages}
-            countries={countries}
-          />
-        </div>
       </div>
 
       <div className='grid lg:grid-cols-[60%_auto] gap-6 mb-6'>
@@ -169,6 +138,48 @@ export default async function ArtistManagerDetailPage({ params }: ArtistManagerD
           </div>
         </section>
 
+        <section className='bg-white py-6 px-6 rounded-2xl'>
+          <div className='text-lg font-semibold mb-4'>Azioni rapide</div>
+          <div className='flex flex-wrap gap-2'>
+            <CreateEventButton
+              userRole={user.role}
+              artists={artists}
+              venues={venues}
+              moCoordinators={moCoordinators}
+              buttonLabel='Crea evento'
+              buttonVariant='outline'
+              buttonSize='sm'
+            />
+            <CreateArtistButton
+              userRole={user.role}
+              userProfileId={profileId as number}
+              languages={languages}
+              countries={countries}
+              zones={zones}
+              artistManagers={artistManagers}
+              buttonLabel='Crea artista'
+              buttonVariant='outline'
+              buttonSize='sm'
+            />
+            <ManageArtistsButton
+              managerProfileId={userData.profileId}
+              artists={artists}
+              initialArtistIds={userData.artists.map((artist) => artist.id)}
+            />
+            <UpdateButton
+              userData={userData}
+              languages={languages}
+              countries={countries}
+            />
+            <ToggleBlockButton
+              userId={userData.id}
+              userInitialStatus={userData.status}
+            />
+          </div>
+        </section>
+      </div>
+
+      <div className='mb-6'>
         <NotesSection
           isArtist={false}
           initialNotes={initialNotesData.data || []}
@@ -176,46 +187,6 @@ export default async function ArtistManagerDetailPage({ params }: ArtistManagerD
           receiverProfileId={userData.profileId}
         />
       </div>
-
-      <section className='bg-white py-6 px-6 rounded-2xl mb-6'>
-        <div className='text-lg font-semibold mb-4'>Azioni rapide</div>
-        <div className='flex flex-wrap gap-2'>
-          <CreateEventButton
-            userRole={user.role}
-            artists={artists}
-            venues={venues}
-            moCoordinators={moCoordinators}
-            buttonLabel='Crea evento'
-            buttonVariant='outline'
-            buttonSize='sm'
-          />
-          <CreateArtistButton
-            userRole={user.role}
-            userProfileId={profileId as number}
-            languages={languages}
-            countries={countries}
-            zones={zones}
-            artistManagers={artistManagers}
-            buttonLabel='Crea artista'
-            buttonVariant='outline'
-            buttonSize='sm'
-          />
-          <ManageArtistsButton
-            managerProfileId={userData.profileId}
-            artists={artists}
-            initialArtistIds={userData.artists.map((artist) => artist.id)}
-          />
-          <UpdateButton
-            userData={userData}
-            languages={languages}
-            countries={countries}
-          />
-          <ToggleBlockButton
-            userId={userData.id}
-            userInitialStatus={userData.status}
-          />
-        </div>
-      </section>
 
       <Tabs defaultValue='a'>
         <div className='flex justify-between items-center mb-2 overflow-hidden'>

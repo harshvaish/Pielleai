@@ -11,8 +11,6 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { getArtistNotes } from '@/lib/data/notes/get-artist-notes';
 import ToggleArtistBlockButton from './_components/ToggleArtistBlockButton';
 import EditArtistButton from './_components/update/EditArtistButton';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Ellipsis } from 'lucide-react';
 import { getLanguagesCached } from '@/lib/cache/languages';
 import { getCountriesCached } from '@/lib/cache/countries';
 import { getZonesCached } from '@/lib/cache/zones';
@@ -108,45 +106,6 @@ export default async function ArtistDetailPage({ params, searchParams }: ArtistD
     <div className='max-w-full overflow-x-hidden'>
       <div className='flex justify-between items-center'>
         <BackButton />
-
-        {hasRole(user, ['admin', 'artist-manager']) && (
-          <>
-            <Popover>
-              <PopoverTrigger className='lg:hidden'>
-                <Ellipsis />
-              </PopoverTrigger>
-              <PopoverContent className='w-48 flex flex-col justify-start lg:hidden'>
-                <EditArtistButton
-                  userRole={user.role}
-                  userData={userData}
-                  languages={languages}
-                  countries={countries}
-                  zones={zones}
-                  artistManagers={artistManagers}
-                />
-                <ToggleArtistBlockButton
-                  artistId={userData.id}
-                  initialStatus={userData.status}
-                />
-              </PopoverContent>
-            </Popover>
-
-            <div className='hidden lg:flex items-center gap-4'>
-              <ToggleArtistBlockButton
-                artistId={userData.id}
-                initialStatus={userData.status}
-              />
-              <EditArtistButton
-                userRole={user.role}
-                userData={userData}
-                languages={languages}
-                countries={countries}
-                zones={zones}
-                artistManagers={artistManagers}
-              />
-            </div>
-          </>
-        )}
       </div>
 
       <div className={cn('mb-6', isAdmin && 'grid lg:grid-cols-[60%_auto] gap-6 ')}>
@@ -215,20 +174,9 @@ export default async function ArtistDetailPage({ params, searchParams }: ArtistD
         </section>
 
         {isAdmin && (
-          <NotesSection
-            isArtist={true}
-            initialNotes={initialNotesData}
-            writerId={user.id}
-            receiverProfileId={userData.id}
-          />
-        )}
-      </div>
-
-      {hasRole(user, ['admin', 'artist-manager']) && (
-        <section className='bg-white py-6 px-6 rounded-2xl mb-6'>
-          <div className='text-lg font-semibold mb-4'>Azioni rapide</div>
-          <div className='flex flex-wrap gap-2'>
-            {isAdmin && (
+          <section className='bg-white py-6 px-6 rounded-2xl'>
+            <div className='text-lg font-semibold mb-4'>Azioni rapide</div>
+            <div className='flex flex-wrap gap-2'>
               <CreateEventButton
                 userRole={user.role}
                 artists={artists}
@@ -238,8 +186,6 @@ export default async function ArtistDetailPage({ params, searchParams }: ArtistD
                 buttonVariant='outline'
                 buttonSize='sm'
               />
-            )}
-            {isAdmin && (
               <CreateArtistManagerButton
                 languages={languages}
                 countries={countries}
@@ -247,7 +193,43 @@ export default async function ArtistDetailPage({ params, searchParams }: ArtistD
                 buttonVariant='outline'
                 buttonSize='sm'
               />
-            )}
+              <ManageArtistManagersButton
+                artistId={userData.id}
+                artistManagers={artistManagers}
+                initialManagerIds={userData.managers.map((manager) => manager.profileId)}
+              />
+              <EditArtistButton
+                userRole={user.role}
+                userData={userData}
+                languages={languages}
+                countries={countries}
+                zones={zones}
+                artistManagers={artistManagers}
+              />
+              <ToggleArtistBlockButton
+                artistId={userData.id}
+                initialStatus={userData.status}
+              />
+            </div>
+          </section>
+        )}
+      </div>
+
+      {isAdmin && (
+        <div className='mb-6'>
+          <NotesSection
+            isArtist={true}
+            initialNotes={initialNotesData}
+            writerId={user.id}
+            receiverProfileId={userData.id}
+          />
+        </div>
+      )}
+
+      {!isAdmin && hasRole(user, ['admin', 'artist-manager']) && (
+        <section className='bg-white py-6 px-6 rounded-2xl mb-6'>
+          <div className='text-lg font-semibold mb-4'>Azioni rapide</div>
+          <div className='flex flex-wrap gap-2'>
             <ManageArtistManagersButton
               artistId={userData.id}
               artistManagers={artistManagers}
