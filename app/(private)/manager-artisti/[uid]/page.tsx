@@ -1,16 +1,14 @@
 import BackButton from '@/app/_components/BackButton';
 import { Separator } from '@/components/ui/separator';
 import { format } from 'date-fns';
-import Image from 'next/image';
 import { notFound, redirect } from 'next/navigation';
 import { getProfileNotes } from '@/lib/data/notes/get-profile-notes';
-import { cn, hasRole, resolveNextPath } from '@/lib/utils';
-import { Badge } from '@/components/ui/badge';
+import { hasRole, resolveNextPath } from '@/lib/utils';
 import UpdateButton from './_components/update/UpdateButton';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import ToggleBlockButton from '../../_components/ToggleBlockButton';
 import { toZonedTime } from 'date-fns-tz';
-import { AVATAR_FALLBACK, TIME_ZONE } from '@/lib/constants';
+import { TIME_ZONE } from '@/lib/constants';
 import { getLanguagesCached } from '@/lib/cache/languages';
 import { getCountriesCached } from '@/lib/cache/countries';
 import { getArtistManagerCached } from '@/lib/cache/artist-managers';
@@ -18,7 +16,7 @@ import ManagedArtistsTab from './_components/Tabs/ManagedArtistsTab';
 import PersonalDataTab from './_components/Tabs/PersonalDataTab';
 import getSession from '@/lib/data/auth/get-session';
 import { getUserProfileIdCached } from '@/lib/cache/users';
-import StatusBadge from '../../_components/Badges/StatusBadge';
+import ArtistManagerHeader from './_components/ArtistManagerHeader';
 import NotesSection from '../../_components/Notes/NotesSection';
 import BillingDataTab from '../../_components/Tabs/BillingDataTab';
 import CreateEventButton from '../../eventi/_components/create/CreateButton';
@@ -78,8 +76,6 @@ export default async function ArtistManagerDetailPage({ params }: ArtistManagerD
 
   const createdAtZoned = format(toZonedTime(userData.createdAt, TIME_ZONE), 'dd/MM/yyyy, HH:mm');
   const updatedAtZoned = format(toZonedTime(userData.updatedAt, TIME_ZONE), 'dd/MM/yyyy, HH:mm');
-  const isDisabled = userData.status === 'disabled';
-
   return (
     <div className='max-w-full overflow-x-hidden'>
       <div className='flex justify-between items-center'>
@@ -90,28 +86,13 @@ export default async function ArtistManagerDetailPage({ params }: ArtistManagerD
         {/* main details section */}
         <section className='bg-white py-8 px-6 rounded-2xl overflow-x-hidden'>
           <div className='flex flex-col lg:flex-row lg:justify-between gap-4 lg:gap-2'>
-            <div className='flex items-center gap-4'>
-              <Image
-                src={userData.avatarUrl || AVATAR_FALLBACK}
-                alt='Icona profilo manager artista'
-                width={60}
-                height={60}
-                className={cn(
-                  'shrink-0 w-[60px] h-[60px] rounded-full object-cover',
-                  isDisabled ? 'grayscale' : '',
-                )}
-              />
-
-              <div className='flex flex-col gap-1.5'>
-                <div className='text-2xl font-bold'>
-                  {userData.name} {userData.surname}
-                </div>
-                <div className='flex items-center gap-2'>
-                  <Badge variant={isDisabled ? 'disabled' : 'emerald'}>Manager artista</Badge>
-                  {isDisabled && <StatusBadge status='disabled' />}
-                </div>
-              </div>
-            </div>
+            <ArtistManagerHeader
+              userId={userData.id}
+              name={userData.name}
+              surname={userData.surname}
+              avatarUrl={userData.avatarUrl}
+              initialStatus={userData.status}
+            />
 
             <div className='max-w-full flex flex-col lg:items-end gap-0.5 overflow-x-auto'>
               <div className='flex flex-col lg:flex-row text-sm font-semibold text-zinc-500 whitespace-nowrap'>

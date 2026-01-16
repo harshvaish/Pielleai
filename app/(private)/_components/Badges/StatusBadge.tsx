@@ -1,3 +1,5 @@
+'use client';
+
 type StatusBadgeVariant = 'active' | 'disabled' | 'new';
 
 const STATUS_STYLES: Record<

@@ -118,22 +118,27 @@ export default async function FinanzePage({ searchParams }: FinanzePageProps) {
           <StatusFilterButton
             status='proposed'
             label='Proposto'
+            singleSelect
           />
           <StatusFilterButton
             status='pre-confirmed'
             label='Pre confermato'
+            singleSelect
           />
           <StatusFilterButton
             status='confirmed'
             label='Confermato'
+            singleSelect
           />
           <StatusFilterButton
             status='rejected'
             label='Rifiutato'
+            singleSelect
           />
           <StatusFilterButton
             status='ended'
             label='Finito'
+            singleSelect
           />
         </div>
         <div className='flex items-center gap-2'>
