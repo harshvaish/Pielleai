@@ -17,6 +17,8 @@ import { notFound, redirect } from 'next/navigation';
 import { format } from 'date-fns';
 import { it } from 'date-fns/locale';
 import EventStatusBadge from '../_components/Badges/EventStatusBadge';
+import ArtistsBadge from '../_components/Badges/ArtistsBadge';
+import VenuesBadge from '../_components/Badges/VenuesBadge';
 
 export const dynamic = 'force-dynamic';
 
@@ -181,8 +183,6 @@ export default async function FinanzePage({ searchParams }: FinanzePageProps) {
                 const eventDate = format(event.availability.startDate, 'dd/MM/yyyy', {
                   locale: it,
                 });
-                const artistLabel =
-                  event.artist.stageName || `${event.artist.name} ${event.artist.surname}`;
                 const bookingAmount = computeBookingAmount(
                   event.moCost,
                   event.bookingPercentage,
@@ -197,8 +197,18 @@ export default async function FinanzePage({ searchParams }: FinanzePageProps) {
                 return (
                   <TableRow key={event.id}>
                     <TableCell className='whitespace-nowrap'>{eventDate}</TableCell>
-                    <TableCell className='whitespace-nowrap'>{artistLabel}</TableCell>
-                    <TableCell className='whitespace-nowrap'>{event.venue.name}</TableCell>
+                    <TableCell className='whitespace-nowrap'>
+                      <ArtistsBadge
+                        artists={[event.artist]}
+                        userRole={user.role}
+                      />
+                    </TableCell>
+                    <TableCell className='whitespace-nowrap'>
+                      <VenuesBadge
+                        userRole={user.role}
+                        venues={[event.venue]}
+                      />
+                    </TableCell>
                     <TableCell>
                       <EventStatusBadge
                         status={event.status}
