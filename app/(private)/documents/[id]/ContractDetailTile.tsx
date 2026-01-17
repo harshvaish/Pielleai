@@ -15,7 +15,7 @@ import GenerateButton from "../_components/GenerateButton";
 import DocuSignButton from "../_components/DocuSignButton";
 import ViewContractButton from "../_components/ViewContractButton";
 import ContractStatusButton from "../_components/ContractStatusButton";
-import { GREEN_TICK_ICON } from "@/lib/constants";
+import { AVATAR_FALLBACK, GREEN_TICK_ICON } from "@/lib/constants";
 import UplodPdf from "../_components/UploadPdf";
 import ResendDocuSignButton from "./ResendDocuSignButton";
 
@@ -181,7 +181,7 @@ export default function ContractDetailTile({ payload }: Props) {
                 <div className="flex flex-col gap-2">
                   <div className="flex items-center gap-3">
                     <img
-                      src={payload?.artist?.avatarUrl}
+                      src={payload?.artist?.avatarUrl || AVATAR_FALLBACK}
                       alt="Avatar"
                       className="size-12 rounded-full object-cover bg-zinc-200"
                     />
