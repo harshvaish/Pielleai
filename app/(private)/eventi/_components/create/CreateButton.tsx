@@ -21,6 +21,7 @@ type CreateButtonProps = {
   artists?: ArtistSelectData[];
   venues?: VenueSelectData[];
   moCoordinators?: MoCoordinator[];
+  forceLink?: boolean;
   buttonLabel?: string;
   buttonVariant?: VariantProps<typeof buttonVariants>['variant'];
   buttonSize?: VariantProps<typeof buttonVariants>['size'];
@@ -31,6 +32,7 @@ export default function CreateButton({
   artists,
   venues,
   moCoordinators,
+  forceLink = false,
   buttonLabel = 'Aggiungi',
   buttonVariant,
   buttonSize = 'sm',
@@ -38,6 +40,7 @@ export default function CreateButton({
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   if (
+    forceLink ||
     !userRole ||
     !artists ||
     !venues ||

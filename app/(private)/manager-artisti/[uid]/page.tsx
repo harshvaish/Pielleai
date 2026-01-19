@@ -127,6 +127,7 @@ export default async function ArtistManagerDetailPage({ params }: ArtistManagerD
               artists={artists}
               venues={venues}
               moCoordinators={moCoordinators}
+              forceLink={true}
               buttonLabel='Crea evento'
               buttonVariant='outline'
               buttonSize='sm'

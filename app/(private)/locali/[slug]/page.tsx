@@ -195,6 +195,7 @@ export default async function VenueDetailPage({ params }: VenueDetailPageProps) 
                 artists={artists}
                 venues={venuesList}
                 moCoordinators={moCoordinators}
+                forceLink={true}
                 buttonLabel='Crea evento'
                 buttonVariant='outline'
                 buttonSize='sm'

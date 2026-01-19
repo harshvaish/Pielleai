@@ -182,6 +182,7 @@ export default async function ArtistDetailPage({ params, searchParams }: ArtistD
                 artists={artists}
                 venues={venues}
                 moCoordinators={moCoordinators}
+                forceLink={true}
                 buttonLabel='Crea evento'
                 buttonVariant='outline'
                 buttonSize='sm'
