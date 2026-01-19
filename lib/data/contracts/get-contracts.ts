@@ -315,6 +315,42 @@ export async function getContracts(
               changedByUserId: null,
               note: 'File firmato caricato da DocuSign (sync).',
             });
+
+            // Activate payment flow when contract is signed
+            const eventResults = await tx
+              .select({
+                paymentStatus: events.paymentStatus,
+                totalCost: events.totalCost,
+                startDate: artistAvailabilities.startDate,
+              })
+              .from(events)
+              .innerJoin(artistAvailabilities, eq(events.availabilityId, artistAvailabilities.id))
+              .where(eq(events.id, item.eventId));
+
+            const eventData = eventResults[0];
+
+            if (eventData?.paymentStatus === 'pending') {
+              const now = new Date().toISOString();
+              const totalCost = eventData.totalCost ? parseFloat(eventData.totalCost) : 0;
+              const upfrontAmount = (totalCost * 0.5).toFixed(2);
+              const finalBalanceAmount = (totalCost * 0.5).toFixed(2);
+
+              let finalBalanceDeadline = null;
+              if (eventData.startDate) {
+                const deadline = new Date(eventData.startDate);
+                deadline.setDate(deadline.getDate() - 2);
+                finalBalanceDeadline = deadline.toISOString();
+              }
+
+              await tx.update(events).set({
+                paymentStatus: 'upfront-required',
+                upfrontPaymentAmount: upfrontAmount,
+                finalBalanceAmount: finalBalanceAmount,
+                finalBalanceDeadline: finalBalanceDeadline,
+                paymentPendingAt: now,
+                upfrontRequiredAt: now,
+              }).where(eq(events.id, item.eventId));
+            }
           });
 
           // Mutate in-memory data to reflect the change for this response

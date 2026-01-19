@@ -10,6 +10,7 @@ import {
   artists,
   venues,
   events,
+  artistAvailabilities,
 } from '../../../../drizzle/schema';
 import { users } from '@/lib/database/schema';
 import getSession from '@/lib/data/auth/get-session';
@@ -87,6 +88,44 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
       if (Object.keys(updateValues).length > 0) {
         await tx.update(contracts).set(updateValues).where(eq(contracts.id, contractId));
+
+        // If status changed to 'signed', activate payment flow
+        if (status === 'signed' && existing.status !== 'signed') {
+          const eventResults = await tx
+            .select({
+              paymentStatus: events.paymentStatus,
+              totalCost: events.totalCost,
+              startDate: artistAvailabilities.startDate,
+            })
+            .from(events)
+            .innerJoin(artistAvailabilities, eq(events.availabilityId, artistAvailabilities.id))
+            .where(eq(events.id, existing.eventId));
+
+          const eventData = eventResults[0];
+
+          if (eventData?.paymentStatus === 'pending') {
+            const now = new Date().toISOString();
+            const totalCost = eventData.totalCost ? parseFloat(eventData.totalCost) : 0;
+            const upfrontAmount = (totalCost * 0.5).toFixed(2);
+            const finalBalanceAmount = (totalCost * 0.5).toFixed(2);
+
+            let finalBalanceDeadline = null;
+            if (eventData.startDate) {
+              const deadline = new Date(eventData.startDate);
+              deadline.setDate(deadline.getDate() - 2);
+              finalBalanceDeadline = deadline.toISOString();
+            }
+
+            await tx.update(events).set({
+              paymentStatus: 'upfront-required',
+              upfrontPaymentAmount: upfrontAmount,
+              finalBalanceAmount: finalBalanceAmount,
+              finalBalanceDeadline: finalBalanceDeadline,
+              paymentPendingAt: now,
+              upfrontRequiredAt: now,
+            }).where(eq(events.id, existing.eventId));
+          }
+        }
       }
 
       // 3️⃣ Replace CCs if provided

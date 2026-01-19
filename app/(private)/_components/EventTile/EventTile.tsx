@@ -8,7 +8,7 @@ import UpdateEventStatusButton from './UpdateEventStatusButton';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import DeleteEventButton from './DeleteEventButton';
 import UpdateButton from '../../eventi/_components/update/UpdateButton';
-import { CalendarDays, Check, ChevronDown, Clock, Ellipsis, X } from 'lucide-react';
+import { CalendarDays, Check, ChevronDown, Clock, Ellipsis, Eye, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Separator } from '@/components/ui/separator';
 import EventStatusBadge from '../Badges/EventStatusBadge';
@@ -16,6 +16,8 @@ import ArtistsBadge from '../Badges/ArtistsBadge';
 import VenuesBadge from '../Badges/VenuesBadge';
 import ManagersBadge from '../Badges/ManagersBadge';
 import EventConflictBadge from '../Badges/EventConflictBadge';
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
 
 type EventTileProps = {
   userRole: UserRole;
@@ -178,6 +180,18 @@ export default function EventTile({
         <Separator className='my-4' />
 
         <div className={cn('grid gap-2', isVenueManager ? '' : 'grid-cols-2')}>
+          <Button
+            asChild
+            variant='outline'
+            size='sm'
+            className='w-full'
+          >
+            <Link href={`/eventi/${event.id}`}>
+              <Eye className='size-4' />
+              Vedi Dettagli
+            </Link>
+          </Button>
+
           {isAdmin && event.status === 'proposed' && (
             <UpdateEventStatusButton
               event={event}
@@ -316,6 +330,17 @@ export default function EventTile({
         </div>
 
         <div className='flex items-center gap-2'>
+          <Button
+            asChild
+            variant='outline'
+            size='sm'
+          >
+            <Link href={`/eventi/${event.id}`}>
+              <Eye className='size-4' />
+              Vedi Dettagli
+            </Link>
+          </Button>
+
           {isAdmin && event.status === 'proposed' && (
             <UpdateEventStatusButton
               event={event}
