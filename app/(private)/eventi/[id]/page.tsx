@@ -74,6 +74,7 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
       finalBalanceAmount: events.finalBalanceAmount,
       finalBalanceMethod: events.finalBalanceMethod,
       finalBalanceDate: events.finalBalanceDate,
+      finalBalanceReference: events.finalBalanceReference,
       finalBalanceDeadline: events.finalBalanceDeadline,
       balancePaidAt: events.balancePaidAt,
       fullyPaidAt: events.fullyPaidAt,
