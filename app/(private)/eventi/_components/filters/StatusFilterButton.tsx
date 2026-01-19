@@ -8,9 +8,14 @@ import { useTransition } from 'react';
 type StatusFilterButtonProps = {
   status: EventStatus;
   label: string;
+  singleSelect?: boolean;
 };
 
-export default function StatusFilterButton({ status, label }: StatusFilterButtonProps) {
+export default function StatusFilterButton({
+  status,
+  label,
+  singleSelect = false,
+}: StatusFilterButtonProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
@@ -26,6 +31,9 @@ export default function StatusFilterButton({ status, label }: StatusFilterButton
     if (isActive) {
       // Remove the clicked status
       newStatuses = selectedStatuses.filter((s) => s !== status);
+    } else if (singleSelect) {
+      // Replace previous selection when behaving like tabs
+      newStatuses = [status];
     } else {
       // Add the clicked status
       newStatuses = [...selectedStatuses, status];

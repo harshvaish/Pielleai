@@ -13,7 +13,7 @@ import { eventFormSchema } from '@/lib/validation/event-form-schema';
 import type { EventFormSchema } from '@/lib/validation/event-form-schema';
 import { updateEvent } from '@/lib/server-actions/events/update-event';
 import EventForm from '../form/EventForm';
-import { useTransition } from 'react';
+import { useState } from 'react';
 
 type UpdateEventFormProps = {
   event: DomainEvent;
@@ -21,7 +21,7 @@ type UpdateEventFormProps = {
   venues: VenueSelectData[];
   moCoordinators: MoCoordinator[];
   userRole: UserRole;
-  closeDialog: () => void;
+  closeDialog?: () => void;
 };
 
 type FormContractStatus = EventFormSchema['contractStatus'];
@@ -53,7 +53,7 @@ export default function UpdateEventForm({
   closeDialog,
 }: UpdateEventFormProps) {
   const router = useRouter();
-  const [isPending, startTransition] = useTransition();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const ALL_CC_EMAILS = [
     "Tour Manager",
     "Admin",
@@ -69,6 +69,16 @@ export default function UpdateEventForm({
       contractCcs?.includes(email) ?? false
     );
   
+  const toDate = (value: Date | string | null | undefined): Date | undefined => {
+    if (!value) return undefined;
+    const parsed = value instanceof Date ? value : new Date(value);
+    return Number.isNaN(parsed.getTime()) ? undefined : parsed;
+  };
+
+  const availabilityStart = toDate(event.availability.startDate);
+  const availabilityEnd = toDate(event.availability.endDate);
+  const paymentDate = toDate(event.paymentDate ?? null);
+
   const methods = useForm({
     resolver: zodResolver(eventFormSchema),
     defaultValues: {
@@ -79,8 +89,8 @@ export default function UpdateEventForm({
       artistManagerProfileId: event.artistManager?.profileId || undefined,
       availability: {
         id: event.availability.id || undefined,
-        startDate: event.availability.startDate || undefined,
-        endDate: event.availability.endDate || undefined,
+        startDate: availabilityStart,
+        endDate: availabilityEnd,
       },
       venueId: event.venue.id,
       venueName: event.venue.name || '',
@@ -136,10 +146,10 @@ export default function UpdateEventForm({
       bordereau: event.bordereau ?? false,
       eventId: event.id,
       eventType: event.eventType ?? '',
-      eventDate: format(event.availability.startDate, 'yyyy-MM-dd'),
+      eventDate: availabilityStart ? format(availabilityStart, 'yyyy-MM-dd') : '',
       ccEmails: buildDefaultCcBooleans(event.contract?.ccs),
-      eventStartTime : format(event.availability.startDate, 'HH:mm', { locale: it }),
-      eventEndTime : format(event.availability.endDate, 'HH:mm', { locale: it }),
+      eventStartTime : availabilityStart ? format(availabilityStart, 'HH:mm', { locale: it }) : '',
+      eventEndTime : availabilityEnd ? format(availabilityEnd, 'HH:mm', { locale: it }) : '',
       contractDocument:
       event.contract?.fileUrl && event.contract?.fileName
         ? {
@@ -148,25 +158,37 @@ export default function UpdateEventForm({
           }
         : undefined,
 
-      paymentDate: event.paymentDate
-      ? format(event.paymentDate, "yyyy-MM-dd")
-      : "",
+      paymentDate: paymentDate ? format(paymentDate, "yyyy-MM-dd") : "",
           upfrontPayment: parseFloat(event.artistUpfrontCost || '') || undefined,
     },
   });
   const { handleSubmit } = methods;
   const onSubmit = async (data: EventFormSchema) => {
     console.log("inside submit")
-    startTransition(async () => {
+    setIsSubmitting(true);
+    try {
       const response = await updateEvent(event.id, data);
 
       if (response.success) {
         toast.success('Evento aggiornato!');
-        startTransition(async () => router.refresh());
+        if (closeDialog) {
+          closeDialog();
+        }
+        router.refresh();
       } else {
         toast.error(response.message);
       }
-    });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleCancel = () => {
+    if (closeDialog) {
+      closeDialog();
+      return;
+    }
+    router.back();
   };
   return (
     <section className='max-h-full overflow-y-auto'>
@@ -191,18 +213,18 @@ export default function UpdateEventForm({
           <div className='flex justify-between'>
             <Button
               type='button'
-              onClick={closeDialog}
+              onClick={handleCancel}
               variant='ghost'
               className='text-destructive'
-              disabled={isPending}
+              disabled={isSubmitting}
             >
               <X /> Annulla
             </Button>
             <Button
               type='submit'
-              disabled={isPending}
+              disabled={isSubmitting}
             >
-              {isPending ? 'Salvataggio...' : 'Salva'}
+              {isSubmitting ? 'Salvataggio...' : 'Salva'}
             </Button>
           </div>
         </form>

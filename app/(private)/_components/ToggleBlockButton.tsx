@@ -10,12 +10,19 @@ import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import { toast } from 'sonner';
 
-export default function ToggleBlockButton({ userId, userInitialStatus }: { userId: string; userInitialStatus: UserStatus }) {
+export default function ToggleBlockButton({
+  userId,
+  userInitialStatus,
+}: {
+  userId: string;
+  userInitialStatus: UserStatus;
+}) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
+  const [status, setStatus] = useState<UserStatus>(userInitialStatus);
   const router = useRouter();
 
-  const isActive = userInitialStatus === 'active';
+  const isActive = status === 'active';
   const title = isActive ? "Vuoi disattivare l'utente?" : "Vuoi riattivare l'utente?";
   const description = isActive ? "Sei sicuro di voler disattivare questo utente? L'utente non potrà più accedere." : "Sei sicuro di voler riattivare questo utente? L'utente potrà accedere di nuovo.";
   const confirmLabel = isActive ? 'Disattiva' : 'Riattiva';
@@ -30,6 +37,13 @@ export default function ToggleBlockButton({ userId, userInitialStatus }: { userI
         toast.error(response.message || 'Aggiornamento utente non riuscito.');
         return;
       }
+      setStatus(newStatus);
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(
+          new CustomEvent('user-status-change', { detail: { userId, status: newStatus } }),
+        );
+      }
+      toast.success(isActive ? 'Utente disattivato.' : 'Utente riattivato.');
       router.refresh();
     });
   };

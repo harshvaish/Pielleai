@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import {
   Dialog,
   DialogContent,
@@ -7,18 +8,23 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
+import { VariantProps } from 'class-variance-authority';
 import { Plus } from 'lucide-react';
-import { ArtistSelectData, MoCoordinator, UserRole, VenueSelectData } from '@/lib/types';
 import { useState } from 'react';
+import { ArtistSelectData, MoCoordinator, UserRole, VenueSelectData } from '@/lib/types';
 import CreateEventForm from './CreateEventForm';
 import CreateEventRequestForm from './CreateEventRequestForm';
 
 type CreateButtonProps = {
-  userRole: UserRole;
-  artists: ArtistSelectData[];
-  venues: VenueSelectData[];
-  moCoordinators: MoCoordinator[];
+  userRole?: UserRole;
+  artists?: ArtistSelectData[];
+  venues?: VenueSelectData[];
+  moCoordinators?: MoCoordinator[];
+  forceLink?: boolean;
+  buttonLabel?: string;
+  buttonVariant?: VariantProps<typeof buttonVariants>['variant'];
+  buttonSize?: VariantProps<typeof buttonVariants>['size'];
 };
 
 export default function CreateButton({
@@ -26,21 +32,47 @@ export default function CreateButton({
   artists,
   venues,
   moCoordinators,
+  forceLink = false,
+  buttonLabel = 'Aggiungi',
+  buttonVariant,
+  buttonSize = 'sm',
 }: CreateButtonProps) {
-  const [open, setOpen] = useState<boolean>(false);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  const isAdmin = userRole === 'admin';
+  if (
+    forceLink ||
+    !userRole ||
+    !artists ||
+    !venues ||
+    (userRole === 'admin' && !moCoordinators)
+  ) {
+    return (
+      <Button
+        asChild
+        size={buttonSize}
+        variant={buttonVariant}
+      >
+        <Link href='/eventi/crea'>
+          <Plus />
+          {buttonLabel}
+        </Link>
+      </Button>
+    );
+  }
 
   return (
     <Dialog
-      open={open}
-      onOpenChange={setOpen}
+      open={isDialogOpen}
+      onOpenChange={setIsDialogOpen}
       modal
     >
       <DialogTrigger asChild>
-        <Button size='sm'>
+        <Button
+          size={buttonSize}
+          variant={buttonVariant}
+        >
           <Plus />
-          Aggiungi
+          {buttonLabel}
         </Button>
       </DialogTrigger>
       <DialogContent
@@ -51,23 +83,23 @@ export default function CreateButton({
       >
         <DialogTitle className='hidden'>Form per creazione nuovo evento</DialogTitle>
         <DialogDescription className='hidden'>
-          Inserisci tutti i dati necessari alla creazione dell&apos;evento.
+          Inserisci tutti i dati necessari alla creazione dell&#39;evento.
         </DialogDescription>
 
-        {isAdmin ? (
+        {userRole === 'admin' ? (
           <CreateEventForm
-            artists={artists}
-            venues={venues}
-            moCoordinators={moCoordinators}
+            artists={artists!}
+            venues={venues!}
+            moCoordinators={moCoordinators!}
             userRole={userRole}
-            closeDialog={() => setOpen(false)}
+            closeDialog={() => setIsDialogOpen(false)}
           />
         ) : (
           <CreateEventRequestForm
-            artists={artists}
-            venues={venues}
+            artists={artists!}
+            venues={venues!}
             userRole={userRole}
-            closeDialog={() => setOpen(false)}
+            closeDialog={() => setIsDialogOpen(false)}
           />
         )}
       </DialogContent>

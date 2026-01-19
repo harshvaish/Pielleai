@@ -122,8 +122,9 @@ export const sdiRecipientCodeValidation = z
   .trim();
 
 export const userIdValidation = z
-  .string('Campo malformato')
-  .regex(/^[a-zA-Z0-9]+$/, 'Può contenere solo lettere e numeri.');
+  .coerce.string()
+  .trim()
+  .min(1, 'Campo obbligatorio.');
 
 export const idValidation = z
   .number("Seleziona un'opzione valida.")

@@ -83,7 +83,6 @@ export default async function DashboardPage() {
                 userRole={user.role}
                 event={event}
                 artists={artists}
-                moCoordinators={moCoordinators}
                 venues={venues}
               />
             ))}

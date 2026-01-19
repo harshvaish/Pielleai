@@ -97,10 +97,6 @@ export const updateEvent = async (
 
     if (!oldEvent) throw new AppError('Evento non trovato.');
 
-    if (['rejected', 'ended'].includes(oldEvent.status)) {
-      throw new AppError('Evento rifiutato o terminato, non puoi modificarlo.');
-    }
-
     if (!newAvailability.startDate || !newAvailability.endDate) {
       throw new AppError('Seleziona una data e un orario validi.');
     }
@@ -108,7 +104,7 @@ export const updateEvent = async (
     if (isBefore(newAvailability.endDate, newAvailability.startDate)) {
       throw new AppError("L'orario di fine deve essere successivo all'orario di inizio.");
     }
-    if (isBefore(newAvailability.startDate, now)) {
+    if (oldEvent.status !== 'ended' && isBefore(newAvailability.startDate, now)) {
       throw new AppError('Nuova disponibilità inserita già iniziata e quindi scaduta.');
     }
 

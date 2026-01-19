@@ -9,7 +9,6 @@ import { hasRole, resolveNextPath, splitCsv } from '@/lib/utils';
 import { getArtistsCached } from '@/lib/cache/artists';
 import { getArtistManagersCached } from '@/lib/cache/artist-managers';
 import { getVenuesCached } from '@/lib/cache/venues';
-import { getMoCoordinatorsCached } from '@/lib/cache/mo-coordinators';
 import { eventsFiltersSchema } from '@/lib/validation/filters/events-filters-schema';
 import { notFound, redirect } from 'next/navigation';
 import ExportButton from './_components/ExportButton';
@@ -71,28 +70,19 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
     notFound();
   }
 
-  const [{ data: events, totalPages }, artists, artistManagers, venues, moCoordinators] =
-    await Promise.all([
-      getEvents(user, filters),
-      getArtistsCached(isArtistManager ? profileId! : undefined),
-      isAdmin ? getArtistManagersCached() : Promise.resolve([]),
-      getVenuesCached(isVenueManager ? profileId! : undefined),
-      getMoCoordinatorsCached(),
-    ]);
+  const [{ data: events, totalPages }, artists, artistManagers, venues] = await Promise.all([
+    getEvents(user, filters),
+    getArtistsCached(isArtistManager ? profileId! : undefined),
+    isAdmin ? getArtistManagersCached() : Promise.resolve([]),
+    getVenuesCached(isVenueManager ? profileId! : undefined),
+  ]);
   return (
     <div className='h-full grid grid-rows-[min-content_min-content_1fr_min-content] gap-4'>
       <div className='flex justify-between items-center'>
         <h1 className='text-xl md:text-2xl font-bold'>Eventi</h1>
         <div className='flex items-center gap-2'>
           {isAdmin && <ExportButton filters={filters} />}
-          {(isAdmin || isVenueManager) && (
-            <CreateButton
-              userRole={user.role}
-              artists={artists}
-              venues={venues}
-              moCoordinators={moCoordinators}
-            />
-          )}
+          {(isAdmin || isVenueManager) && <CreateButton />}
         </div>
       </div>
 
@@ -142,7 +132,6 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
               event={event}
               artists={artists}
               venues={venues}
-              moCoordinators={moCoordinators}
             />
           ))}
         </div>

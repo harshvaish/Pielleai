@@ -10,8 +10,6 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import ToggleBlockButton from '../../_components/ToggleBlockButton';
 import UpdateButton from './_components/update/UpdateButton';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Ellipsis } from 'lucide-react';
 import { getLanguagesCached } from '@/lib/cache/languages';
 import { getCountriesCached } from '@/lib/cache/countries';
 import { getVenueManagerCached } from '@/lib/cache/venue-managers';
@@ -22,6 +20,13 @@ import { getUserProfileIdCached } from '@/lib/cache/users';
 import StatusBadge from '../../_components/Badges/StatusBadge';
 import NotesSection from '../../_components/Notes/NotesSection';
 import { AVATAR_FALLBACK, TIME_ZONE } from '@/lib/constants';
+import CreateEventButton from '../../eventi/_components/create/CreateButton';
+import CreateVenueButton from '../../locali/_components/create/CreateButton';
+import { getArtistsCached } from '@/lib/cache/artists';
+import { getVenuesCached } from '@/lib/cache/venues';
+import { getMoCoordinatorsCached } from '@/lib/cache/mo-coordinators';
+import { getVenueManagersCached } from '@/lib/cache/venue-managers';
+import ManageVenuesButton from './_components/ManageVenuesButton';
 
 type VenueManagerDetailPageProps = { params: Promise<{ uid: string }> };
 
@@ -45,11 +50,16 @@ export default async function VenueManagerDetailPage({ params }: VenueManagerDet
   const p = await params;
   const { uid } = p;
 
-  const [userData, languages, countries] = await Promise.all([
-    getVenueManagerCached(uid),
-    getLanguagesCached(),
-    getCountriesCached(),
-  ]);
+  const [userData, languages, countries, artists, venues, moCoordinators, venueManagers] =
+    await Promise.all([
+      getVenueManagerCached(uid),
+      getLanguagesCached(),
+      getCountriesCached(),
+      getArtistsCached(),
+      getVenuesCached(),
+      getMoCoordinatorsCached(),
+      getVenueManagersCached(),
+    ]);
 
   if (!userData) notFound();
 
@@ -65,35 +75,6 @@ export default async function VenueManagerDetailPage({ params }: VenueManagerDet
     <div className='max-w-full overflow-x-hidden'>
       <div className='flex justify-between items-center'>
         <BackButton />
-
-        <Popover>
-          <PopoverTrigger className='lg:hidden'>
-            <Ellipsis />
-          </PopoverTrigger>
-          <PopoverContent className='w-48 flex flex-col justify-start lg:hidden'>
-            <UpdateButton
-              userData={userData}
-              languages={languages}
-              countries={countries}
-            />
-            <ToggleBlockButton
-              userId={userData.id}
-              userInitialStatus={userData.status}
-            />
-          </PopoverContent>
-        </Popover>
-
-        <div className='hidden lg:flex items-center gap-4'>
-          <ToggleBlockButton
-            userId={userData.id}
-            userInitialStatus={userData.status}
-          />
-          <UpdateButton
-            userData={userData}
-            languages={languages}
-            countries={countries}
-          />
-        </div>
       </div>
 
       <div className='grid lg:grid-cols-[60%_auto] gap-6 mb-6'>
@@ -144,6 +125,47 @@ export default async function VenueManagerDetailPage({ params }: VenueManagerDet
           </div>
         </section>
 
+        <section className='bg-white py-6 px-6 rounded-2xl'>
+          <div className='text-lg font-semibold mb-4'>Azioni rapide</div>
+          <div className='flex flex-wrap gap-2'>
+            <CreateEventButton
+              userRole={user.role}
+              artists={artists}
+              venues={venues}
+              moCoordinators={moCoordinators}
+              forceLink={true}
+              buttonLabel='Crea evento'
+              buttonVariant='outline'
+              buttonSize='sm'
+            />
+            <CreateVenueButton
+              userRole={user.role}
+              userProfileId={profileId as number}
+              countries={countries}
+              venueManagers={venueManagers}
+              buttonLabel='Crea locale'
+              buttonVariant='outline'
+              buttonSize='sm'
+            />
+            <ManageVenuesButton
+              managerProfileId={userData.profileId}
+              venues={venues}
+              initialVenueIds={userData.venues.map((venue) => venue.id)}
+            />
+            <UpdateButton
+              userData={userData}
+              languages={languages}
+              countries={countries}
+            />
+            <ToggleBlockButton
+              userId={userData.id}
+              userInitialStatus={userData.status}
+            />
+          </div>
+        </section>
+      </div>
+
+      <div className='mb-6'>
         <NotesSection
           isArtist={false}
           initialNotes={initialNotesData.data || []}

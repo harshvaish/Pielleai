@@ -7,17 +7,21 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
 import { Country, UserRole, VenueManagerSelectData } from '@/lib/types';
 import { useState } from 'react';
 import CreateVenueForm from './CreateVenueForm';
+import { VariantProps } from 'class-variance-authority';
 
 type CreateButtonProps = {
   userRole: UserRole;
   userProfileId: number;
   countries: Country[];
   venueManagers: VenueManagerSelectData[];
+  buttonLabel?: string;
+  buttonVariant?: VariantProps<typeof buttonVariants>['variant'];
+  buttonSize?: VariantProps<typeof buttonVariants>['size'];
 };
 
 export default function CreateButton({
@@ -25,6 +29,9 @@ export default function CreateButton({
   userProfileId,
   countries,
   venueManagers,
+  buttonLabel = 'Aggiungi',
+  buttonVariant,
+  buttonSize = 'sm',
 }: CreateButtonProps) {
   const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
   return (
@@ -34,9 +41,12 @@ export default function CreateButton({
       modal
     >
       <DialogTrigger asChild>
-        <Button size='sm'>
+        <Button
+          size={buttonSize}
+          variant={buttonVariant}
+        >
           <Plus />
-          Aggiungi
+          {buttonLabel}
         </Button>
       </DialogTrigger>
       <DialogContent

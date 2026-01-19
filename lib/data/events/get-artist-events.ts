@@ -41,6 +41,7 @@ export async function getArtistEvents(
     let baseQuery = database
       .select({
         id: events.id,
+        title: events.title,
         status: events.status,
         eventType: events.eventType,
         startDate: artistAvailabilities.startDate,
