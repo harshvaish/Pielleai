@@ -145,7 +145,7 @@ export const createVenueManager = async (
           name: data.name ?? fallbackName,
           surname: data.surname ?? '',
           phone: data.phone ?? '',
-          birthDate: data.birthDate ?? null,
+          birthDate: data.birthDate || null,
           birthPlace: data.birthPlace?.trim() || placeholderText,
           gender: resolvedGender,
           address: data.address?.trim() || placeholderText,
