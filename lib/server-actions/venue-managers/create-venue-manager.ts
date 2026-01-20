@@ -15,10 +15,7 @@ import {
 } from '@/lib/database/schema';
 import { APIError } from 'better-auth/api';
 import { getBetterAuthErrorMessage } from '@/lib/utils';
-import {
-  venueManagerFormSchema,
-  VenueManagerFormSchema,
-} from '@/lib/validation/venue-manager-form-schema';
+import type { VenueManagerFormSchema } from '@/lib/validation/venue-manager-form-schema';
 import { AppError } from '@/lib/classes/AppError';
 import { revalidateTag } from 'next/cache';
 import getSession from '@/lib/data/auth/get-session';
@@ -43,27 +40,8 @@ export const createVenueManager = async (
       throw new AppError('Non sei autorizzato.');
     }
 
-    const sanitizeName = (value?: string | null) => {
-      if (typeof value !== 'string') return value;
-      return value.replace(/[^\p{L}\s'-]/gu, '').trim();
-    };
-
-    const validation = venueManagerFormSchema.safeParse({
-      ...data,
-      name: sanitizeName(data.name),
-      surname: sanitizeName(data.surname),
-    });
-
-    if (!validation.success) {
-      console.error('[createVenueManager] - Error: validation failed', validation.error.issues[0]);
-      const issue = validation.error.issues[0];
-      const message = issue?.message || 'Dati inviati non corretti.';
-      throw new AppError(message);
-    }
-
-    const { name, signUpEmail, signUpPassword, languages, countryId, subdivisionId } =
-      validation.data;
-    const safeLanguages = languages ?? [];
+    const { name, signUpEmail, signUpPassword, languages, countryId, subdivisionId } = data;
+    const safeLanguages = Array.isArray(languages) ? languages : [];
     const fallbackName = name?.trim() || 'Utente';
     const finalEmail = signUpEmail?.trim() || null;
     const finalPassword = signUpPassword?.trim() || null;
@@ -71,10 +49,7 @@ export const createVenueManager = async (
     const placeholderText = 'Non disponibile';
     const placeholderZipCode = 'ND0';
     const placeholderGender = 'non-binary';
-    const resolvedGender =
-      validation.data.gender
-        ? validation.data.gender
-        : placeholderGender;
+    const resolvedGender = data.gender ? data.gender : placeholderGender;
     const [languagesCheck, countryCheck, subdivisionCheck] = await Promise.all([
       safeLanguages.length
         ? database
@@ -166,18 +141,18 @@ export const createVenueManager = async (
         .insert(profiles)
         .values({
           userId: newUserId,
-          avatarUrl: validation.data.avatarUrl ?? null,
-          name: validation.data.name ?? fallbackName,
-          surname: validation.data.surname ?? '',
-          phone: validation.data.phone ?? '',
-          birthDate: validation.data.birthDate ?? null,
-          birthPlace: validation.data.birthPlace?.trim() || placeholderText,
+          avatarUrl: data.avatarUrl ?? null,
+          name: data.name ?? fallbackName,
+          surname: data.surname ?? '',
+          phone: data.phone ?? '',
+          birthDate: data.birthDate ?? null,
+          birthPlace: data.birthPlace?.trim() || placeholderText,
           gender: resolvedGender,
-          address: validation.data.address?.trim() || placeholderText,
+          address: data.address?.trim() || placeholderText,
           ...(countryId !== undefined && countryId !== null && { countryId }),
           ...(subdivisionId !== undefined && subdivisionId !== null && { subdivisionId }),
-          city: validation.data.city?.trim() || placeholderText,
-          zipCode: validation.data.zipCode?.trim() || placeholderZipCode,
+          city: data.city?.trim() || placeholderText,
+          zipCode: data.zipCode?.trim() || placeholderZipCode,
         })
         .returning({ id: profiles.id, userId: profiles.userId });
 

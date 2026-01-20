@@ -15,7 +15,7 @@ import {
   managerArtists,
   artistZones,
 } from '@/lib/database/schema';
-import { artistFormSchema, ArtistFormSchema } from '@/lib/validation/artist-form-schema';
+import type { ArtistFormSchema } from '@/lib/validation/artist-form-schema';
 import { AppError } from '@/lib/classes/AppError';
 import { revalidateTag } from 'next/cache';
 import { hasRole } from '@/lib/utils';
@@ -39,22 +39,6 @@ export const createArtist = async (
 
     const isAdmin = user.role === 'admin';
 
-    const sanitizeName = (value?: string | null) => {
-      if (typeof value !== 'string') return value;
-      return value.replace(/[^\p{L}\s'-]/gu, '').trim();
-    };
-
-    const validation = artistFormSchema.safeParse({
-      ...data,
-      name: sanitizeName(data.name),
-      surname: sanitizeName(data.surname),
-    });
-
-    if (!validation.success) {
-      console.error('[createArtist] - Error: validation failed', validation.error.issues[0]);
-      throw new AppError('I dati inviati non sono corretti.');
-    }
-
     const {
       languages,
       countryId,
@@ -63,16 +47,16 @@ export const createArtist = async (
       billingSubdivisionId,
       zones,
       artistManagers,
-    } = validation.data;
-    const safeLanguages = languages ?? [];
-    const safeZones = zones ?? [];
-    const safeArtistManagers = artistManagers ?? [];
-    const fallbackEmail = validation.data.email?.trim() || '';
-    const fallbackName = validation.data.name?.trim() || 'Artista';
-    const fallbackSurname = validation.data.surname?.trim() || '';
-    const fallbackStageName = validation.data.stageName?.trim() || fallbackName;
-    const fallbackBirthDate = validation.data.birthDate || '1970-01-01';
-    const fallbackGender = validation.data.gender || 'non-binary';
+    } = data;
+    const safeLanguages = Array.isArray(languages) ? languages : [];
+    const safeZones = Array.isArray(zones) ? zones : [];
+    const safeArtistManagers = Array.isArray(artistManagers) ? artistManagers : [];
+    const fallbackEmail = data.email?.trim() || '';
+    const fallbackName = data.name?.trim() || 'Artista';
+    const fallbackSurname = data.surname?.trim() || '';
+    const fallbackStageName = data.stageName?.trim() || fallbackName;
+    const fallbackBirthDate = data.birthDate || '1970-01-01';
+    const fallbackGender = data.gender || 'non-binary';
 
     const [
       languagesCheck,
@@ -177,62 +161,62 @@ export const createArtist = async (
       const insertValues: any = {
         status: 'active',
 
-        avatarUrl: validation.data.avatarUrl || '',
-        name: validation.data.name || fallbackName,
-        surname: validation.data.surname || fallbackSurname,
-        stageName: validation.data.stageName || fallbackStageName,
-        bio: validation.data.bio || '',
+        avatarUrl: data.avatarUrl || '',
+        name: data.name || fallbackName,
+        surname: data.surname || fallbackSurname,
+        stageName: data.stageName || fallbackStageName,
+        bio: data.bio || '',
         email: fallbackEmail,
-        phone: validation.data.phone || '',
-        birthPlace: validation.data.birthPlace || '',
-        address: validation.data.address || null,
-        countryId: validation.data.countryId || null,
-        subdivisionId: validation.data.subdivisionId || null,
-        city: validation.data.city || null,
-        zipCode: validation.data.zipCode || null,
-        tourManagerName: validation.data.tourManagerName || '',
-        tourManagerSurname: validation.data.tourManagerSurname || '',
-        tourManagerEmail: validation.data.tourManagerEmail || '',
-        tourManagerPhone: validation.data.tourManagerPhone || '',
+        phone: data.phone || '',
+        birthPlace: data.birthPlace || '',
+        address: data.address || null,
+        countryId: data.countryId || null,
+        subdivisionId: data.subdivisionId || null,
+        city: data.city || null,
+        zipCode: data.zipCode || null,
+        tourManagerName: data.tourManagerName || '',
+        tourManagerSurname: data.tourManagerSurname || '',
+        tourManagerEmail: data.tourManagerEmail || '',
+        tourManagerPhone: data.tourManagerPhone || '',
 
-        company: validation.data.company || null,
-        taxCode: validation.data.taxCode || null,
-        ipiCode: validation.data.ipiCode || null,
-        bicCode: validation.data.bicCode || null,
-        abaRoutingNumber: validation.data.abaRoutingNumber || null,
-        iban: validation.data.iban || null,
-        sdiRecipientCode: validation.data.sdiRecipientCode || null,
-        billingAddress: validation.data.billingAddress || null,
-        billingCountryId: validation.data.billingCountry?.id || null,
-        billingSubdivisionId: validation.data.billingSubdivisionId || null,
-        billingCity: validation.data.billingCity || null,
-        billingZipCode: validation.data.billingZipCode || null,
-        billingEmail: validation.data.billingEmail || null,
-        billingPhone: validation.data.billingPhone || null,
-        billingPec: validation.data.billingPec || null,
-        taxableInvoice: validation.data.taxableInvoice === 'true',
+        company: data.company || null,
+        taxCode: data.taxCode || null,
+        ipiCode: data.ipiCode || null,
+        bicCode: data.bicCode || null,
+        abaRoutingNumber: data.abaRoutingNumber || null,
+        iban: data.iban || null,
+        sdiRecipientCode: data.sdiRecipientCode || null,
+        billingAddress: data.billingAddress || null,
+        billingCountryId: data.billingCountry?.id || null,
+        billingSubdivisionId: data.billingSubdivisionId || null,
+        billingCity: data.billingCity || null,
+        billingZipCode: data.billingZipCode || null,
+        billingEmail: data.billingEmail || null,
+        billingPhone: data.billingPhone || null,
+        billingPec: data.billingPec || null,
+        taxableInvoice: data.taxableInvoice === 'true',
         birthDate: fallbackBirthDate,
         gender: fallbackGender,
 
-        tiktokUrl: validation.data.tiktokUrl || null,
-        tiktokUsername: validation.data.tiktokUsername || null,
-        tiktokFollowers: validation.data.tiktokFollowers || null,
-        tiktokCreatedAt: validation.data.tiktokCreatedAt || null,
+        tiktokUrl: data.tiktokUrl || null,
+        tiktokUsername: data.tiktokUsername || null,
+        tiktokFollowers: data.tiktokFollowers || null,
+        tiktokCreatedAt: data.tiktokCreatedAt || null,
 
-        facebookUrl: validation.data.facebookUrl || null,
-        facebookUsername: validation.data.facebookUsername || null,
-        facebookFollowers: validation.data.facebookFollowers || null,
-        facebookCreatedAt: validation.data.facebookCreatedAt || null,
+        facebookUrl: data.facebookUrl || null,
+        facebookUsername: data.facebookUsername || null,
+        facebookFollowers: data.facebookFollowers || null,
+        facebookCreatedAt: data.facebookCreatedAt || null,
 
-        instagramUrl: validation.data.instagramUrl || null,
-        instagramUsername: validation.data.instagramUsername || null,
-        instagramFollowers: validation.data.instagramFollowers || null,
-        instagramCreatedAt: validation.data.instagramCreatedAt || null,
+        instagramUrl: data.instagramUrl || null,
+        instagramUsername: data.instagramUsername || null,
+        instagramFollowers: data.instagramFollowers || null,
+        instagramCreatedAt: data.instagramCreatedAt || null,
 
-        xUrl: validation.data.xUrl || null,
-        xUsername: validation.data.xUsername || null,
-        xFollowers: validation.data.xFollowers || null,
-        xCreatedAt: validation.data.xCreatedAt || null,
+        xUrl: data.xUrl || null,
+        xUsername: data.xUsername || null,
+        xFollowers: data.xFollowers || null,
+        xCreatedAt: data.xCreatedAt || null,
       };
 
       const artistResult = await tx

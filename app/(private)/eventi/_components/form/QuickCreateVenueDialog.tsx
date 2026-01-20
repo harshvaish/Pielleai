@@ -40,31 +40,13 @@ export default function QuickCreateVenueDialog({
   };
 
   const onSubmit = () => {
-    const trimmedName = name.trim();
-    const trimmedAddress = address.trim();
-
-    if (!trimmedName || trimmedName.length < 2) {
-      toast.error('Inserisci il nome del locale.');
-      return;
-    }
-
-    if (!trimmedAddress || trimmedAddress.length < 5) {
-      toast.error("Inserisci l'indirizzo del locale.");
-      return;
-    }
-
     startTransition(async () => {
       let venueManagerId: number | undefined;
 
       if (isAdmin && shouldCreateManager) {
-        if (!managerName.trim()) {
-          toast.error('Inserisci il nome del promoter.');
-          return;
-        }
-
         const managerResponse = await createVenueManager({
-          name: managerName.trim(),
-          surname: managerSurname.trim(),
+          name: managerName,
+          surname: managerSurname,
         });
 
         if (!managerResponse.success) {
@@ -76,8 +58,8 @@ export default function QuickCreateVenueDialog({
       }
 
       const response = await createVenue({
-        name: trimmedName,
-        address: trimmedAddress,
+        name,
+        address,
         ...(venueManagerId ? { venueManagerId } : {}),
       });
 
