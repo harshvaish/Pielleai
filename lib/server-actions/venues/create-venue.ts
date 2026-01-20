@@ -4,7 +4,7 @@ import { ServerActionResponse, VenueSelectData, VenueManagerSelectData } from '@
 import { database } from '@/lib/database/connection';
 import { and, eq } from 'drizzle-orm';
 import { profiles, countries, subdivisions, users, venues } from '@/lib/database/schema';
-import { venueFormSchema, VenueFormSchema } from '@/lib/validation/venue-form-schema';
+import type { VenueFormSchema } from '@/lib/validation/venue-form-schema';
 import { AppError } from '@/lib/classes/AppError';
 import { revalidateTag } from 'next/cache';
 import getSession from '@/lib/data/auth/get-session';
@@ -27,41 +27,10 @@ export const createVenue = async (
     }
     const isAdmin = user.role === 'admin';
 
-    const sanitizeText = (value?: string | null) => {
-      if (typeof value !== 'string') return value;
-      const trimmed = value.trim();
-      return trimmed.length > 0 ? trimmed : undefined;
-    };
-
-    const validation = venueFormSchema.safeParse({
-      ...data,
-      name: sanitizeText(data.name),
-      address: sanitizeText(data.address),
-      city: sanitizeText(data.city),
-      company: sanitizeText(data.company),
-      taxCode: sanitizeText(data.taxCode),
-      vatCode: sanitizeText(data.vatCode),
-      sdiRecipientCode: sanitizeText(data.sdiRecipientCode),
-      billingAddress: sanitizeText(data.billingAddress),
-      billingCity: sanitizeText(data.billingCity),
-      billingZipCode: sanitizeText(data.billingZipCode),
-      billingEmail: sanitizeText(data.billingEmail),
-      billingPhone: sanitizeText(data.billingPhone),
-      billingPec: sanitizeText(data.billingPec),
-    });
-
-    if (!validation.success) {
-      console.error('[createVenue] - Error: validation failed', validation.error.issues[0]);
-      const issue = validation.error.issues[0];
-      const message = issue?.message || 'I dati inviati non sono corretti.';
-      throw new AppError(message);
-    }
-
-    const { countryId, subdivisionId, venueManagerId, billingCountry, billingSubdivisionId } =
-      validation.data;
-    const fallbackName = validation.data.name?.trim() || 'Locale';
-    const fallbackType = validation.data.type || 'small';
-    const fallbackCapacity = validation.data.capacity ?? 0;
+    const { countryId, subdivisionId, venueManagerId, billingCountry, billingSubdivisionId } = data;
+    const fallbackName = data.name?.trim() || 'Locale';
+    const fallbackType = data.type || 'small';
+    const fallbackCapacity = data.capacity ?? 0;
     const billingCountryId = billingCountry?.id;
 
     const [countryCheck, subdivisionCheck] = await Promise.all([
@@ -139,49 +108,49 @@ export const createVenue = async (
 
     const insertValues: any = {
       status: 'active',
-      avatarUrl: validation.data.avatarUrl || null,
-      name: validation.data.name || fallbackName,
-      bio: validation.data.bio || null,
+      avatarUrl: data.avatarUrl || null,
+      name: data.name || fallbackName,
+      bio: data.bio || null,
       type: fallbackType,
       capacity: fallbackCapacity,
-      managerProfileId: validation.data.venueManagerId || null,
+      managerProfileId: data.venueManagerId || null,
 
-      address: validation.data.address || '',
-      city: validation.data.city || '',
-      zipCode: validation.data.zipCode || '',
+      address: data.address || '',
+      city: data.city || '',
+      zipCode: data.zipCode || '',
 
-      company: validation.data.company || '',
-      taxCode: validation.data.taxCode || '',
-      vatCode: validation.data.vatCode || '',
-      bicCode: validation.data.bicCode || null,
-      abaRoutingNumber: validation.data.abaRoutingNumber || null,
-      sdiRecipientCode: validation.data.sdiRecipientCode || null,
-      billingAddress: validation.data.billingAddress || '',
-      billingCity: validation.data.billingCity || '',
-      billingZipCode: validation.data.billingZipCode || '',
-      billingEmail: validation.data.billingEmail || null,
-      billingPhone: validation.data.billingPhone || null,
-      billingPec: validation.data.billingPec || '',
+      company: data.company || '',
+      taxCode: data.taxCode || '',
+      vatCode: data.vatCode || '',
+      bicCode: data.bicCode || null,
+      abaRoutingNumber: data.abaRoutingNumber || null,
+      sdiRecipientCode: data.sdiRecipientCode || null,
+      billingAddress: data.billingAddress || '',
+      billingCity: data.billingCity || '',
+      billingZipCode: data.billingZipCode || '',
+      billingEmail: data.billingEmail || null,
+      billingPhone: data.billingPhone || null,
+      billingPec: data.billingPec || '',
 
-      tiktokUrl: validation.data.tiktokUrl || null,
-      tiktokUsername: validation.data.tiktokUsername || null,
-      tiktokFollowers: validation.data.tiktokFollowers || null,
-      tiktokCreatedAt: validation.data.tiktokCreatedAt || null,
+      tiktokUrl: data.tiktokUrl || null,
+      tiktokUsername: data.tiktokUsername || null,
+      tiktokFollowers: data.tiktokFollowers || null,
+      tiktokCreatedAt: data.tiktokCreatedAt || null,
 
-      facebookUrl: validation.data.facebookUrl || null,
-      facebookUsername: validation.data.facebookUsername || null,
-      facebookFollowers: validation.data.facebookFollowers || null,
-      facebookCreatedAt: validation.data.facebookCreatedAt || null,
+      facebookUrl: data.facebookUrl || null,
+      facebookUsername: data.facebookUsername || null,
+      facebookFollowers: data.facebookFollowers || null,
+      facebookCreatedAt: data.facebookCreatedAt || null,
 
-      instagramUrl: validation.data.instagramUrl || null,
-      instagramUsername: validation.data.instagramUsername || null,
-      instagramFollowers: validation.data.instagramFollowers || null,
-      instagramCreatedAt: validation.data.instagramCreatedAt || null,
+      instagramUrl: data.instagramUrl || null,
+      instagramUsername: data.instagramUsername || null,
+      instagramFollowers: data.instagramFollowers || null,
+      instagramCreatedAt: data.instagramCreatedAt || null,
 
-      xUrl: validation.data.xUrl || null,
-      xUsername: validation.data.xUsername || null,
-      xFollowers: validation.data.xFollowers || null,
-      xCreatedAt: validation.data.xCreatedAt || null,
+      xUrl: data.xUrl || null,
+      xUsername: data.xUsername || null,
+      xFollowers: data.xFollowers || null,
+      xCreatedAt: data.xCreatedAt || null,
     };
 
     if (countryId !== undefined && countryId !== null) {

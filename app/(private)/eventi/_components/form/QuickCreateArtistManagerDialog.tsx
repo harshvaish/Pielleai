@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState, useTransition } from 'react';
+import { useState, useTransition } from 'react';
 import { toast } from 'sonner';
 import { Plus } from 'lucide-react';
 
@@ -21,11 +21,6 @@ export default function QuickCreateArtistManagerDialog({
   const [name, setName] = useState('');
   const [surname, setSurname] = useState('');
   const [isPending, startTransition] = useTransition();
-  const sanitizedName = useMemo(() => name.replace(/[^\p{L}\s'-]/gu, '').trim(), [name]);
-  const sanitizedSurname = useMemo(
-    () => surname.replace(/[^\p{L}\s'-]/gu, '').trim(),
-    [surname],
-  );
 
   const resetForm = () => {
     setName('');
@@ -33,15 +28,10 @@ export default function QuickCreateArtistManagerDialog({
   };
 
   const onSubmit = () => {
-    if (!sanitizedName || sanitizedName.length < 2) {
-      toast.error('Inserisci un nome valido.');
-      return;
-    }
-
     startTransition(async () => {
       const response = await createArtistManager({
-        name: sanitizedName,
-        surname: sanitizedSurname,
+        name,
+        surname,
       });
 
       if (response.success) {
