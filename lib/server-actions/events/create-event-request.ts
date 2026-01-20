@@ -9,6 +9,7 @@ import { isBefore } from 'date-fns';
 import { AppError } from '@/lib/classes/AppError';
 import getSession from '@/lib/data/auth/get-session';
 import { recomputeConflicts } from '@/lib/data/events/recompute-conflicts';
+import { generateEventTitle } from '@/lib/utils/generate-event-title';
 
 export const createEventRequest = async (
   data: EventRequestFormSchema,
@@ -103,6 +104,40 @@ export const createEventRequest = async (
       throw new AppError('Il periodo selezionato è in conflitto con un altro evento.');
     }
 
+    // Fetch artist and venue details for title generation
+    const [[artistDetails], [venueDetails]] = await Promise.all([
+      database
+        .select({
+          name: artists.name,
+          surname: artists.surname,
+          stageName: artists.stageName,
+        })
+        .from(artists)
+        .where(eq(artists.id, artistId))
+        .limit(1),
+      database
+        .select({
+          name: venues.name,
+        })
+        .from(venues)
+        .where(eq(venues.id, venueId))
+        .limit(1),
+    ]);
+
+    if (!artistDetails || !venueDetails) {
+      throw new AppError('Impossibile recuperare i dettagli per generare il titolo.');
+    }
+
+    // Generate event title
+    const artistName =
+      artistDetails.stageName || `${artistDetails.name} ${artistDetails.surname}`.trim();
+    const eventTitle = generateEventTitle(
+      artistName,
+      venueDetails.name,
+      availability.startDate,
+      availability.endDate,
+    );
+
     await database.transaction(async (tx) => {
       const [newAvailability] = await tx
         .insert(artistAvailabilities)
@@ -121,6 +156,7 @@ export const createEventRequest = async (
       const [eventResult] = await tx
         .insert(events)
         .values({
+          title: eventTitle,
           artistId: artistId,
           availabilityId: newAvailability.id,
           venueId: venueId,

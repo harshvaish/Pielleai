@@ -107,21 +107,21 @@ export async function POST(req: NextRequest) {
     // Update contract row and insert history
     const prevStatus = contractRow.status;
 
-    if (prevStatus === 'signed') {
-      console.log('[docusign-webhook] contract already marked as signed; skipping update and email:', contractId);
-      return NextResponse.json({ success: true, message: 'Already signed; nothing to do.' }, { status: 200 });
+    if (prevStatus === 'voided') {
+      console.log('[docusign-webhook] contract already marked as voided/archived; skipping update and email:', contractId);
+      return NextResponse.json({ success: true, message: 'Already archived; nothing to do.' }, { status: 200 });
     }
 
     await database.transaction(async (tx) => {
       await tx
         .update(contracts)
-        .set({ fileUrl, fileName: finalFileName, status: 'signed' })
+        .set({ fileUrl, fileName: finalFileName, status: 'voided' })
         .where(eq(contracts.id, contractId));
 
       await tx.insert(contractHistory).values({
         contractId,
         fromStatus: prevStatus,
-        toStatus: 'signed',
+        toStatus: 'voided',
         fileUrl,
         fileName: finalFileName,
         changedByUserId: null,

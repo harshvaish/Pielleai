@@ -264,7 +264,7 @@ export async function getContracts(
       for (const item of data) {
         try {
           if (!item.envelopeId) continue;
-          if (item.status === 'signed') continue; // already processed
+          if (item.status === 'voided') continue; // already processed (archived)
 
           const envStatus = await getEnvelopeStatus(item.envelopeId);
           const envelopeStatus = envStatus && envStatus.status ? String(envStatus.status).toLowerCase() : null;
@@ -305,11 +305,11 @@ export async function getContracts(
 
           // Persist DB update and history
           await database.transaction(async (tx) => {
-            await tx.update(contracts).set({ fileUrl, fileName: finalFileName, status: 'signed' }).where(eq(contracts.id, item.id));
+            await tx.update(contracts).set({ fileUrl, fileName: finalFileName, status: 'voided' }).where(eq(contracts.id, item.id));
             await tx.insert(contractHistory).values({
               contractId: item.id,
               fromStatus: prevStatus,
-              toStatus: 'signed',
+              toStatus: 'voided',
               fileUrl,
               fileName: finalFileName,
               changedByUserId: null,
@@ -356,14 +356,14 @@ export async function getContracts(
           // Mutate in-memory data to reflect the change for this response
           item.fileUrl = fileUrl;
           item.fileName = finalFileName;
-          item.status = 'signed';
+          item.status = 'voided';
 
           // Also push a history entry to the response object
           const arr = historyByContract.get(item.id) ?? [];
           arr.unshift({
             id: -1,
             fromStatus: prevStatus,
-            toStatus: 'signed',
+            toStatus: 'voided',
             fileUrl,
             fileName: finalFileName,
             note: 'File firmato caricato da DocuSign (sync).',
