@@ -179,14 +179,20 @@ function mapStatus(
 }
 
 function formatDateAndTime(
-  availability: { startDate: string; endDate: string } | null,
+  availability: { startDate: string | Date; endDate: string | Date } | null,
 ): { date: string; time: string } {
   if (!availability) {
     return { date: '—', time: '—' };
   }
 
-  const start = new Date(availability.startDate);
-  const end = new Date(availability.endDate);
+  const start =
+    availability.startDate instanceof Date
+      ? availability.startDate
+      : new Date(availability.startDate);
+  const end =
+    availability.endDate instanceof Date
+      ? availability.endDate
+      : new Date(availability.endDate);
 
   const date = start.toLocaleDateString('it-IT', {
     day: '2-digit',
