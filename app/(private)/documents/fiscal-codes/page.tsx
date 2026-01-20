@@ -14,7 +14,7 @@ import { ArtistsTableFilters } from "@/lib/types";
 import { hasRole, resolveNextPath, splitCsv } from "@/lib/utils";
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
-import { ChevronRight, FileText, Mail } from "lucide-react";
+import { Briefcase, ChevronRight, FileText, Mail, User } from "lucide-react";
 
 type FiscalCodesPageProps = {
   searchParams?: Promise<{
@@ -120,19 +120,33 @@ export default async function FiscalCodesPage({
                     artists={[artist]}
                     userRole={user.role}
                   />
-                  <div className="flex items-center gap-2 text-xs text-zinc-500">
-                    <span className="text-zinc-400">Manager</span>
-                    <ManagersBadge
-                      userRole={user.role}
-                      managers={artist.managers}
-                      pathSegment="manager-artisti"
-                    />
-                  </div>
-                  <div className="flex items-center gap-2 text-xs text-zinc-500">
-                    <Mail className="h-4 w-4 text-zinc-400" />
-                    <span>Email</span>
-                    <span className="text-zinc-700">
-                      {artist.email || "-"}
+                  <div className="flex flex-wrap items-center gap-4 text-xs text-zinc-500">
+                    <span className="inline-flex items-center gap-1.5">
+                      <Briefcase className="h-4 w-4 text-zinc-400" />
+                      <span className="text-zinc-400">Manager</span>
+                      <ManagersBadge
+                        userRole={user.role}
+                        managers={artist.managers}
+                        pathSegment="manager-artisti"
+                      />
+                    </span>
+                    <span className="inline-flex items-center gap-1.5">
+                      <User className="h-4 w-4 text-zinc-400" />
+                      <span className="text-zinc-400">Tour manager</span>
+                      <span className="text-zinc-700">
+                        {artist.tourManagerName || artist.tourManagerSurname
+                          ? `${artist.tourManagerName ?? ""} ${
+                              artist.tourManagerSurname ?? ""
+                            }`.trim()
+                          : artist.tourManagerEmail || "-"}
+                      </span>
+                    </span>
+                    <span className="inline-flex items-center gap-1.5">
+                      <Mail className="h-4 w-4 text-zinc-400" />
+                      <span className="text-zinc-400">Amministrazione</span>
+                      <span className="text-zinc-700">
+                        {artist.email || "-"}
+                      </span>
                     </span>
                   </div>
                 </div>

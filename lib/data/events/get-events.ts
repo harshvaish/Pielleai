@@ -101,6 +101,7 @@ export async function getEvents(
     let baseQuery = database
       .select({
         id: events.id,
+        title: events.title,
 
         artist: {
           id: artists.id,
@@ -110,6 +111,10 @@ export async function getEvents(
           name: artists.name,
           surname: artists.surname,
           stageName: artists.stageName,
+          tourManagerEmail: artists.tourManagerEmail,
+          tourManagerName: artists.tourManagerName,
+          tourManagerSurname: artists.tourManagerSurname,
+          tourManagerPhone: artists.tourManagerPhone,
         },
 
         availability: {

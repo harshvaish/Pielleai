@@ -269,6 +269,10 @@ export type ArtistTableData = Pick<
   | 'phone'
   | 'email'
   | 'company'
+  | 'tourManagerEmail'
+  | 'tourManagerName'
+  | 'tourManagerSurname'
+  | 'tourManagerPhone'
   | 'managers'
   | 'tiktokUrl'
   | 'facebookUrl'
@@ -513,6 +517,7 @@ export type EventType = "dj-set" | "live" | "festival";
 // event
 export type Event = {
   id: number;
+  title?: string | null;
   artist: ArtistSelectData;
   availability: ArtistAvailability;
   venue: VenueSelectData;

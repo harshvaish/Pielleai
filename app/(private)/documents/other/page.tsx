@@ -20,7 +20,9 @@ import { EventsTableFilters, EventStatus } from "@/lib/types";
 import { hasRole, resolveNextPath, splitCsv } from "@/lib/utils";
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
-import { ChevronRight, FileText } from "lucide-react";
+import { Briefcase, ChevronRight, FileText, Mail, MapPin, User } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { AVATAR_FALLBACK } from "@/lib/constants";
 
 type OtherDocumentsPageProps = {
   searchParams?: Promise<{
@@ -238,6 +240,63 @@ export default async function OtherDocumentsPage({
                         userRole={user.role}
                         venues={[event.venue]}
                       />
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-4 text-xs text-zinc-500">
+                      <span className="inline-flex items-center gap-1.5">
+                        <MapPin className="h-4 w-4 text-zinc-400" />
+                        <span className="text-zinc-400">Locale</span>
+                        <span className="text-zinc-700">
+                          Club "{event.venue.name}"
+                        </span>
+                      </span>
+                      <span className="inline-flex items-center gap-1.5">
+                        <Briefcase className="h-4 w-4 text-zinc-400" />
+                        <span className="text-zinc-400">Manager</span>
+                        {event.artistManager ? (
+                          <Link
+                            href={`/manager-artisti/${event.artistManager.id}`}
+                            className="inline-flex items-center gap-2 rounded-full bg-zinc-100 px-2 py-1 text-xs font-medium text-zinc-700 hover:bg-zinc-200"
+                          >
+                            <Avatar className="h-4 w-4">
+                              <AvatarImage
+                                src={
+                                  event.artistManager.avatarUrl ||
+                                  AVATAR_FALLBACK
+                                }
+                              />
+                              <AvatarFallback>
+                                {event.artistManager.name
+                                  .substring(0, 1)
+                                  .toUpperCase()}
+                              </AvatarFallback>
+                            </Avatar>
+                            {event.artistManager.name}{" "}
+                            {event.artistManager.surname}
+                          </Link>
+                        ) : (
+                          <span className="text-zinc-700">-</span>
+                        )}
+                      </span>
+                      <span className="inline-flex items-center gap-1.5">
+                        <User className="h-4 w-4 text-zinc-400" />
+                        <span className="text-zinc-400">Tour manager</span>
+                        <span className="text-zinc-700">
+                          {event.artist.tourManagerName ||
+                          event.artist.tourManagerSurname
+                            ? `${event.artist.tourManagerName ?? ""} ${
+                                event.artist.tourManagerSurname ?? ""
+                              }`.trim()
+                            : event.tourManagerEmail || "-"}
+                        </span>
+                      </span>
+                      <span className="inline-flex items-center gap-1.5">
+                        <Mail className="h-4 w-4 text-zinc-400" />
+                        <span className="text-zinc-400">Amministrazione</span>
+                        <span className="text-zinc-700">
+                          {event.payrollConsultantEmail || "-"}
+                        </span>
+                      </span>
                     </div>
 
                     <div className="flex flex-wrap items-center gap-2 text-xs text-zinc-500">

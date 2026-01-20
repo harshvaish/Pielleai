@@ -10,19 +10,26 @@ import {
   ChevronRight,
   Clock,
   FileText,
+  Mail,
+  MapPin,
+  Briefcase,
+  User,
   X,
   Check,
   PartyPopper,
 } from "lucide-react";
 import { getContracts } from "@/lib/data/contracts/get-contracts";
-import { getArtistsCached } from "@/lib/cache/artists";
+import { getPaginatedArtists } from "@/lib/data/artists/get-paginated-artists";
 import ExportButton from "./_components/ExportButton";
 import { JSX } from "react";
 import ResendDocuSignButton from "./_components/ResendDocuSignButton";
 import DocumentVenuesBadge from "../_components/Badges/DocumentVenuesBadge";
 import ArtistsBadge from "../_components/Badges/ArtistsBadge";
+import ManagersBadge from "../_components/Badges/ManagersBadge";
+import EventStatusBadge from "../_components/Badges/EventStatusBadge";
 import { AVATAR_FALLBACK } from "@/lib/constants";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { ArtistsTableFilters } from "@/lib/types";
 
 type EventsPageProps = {
   searchParams?: Promise<{
@@ -94,6 +101,15 @@ export type ContractCard = {
     tourManagerSurname: string | undefined;
     tourManagerPhone: string | undefined;
   };
+
+  artistManager: {
+    id: string;
+    profileId: number;
+    avatarUrl: string | null;
+    name: string;
+    surname: string;
+    status: string;
+  } | null;
 
   venue: {
     id: number;
@@ -317,6 +333,8 @@ function mapContract(c: any): ContractCard {
   const { date, time } = formatDateAndTime(c.availability);
 
   const backendStatus = c.status as BackendContractStatus;
+  const artistManager =
+    c.artistManager && c.artistManager.id ? c.artistManager : null;
   return {
     id: c.id,
 
@@ -353,6 +371,7 @@ function mapContract(c: any): ContractCard {
       tourManagerSurname: c.artist.tourManagerSurname ?? undefined,
       tourManagerPhone: c.artist.tourManagerPhone ?? undefined,
     },
+    artistManager,
     availability: c.availability
       ? {
           id: c.availability.id,
@@ -453,7 +472,21 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
         return ["all"];
     }
   }
-  const [api, artists] = await Promise.all([
+  const managersFilter = isAdmin
+    ? []
+    : isArtistManager
+      ? [profileId!.toString()]
+      : [];
+  const artistFilters: ArtistsTableFilters = {
+    currentPage: 1,
+    fullName: null,
+    email: null,
+    phone: null,
+    managerIds: managersFilter,
+    zoneIds: [],
+  };
+
+  const [api, artistsResult] = await Promise.all([
     getContracts(user, {
       currentPage,
       startDate: sp?.start ?? "",
@@ -464,8 +497,9 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
       venueIds: filters.venueIds,
       sort,
     }),
-    getArtistsCached(isArtistManager ? profileId! : undefined),
+    getPaginatedArtists(artistFilters),
   ]);
+  const artists = artistsResult.data;
 
   const apiData = Array.isArray(api.data) ? api.data : [];
   let contracts: ContractCard[] = apiData.map(mapContract);
@@ -577,32 +611,91 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
                       </div>
 
                       <div className="flex flex-col gap-3">
-                        <div className="flex flex-wrap items-center gap-3 text-sm">
-                          <ArtistsBadge
-                            artists={[contract.artist]}
+                      <div className="flex flex-wrap items-center gap-3 text-sm">
+                        <ArtistsBadge
+                          artists={[contract.artist]}
+                          userRole={user.role}
+                        />
+                        <div className="flex flex-col gap-1.5">
+                          <DocumentVenuesBadge
                             userRole={user.role}
+                            venues={[contract.venue]}
                           />
-                          <div className="flex flex-col gap-1.5">
-                            <DocumentVenuesBadge
-                              userRole={user.role}
-                              venues={[contract.venue]}
-                            />
-                            <div className="flex flex-wrap items-center gap-4 text-xs text-zinc-500">
-                              <span className="flex items-center gap-1">
-                                <CalendarDays className="h-4 w-4 text-zinc-400" />
-                                {contract.date}
-                              </span>
-                              <span className="flex items-center gap-1">
-                                <Clock className="h-4 w-4 text-zinc-400" />
-                                {contract.time}
-                              </span>
-                            </div>
+                          <div className="flex flex-wrap items-center gap-4 text-xs text-zinc-500">
+                            <span className="flex items-center gap-1">
+                              <CalendarDays className="h-4 w-4 text-zinc-400" />
+                              {contract.date}
+                            </span>
+                            <span className="flex items-center gap-1">
+                              <Clock className="h-4 w-4 text-zinc-400" />
+                              {contract.time}
+                            </span>
                           </div>
                         </div>
+                      </div>
 
-                        <div className="flex flex-wrap items-center gap-2 text-xs text-zinc-500">
-                          <FileText className="h-4 w-4 text-zinc-400" />
-                          <span>Contratto</span>
+                      <div className="flex flex-wrap items-center gap-4 text-xs text-zinc-500">
+                        <span className="inline-flex items-center gap-1.5">
+                          <MapPin className="h-4 w-4 text-zinc-400" />
+                          <span className="text-zinc-400">Locale</span>
+                          <span className="text-zinc-700">
+                            Club "{contract.venue.name}"
+                          </span>
+                        </span>
+                        <span className="inline-flex items-center gap-1.5">
+                          <Briefcase className="h-4 w-4 text-zinc-400" />
+                          <span className="text-zinc-400">Manager</span>
+                        {contract.artistManager ? (
+                          <Link
+                            href={`/manager-artisti/${contract.artistManager.id}`}
+                            className="inline-flex items-center gap-2 rounded-full bg-zinc-100 px-2 py-1 text-xs font-medium text-zinc-700 hover:bg-zinc-200"
+                          >
+                            <Avatar className="h-4 w-4">
+                              <AvatarImage
+                                src={
+                                  contract.artistManager.avatarUrl ||
+                                  AVATAR_FALLBACK
+                                }
+                              />
+                              <AvatarFallback>
+                                {contract.artistManager.name
+                                  .substring(0, 1)
+                                  .toUpperCase()}
+                              </AvatarFallback>
+                            </Avatar>
+                            {contract.artistManager.name}{" "}
+                            {contract.artistManager.surname}
+                          </Link>
+                        ) : (
+                          <span className="text-zinc-700">-</span>
+                        )}
+                        </span>
+                        <span className="inline-flex items-center gap-1.5">
+                          <User className="h-4 w-4 text-zinc-400" />
+                          <span className="text-zinc-400">Tour manager</span>
+                          <span className="text-zinc-700">
+                            {contract.artist.tourManagerName ||
+                            contract.artist.tourManagerSurname
+                              ? `${contract.artist.tourManagerName ?? ""} ${
+                                  contract.artist.tourManagerSurname ?? ""
+                                }`.trim()
+                              : contract.event.tourManagerEmail || "-"}
+                          </span>
+                        </span>
+                        <span className="inline-flex items-center gap-1.5">
+                          <Mail className="h-4 w-4 text-zinc-400" />
+                          <span className="text-zinc-400">
+                            Amministrazione
+                          </span>
+                          <span className="text-zinc-700">
+                            {contract.event.payrollConsultantEmail || "-"}
+                          </span>
+                        </span>
+                      </div>
+
+                      <div className="flex flex-wrap items-center gap-2 text-xs text-zinc-500">
+                        <FileText className="h-4 w-4 text-zinc-400" />
+                        <span>Contratto</span>
                           {contract.fileUrl ? (
                             <span className="inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-white px-3 py-1.5">
                               <FileText className="h-4 w-4 text-zinc-400" />
@@ -664,7 +757,11 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
                     className="grid gap-4 px-4 py-4 md:grid-cols-[170px_1fr_auto]"
                   >
                     <div className="flex flex-col gap-2 md:border-r md:pr-4">
-                      <span className="text-xs font-semibold text-zinc-800">
+                      <EventStatusBadge
+                        status={contract.event.status as any}
+                        size="sm"
+                      />
+                      <span className="text-sm font-semibold text-zinc-800">
                         {contract.date}
                       </span>
                       <span className="text-xs text-zinc-500">
@@ -681,6 +778,64 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
                           userRole={user.role}
                           venues={[contract.venue]}
                         />
+                      </div>
+                      <div className="flex flex-wrap items-center gap-4 text-xs text-zinc-500">
+                        <span className="inline-flex items-center gap-1.5">
+                          <MapPin className="h-4 w-4 text-zinc-400" />
+                          <span className="text-zinc-400">Locale</span>
+                          <span className="text-zinc-700">
+                            Club "{contract.venue.name}"
+                          </span>
+                        </span>
+                        <span className="inline-flex items-center gap-1.5">
+                          <Briefcase className="h-4 w-4 text-zinc-400" />
+                          <span className="text-zinc-400">Manager</span>
+                        {contract.artistManager ? (
+                          <Link
+                            href={`/manager-artisti/${contract.artistManager.id}`}
+                            className="inline-flex items-center gap-2 rounded-full bg-zinc-100 px-2 py-1 text-xs font-medium text-zinc-700 hover:bg-zinc-200"
+                          >
+                            <Avatar className="h-4 w-4">
+                              <AvatarImage
+                                src={
+                                  contract.artistManager.avatarUrl ||
+                                  AVATAR_FALLBACK
+                                }
+                              />
+                              <AvatarFallback>
+                                {contract.artistManager.name
+                                  .substring(0, 1)
+                                  .toUpperCase()}
+                              </AvatarFallback>
+                            </Avatar>
+                            {contract.artistManager.name}{" "}
+                            {contract.artistManager.surname}
+                          </Link>
+                        ) : (
+                          <span className="text-zinc-700">-</span>
+                        )}
+                        </span>
+                        <span className="inline-flex items-center gap-1.5">
+                          <User className="h-4 w-4 text-zinc-400" />
+                          <span className="text-zinc-400">Tour manager</span>
+                          <span className="text-zinc-700">
+                            {contract.artist.tourManagerName ||
+                            contract.artist.tourManagerSurname
+                              ? `${contract.artist.tourManagerName ?? ""} ${
+                                  contract.artist.tourManagerSurname ?? ""
+                                }`.trim()
+                              : contract.event.tourManagerEmail || "-"}
+                          </span>
+                        </span>
+                        <span className="inline-flex items-center gap-1.5">
+                          <Mail className="h-4 w-4 text-zinc-400" />
+                          <span className="text-zinc-400">
+                            Amministrazione
+                          </span>
+                          <span className="text-zinc-700">
+                            {contract.event.payrollConsultantEmail || "-"}
+                          </span>
+                        </span>
                       </div>
                       <div className="flex flex-wrap items-center gap-2 text-xs text-zinc-500">
                         <FileText className="h-4 w-4 text-zinc-400" />
@@ -746,6 +901,64 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
                           venues={[contract.venue]}
                         />
                       </div>
+                      <div className="flex flex-wrap items-center gap-4 text-xs text-zinc-500">
+                        <span className="inline-flex items-center gap-1.5">
+                          <MapPin className="h-4 w-4 text-zinc-400" />
+                          <span className="text-zinc-400">Locale</span>
+                          <span className="text-zinc-700">
+                            Club "{contract.venue.name}"
+                          </span>
+                        </span>
+                        <span className="inline-flex items-center gap-1.5">
+                          <Briefcase className="h-4 w-4 text-zinc-400" />
+                          <span className="text-zinc-400">Manager</span>
+                        {contract.artistManager ? (
+                          <Link
+                            href={`/manager-artisti/${contract.artistManager.id}`}
+                            className="inline-flex items-center gap-2 rounded-full bg-zinc-100 px-2 py-1 text-xs font-medium text-zinc-700 hover:bg-zinc-200"
+                          >
+                            <Avatar className="h-4 w-4">
+                              <AvatarImage
+                                src={
+                                  contract.artistManager.avatarUrl ||
+                                  AVATAR_FALLBACK
+                                }
+                              />
+                              <AvatarFallback>
+                                {contract.artistManager.name
+                                  .substring(0, 1)
+                                  .toUpperCase()}
+                              </AvatarFallback>
+                            </Avatar>
+                            {contract.artistManager.name}{" "}
+                            {contract.artistManager.surname}
+                          </Link>
+                        ) : (
+                          <span className="text-zinc-700">-</span>
+                        )}
+                        </span>
+                        <span className="inline-flex items-center gap-1.5">
+                          <User className="h-4 w-4 text-zinc-400" />
+                          <span className="text-zinc-400">Tour manager</span>
+                          <span className="text-zinc-700">
+                            {contract.artist.tourManagerName ||
+                            contract.artist.tourManagerSurname
+                              ? `${contract.artist.tourManagerName ?? ""} ${
+                                  contract.artist.tourManagerSurname ?? ""
+                                }`.trim()
+                              : contract.event.tourManagerEmail || "-"}
+                          </span>
+                        </span>
+                        <span className="inline-flex items-center gap-1.5">
+                          <Mail className="h-4 w-4 text-zinc-400" />
+                          <span className="text-zinc-400">
+                            Amministrazione
+                          </span>
+                          <span className="text-zinc-700">
+                            {contract.event.payrollConsultantEmail || "-"}
+                          </span>
+                        </span>
+                      </div>
                       <div className="flex flex-wrap items-center gap-2 text-xs text-zinc-500">
                         <FileText className="h-4 w-4 text-zinc-400" />
                         <span>Documento</span>
@@ -799,13 +1012,6 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
             {previewArtists.length ? (
               <div className="divide-y divide-zinc-100">
                 {previewArtists.map((artist) => {
-                  const managerName = [
-                    artist.tourManagerName,
-                    artist.tourManagerSurname,
-                  ]
-                    .filter(Boolean)
-                    .join(" ");
-                  const hasManager = managerName.length > 0;
                   return (
                     <div
                       key={`fiscal-${artist.id}`}
@@ -843,24 +1049,36 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
                       </div>
 
                       <div className="flex flex-wrap items-center gap-4 text-xs text-zinc-500">
-                        {hasManager ? (
-                          <>
-                            <span className="text-zinc-400">Manager</span>
-                            <span className="text-zinc-600">{managerName}</span>
-                          </>
-                        ) : (
-                          <span className="text-zinc-400">
-                            Manager non assegnato
+                        <span className="inline-flex items-center gap-1.5">
+                          <Briefcase className="h-4 w-4 text-zinc-400" />
+                          <span className="text-zinc-400">Manager</span>
+                          <ManagersBadge
+                            userRole={user.role}
+                            managers={artist.managers}
+                            pathSegment="manager-artisti"
+                          />
+                        </span>
+                        <span className="inline-flex items-center gap-1.5">
+                          <User className="h-4 w-4 text-zinc-400" />
+                          <span className="text-zinc-400">Tour manager</span>
+                          <span className="text-zinc-700">
+                            {artist.tourManagerName ||
+                            artist.tourManagerSurname
+                              ? `${artist.tourManagerName ?? ""} ${
+                                  artist.tourManagerSurname ?? ""
+                                }`.trim()
+                              : artist.tourManagerEmail || "-"}
                           </span>
-                        )}
-                        {artist.tourManagerEmail && (
-                          <>
-                            <span className="text-zinc-400">Email</span>
-                            <span className="text-zinc-600">
-                              {artist.tourManagerEmail}
-                            </span>
-                          </>
-                        )}
+                        </span>
+                        <span className="inline-flex items-center gap-1.5">
+                          <Mail className="h-4 w-4 text-zinc-400" />
+                          <span className="text-zinc-400">
+                            Amministrazione
+                          </span>
+                          <span className="text-zinc-700">
+                            {artist.email || "-"}
+                          </span>
+                        </span>
                       </div>
 
                       <div className="flex flex-wrap items-center gap-2 text-xs text-zinc-500">
@@ -895,13 +1113,6 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
             {previewArtists.length ? (
               <div className="divide-y divide-zinc-100">
                 {previewArtists.map((artist) => {
-                  const managerName = [
-                    artist.tourManagerName,
-                    artist.tourManagerSurname,
-                  ]
-                    .filter(Boolean)
-                    .join(" ");
-                  const hasManager = managerName.length > 0;
                   return (
                     <div
                       key={`id-${artist.id}`}
@@ -939,24 +1150,36 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
                       </div>
 
                       <div className="flex flex-wrap items-center gap-4 text-xs text-zinc-500">
-                        {hasManager ? (
-                          <>
-                            <span className="text-zinc-400">Manager</span>
-                            <span className="text-zinc-600">{managerName}</span>
-                          </>
-                        ) : (
-                          <span className="text-zinc-400">
-                            Manager non assegnato
+                        <span className="inline-flex items-center gap-1.5">
+                          <Briefcase className="h-4 w-4 text-zinc-400" />
+                          <span className="text-zinc-400">Manager</span>
+                          <ManagersBadge
+                            userRole={user.role}
+                            managers={artist.managers}
+                            pathSegment="manager-artisti"
+                          />
+                        </span>
+                        <span className="inline-flex items-center gap-1.5">
+                          <User className="h-4 w-4 text-zinc-400" />
+                          <span className="text-zinc-400">Tour manager</span>
+                          <span className="text-zinc-700">
+                            {artist.tourManagerName ||
+                            artist.tourManagerSurname
+                              ? `${artist.tourManagerName ?? ""} ${
+                                  artist.tourManagerSurname ?? ""
+                                }`.trim()
+                              : artist.tourManagerEmail || "-"}
                           </span>
-                        )}
-                        {artist.tourManagerEmail && (
-                          <>
-                            <span className="text-zinc-400">Email</span>
-                            <span className="text-zinc-600">
-                              {artist.tourManagerEmail}
-                            </span>
-                          </>
-                        )}
+                        </span>
+                        <span className="inline-flex items-center gap-1.5">
+                          <Mail className="h-4 w-4 text-zinc-400" />
+                          <span className="text-zinc-400">
+                            Amministrazione
+                          </span>
+                          <span className="text-zinc-700">
+                            {artist.email || "-"}
+                          </span>
+                        </span>
                       </div>
 
                       <div className="flex flex-wrap items-center gap-2 text-xs text-zinc-500">
@@ -970,6 +1193,91 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
                     </div>
                   );
                 })}
+              </div>
+            ) : (
+              <div className="px-4 py-6 text-sm text-zinc-500">
+                Nessun documento disponibile.
+              </div>
+            )}
+          </section>
+
+          <section className="rounded-2xl border border-zinc-100 bg-white lg:col-span-2">
+            <div className="flex items-center justify-between border-b border-zinc-100 px-4 py-3">
+              <h2 className="text-sm font-semibold text-zinc-800">Other</h2>
+              <Link
+                href="/documents/other"
+                className="inline-flex items-center gap-1 text-xs text-zinc-500 hover:text-zinc-700"
+              >
+                Vedi tutto <ChevronRight className="size-4" />
+              </Link>
+            </div>
+            {previewArtists.length ? (
+              <div className="divide-y divide-zinc-100">
+                {previewArtists.map((artist) => (
+                  <div
+                    key={`other-artist-${artist.id}`}
+                    className="flex flex-col gap-3 px-4 py-4"
+                  >
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex items-center gap-3">
+                        <Avatar className="h-8 w-8">
+                          <AvatarImage
+                            src={artist.avatarUrl || AVATAR_FALLBACK}
+                          />
+                          <AvatarFallback>
+                            {artist.stageName.substring(0, 1).toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0">
+                          <Link
+                            href={`/artisti/${artist.slug}`}
+                            className="text-xs font-semibold text-zinc-800"
+                          >
+                            @{artist.stageName}
+                          </Link>
+                          <div className="text-[10px] text-zinc-500">
+                            {artist.name} {artist.surname}
+                          </div>
+                        </div>
+                      </div>
+                      <Link
+                        href={`/artisti/${artist.slug}`}
+                        aria-label="Open artist details"
+                        className="inline-flex items-center text-zinc-400 hover:text-zinc-600"
+                      >
+                        <ChevronRight className="size-4" />
+                      </Link>
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-4 text-xs text-zinc-500">
+                      <span className="inline-flex items-center gap-1.5">
+                        <Briefcase className="h-4 w-4 text-zinc-400" />
+                        <span className="text-zinc-400">Manager</span>
+                        <ManagersBadge
+                          userRole={user.role}
+                          managers={artist.managers}
+                          pathSegment="manager-artisti"
+                        />
+                      </span>
+                      <span className="inline-flex items-center gap-1.5">
+                        <Mail className="h-4 w-4 text-zinc-400" />
+                        <span className="text-zinc-400">Email</span>
+                        <span className="text-zinc-700">
+                          {artist.email || "-"}
+                        </span>
+                      </span>
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-2 text-xs text-zinc-500">
+                      <FileText className="h-4 w-4 text-zinc-400" />
+                      <span>Documento</span>
+                      <span className="inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-1.5 text-zinc-600">
+                        <FileText className="h-4 w-4 text-zinc-400" />
+                        Documento.pdf
+                      </span>
+                    </div>
+                  </div>
+                ))}
               </div>
             ) : (
               <div className="px-4 py-6 text-sm text-zinc-500">

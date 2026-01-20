@@ -4,6 +4,7 @@ import { User } from '@/lib/auth';
 import { PAGINATED_TABLE_ROWS_X_PAGE } from '@/lib/constants';
 import { database } from '@/lib/database/connection';
 import { and, count, desc, eq, gte, inArray, lte, sql } from 'drizzle-orm';
+import { alias } from 'drizzle-orm/pg-core';
 
 import {
   contracts,
@@ -17,11 +18,14 @@ import {
 import { supabaseServerClient } from '@/lib/supabase-server-client';
 import { sanitizeFileName } from '@/lib/utils';
 
-import { artistAvailabilities, users } from '@/lib/database/schema';
+import { artistAvailabilities, profiles, users } from '@/lib/database/schema';
 
 // ----- constants -----
 export const CONTRACT_STATUS = ['draft', 'queued', 'sent', 'viewed', 'signed', 'voided', 'declined'] as const;
 export type ContractStatus = (typeof CONTRACT_STATUS)[number];
+
+const artistManagerProfile = alias(profiles, 'artistManagerProfile');
+const artistManagerUser = alias(users, 'artistManagerUser');
 
 export type ContractListFilters = {
   currentPage?: number | null;
@@ -152,6 +156,15 @@ export async function getContracts(
           paymentDate: events.paymentDate,
         },
 
+        artistManager: {
+          id: artistManagerUser.id,
+          status: artistManagerUser.status,
+          profileId: artistManagerProfile.id,
+          avatarUrl: artistManagerProfile.avatarUrl,
+          name: artistManagerProfile.name,
+          surname: artistManagerProfile.surname,
+        },
+
         // ✅ populated availability like getEvents
         availability: {
           id: artistAvailabilities.id,
@@ -168,6 +181,8 @@ export async function getContracts(
 
       // ✅ LEFT JOIN so contracts still return even if availabilityId is null
       .leftJoin(artistAvailabilities, eq(events.availabilityId, artistAvailabilities.id))
+      .leftJoin(artistManagerProfile, eq(events.artistManagerProfileId, artistManagerProfile.id))
+      .leftJoin(artistManagerUser, eq(artistManagerProfile.userId, artistManagerUser.id))
 
       .where(filters)
       .orderBy(sort === 'asc' ? contracts.createdAt : desc(contracts.createdAt));

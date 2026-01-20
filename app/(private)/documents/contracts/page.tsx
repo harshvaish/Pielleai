@@ -26,10 +26,15 @@ import {
   ChevronRight,
   Clock,
   FileText,
+  Mail,
+  MapPin,
+  Briefcase,
+  User,
   PartyPopper,
   X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { JSX } from "react";
 
 type ContractsPageProps = {
@@ -111,6 +116,15 @@ export type ContractCard = {
     tourManagerSurname: string | undefined;
     tourManagerPhone: string | undefined;
   };
+
+  artistManager: {
+    id: string;
+    profileId: number;
+    avatarUrl: string | null;
+    name: string;
+    surname: string;
+    status: string;
+  } | null;
 
   venue: {
     id: number;
@@ -308,6 +322,8 @@ function mapContract(c: any): ContractCard {
   const { date, time } = formatDateAndTime(c.availability);
 
   const backendStatus = c.status as BackendContractStatus;
+  const artistManager =
+    c.artistManager && c.artistManager.id ? c.artistManager : null;
   return {
     id: c.id,
     backendStatus,
@@ -337,6 +353,7 @@ function mapContract(c: any): ContractCard {
       tourManagerSurname: c.artist.tourManagerSurname ?? undefined,
       tourManagerPhone: c.artist.tourManagerPhone ?? undefined,
     },
+    artistManager,
     availability: c.availability
       ? {
           id: c.availability.id,
@@ -587,6 +604,63 @@ export default async function ContractsPage({
                           </span>
                         </div>
                       </div>
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-4 text-xs text-zinc-500">
+                      <span className="inline-flex items-center gap-1.5">
+                        <MapPin className="h-4 w-4 text-zinc-400" />
+                        <span className="text-zinc-400">Locale</span>
+                        <span className="text-zinc-700">
+                          Club "{contract.venue.name}"
+                        </span>
+                      </span>
+                      <span className="inline-flex items-center gap-1.5">
+                        <Briefcase className="h-4 w-4 text-zinc-400" />
+                        <span className="text-zinc-400">Manager</span>
+                        {contract.artistManager ? (
+                          <Link
+                            href={`/manager-artisti/${contract.artistManager.id}`}
+                            className="inline-flex items-center gap-2 rounded-full bg-zinc-100 px-2 py-1 text-xs font-medium text-zinc-700 hover:bg-zinc-200"
+                          >
+                            <Avatar className="h-4 w-4">
+                              <AvatarImage
+                                src={
+                                  contract.artistManager.avatarUrl ||
+                                  AVATAR_FALLBACK
+                                }
+                              />
+                              <AvatarFallback>
+                                {contract.artistManager.name
+                                  .substring(0, 1)
+                                  .toUpperCase()}
+                              </AvatarFallback>
+                            </Avatar>
+                            {contract.artistManager.name}{" "}
+                            {contract.artistManager.surname}
+                          </Link>
+                        ) : (
+                          <span className="text-zinc-700">-</span>
+                        )}
+                      </span>
+                      <span className="inline-flex items-center gap-1.5">
+                        <User className="h-4 w-4 text-zinc-400" />
+                        <span className="text-zinc-400">Tour manager</span>
+                        <span className="text-zinc-700">
+                          {contract.artist.tourManagerName ||
+                          contract.artist.tourManagerSurname
+                            ? `${contract.artist.tourManagerName ?? ""} ${
+                                contract.artist.tourManagerSurname ?? ""
+                              }`.trim()
+                            : contract.event.tourManagerEmail || "-"}
+                        </span>
+                      </span>
+                      <span className="inline-flex items-center gap-1.5">
+                        <Mail className="h-4 w-4 text-zinc-400" />
+                        <span className="text-zinc-400">Amministrazione</span>
+                        <span className="text-zinc-700">
+                          {contract.event.payrollConsultantEmail || "-"}
+                        </span>
+                      </span>
                     </div>
 
                     <div className="flex items-center gap-2 text-xs text-zinc-500 py-2">

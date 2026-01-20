@@ -97,6 +97,10 @@ export async function getPaginatedArtists({
         email: artists.email,
         phone: artists.phone,
         company: artists.company,
+        tourManagerEmail: artists.tourManagerEmail,
+        tourManagerName: artists.tourManagerName,
+        tourManagerSurname: artists.tourManagerSurname,
+        tourManagerPhone: artists.tourManagerPhone,
         status: artists.status,
         createdAt: artists.createdAt,
 

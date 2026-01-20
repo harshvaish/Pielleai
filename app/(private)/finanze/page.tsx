@@ -19,6 +19,7 @@ import { it } from 'date-fns/locale';
 import EventStatusBadge from '../_components/Badges/EventStatusBadge';
 import ArtistsBadge from '../_components/Badges/ArtistsBadge';
 import VenuesBadge from '../_components/Badges/VenuesBadge';
+import Link from 'next/link';
 
 export const dynamic = 'force-dynamic';
 
@@ -161,6 +162,7 @@ export default async function FinanzePage({ searchParams }: FinanzePageProps) {
           <Table className='min-w-[1400px]'>
             <TableHeader className='bg-zinc-50'>
               <TableRow>
+                <TableHead>Titolo evento</TableHead>
                 <TableHead>Data evento</TableHead>
                 <TableHead>Artista</TableHead>
                 <TableHead>Locale</TableHead>
@@ -193,9 +195,18 @@ export default async function FinanzePage({ searchParams }: FinanzePageProps) {
                 const paymentDate = event.paymentDate
                   ? format(event.paymentDate, 'dd/MM/yyyy', { locale: it })
                   : '-';
+                const eventTitle = event.title?.trim() || `Evento #${event.id}`;
 
                 return (
                   <TableRow key={event.id}>
+                    <TableCell className='whitespace-nowrap'>
+                      <Link
+                        href={`/eventi/${event.id}`}
+                        className='font-medium text-zinc-900 hover:underline'
+                      >
+                        {eventTitle}
+                      </Link>
+                    </TableCell>
                     <TableCell className='whitespace-nowrap'>{eventDate}</TableCell>
                     <TableCell className='whitespace-nowrap'>
                       <ArtistsBadge
