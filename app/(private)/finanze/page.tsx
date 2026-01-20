@@ -20,6 +20,7 @@ import EventStatusBadge from '../_components/Badges/EventStatusBadge';
 import ArtistsBadge from '../_components/Badges/ArtistsBadge';
 import VenuesBadge from '../_components/Badges/VenuesBadge';
 import Link from 'next/link';
+import { generateEventTitle } from '@/lib/utils/generate-event-title';
 
 export const dynamic = 'force-dynamic';
 
@@ -195,7 +196,15 @@ export default async function FinanzePage({ searchParams }: FinanzePageProps) {
                 const paymentDate = event.paymentDate
                   ? format(event.paymentDate, 'dd/MM/yyyy', { locale: it })
                   : '-';
-                const eventTitle = event.title?.trim() || `Evento #${event.id}`;
+                const eventTitle =
+                  event.title?.trim() ||
+                  generateEventTitle(
+                    event.artist.stageName?.trim() ||
+                      `${event.artist.name} ${event.artist.surname}`.trim(),
+                    event.venue.name,
+                    event.availability.startDate,
+                    event.availability.endDate,
+                  );
 
                 return (
                   <TableRow key={event.id}>

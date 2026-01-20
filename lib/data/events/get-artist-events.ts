@@ -2,7 +2,7 @@
 
 import { PAGINATED_TABLE_ROWS_X_PAGE } from '@/lib/constants';
 import { database } from '@/lib/database/connection';
-import { artistAvailabilities, events, venues } from '@/lib/database/schema';
+import { artistAvailabilities, artists, events, venues } from '@/lib/database/schema';
 import { ArtistEventListItem, ArtistEventsTableFilters } from '@/lib/types';
 import { and, count, eq, inArray, sql } from 'drizzle-orm';
 
@@ -42,6 +42,12 @@ export async function getArtistEvents(
       .select({
         id: events.id,
         title: events.title,
+        artist: {
+          id: artists.id,
+          name: artists.name,
+          surname: artists.surname,
+          stageName: artists.stageName,
+        },
         status: events.status,
         eventType: events.eventType,
         startDate: artistAvailabilities.startDate,
@@ -55,6 +61,7 @@ export async function getArtistEvents(
       .from(events)
       .innerJoin(artistAvailabilities, eq(events.availabilityId, artistAvailabilities.id))
       .innerJoin(venues, eq(events.venueId, venues.id))
+      .innerJoin(artists, eq(events.artistId, artists.id))
       .where(filters)
       .orderBy(artistAvailabilities.startDate);
 

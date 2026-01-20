@@ -42,6 +42,7 @@ export async function getEventById(user: User, eventId: number): Promise<Event |
     const eventsResult = await database
       .select({
         id: events.id,
+        title: events.title,
 
         artist: {
           id: artists.id,

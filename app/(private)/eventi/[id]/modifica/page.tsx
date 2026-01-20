@@ -49,10 +49,11 @@ export default async function UpdateEventPage({ params }: UpdateEventPageProps) 
   ]);
 
   return (
-    <div className='max-w-5xl space-y-6'>
-      <div className='flex items-center justify-between'>
+    <div className='max-w-5xl space-y-4'>
+      <div className='flex items-center justify-between -mt-1'>
         <BackButton />
       </div>
+      <h1 className='text-2xl font-bold'>Modifica evento</h1>
       <section className='bg-white p-6 rounded-2xl'>
         <UpdateEventForm
           event={event}

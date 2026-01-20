@@ -30,6 +30,7 @@ import EventStatusBadge from "../_components/Badges/EventStatusBadge";
 import { AVATAR_FALLBACK } from "@/lib/constants";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ArtistsTableFilters } from "@/lib/types";
+import { generateEventTitle } from "@/lib/utils/generate-event-title";
 
 type EventsPageProps = {
   searchParams?: Promise<{
@@ -124,6 +125,7 @@ export type ContractCard = {
 
   event: {
     id: number;
+    title?: string | null;
     availabilityId: number;
     status: string;
     eventType: string | null;
@@ -395,6 +397,7 @@ function mapContract(c: any): ContractCard {
 
     event: {
       id: c.event.id,
+      title: c.event.title ?? null,
       availabilityId: c.event.availabilityId,
       status: c.event.status,
       eventType: c.event.eventType ?? null,
@@ -515,6 +518,20 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
   );
   const previewContracts = contracts.slice(0, 3);
   const previewArtists = artists.slice(0, 3);
+  const buildEventTitle = (contract: ContractCard) => {
+    const existingTitle = contract.event.title?.trim();
+    if (existingTitle) return existingTitle;
+    if (!contract.availability) return `Evento #${contract.event.id}`;
+    const artistLabel =
+      contract.artist.stageName?.trim() ||
+      `${contract.artist.name} ${contract.artist.surname}`.trim();
+    return generateEventTitle(
+      artistLabel,
+      contract.venue.name,
+      new Date(contract.availability.startDate),
+      new Date(contract.availability.endDate),
+    );
+  };
 
   function getBackendStatusLabel(status: string) {
     switch (status) {
@@ -611,28 +628,31 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
                       </div>
 
                       <div className="flex flex-col gap-3">
-                      <div className="flex flex-wrap items-center gap-3 text-sm">
-                        <ArtistsBadge
-                          artists={[contract.artist]}
-                          userRole={user.role}
-                        />
-                        <div className="flex flex-col gap-1.5">
-                          <DocumentVenuesBadge
+                        <div className="text-sm font-semibold text-zinc-800">
+                          {buildEventTitle(contract)}
+                        </div>
+                        <div className="flex flex-wrap items-center gap-3 text-sm">
+                          <ArtistsBadge
+                            artists={[contract.artist]}
                             userRole={user.role}
-                            venues={[contract.venue]}
                           />
-                          <div className="flex flex-wrap items-center gap-4 text-xs text-zinc-500">
-                            <span className="flex items-center gap-1">
-                              <CalendarDays className="h-4 w-4 text-zinc-400" />
-                              {contract.date}
-                            </span>
-                            <span className="flex items-center gap-1">
-                              <Clock className="h-4 w-4 text-zinc-400" />
-                              {contract.time}
-                            </span>
+                          <div className="flex flex-col gap-1.5">
+                            <DocumentVenuesBadge
+                              userRole={user.role}
+                              venues={[contract.venue]}
+                            />
+                            <div className="flex flex-wrap items-center gap-4 text-xs text-zinc-500">
+                              <span className="flex items-center gap-1">
+                                <CalendarDays className="h-4 w-4 text-zinc-400" />
+                                {contract.date}
+                              </span>
+                              <span className="flex items-center gap-1">
+                                <Clock className="h-4 w-4 text-zinc-400" />
+                                {contract.time}
+                              </span>
+                            </div>
                           </div>
                         </div>
-                      </div>
 
                       <div className="flex flex-wrap items-center gap-4 text-xs text-zinc-500">
                         <span className="inline-flex items-center gap-1.5">
@@ -769,6 +789,9 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
                       </span>
                     </div>
                     <div className="flex flex-col gap-3">
+                      <div className="text-sm font-semibold text-zinc-800">
+                        {buildEventTitle(contract)}
+                      </div>
                       <div className="flex flex-wrap items-center gap-3 text-sm">
                         <ArtistsBadge
                           artists={[contract.artist]}
@@ -891,6 +914,9 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
                       </span>
                     </div>
                     <div className="flex flex-col gap-3">
+                      <div className="text-sm font-semibold text-zinc-800">
+                        {buildEventTitle(contract)}
+                      </div>
                       <div className="flex flex-wrap items-center gap-3 text-sm">
                         <ArtistsBadge
                           artists={[contract.artist]}
@@ -1084,10 +1110,19 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
                       <div className="flex flex-wrap items-center gap-2 text-xs text-zinc-500">
                         <FileText className="h-4 w-4 text-zinc-400" />
                         <span>Codice Fiscale</span>
-                        <span className="inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-1.5 text-zinc-600">
+                      {artist.taxCodeFileUrl ? (
+                        <a
+                          href={artist.taxCodeFileUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-1.5 text-zinc-600 hover:underline"
+                        >
                           <FileText className="h-4 w-4 text-zinc-400" />
-                          Codice Fiscale.pdf
-                        </span>
+                          {artist.taxCodeFileName ?? "Codice Fiscale.pdf"}
+                        </a>
+                      ) : (
+                        <span className="text-zinc-400">Mancante</span>
+                      )}
                       </div>
                     </div>
                   );
@@ -1185,10 +1220,19 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
                       <div className="flex flex-wrap items-center gap-2 text-xs text-zinc-500">
                         <FileText className="h-4 w-4 text-zinc-400" />
                         <span>ID Card</span>
-                        <span className="inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-1.5 text-zinc-600">
+                      {artist.idCardFileUrl ? (
+                        <a
+                          href={artist.idCardFileUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-1.5 text-zinc-600 hover:underline"
+                        >
                           <FileText className="h-4 w-4 text-zinc-400" />
-                          ID Card.pdf
-                        </span>
+                          {artist.idCardFileName ?? "ID Card.pdf"}
+                        </a>
+                      ) : (
+                        <span className="text-zinc-400">Mancante</span>
+                      )}
                       </div>
                     </div>
                   );
@@ -1271,10 +1315,19 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
                     <div className="flex flex-wrap items-center gap-2 text-xs text-zinc-500">
                       <FileText className="h-4 w-4 text-zinc-400" />
                       <span>Documento</span>
-                      <span className="inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-1.5 text-zinc-600">
-                        <FileText className="h-4 w-4 text-zinc-400" />
-                        Documento.pdf
-                      </span>
+                      {artist.taxCodeFileUrl ? (
+                        <a
+                          href={artist.taxCodeFileUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-1.5 text-zinc-600 hover:underline"
+                        >
+                          <FileText className="h-4 w-4 text-zinc-400" />
+                          {artist.taxCodeFileName ?? "Documento.pdf"}
+                        </a>
+                      ) : (
+                        <span className="text-zinc-400">Mancante</span>
+                      )}
                     </div>
                   </div>
                 ))}

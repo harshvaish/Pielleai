@@ -10,6 +10,7 @@ export async function getEventSummary(eventId: number): Promise<EventSummary | n
     const result = await database
       .select({
         id: events.id,
+        title: events.title,
         status: events.status,
         eventType: events.eventType as any,
         startDate: artistAvailabilities.startDate,

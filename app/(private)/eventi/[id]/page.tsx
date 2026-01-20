@@ -14,6 +14,7 @@ import { TIME_ZONE } from '@/lib/constants';
 import { database } from '@/lib/database/connection';
 import { events, contracts } from '@/drizzle/schema';
 import { eq } from 'drizzle-orm';
+import { generateEventTitle } from '@/lib/utils/generate-event-title';
 import RegisterPaymentForm from './_components/RegisterPaymentForm';
 import PayWithStripeButton from './_components/PayWithStripeButton';
 import PaymentSuccessHandler from './_components/PaymentSuccessHandler';
@@ -98,8 +99,12 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
   const startLabel = format(toZonedTime(event.startDate, TIME_ZONE), 'dd/MM/yyyy, HH:mm');
   const endLabel = format(toZonedTime(event.endDate, TIME_ZONE), 'dd/MM/yyyy, HH:mm');
   const artistName = `${event.artist.name} ${event.artist.surname}`.trim();
+  const artistLabel = event.artist.stageName?.trim() || artistName;
   const eventTypeLabel = event.eventType ? EVENT_TYPE_LABELS[event.eventType] : null;
   const isAdmin = hasRole(user, ['admin']);
+  const eventTitle =
+    event.title?.trim() ||
+    generateEventTitle(artistLabel, event.venue.name, event.startDate, event.endDate);
 
   return (
     <div className='max-w-3xl space-y-6'>
@@ -113,7 +118,7 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
       <section className='bg-white p-6 rounded-2xl space-y-4'>
         <div className='flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4'>
           <div className='space-y-1'>
-            <div className='text-xl font-bold'>Evento #{event.id}</div>
+            <div className='text-xl font-bold'>{eventTitle}</div>
             <div className='text-sm text-zinc-500'>{event.venue.name}</div>
           </div>
           <div className='flex items-center gap-2'>

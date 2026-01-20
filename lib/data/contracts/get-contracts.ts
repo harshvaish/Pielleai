@@ -144,6 +144,7 @@ export async function getContracts(
 
         event: {
           id: events.id,
+          title: events.title,
           status: events.status,
           availabilityId: events.availabilityId,
           depositCost: events.depositCost,

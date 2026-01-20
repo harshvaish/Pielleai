@@ -65,6 +65,10 @@ export async function getArtist(slug: string): Promise<ArtistData | null> {
 
         company: artists.company,
         taxCode: artists.taxCode,
+        taxCodeFileUrl: artists.taxCodeFileUrl,
+        taxCodeFileName: artists.taxCodeFileName,
+        idCardFileUrl: artists.idCardFileUrl,
+        idCardFileName: artists.idCardFileName,
         ipiCode: artists.ipiCode,
         bicCode: artists.bicCode,
         abaRoutingNumber: artists.abaRoutingNumber,

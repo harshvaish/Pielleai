@@ -1,4 +1,5 @@
 import { ArtistManagerSelectData, CalendarEvent, UserRole } from '@/lib/types';
+import { generateEventTitle } from '@/lib/utils/generate-event-title';
 import { format } from 'date-fns';
 import { CalendarDays, Clock } from 'lucide-react';
 import ArtistsBadge from '../Badges/ArtistsBadge';
@@ -18,10 +19,16 @@ export default function EventContent({ userRole, event }: EventContentProps) {
   const selectedDate = event ? format(event.start, 'yyyy-MM-dd') : '';
   const selectedStartTime = event ? format(event.start, 'HH:mm') : '';
   const selectedEndTime = event ? format(event.end, 'HH:mm') : '';
+  const artistLabel =
+    event.artist.stageName?.trim() || `${event.artist.name} ${event.artist.surname}`.trim();
+  const eventTitle =
+    event.title?.trim() ||
+    generateEventTitle(artistLabel, event.venue.name, event.start, event.end);
 
   return (
     <div className='grid sm:grid-cols-2 gap-4 p-2'>
       <div className='space-y-2'>
+        <div className='text-sm font-semibold text-zinc-800'>{eventTitle}</div>
         <div className='flex items-center gap-2'>
           <EventStatusBadge status={event.status} />
           {isAdmin && event.hasConflict && <EventConflictBadge />}

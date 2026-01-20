@@ -18,6 +18,7 @@ import ManagersBadge from '../Badges/ManagersBadge';
 import EventConflictBadge from '../Badges/EventConflictBadge';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
+import { generateEventTitle } from '@/lib/utils/generate-event-title';
 
 type EventTileProps = {
   userRole: UserRole;
@@ -39,6 +40,14 @@ export default function EventTile({
   const eventDate = format(event.availability.startDate, 'dd MMM yyyy', { locale: it });
   const eventStartTime = format(event.availability.startDate, 'HH:mm', { locale: it });
   const eventEndTime = format(event.availability.endDate, 'HH:mm', { locale: it });
+  const eventTitle =
+    event.title?.trim() ||
+    generateEventTitle(
+      event.artist.stageName?.trim() || `${event.artist.name} ${event.artist.surname}`.trim(),
+      event.venue.name,
+      event.availability.startDate,
+      event.availability.endDate,
+    );
 
   const activityCount = Object.values({
     contractSigning: event.contractSigning,
@@ -78,6 +87,8 @@ export default function EventTile({
             </Popover>
           )}
         </div>
+
+        <div className='text-sm font-semibold text-zinc-800'>{eventTitle}</div>
 
         <div className='flex flex-col sm:flex-row justify-between sm:items-end gap-4'>
           <div className='flex justify-between items-center gap-4'>
@@ -227,185 +238,188 @@ export default function EventTile({
       </div>
 
       {/* DESKTOP */}
-      <div className='max-h-max hidden xl:flex justify-between items-center gap-4 hover:bg-zinc-50 rounded-2xl p-6'>
-        <div className='grid grid-cols-[max-content_1fr] gap-4'>
-          {/* time info */}
-          <div className='w-40 flex flex-col gap-1 justify-center pe-4 border-r'>
-            <EventStatusBadge status={event.status} />
+      <div className='max-h-max hidden xl:flex flex-col gap-3 hover:bg-zinc-50 rounded-2xl p-6'>
+        <div className='text-sm font-semibold text-zinc-800'>{eventTitle}</div>
+        <div className='flex justify-between items-center gap-4'>
+          <div className='grid grid-cols-[max-content_1fr] gap-4'>
+            {/* time info */}
+            <div className='w-40 flex flex-col gap-1 justify-center pe-4 border-r'>
+              <EventStatusBadge status={event.status} />
 
-            {userRole === 'admin' && event.hasConflict && <EventConflictBadge />}
-            <div className='text-lg font-semibold capitalize'>{eventDate}</div>
-            <div className='text-zinc-500 font-medium'>
-              {eventStartTime} - {eventEndTime}
-            </div>
-          </div>
-
-          {/* general info */}
-          <div className='space-y-4'>
-            <div className='flex justify-start items-center gap-4'>
-              <ArtistsBadge
-                artists={[event.artist]}
-                userRole={userRole}
-              />
-              {isAdmin && (
-                <div className='flex items-center gap-2'>
-                  <div className='w-3 h-3 flex justify-center items-center bg-zinc-400 rounded-xs'>
-                    <Check className='size-2 text-white' />
-                  </div>
-                  <span className='text-xs text-zinc-400 font-normal'>
-                    Attività completate: {activityCount}/10
-                  </span>
-                </div>
-              )}
-            </div>
-            <div className='grid grid-cols-2 gap-4'>
-              <div className='flex items-center gap-4'>
-                <div className='flex items-center gap-1'>
-                  <Image
-                    className='w-4 h-4'
-                    src='/images/navbar-icons/venues.svg'
-                    alt='icona geolocalizzazione'
-                    width={16}
-                    height={16}
-                    loading='lazy'
-                  />
-                  <span className='text-xs text-zinc-600'>Location</span>
-                </div>
-                <VenuesBadge
-                  userRole={userRole}
-                  venues={[event.venue]}
-                />
+              {userRole === 'admin' && event.hasConflict && <EventConflictBadge />}
+              <div className='text-lg font-semibold capitalize'>{eventDate}</div>
+              <div className='text-zinc-500 font-medium'>
+                {eventStartTime} - {eventEndTime}
               </div>
+            </div>
 
-              {isAdmin && event.artistManager && (
+            {/* general info */}
+            <div className='space-y-4'>
+              <div className='flex justify-start items-center gap-4'>
+                <ArtistsBadge
+                  artists={[event.artist]}
+                  userRole={userRole}
+                />
+                {isAdmin && (
+                  <div className='flex items-center gap-2'>
+                    <div className='w-3 h-3 flex justify-center items-center bg-zinc-400 rounded-xs'>
+                      <Check className='size-2 text-white' />
+                    </div>
+                    <span className='text-xs text-zinc-400 font-normal'>
+                      Attività completate: {activityCount}/10
+                    </span>
+                  </div>
+                )}
+              </div>
+              <div className='grid grid-cols-2 gap-4'>
                 <div className='flex items-center gap-4'>
                   <div className='flex items-center gap-1'>
                     <Image
                       className='w-4 h-4'
-                      src='/images/navbar-icons/artist-managers.svg'
-                      alt='icona valigetta'
+                      src='/images/navbar-icons/venues.svg'
+                      alt='icona geolocalizzazione'
                       width={16}
                       height={16}
                       loading='lazy'
                     />
-                    <span className='text-xs text-zinc-600'>Manager</span>
+                    <span className='text-xs text-zinc-600'>Location</span>
                   </div>
-
-                  <ManagersBadge
+                  <VenuesBadge
                     userRole={userRole}
-                    managers={[event.artistManager]}
-                    pathSegment='manager-artisti'
+                    venues={[event.venue]}
                   />
                 </div>
-              )}
 
-              {isAdmin && event.tourManagerEmail && (
-                <div className='flex items-center gap-4'>
-                  <div className='flex items-center gap-1'>
-                    <Image
-                      className='w-4 h-4'
-                      src='/images/navbar-icons/artist-managers.svg'
-                      alt='icona valigetta'
-                      width={16}
-                      height={16}
-                      loading='lazy'
+                {isAdmin && event.artistManager && (
+                  <div className='flex items-center gap-4'>
+                    <div className='flex items-center gap-1'>
+                      <Image
+                        className='w-4 h-4'
+                        src='/images/navbar-icons/artist-managers.svg'
+                        alt='icona valigetta'
+                        width={16}
+                        height={16}
+                        loading='lazy'
+                      />
+                      <span className='text-xs text-zinc-600'>Manager</span>
+                    </div>
+
+                    <ManagersBadge
+                      userRole={userRole}
+                      managers={[event.artistManager]}
+                      pathSegment='manager-artisti'
                     />
-                    <span className='text-xs text-zinc-600'>Tour manager</span>
                   </div>
-                  <span className='text-xs text-zinc-500 font-semibold'>
-                    {event.tourManagerEmail}
-                  </span>
-                </div>
-              )}
+                )}
+
+                {isAdmin && event.tourManagerEmail && (
+                  <div className='flex items-center gap-4'>
+                    <div className='flex items-center gap-1'>
+                      <Image
+                        className='w-4 h-4'
+                        src='/images/navbar-icons/artist-managers.svg'
+                        alt='icona valigetta'
+                        width={16}
+                        height={16}
+                        loading='lazy'
+                      />
+                      <span className='text-xs text-zinc-600'>Tour manager</span>
+                    </div>
+                    <span className='text-xs text-zinc-500 font-semibold'>
+                      {event.tourManagerEmail}
+                    </span>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
-        </div>
 
-        <div className='flex items-center gap-2'>
-          <Button
-            asChild
-            variant='outline'
-            size='sm'
-          >
-            <Link href={`/eventi/${event.id}`}>
-              <Eye className='size-4' />
-              Vedi Dettagli
-            </Link>
-          </Button>
+          <div className='flex items-center gap-2'>
+            <Button
+              asChild
+              variant='outline'
+              size='sm'
+            >
+              <Link href={`/eventi/${event.id}`}>
+                <Eye className='size-4' />
+                Vedi Dettagli
+              </Link>
+            </Button>
 
-          {isAdmin && event.status === 'proposed' && (
-            <UpdateEventStatusButton
-              event={event}
-              newStatus='pre-confirmed'
-              buttonLabel='Accetta'
-              buttonVariant='success'
-              dialogTitle='Vuoi accettare questa richiesta?'
-              dialogDescription="Accettando, l'evento sarà inoltrato al manager dell'artista per la conferma finale. Confermi di voler procedere?"
-              icon={<Check className='size-4' />}
-            />
-          )}
+            {isAdmin && event.status === 'proposed' && (
+              <UpdateEventStatusButton
+                event={event}
+                newStatus='pre-confirmed'
+                buttonLabel='Accetta'
+                buttonVariant='success'
+                dialogTitle='Vuoi accettare questa richiesta?'
+                dialogDescription="Accettando, l'evento sarà inoltrato al manager dell'artista per la conferma finale. Confermi di voler procedere?"
+                icon={<Check className='size-4' />}
+              />
+            )}
 
-          {isArtistManager && event.status === 'pre-confirmed' && (
-            <UpdateEventStatusButton
-              event={event}
-              newStatus='confirmed'
-              buttonLabel='Accetta'
-              buttonVariant='success'
-              dialogTitle='Vuoi accettare questa richiesta?'
-              dialogDescription='Confermi di voler procedere?'
-              icon={<Check className='size-4' />}
-            />
-          )}
+            {isArtistManager && event.status === 'pre-confirmed' && (
+              <UpdateEventStatusButton
+                event={event}
+                newStatus='confirmed'
+                buttonLabel='Accetta'
+                buttonVariant='success'
+                dialogTitle='Vuoi accettare questa richiesta?'
+                dialogDescription='Confermi di voler procedere?'
+                icon={<Check className='size-4' />}
+              />
+            )}
 
-          {isAdmin && event.status === 'proposed' && (
-            <UpdateEventStatusButton
-              event={event}
-              newStatus='rejected'
-              buttonLabel='Rifiuta'
-              buttonVariant='destructive'
-              dialogTitle='Vuoi rifiutare questa richiesta?'
-              dialogDescription="Sei sicuro di voler rifiutare questa richiesta? L'organizzatore dell'evento riceverà una notifica."
-              icon={<X className='size-4' />}
-            />
-          )}
+            {isAdmin && event.status === 'proposed' && (
+              <UpdateEventStatusButton
+                event={event}
+                newStatus='rejected'
+                buttonLabel='Rifiuta'
+                buttonVariant='destructive'
+                dialogTitle='Vuoi rifiutare questa richiesta?'
+                dialogDescription="Sei sicuro di voler rifiutare questa richiesta? L'organizzatore dell'evento riceverà una notifica."
+                icon={<X className='size-4' />}
+              />
+            )}
 
-          {isArtistManager && (event.status === 'proposed' || event.status === 'pre-confirmed') && (
-            <UpdateEventStatusButton
-              event={event}
-              newStatus='rejected'
-              buttonLabel='Rifiuta'
-              buttonVariant='destructive'
-              dialogTitle='Vuoi rifiutare questa richiesta?'
-              dialogDescription="Sei sicuro di voler rifiutare questa richiesta? L'organizzatore dell'evento riceverà una notifica."
-              icon={<X className='size-4' />}
-            />
-          )}
+            {isArtistManager && (event.status === 'proposed' || event.status === 'pre-confirmed') && (
+              <UpdateEventStatusButton
+                event={event}
+                newStatus='rejected'
+                buttonLabel='Rifiuta'
+                buttonVariant='destructive'
+                dialogTitle='Vuoi rifiutare questa richiesta?'
+                dialogDescription="Sei sicuro di voler rifiutare questa richiesta? L'organizzatore dell'evento riceverà una notifica."
+                icon={<X className='size-4' />}
+              />
+            )}
 
-          {isVenueManager && ['proposed', 'pre-confirmed'].includes(event.status) && (
-            <DeleteEventButton event={event} />
-          )}
+            {isVenueManager && ['proposed', 'pre-confirmed'].includes(event.status) && (
+              <DeleteEventButton event={event} />
+            )}
 
-          {isAdmin && (
-            <Popover>
-              <PopoverTrigger
-                className={cn(
-                  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-2xl text-sm font-semibold transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
-                  'bg-zinc-200 text-secondary-foreground hover:bg-zinc-200/80', // secondary variant
-                  'h-10 min-w-20 rounded-xl gap-1.5 px-3 has-[>svg]:px-2.5', // sm size
-                )}
-              >
-                Modifica <ChevronDown />
-              </PopoverTrigger>
+            {isAdmin && (
+              <Popover>
+                <PopoverTrigger
+                  className={cn(
+                    "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-2xl text-sm font-semibold transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
+                    'bg-zinc-200 text-secondary-foreground hover:bg-zinc-200/80', // secondary variant
+                    'h-10 min-w-20 rounded-xl gap-1.5 px-3 has-[>svg]:px-2.5', // sm size
+                  )}
+                >
+                  Modifica <ChevronDown />
+                </PopoverTrigger>
 
-              <PopoverContent
-                align='end'
-                className='max-w-max flex flex-col items-start gap-2'
-              >
-                <UpdateButton event={event} />
-                <DeleteEventButton event={event} />
-              </PopoverContent>
-            </Popover>
-          )}
+                <PopoverContent
+                  align='end'
+                  className='max-w-max flex flex-col items-start gap-2'
+                >
+                  <UpdateButton event={event} />
+                  <DeleteEventButton event={event} />
+                </PopoverContent>
+              </Popover>
+            )}
+          </div>
         </div>
       </div>
     </>

@@ -5,6 +5,7 @@ import { GENDERS_LABELS } from '@/lib/constants';
 import ManagersBadge from '@/app/(private)/_components/Badges/ManagersBadge';
 import TourManagerBadge from '@/app/(private)/_components/Badges/TourManagerBadge';
 import ZonesBadge from '@/app/(private)/_components/Badges/ZonesBadge';
+import ArtistDocumentUpload from '../ArtistDocumentUpload';
 
 type PersonalDataTabProps = { tabValue: string; data: ArtistData; userRole: UserRole };
 
@@ -49,6 +50,24 @@ export default function PersonalDataTab({ tabValue, data, userRole }: PersonalDa
 
           <span className='text-sm font-semibold text-zinc-600'>Lingue</span>
           <span className='text-sm font-medium text-zinc-500'>{languagesString}</span>
+
+          <span className='text-sm font-semibold text-zinc-600'>Codice Fiscale</span>
+          <ArtistDocumentUpload
+            artistId={data.id}
+            label='Codice Fiscale'
+            docType='tax-code'
+            fileUrl={data.taxCodeFileUrl}
+            fileName={data.taxCodeFileName}
+          />
+
+          <span className='text-sm font-semibold text-zinc-600'>ID Card</span>
+          <ArtistDocumentUpload
+            artistId={data.id}
+            label='ID Card'
+            docType='id-card'
+            fileUrl={data.idCardFileUrl}
+            fileName={data.idCardFileName}
+          />
         </div>
       </div>
       <div className='bg-white py-8 px-6 rounded-2xl'>

@@ -23,6 +23,7 @@ import {
 } from '@/lib/types';
 import useSWR from 'swr';
 import { calculateRange, fetcher, splitCsv } from '@/lib/utils';
+import { generateEventTitle } from '@/lib/utils/generate-event-title';
 import { toast } from 'sonner';
 import { it } from 'date-fns/locale';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -113,6 +114,17 @@ export default function EventsCalendar({ userRole, artists, venues }: EventsCale
     );
   }, [response]);
 
+  const selectedEventTitle = selectedEvent
+    ? selectedEvent.title?.trim() ||
+      generateEventTitle(
+        selectedEvent.artist.stageName?.trim() ||
+          `${selectedEvent.artist.name} ${selectedEvent.artist.surname}`.trim(),
+        selectedEvent.venue.name,
+        selectedEvent.start,
+        selectedEvent.end,
+      )
+    : '';
+
   return (
     <div className='relative'>
       {isLoading && <Skeleton className='absolute inset-0 z-50 opacity-60 rounded-xl' />}
@@ -161,7 +173,7 @@ export default function EventsCalendar({ userRole, artists, venues }: EventsCale
           setDialogOpen(open);
           if (!open) window.setTimeout(() => setSelectedEvent(null), 200);
         }}
-        title={`Evento #${selectedEvent?.id ?? ''}`}
+        title={selectedEvent ? selectedEventTitle : 'Evento'}
         description={`Consulta i dati principali dell'evento, per vederne tutti i dettagli ${isAdmin ? 'o per fare modifiche ' : ''}vai alla sezione eventi.`}
       >
         {selectedEvent && (

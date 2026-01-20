@@ -28,11 +28,14 @@ import BillingDataTab from '../../_components/Tabs/BillingDataTab';
 import AvailabilitiesTab from './_components/Tabs/AvailabilitiesTab';
 import SocialDataTab from '../../_components/Tabs/SocialDataTab';
 import ArtistEventsTab from './_components/Tabs/ArtistEventsTab';
+import DocumentsTab from './_components/Tabs/DocumentsTab';
 import CreateEventButton from '../../eventi/_components/create/CreateButton';
 import CreateArtistManagerButton from '../../manager-artisti/_components/create/CreateButton';
 import { getArtistsCached } from '@/lib/cache/artists';
 import { getMoCoordinatorsCached } from '@/lib/cache/mo-coordinators';
 import ManageArtistManagersButton from './_components/ManageArtistManagersButton';
+import { getContracts } from '@/lib/data/contracts/get-contracts';
+import { getEvents } from '@/lib/data/events/get-events';
 
 type ArtistDetailPageProps = {
   params: Promise<{ slug: string }>;
@@ -101,6 +104,27 @@ export default async function ArtistDetailPage({ params, searchParams }: ArtistD
   const updatedAtZoned = format(toZonedTime(userData.updatedAt, TIME_ZONE), 'dd/MM/yyyy, HH:mm');
 
   const sp = searchParams ? await searchParams : {};
+
+  const [contractsResponse, eventsResponse] = await Promise.all([
+    getContracts(user, {
+      currentPage: null,
+      status: ['all'],
+      artistIds: [String(userData.id)],
+      startDate: '1900-01-01',
+      endDate: '2100-01-01',
+      sort: 'desc',
+    }),
+    getEvents(user, {
+      currentPage: null,
+      status: [],
+      conflict: false,
+      artistIds: [String(userData.id)],
+      artistManagerIds: [],
+      venueIds: [],
+      startDate: null,
+      endDate: null,
+    }),
+  ]);
 
   return (
     <div className='max-w-full overflow-x-hidden'>
@@ -258,11 +282,12 @@ export default async function ArtistDetailPage({ params, searchParams }: ArtistD
           <TabsList className='w-full lg:max-w-max justify-start gap-4 bg-white p-1 rounded-xl overflow-x-auto'>
             <TabsTrigger value='a'>Dati personali</TabsTrigger>
             <TabsTrigger value='b'>Dati di fatturazione</TabsTrigger>
-            <TabsTrigger value='c'>Disponibilità</TabsTrigger>
+          <TabsTrigger value='c'>Disponibilità</TabsTrigger>
+            <TabsTrigger value='f'>Documenti</TabsTrigger>
             <TabsTrigger value='d'>Social</TabsTrigger>
             <TabsTrigger value='e'>Eventi</TabsTrigger>
-          </TabsList>
-        </div>
+        </TabsList>
+      </div>
 
         <PersonalDataTab
           tabValue='a'
@@ -286,6 +311,12 @@ export default async function ArtistDetailPage({ params, searchParams }: ArtistD
           artistId={userData.id}
           venues={venues}
           searchParams={sp ?? {}}
+        />
+        <DocumentsTab
+          tabValue='f'
+          userRole={user.role}
+          contracts={contractsResponse.data ?? []}
+          events={eventsResponse.data ?? []}
         />
       </Tabs>
     </div>

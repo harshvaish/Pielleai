@@ -36,6 +36,7 @@ export async function getCalendarEvents({
     const eventsResult = await database
       .select({
         id: events.id,
+        title: events.title,
         start: artistAvailabilities.startDate,
         end: artistAvailabilities.endDate,
 

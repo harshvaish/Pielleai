@@ -14,6 +14,7 @@ import type { EventFormSchema } from '@/lib/validation/event-form-schema';
 import { updateEvent } from '@/lib/server-actions/events/update-event';
 import EventForm from '../form/EventForm';
 import { useState } from 'react';
+import { generateEventTitle } from '@/lib/utils/generate-event-title';
 
 type UpdateEventFormProps = {
   event: DomainEvent;
@@ -78,6 +79,17 @@ export default function UpdateEventForm({
   const availabilityStart = toDate(event.availability.startDate);
   const availabilityEnd = toDate(event.availability.endDate);
   const paymentDate = toDate(event.paymentDate ?? null);
+  const eventTitle =
+    event.title?.trim() ||
+    (availabilityStart && availabilityEnd
+      ? generateEventTitle(
+          event.artist.stageName?.trim() ||
+            `${event.artist.name} ${event.artist.surname}`.trim(),
+          event.venue.name,
+          availabilityStart,
+          availabilityEnd,
+        )
+      : `Evento #${event.id}`);
 
   const methods = useForm({
     resolver: zodResolver(eventFormSchema),
@@ -198,7 +210,7 @@ export default function UpdateEventForm({
           onSubmit={handleSubmit(onSubmit)}
           noValidate={true}
         >
-          <div className='text-2xl font-bold mb-4'>Modifica evento</div>
+          <div className='text-2xl font-bold mb-4'>{eventTitle}</div>
 
           <EventForm
             artists={artists}

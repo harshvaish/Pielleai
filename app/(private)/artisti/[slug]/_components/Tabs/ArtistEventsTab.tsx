@@ -6,6 +6,7 @@ import { format } from 'date-fns';
 import { toZonedTime } from 'date-fns-tz';
 import { TIME_ZONE } from '@/lib/constants';
 import { splitCsv } from '@/lib/utils';
+import { generateEventTitle } from '@/lib/utils/generate-event-title';
 import { ArtistEventsTableFilters, EventStatus, EventType, VenueSelectData } from '@/lib/types';
 import { artistEventsFiltersSchema } from '@/lib/validation/filters/artist-events-filters-schema';
 import { getArtistEvents } from '@/lib/data/events/get-artist-events';
@@ -100,11 +101,14 @@ export default async function ArtistEventsTab({
                   const startLabel = format(toZonedTime(event.startDate, TIME_ZONE), 'dd/MM/yyyy, HH:mm');
                   const endLabel = format(toZonedTime(event.endDate, TIME_ZONE), 'dd/MM/yyyy, HH:mm');
                   const eventTitle = event.title?.trim();
-                  const eventLabel = eventTitle
-                    ? eventTitle
-                    : event.eventType
-                      ? EVENT_TYPE_LABELS[event.eventType]
-                      : `Evento #${event.id}`;
+                  const generatedTitle = generateEventTitle(
+                    event.artist.stageName?.trim() ||
+                      `${event.artist.name} ${event.artist.surname}`.trim(),
+                    event.venue.name,
+                    event.startDate,
+                    event.endDate,
+                  );
+                  const eventLabel = eventTitle || generatedTitle;
                   const isOngoing = event.startDate <= now && event.endDate >= now;
 
                   return (

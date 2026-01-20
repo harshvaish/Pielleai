@@ -155,10 +155,19 @@ export default async function FiscalCodesPage({
                     <FileText className="h-4 w-4 text-zinc-400" />
                     <span>Codice Fiscale</span>
                   </div>
-                  <span className="inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-1.5 text-xs text-zinc-700">
-                    <FileText className="h-4 w-4 text-zinc-400" />
-                    Codice Fiscale.pdf
-                  </span>
+                  {artist.taxCodeFileUrl ? (
+                    <a
+                      href={artist.taxCodeFileUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-1.5 text-xs text-zinc-700 hover:underline"
+                    >
+                      <FileText className="h-4 w-4 text-zinc-400" />
+                      {artist.taxCodeFileName ?? "Codice Fiscale.pdf"}
+                    </a>
+                  ) : (
+                    <span className="text-zinc-400">Mancante</span>
+                  )}
                   <Link
                     href={`/artisti/${artist.slug}`}
                     aria-label="Open artist details"

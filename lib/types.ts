@@ -218,6 +218,10 @@ export type ArtistData = {
 
   company: string | null;
   taxCode: string | null;
+  taxCodeFileUrl: string | null;
+  taxCodeFileName: string | null;
+  idCardFileUrl: string | null;
+  idCardFileName: string | null;
   ipiCode: string | null;
   bicCode: string | null;
   abaRoutingNumber: string | null;
@@ -269,6 +273,10 @@ export type ArtistTableData = Pick<
   | 'phone'
   | 'email'
   | 'company'
+  | 'taxCodeFileUrl'
+  | 'taxCodeFileName'
+  | 'idCardFileUrl'
+  | 'idCardFileName'
   | 'tourManagerEmail'
   | 'tourManagerName'
   | 'tourManagerSurname'
@@ -585,6 +593,12 @@ export type Event = {
 export type ArtistEventListItem = {
   id: number;
   title: string | null;
+  artist: {
+    id: number;
+    name: string;
+    surname: string;
+    stageName: string | null;
+  };
   startDate: Date;
   endDate: Date;
   status: EventStatus;
@@ -598,6 +612,7 @@ export type ArtistEventListItem = {
 
 export type EventSummary = {
   id: number;
+  title?: string | null;
   status: EventStatus;
   eventType: EventType | null;
   startDate: Date;
@@ -646,6 +661,7 @@ export type EventsCalendarFilters = {
 
 export interface CalendarEvent extends RbcEvent {
   id: number;
+  title?: string | null;
   artist: ArtistSelectData;
   venue: VenueBadgeData;
   artistManager: {
