@@ -74,8 +74,6 @@ export default function CreateEventRequestForm({
           onSubmit={handleSubmit(onSubmit)}
           noValidate={true}
         >
-          <div className='text-2xl font-bold mb-4'>Crea evento</div>
-
           <EventRequestForm
             artists={artists}
             venues={venues}
