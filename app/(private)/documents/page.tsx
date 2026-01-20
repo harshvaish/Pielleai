@@ -1,16 +1,12 @@
 import { TablePagination } from "../_components/form/TablePagination";
-import StatusFilterButton, {
-  ContractFilterStatus,
-} from "./_components/filters/StatusFilterButton";
+import type { ContractFilterStatus } from "./_components/filters/StatusFilterButton";
 import { hasRole, resolveNextPath, splitCsv } from "@/lib/utils";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import getSession from "@/lib/data/auth/get-session";
 import { getUserProfileIdCached } from "@/lib/cache/users";
-import { Button } from "@/components/ui/button";
 import {
   CalendarDays,
-  ChevronDown,
   ChevronRight,
   Clock,
   FileText,
@@ -18,18 +14,15 @@ import {
   Check,
   PartyPopper,
 } from "lucide-react";
-import DatesFilterButton from "./_components/filters/DatesFilterButton";
 import { getContracts } from "@/lib/data/contracts/get-contracts";
-import FiltersButton from "./_components/filters/FiltersButton";
 import { getArtistsCached } from "@/lib/cache/artists";
-import { getArtistManagersCached } from "@/lib/cache/artist-managers";
-import { getVenuesCached } from "@/lib/cache/venues";
 import ExportButton from "./_components/ExportButton";
 import { JSX } from "react";
 import ResendDocuSignButton from "./_components/ResendDocuSignButton";
 import DocumentVenuesBadge from "../_components/Badges/DocumentVenuesBadge";
 import ArtistsBadge from "../_components/Badges/ArtistsBadge";
 import { AVATAR_FALLBACK } from "@/lib/constants";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 type EventsPageProps = {
   searchParams?: Promise<{
@@ -41,6 +34,7 @@ type EventsPageProps = {
     start?: string;
     end?: string;
     sort?: "asc" | "desc";
+    tab?: string;
   }>;
 };
 
@@ -423,7 +417,6 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
   }
   const isAdmin = user.role === "admin";
   const isArtistManager = user.role === "artist-manager";
-  const isVenueManager = user.role === "venue-manager";
 
   const sp = await searchParams;
   const statusParam = sp?.status === "declined" ? "refused" : sp?.status;
@@ -460,7 +453,7 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
         return ["all"];
     }
   }
-  const [api, artists, artistManagers, venues] = await Promise.all([
+  const [api, artists] = await Promise.all([
     getContracts(user, {
       currentPage,
       startDate: sp?.start ?? "",
@@ -472,8 +465,6 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
       sort,
     }),
     getArtistsCached(isArtistManager ? profileId! : undefined),
-    isAdmin ? getArtistManagersCached() : Promise.resolve([]),
-    getVenuesCached(isVenueManager ? profileId! : undefined),
   ]);
 
   const apiData = Array.isArray(api.data) ? api.data : [];
@@ -484,6 +475,12 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
 
   const totalPages = api.totalPages;
   const hasContracts = contracts.length > 0;
+  const activeTab = sp?.tab === "artisti" ? "artisti" : "eventi";
+  const baseQuery = Object.fromEntries(
+    Object.entries(sp ?? {}).filter(([, v]) => v != null)
+  );
+  const previewContracts = contracts.slice(0, 3);
+  const previewArtists = artists.slice(0, 3);
 
   function getBackendStatusLabel(status: string) {
     switch (status) {
@@ -508,175 +505,479 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
   }
 
   return (
-    <div className="h-full grid grid-rows-[min-content_min-content_1fr_min-content] gap-4">
-      <div className="flex flex-wrap justify-between items-center gap-3">
-        <h1 className="text-xl md:text-2xl font-bold">Contratti</h1>
-
-        {isAdmin && <ExportButton filters={filters} />}
-      </div>
-
-      {/* Filters */}
-      <div className="w-full flex flex-col lg:flex-row justify-between items-end lg:items-center gap-4 overflow-hidden">
-        <div className="max-w-full bg-white flex items-center gap-1 p-1 rounded-2xl overflow-auto">
-          <StatusFilterButton status="all" label="Tutti" />
-          <StatusFilterButton status="to-sign" label="Da firmare" />
-          <StatusFilterButton status="signed" label="Firmato" />
-          <StatusFilterButton status="refused" label="Rifiutato" />
-          <StatusFilterButton status="error" label="Errore" />
-          <StatusFilterButton status="archived" label="Archiviato" />
-        </div>
-
-        <div className="flex items-center gap-2">
-          <Button variant="ghost" size="sm" asChild>
-            <Link
-              href={{
-                query: {
-                  ...Object.fromEntries(
-                    Object.entries(sp ?? {}).filter(([, v]) => v != null)
-                  ),
-                  sort: sort === "desc" ? "asc" : "desc",
-                  page: "1",
-                },
-              }}
-            >
-              Ordina{" "}
-              <span className="text-zinc-400">
-                {sort === "desc" ? "Più recente" : "Meno recente"}
-              </span>
-              <ChevronDown className="size-4 ml-1" />
-            </Link>
-          </Button>
-          <FiltersButton
-            userRole={user.role}
-            filters={filters}
-            artists={artists}
-            artistManagers={artistManagers}
-            venues={venues}
-          />
-          <DatesFilterButton filters={filters} />
-        </div>
-      </div>
-
-      {/* List */}
-      {hasContracts ? (
-        <div className="max-h-full flex flex-col gap-3 overflow-auto">
-          {contracts.map((contract) => {
-            const s = STATUS_STYLES[contract.status];
-            const cardHref = `/documents/${contract.id}`;
-            return (
-              <div
-                key={contract.id}
-                className="relative bg-white border border-zinc-100 rounded-2xl"
+    <div className="h-full flex flex-col gap-4">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex flex-col gap-3">
+          <h1 className="text-xl md:text-2xl font-bold">Documenti</h1>
+          <div className="w-fit rounded-xl bg-zinc-100 p-1">
+            <div className="flex items-center gap-1">
+              <Link
+                href={{ query: { ...baseQuery, tab: "eventi" } }}
+                className={`px-3 py-1.5 text-sm font-medium rounded-lg transition ${
+                  activeTab === "eventi"
+                    ? "bg-white text-zinc-900 shadow-sm"
+                    : "text-zinc-500 hover:text-zinc-700"
+                }`}
               >
-                <div className="grid grid-cols-[180px_1fr_auto] items-start gap-6 p-4">
-                  {/* LEFT */}
-                  <div className="flex flex-col gap-1.5 border-r">
-                    <span
-                      className={`w-fit inline-flex gap-1.5 items-center rounded-md px-2 py-1.5 text-xs font-medium border ${s.badgeBorder} ${s.badgeBg}`}
-                    >
-                      {contract.status === "missing-info"
-                        ? "Info mancanti"
-                        : getBackendStatusLabel(contract.backendStatus)}
-                      <span>{s.icon}</span>
-                    </span>
-                    <span className="text-xs text-zinc-500">
-                      Stato aggiornato
-                    </span>
-                    <span className="text-xs text-zinc-500">
-                      il {contract.statusDate}
-                    </span>
-                  </div>
+                Eventi
+              </Link>
+              <Link
+                href={{ query: { ...baseQuery, tab: "artisti", page: "1" } }}
+                className={`px-3 py-1.5 text-sm font-medium rounded-lg transition ${
+                  activeTab === "artisti"
+                    ? "bg-white text-zinc-900 shadow-sm"
+                    : "text-zinc-500 hover:text-zinc-700"
+                }`}
+              >
+                Artisti
+              </Link>
+            </div>
+          </div>
+        </div>
+        {isAdmin && activeTab === "eventi" && <ExportButton filters={filters} />}
+      </div>
 
-                  {/* CENTER */}
-                  <div className="flex flex-col gap-2">
-                    {/* Row 1 */}
-                    <div className="flex flex-wrap items-center gap-2 text-sm">
-                      <div className="flex flex-col leading-tight">
+      {activeTab === "eventi" ? (
+        <div className="flex flex-col gap-4">
+          <section className="rounded-2xl border border-zinc-100 bg-white">
+            <div className="flex items-center justify-between border-b border-zinc-100 px-4 py-3">
+              <h2 className="text-sm font-semibold text-zinc-800">Contratti</h2>
+              <Link
+                href="/documents/contracts"
+                className="inline-flex items-center gap-1 text-xs text-zinc-500 hover:text-zinc-700"
+              >
+                Vedi tutto <ChevronRight className="size-4" />
+              </Link>
+            </div>
+            {hasContracts ? (
+              <div className="divide-y divide-zinc-100">
+                {contracts.map((contract) => {
+                  const s = STATUS_STYLES[contract.status];
+                  const cardHref = `/documents/${contract.id}`;
+                  return (
+                    <div
+                      key={contract.id}
+                      className="grid gap-4 px-4 py-4 md:grid-cols-[170px_1fr_auto]"
+                    >
+                      <div className="flex flex-col gap-2 md:border-r md:pr-4">
+                        <span
+                          className={`w-fit inline-flex gap-1.5 items-center rounded-md px-2 py-1.5 text-xs font-medium border ${s.badgeBorder} ${s.badgeBg}`}
+                        >
+                          {contract.status === "missing-info"
+                            ? "Info mancanti"
+                            : getBackendStatusLabel(contract.backendStatus)}
+                          <span>{s.icon}</span>
+                        </span>
+                        <span className="text-xs text-zinc-500">
+                          Stato aggiornato
+                        </span>
+                        <span className="text-xs text-zinc-500">
+                          il {contract.statusDate}
+                        </span>
+                      </div>
+
+                      <div className="flex flex-col gap-3">
+                        <div className="flex flex-wrap items-center gap-3 text-sm">
+                          <ArtistsBadge
+                            artists={[contract.artist]}
+                            userRole={user.role}
+                          />
+                          <div className="flex flex-col gap-1.5">
+                            <DocumentVenuesBadge
+                              userRole={user.role}
+                              venues={[contract.venue]}
+                            />
+                            <div className="flex flex-wrap items-center gap-4 text-xs text-zinc-500">
+                              <span className="flex items-center gap-1">
+                                <CalendarDays className="h-4 w-4 text-zinc-400" />
+                                {contract.date}
+                              </span>
+                              <span className="flex items-center gap-1">
+                                <Clock className="h-4 w-4 text-zinc-400" />
+                                {contract.time}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="flex flex-wrap items-center gap-2 text-xs text-zinc-500">
+                          <FileText className="h-4 w-4 text-zinc-400" />
+                          <span>Contratto</span>
+                          {contract.fileUrl ? (
+                            <span className="inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-white px-3 py-1.5">
+                              <FileText className="h-4 w-4 text-zinc-400" />
+                              <a
+                                href={contract.fileUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-zinc-700 hover:underline"
+                              >
+                                {contract.fileName ?? "Contratto.pdf"}
+                              </a>
+                            </span>
+                          ) : (
+                            <span className="text-zinc-400">Mancante</span>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2 md:justify-end">
+                        {contract.backendStatus === "declined" && (
+                          <ResendDocuSignButton contractId={contract.id} />
+                        )}
+                        <Link
+                          href={cardHref}
+                          aria-label="Open contract details"
+                          className="inline-flex items-center text-zinc-400 hover:text-zinc-600"
+                        >
+                          <ChevronRight className="h-4 w-4 translate-y-[0.5px]" />
+                        </Link>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="px-4 py-6 text-sm text-zinc-500">
+                Nessun contratto disponibile.
+              </div>
+            )}
+          </section>
+
+          <section className="rounded-2xl border border-zinc-100 bg-white">
+            <div className="flex items-center justify-between border-b border-zinc-100 px-4 py-3">
+              <h2 className="text-sm font-semibold text-zinc-800">
+                Technical Ride
+              </h2>
+              <Link
+                href="/documents/technical-ride"
+                className="inline-flex items-center gap-1 text-xs text-zinc-500 hover:text-zinc-700"
+              >
+                Vedi tutto <ChevronRight className="size-4" />
+              </Link>
+            </div>
+            {previewContracts.length ? (
+              <div className="divide-y divide-zinc-100">
+                {previewContracts.map((contract) => (
+                  <div
+                    key={`tech-${contract.id}`}
+                    className="grid gap-4 px-4 py-4 md:grid-cols-[170px_1fr_auto]"
+                  >
+                    <div className="flex flex-col gap-2 md:border-r md:pr-4">
+                      <span className="text-xs font-semibold text-zinc-800">
+                        {contract.date}
+                      </span>
+                      <span className="text-xs text-zinc-500">
+                        {contract.time}
+                      </span>
+                    </div>
+                    <div className="flex flex-col gap-3">
+                      <div className="flex flex-wrap items-center gap-3 text-sm">
                         <ArtistsBadge
                           artists={[contract.artist]}
                           userRole={user.role}
                         />
-                      </div>
-                      <div className="flex flex-col leading-tight">
                         <DocumentVenuesBadge
                           userRole={user.role}
                           venues={[contract.venue]}
                         />
-                        <div className="flex items-center gap-4 text-xs py-0.5 text-zinc-500">
-                          <span className="flex items-center gap-1">
-                            <CalendarDays className="h-4 w-4 text-zinc-400" />
-                            {contract.date}
-                          </span>
-
-                          <span className="flex items-center gap-1">
-                            <Clock className="h-4 w-4 text-zinc-400" />
-                            {contract.time}
-                          </span>
-                        </div>
+                      </div>
+                      <div className="flex flex-wrap items-center gap-2 text-xs text-zinc-500">
+                        <FileText className="h-4 w-4 text-zinc-400" />
+                        <span>Technical Ride</span>
+                        <span className="inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-zinc-700">
+                          <FileText className="h-4 w-4 text-zinc-400" />
+                          Technical Ride.pdf
+                        </span>
                       </div>
                     </div>
-
-                    {/* Row 2 */}
-                    <div className="flex items-center gap-2 text-xs text-zinc-500 py-2">
-                      <FileText className="h-4 w-4 text-zinc-400" />
-                      <span>Contratto</span>
-                      <span>
-                        {contract.fileUrl ? (
-                          <span className="flex items-center bg-white border border-zinc-300 rounded-lg px-2 py-1.5">
-                            <FileText className="h-4 w-4 text-zinc-400" />
-                            <a
-                              href={contract.fileUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-zinc-700 hover:underline"
-                            >
-                              {contract.fileName}
-                            </a>
-                          </span>
-                        ) : (
-                          "Mancante"
-                        )}
-                      </span>
+                    <div className="flex items-center justify-end">
+                      <Link
+                        href={`/eventi/${contract.event.id}/modifica`}
+                        aria-label="Open event details"
+                        className="inline-flex items-center text-zinc-400 hover:text-zinc-600"
+                      >
+                        <ChevronRight className="h-4 w-4 translate-y-[0.5px]" />
+                      </Link>
                     </div>
                   </div>
-                  {/* RIGHT */}
-                  <div className="flex h-full items-center">
-                    {contract.backendStatus == "declined" && (
-                      <ResendDocuSignButton contractId={contract.id} />
-                    )}
-                    <a
-                      href={cardHref}
-                      aria-label="Open contract details"
-                      className="inline-flex items-center"
-                    >
-                      <ChevronRight className="h-4 w-4 text-zinc-400 translate-y-[0.5px]" />
-                    </a>
-                  </div>
-                </div>
-                {/* <a
-                  href={cardHref}
-                  className="absolute inset-0"
-                  aria-label="Open contract details"
-                /> */}
+                ))}
               </div>
-            );
-          })}
+            ) : (
+              <div className="px-4 py-6 text-sm text-zinc-500">
+                Nessun documento disponibile.
+              </div>
+            )}
+          </section>
+
+          <section className="rounded-2xl border border-zinc-100 bg-white">
+            <div className="flex items-center justify-between border-b border-zinc-100 px-4 py-3">
+              <h2 className="text-sm font-semibold text-zinc-800">Other</h2>
+              <Link
+                href="/documents/other"
+                className="inline-flex items-center gap-1 text-xs text-zinc-500 hover:text-zinc-700"
+              >
+                Vedi tutto <ChevronRight className="size-4" />
+              </Link>
+            </div>
+            {previewContracts.length ? (
+              <div className="divide-y divide-zinc-100">
+                {previewContracts.map((contract) => (
+                  <div
+                    key={`other-${contract.id}`}
+                    className="grid gap-4 px-4 py-4 md:grid-cols-[170px_1fr_auto]"
+                  >
+                    <div className="flex flex-col gap-2 md:border-r md:pr-4">
+                      <span className="text-xs font-semibold text-zinc-800">
+                        {contract.date}
+                      </span>
+                      <span className="text-xs text-zinc-500">
+                        {contract.time}
+                      </span>
+                    </div>
+                    <div className="flex flex-col gap-3">
+                      <div className="flex flex-wrap items-center gap-3 text-sm">
+                        <ArtistsBadge
+                          artists={[contract.artist]}
+                          userRole={user.role}
+                        />
+                        <DocumentVenuesBadge
+                          userRole={user.role}
+                          venues={[contract.venue]}
+                        />
+                      </div>
+                      <div className="flex flex-wrap items-center gap-2 text-xs text-zinc-500">
+                        <FileText className="h-4 w-4 text-zinc-400" />
+                        <span>Documento</span>
+                        <span className="inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-zinc-700">
+                          <FileText className="h-4 w-4 text-zinc-400" />
+                          Documento.pdf
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-end">
+                      <Link
+                        href={`/documents/${contract.id}`}
+                        aria-label="Open document details"
+                        className="inline-flex items-center text-zinc-400 hover:text-zinc-600"
+                      >
+                        <ChevronRight className="h-4 w-4 translate-y-[0.5px]" />
+                      </Link>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="px-4 py-6 text-sm text-zinc-500">
+                Nessun documento disponibile.
+              </div>
+            )}
+          </section>
+
+          {hasContracts && (
+            <TablePagination
+              totalPages={totalPages}
+              currentPage={currentPage}
+              searchParams={sp ?? {}}
+            />
+          )}
         </div>
       ) : (
-        <section className="flex flex-col justify-center items-center bg-white rounded-2xl p-8">
-          <h2 className="text-base font-bold">There is no contracts yet</h2>
-          <div className="text-sm text-zinc-400">
-            As soon as contracts are generated, you will see them here.
-          </div>
-        </section>
-      )}
+        <div className="grid gap-4 lg:grid-cols-2">
+          <section className="rounded-2xl border border-zinc-100 bg-white">
+            <div className="flex items-center justify-between border-b border-zinc-100 px-4 py-3">
+              <h2 className="text-sm font-semibold text-zinc-800">
+                Fiscal Codes
+              </h2>
+              <Link
+                href="/documents/fiscal-codes"
+                className="inline-flex items-center gap-1 text-xs text-zinc-500 hover:text-zinc-700"
+              >
+                Vedi tutto <ChevronRight className="size-4" />
+              </Link>
+            </div>
+            {previewArtists.length ? (
+              <div className="divide-y divide-zinc-100">
+                {previewArtists.map((artist) => {
+                  const managerName = [
+                    artist.tourManagerName,
+                    artist.tourManagerSurname,
+                  ]
+                    .filter(Boolean)
+                    .join(" ");
+                  const hasManager = managerName.length > 0;
+                  return (
+                    <div
+                      key={`fiscal-${artist.id}`}
+                      className="flex flex-col gap-3 px-4 py-4"
+                    >
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex items-center gap-3">
+                          <Avatar className="h-8 w-8">
+                            <AvatarImage
+                              src={artist.avatarUrl || AVATAR_FALLBACK}
+                            />
+                            <AvatarFallback>
+                              {artist.stageName.substring(0, 1).toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="min-w-0">
+                            <Link
+                              href={`/artisti/${artist.slug}`}
+                              className="text-xs font-semibold text-zinc-800"
+                            >
+                              @{artist.stageName}
+                            </Link>
+                            <div className="text-[10px] text-zinc-500">
+                              {artist.name} {artist.surname}
+                            </div>
+                          </div>
+                        </div>
+                        <Link
+                          href={`/artisti/${artist.slug}`}
+                          aria-label="Open artist details"
+                          className="inline-flex items-center text-zinc-400 hover:text-zinc-600"
+                        >
+                          <ChevronRight className="size-4" />
+                        </Link>
+                      </div>
 
-      {hasContracts && (
-        <TablePagination
-          totalPages={totalPages}
-          currentPage={currentPage}
-          searchParams={sp ?? {}}
-        />
+                      <div className="flex flex-wrap items-center gap-4 text-xs text-zinc-500">
+                        {hasManager ? (
+                          <>
+                            <span className="text-zinc-400">Manager</span>
+                            <span className="text-zinc-600">{managerName}</span>
+                          </>
+                        ) : (
+                          <span className="text-zinc-400">
+                            Manager non assegnato
+                          </span>
+                        )}
+                        {artist.tourManagerEmail && (
+                          <>
+                            <span className="text-zinc-400">Email</span>
+                            <span className="text-zinc-600">
+                              {artist.tourManagerEmail}
+                            </span>
+                          </>
+                        )}
+                      </div>
+
+                      <div className="flex flex-wrap items-center gap-2 text-xs text-zinc-500">
+                        <FileText className="h-4 w-4 text-zinc-400" />
+                        <span>Codice Fiscale</span>
+                        <span className="inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-1.5 text-zinc-600">
+                          <FileText className="h-4 w-4 text-zinc-400" />
+                          Codice Fiscale.pdf
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="px-4 py-6 text-sm text-zinc-500">
+                Nessun documento disponibile.
+              </div>
+            )}
+          </section>
+
+          <section className="rounded-2xl border border-zinc-100 bg-white">
+            <div className="flex items-center justify-between border-b border-zinc-100 px-4 py-3">
+              <h2 className="text-sm font-semibold text-zinc-800">ID Card</h2>
+              <Link
+                href="/documents/id-card"
+                className="inline-flex items-center gap-1 text-xs text-zinc-500 hover:text-zinc-700"
+              >
+                Vedi tutto <ChevronRight className="size-4" />
+              </Link>
+            </div>
+            {previewArtists.length ? (
+              <div className="divide-y divide-zinc-100">
+                {previewArtists.map((artist) => {
+                  const managerName = [
+                    artist.tourManagerName,
+                    artist.tourManagerSurname,
+                  ]
+                    .filter(Boolean)
+                    .join(" ");
+                  const hasManager = managerName.length > 0;
+                  return (
+                    <div
+                      key={`id-${artist.id}`}
+                      className="flex flex-col gap-3 px-4 py-4"
+                    >
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex items-center gap-3">
+                          <Avatar className="h-8 w-8">
+                            <AvatarImage
+                              src={artist.avatarUrl || AVATAR_FALLBACK}
+                            />
+                            <AvatarFallback>
+                              {artist.stageName.substring(0, 1).toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="min-w-0">
+                            <Link
+                              href={`/artisti/${artist.slug}`}
+                              className="text-xs font-semibold text-zinc-800"
+                            >
+                              @{artist.stageName}
+                            </Link>
+                            <div className="text-[10px] text-zinc-500">
+                              {artist.name} {artist.surname}
+                            </div>
+                          </div>
+                        </div>
+                        <Link
+                          href={`/artisti/${artist.slug}`}
+                          aria-label="Open artist details"
+                          className="inline-flex items-center text-zinc-400 hover:text-zinc-600"
+                        >
+                          <ChevronRight className="size-4" />
+                        </Link>
+                      </div>
+
+                      <div className="flex flex-wrap items-center gap-4 text-xs text-zinc-500">
+                        {hasManager ? (
+                          <>
+                            <span className="text-zinc-400">Manager</span>
+                            <span className="text-zinc-600">{managerName}</span>
+                          </>
+                        ) : (
+                          <span className="text-zinc-400">
+                            Manager non assegnato
+                          </span>
+                        )}
+                        {artist.tourManagerEmail && (
+                          <>
+                            <span className="text-zinc-400">Email</span>
+                            <span className="text-zinc-600">
+                              {artist.tourManagerEmail}
+                            </span>
+                          </>
+                        )}
+                      </div>
+
+                      <div className="flex flex-wrap items-center gap-2 text-xs text-zinc-500">
+                        <FileText className="h-4 w-4 text-zinc-400" />
+                        <span>ID Card</span>
+                        <span className="inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-1.5 text-zinc-600">
+                          <FileText className="h-4 w-4 text-zinc-400" />
+                          ID Card.pdf
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="px-4 py-6 text-sm text-zinc-500">
+                Nessun documento disponibile.
+              </div>
+            )}
+          </section>
+        </div>
       )}
     </div>
   );

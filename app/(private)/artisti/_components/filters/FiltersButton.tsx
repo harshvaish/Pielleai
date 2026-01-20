@@ -15,6 +15,7 @@ type FiltersButtonProps = {
   filters: ArtistsTableFilters;
   artistManagers: ArtistManagerSelectData[];
   zones: Zone[];
+  label?: string;
 };
 
 export default function FiltersButton({
@@ -22,6 +23,7 @@ export default function FiltersButton({
   filters,
   artistManagers,
   zones,
+  label = 'Filtri',
 }: FiltersButtonProps) {
   const router = useRouter();
   const [open, setOpen] = useState<boolean>(false);
@@ -104,7 +106,7 @@ export default function FiltersButton({
           size='sm'
         >
           <ListFilter />
-          Filtri
+          {label}
         </Button>
       }
     >
