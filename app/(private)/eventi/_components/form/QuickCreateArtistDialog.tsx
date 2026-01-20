@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState, useTransition } from 'react';
+import { useState, useTransition } from 'react';
 import { toast } from 'sonner';
 import { Plus } from 'lucide-react';
 
@@ -20,8 +20,6 @@ export default function QuickCreateArtistDialog({ onCreated }: QuickCreateArtist
   const [name, setName] = useState('');
   const [surname, setSurname] = useState('');
   const [isPending, startTransition] = useTransition();
-  const sanitizedName = useMemo(() => name.replace(/[^\\p{L}\\s'-]/gu, '').trim(), [name]);
-  const sanitizedSurname = useMemo(() => surname.replace(/[^\\p{L}\\s'-]/gu, '').trim(), [surname]);
 
   const resetForm = () => {
     setStageName('');
@@ -30,17 +28,12 @@ export default function QuickCreateArtistDialog({ onCreated }: QuickCreateArtist
   };
 
   const onSubmit = () => {
-    if (!stageName.trim()) {
-      toast.error("Inserisci il nome d'arte.");
-      return;
-    }
-
     startTransition(async () => {
       const response = await createArtist({
-        stageName: stageName.trim(),
-        name: sanitizedName,
-        surname: sanitizedSurname,
-        taxableInvoice: undefined
+        stageName,
+        name,
+        surname,
+        taxableInvoice: undefined,
       });
 
       if (response.success) {
