@@ -22,6 +22,7 @@ type FiltersButtonProps = {
   artists: ArtistSelectData[];
   artistManagers: ArtistManagerSelectData[];
   venues: VenueSelectData[];
+  label?: string;
 };
 
 export default function FiltersButton({
@@ -30,6 +31,7 @@ export default function FiltersButton({
   artists,
   artistManagers,
   venues,
+  label = 'Filtri',
 }: FiltersButtonProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -98,7 +100,7 @@ export default function FiltersButton({
           disabled={isPending}
         >
           <ListFilter />
-          Filtri
+          {label}
         </Button>
       }
     >
