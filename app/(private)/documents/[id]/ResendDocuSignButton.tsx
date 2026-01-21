@@ -3,10 +3,12 @@
 import { EventFormSchema } from "@/lib/validation/event-form-schema";
 import { useFormContext } from "react-hook-form";
 import { toast } from "sonner";
+import { useState } from "react";
 
 
 export default function ResendDocuSignButton() {
   const { watch } = useFormContext<EventFormSchema>();  
+  const [loading, setLoading] = useState(false);
   
   const contractId = watch("contractId");
 
@@ -15,6 +17,7 @@ export default function ResendDocuSignButton() {
     e.preventDefault();
 
     try {
+      setLoading(true);
       const res = await fetch("/api/contract/resend-docusign", {
         method: "POST",
         headers: {
@@ -35,6 +38,8 @@ export default function ResendDocuSignButton() {
     } catch (err: any) {
       console.error("Resend DocuSign failed:", err);
       toast.error(err?.message || "Errore durante l’invio a DocuSign");
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -43,8 +48,9 @@ export default function ResendDocuSignButton() {
       type="button"
       onClick={handleClick}
       className="flex h-full items-center justify-end pr-2 text-sm font-medium text-[#16A34A] hover:underline"
+      disabled={loading}
     >
-      Invia di nuovo per firma
+      {loading ? "Reinvio..." : "Reinvia a DocuSign"}
     </button>
   );
 }

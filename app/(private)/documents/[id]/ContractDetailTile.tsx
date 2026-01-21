@@ -121,6 +121,11 @@ export default function ContractDetailTile({ payload }: Props) {
   const statusUpdatedLabel = statusUpdatedAt
     ? new Date(statusUpdatedAt).toLocaleDateString("it-IT")
     : "—";
+  const isResendable =
+    contractStatus === "declined" ||
+    contractStatus === "sent" ||
+    contractStatus === "queued" ||
+    contractStatus === "viewed";
 
   /* ---------------- HISTORY ---------------- */
   const historyData: HistoryItem[] = Array.isArray(payload.history)
@@ -154,7 +159,7 @@ export default function ContractDetailTile({ payload }: Props) {
           <div className="flex items-center gap-2">
             {contractStatus === "signed" && <ViewContractButton />}
 
-            {contractStatus === "declined" && (
+            {isResendable && (
               <>
                 <ResendDocuSignButton />
                 <ViewContractButton />
@@ -165,7 +170,10 @@ export default function ContractDetailTile({ payload }: Props) {
 
             {contractStatus !== "declined" &&
               contractStatus !== "voided" &&
-              contractStatus !== "signed" && (
+              contractStatus !== "signed" &&
+              contractStatus !== "sent" &&
+              contractStatus !== "queued" &&
+              contractStatus !== "viewed" && (
                 <>
                   <GenerateButton payload={payload} />
                   <DocuSignButton />

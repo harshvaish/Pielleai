@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { useState } from "react";
 
 type Props = {
   contractId: number;
@@ -9,12 +10,14 @@ type Props = {
 
 export default function ResendDocuSignButton({ contractId }: Props) {
   const router = useRouter();
+  const [loading, setLoading] = useState(false);
 
   async function handleClick(e: React.MouseEvent<HTMLButtonElement>) {
     e.stopPropagation();
     e.preventDefault();
 
     try {
+      setLoading(true);
       const res = await fetch("/api/contract/resend-docusign", {
         method: "POST",
         headers: {
@@ -38,6 +41,8 @@ export default function ResendDocuSignButton({ contractId }: Props) {
     } catch (err: any) {
       console.error("Resend DocuSign failed:", err);
       toast.error(err?.message || "Errore durante l’invio a DocuSign");
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -46,8 +51,9 @@ export default function ResendDocuSignButton({ contractId }: Props) {
       type="button"
       onClick={handleClick}
       className="flex h-full items-center justify-end pr-2 text-sm font-medium text-[#16A34A] hover:underline"
+      disabled={loading}
     >
-      Resend to Docusign
+      {loading ? "Reinvio..." : "Reinvia a DocuSign"}
     </button>
   );
 }

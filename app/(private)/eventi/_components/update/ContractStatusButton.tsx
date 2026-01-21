@@ -23,7 +23,9 @@ import { useRouter } from "next/navigation";
 
 type ContractStatus =
   | "draft"
+  | "queued"
   | "sent"
+  | "viewed"
   | "declined"
   | "voided";
 
@@ -55,6 +57,26 @@ const STATUS_STYLES: Record<
 
   sent: {
     label: "Sent",
+    text: "text-sky-600",
+    bg: "bg-sky-50",
+    icon: (
+      <div className="w-3 h-3 flex items-center justify-center bg-sky-600 rounded-full">
+        <ChevronRight className="size-2 text-white" />
+      </div>
+    ),
+  },
+  queued: {
+    label: "Queued",
+    text: "text-sky-600",
+    bg: "bg-sky-50",
+    icon: (
+      <div className="w-3 h-3 flex items-center justify-center bg-sky-600 rounded-full">
+        <ChevronRight className="size-2 text-white" />
+      </div>
+    ),
+  },
+  viewed: {
+    label: "Viewed",
     text: "text-sky-600",
     bg: "bg-sky-50",
     icon: (
@@ -109,6 +131,12 @@ export default function ContractStatusButton({
   },
   sent: {
     success: "Contratto Da firmare con successo",
+  },
+  queued: {
+    success: "Contratto in attesa di firma",
+  },
+  viewed: {
+    success: "Contratto visualizzato",
   },
   declined: {
     success: "Contratto Rifiutato",

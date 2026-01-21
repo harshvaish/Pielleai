@@ -735,7 +735,10 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
                       </div>
 
                       <div className="flex items-center gap-2 md:justify-end">
-                        {contract.backendStatus === "declined" && (
+                        {(contract.backendStatus === "declined" ||
+                          contract.backendStatus === "sent" ||
+                          contract.backendStatus === "queued" ||
+                          contract.backendStatus === "viewed") && (
                           <ResendDocuSignButton contractId={contract.id} />
                         )}
                         <Link
