@@ -686,7 +686,10 @@ export default async function ContractsPage({
                     </div>
                   </div>
                   <div className="flex h-full items-center">
-                    {contract.backendStatus == "declined" && (
+                    {(contract.backendStatus === "declined" ||
+                      contract.backendStatus === "sent" ||
+                      contract.backendStatus === "queued" ||
+                      contract.backendStatus === "viewed") && (
                       <ResendDocuSignButton contractId={contract.id} />
                     )}
                     <a

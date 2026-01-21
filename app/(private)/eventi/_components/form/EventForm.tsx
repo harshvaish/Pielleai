@@ -50,6 +50,7 @@ import ContractStatusButton from "../update/ContractStatusButton";
 import { useRouter } from "next/navigation";
 import ViewContractButton from "../update/ViewContractButton";
 import ViewContractDetail from "../update/ViewContractDetail";
+import ResendDocuSignButton from "../update/ResendDocuSignButton";
 
 type EventForm = {
   artists: ArtistSelectData[];
@@ -136,6 +137,11 @@ export default function EventForm({
     control,
     name: "contractStatus",
   });
+  const isResendable =
+    contractStatus === "sent" ||
+    contractStatus === "queued" ||
+    contractStatus === "viewed" ||
+    contractStatus === "declined";
   const lastArtistIdRef = useRef<number | undefined>(undefined);
 
   // Calculate artistNetCost
@@ -1459,10 +1465,14 @@ export default function EventForm({
                       : "Genera"}
                 </Button>
 
-                <DocuSignButton
-                  event={event}
-                  isDetailsComplete={isDetailsComplete}
-                />
+                {isResendable && contractId ? (
+                  <ResendDocuSignButton contractId={contractId} />
+                ) : (
+                  <DocuSignButton
+                    event={event}
+                    isDetailsComplete={isDetailsComplete}
+                  />
+                )}
               </div>
             )}
           </div>
