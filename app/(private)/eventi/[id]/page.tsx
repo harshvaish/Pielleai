@@ -18,6 +18,7 @@ import { generateEventTitle } from '@/lib/utils/generate-event-title';
 import RegisterPaymentForm from './_components/RegisterPaymentForm';
 import PayWithStripeButton from './_components/PayWithStripeButton';
 import PaymentSuccessHandler from './_components/PaymentSuccessHandler';
+import SyncContractButton from './_components/SyncContractButton';
 import { activatePaymentFlowIfContractSigned } from './_actions/activate-payment-flow';
 
 const EVENT_TYPE_LABELS: Record<EventType, string> = {
@@ -59,9 +60,8 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
     notFound();
   }
 
-  // NOTE: Automatic payment flow activation disabled due to Drizzle ORM issues
-  // Use manual SQL to activate payment flow when contract is signed
-  // await activatePaymentFlowIfContractSigned(eventId);
+  // Automatically activate payment flow if contract is signed
+  await activatePaymentFlowIfContractSigned(eventId);
 
   // Get payment data
   const [paymentData] = await database
@@ -105,6 +105,14 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
   const eventTitle =
     event.title?.trim() ||
     generateEventTitle(artistLabel, event.venue.name, event.startDate, event.endDate);
+
+  console.log('[EventPage] Payment Data:', {
+    paymentStatus: paymentData?.paymentStatus,
+    upfrontPaymentAmount: paymentData?.upfrontPaymentAmount,
+    upfrontPaidAt: paymentData?.upfrontPaidAt,
+    isAdmin,
+    showPaymentButton: isAdmin && paymentData?.paymentStatus === 'upfront-required' && !paymentData?.upfrontPaidAt,
+  });
 
   return (
     <div className='max-w-3xl space-y-6'>
@@ -150,7 +158,16 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
 
       {/* Contract Status Section */}
       <section className='bg-white p-6 rounded-2xl space-y-4'>
-        <h2 className='text-lg font-bold'>Contratto</h2>
+        <div className='flex justify-between items-center'>
+          <h2 className='text-lg font-bold'>Contratto</h2>
+          {isAdmin && contractData?.envelopeId && contractData.status !== 'signed' && (
+            <SyncContractButton
+              contractId={contractData.id}
+              envelopeId={contractData.envelopeId}
+              eventId={eventId}
+            />
+          )}
+        </div>
         <Separator />
         <div className='grid grid-cols-[minmax(180px,max-content)_1fr] gap-3 text-sm'>
           <span className='font-semibold text-zinc-600'>Stato Contratto</span>

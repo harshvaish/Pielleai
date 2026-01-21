@@ -59,7 +59,7 @@ export default function PayWithStripeButton({
       ) : (
         <>
           <CreditCard className='mr-2 h-4 w-4' />
-          Paga con Stripe (€{amount.toFixed(2)})
+          Paga Online (€{amount.toFixed(2)})
         </>
       )}
     </Button>
