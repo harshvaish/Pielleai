@@ -173,8 +173,13 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
           <span className='font-semibold text-zinc-600'>Stato Contratto</span>
           <span className='font-medium text-zinc-500'>
             {contractData?.status ? (
-              <Badge variant={contractData.status === 'signed' ? 'default' : 'secondary'}>
-                {contractData.status === 'signed' ? 'Firmato' : contractData.status}
+              <Badge variant={contractData.status === 'signed' || contractData.status === 'voided' ? 'default' : 'secondary'}>
+                {contractData.status === 'signed' && 'Firmato'}
+                {contractData.status === 'voided' && 'Archiviato'}
+                {contractData.status === 'sent' && 'Inviato'}
+                {contractData.status === 'draft' && 'Bozza'}
+                {contractData.status === 'declined' && 'Rifiutato'}
+                {!['signed', 'voided', 'sent', 'draft', 'declined'].includes(contractData.status) && contractData.status}
               </Badge>
             ) : (
               'Nessun contratto'

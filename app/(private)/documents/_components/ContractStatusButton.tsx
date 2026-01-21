@@ -79,7 +79,7 @@ const STATUS_STYLES: Record<
   },
 
   voided: {
-    label: "Archived",
+    label: "Archiviato",
     text: "text-zinc-600",
     bg: "bg-zinc-100",
     icon: (
