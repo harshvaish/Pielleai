@@ -136,6 +136,8 @@ export type ContractCard = {
     tourManagerEmail: string | null;
     tourManagerName: string | null;
     payrollConsultantEmail: string | null;
+    tecnicalRiderUrl: string | null;
+    tecnicalRiderName: string | null;
   };
 
   ccs: string[];
@@ -408,6 +410,8 @@ function mapContract(c: any): ContractCard {
       tourManagerEmail: c.event.tourManagerEmail ?? null,
       tourManagerName: c.event?.tourManagerName ?? null,
       payrollConsultantEmail: c.event.payrollConsultantEmail ?? null,
+      tecnicalRiderUrl: c.event.tecnicalRiderUrl ?? null,
+      tecnicalRiderName: c.event.tecnicalRiderName ?? null,
     },
 
     ccs: c.ccs ?? [],
@@ -865,11 +869,32 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
                       </div>
                       <div className="flex flex-wrap items-center gap-2 text-xs text-zinc-500">
                         <FileText className="h-4 w-4 text-zinc-400" />
-                        <span>Technical Ride</span>
-                        <span className="inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-zinc-700">
-                          <FileText className="h-4 w-4 text-zinc-400" />
-                          Technical Ride.pdf
-                        </span>
+                        {contract.event.tecnicalRiderUrl ? (
+                          <a
+                            href={contract.event.tecnicalRiderUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-zinc-700 hover:underline"
+                          >
+                            Technical Ride
+                          </a>
+                        ) : (
+                          <span>Technical Ride</span>
+                        )}
+                        {contract.event.tecnicalRiderUrl ? (
+                          <a
+                            href={contract.event.tecnicalRiderUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-zinc-700 hover:underline"
+                          >
+                            <FileText className="h-4 w-4 text-zinc-400" />
+                            {contract.event.tecnicalRiderName ||
+                              "Technical Ride.pdf"}
+                          </a>
+                        ) : (
+                          <span className="text-zinc-400">Mancante</span>
+                        )}
                       </div>
                     </div>
                     <div className="flex items-center justify-end">
