@@ -275,10 +275,10 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
                 )}
               </div>
 
-              {/* Register Upfront Payment Form - Show if admin and payment not yet received */}
-              {isAdmin && paymentData?.paymentStatus === 'upfront-required' && !paymentData?.upfrontPaidAt && (
+              {/* Payment Options - Show if payment not yet received */}
+              {paymentData?.paymentStatus === 'upfront-required' && !paymentData?.upfrontPaidAt && (
                 <div className='mt-4 space-y-3'>
-                  {/* Stripe Payment Button for Venue */}
+                  {/* Stripe Payment Button - Available to all users */}
                   <div>
                     <p className='text-xs font-medium text-zinc-600 mb-2'>Pagamento Online</p>
                     <PayWithStripeButton
@@ -291,25 +291,29 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
                     />
                   </div>
 
-                  {/* Separator */}
-                  <div className='relative'>
-                    <div className='absolute inset-0 flex items-center'>
-                      <span className='w-full border-t' />
-                    </div>
-                    <div className='relative flex justify-center text-xs uppercase'>
-                      <span className='bg-white px-2 text-zinc-500'>oppure</span>
-                    </div>
-                  </div>
+                  {/* Manual Registration - Admin only */}
+                  {isAdmin && (
+                    <>
+                      {/* Separator */}
+                      <div className='relative'>
+                        <div className='absolute inset-0 flex items-center'>
+                          <span className='w-full border-t' />
+                        </div>
+                        <div className='relative flex justify-center text-xs uppercase'>
+                          <span className='bg-white px-2 text-zinc-500'>oppure</span>
+                        </div>
+                      </div>
 
-                  {/* Manual Registration for Admin */}
-                  <div>
-                    <p className='text-xs font-medium text-zinc-600 mb-2'>Registrazione Manuale (Admin)</p>
-                    <RegisterPaymentForm
-                      eventId={eventId}
-                      paymentType='upfront'
-                      expectedAmount={paymentData.upfrontPaymentAmount ? parseFloat(paymentData.upfrontPaymentAmount) : undefined}
-                    />
-                  </div>
+                      <div>
+                        <p className='text-xs font-medium text-zinc-600 mb-2'>Registrazione Manuale (Admin)</p>
+                        <RegisterPaymentForm
+                          eventId={eventId}
+                          paymentType='upfront'
+                          expectedAmount={paymentData.upfrontPaymentAmount ? parseFloat(paymentData.upfrontPaymentAmount) : undefined}
+                        />
+                      </div>
+                    </>
+                  )}
                 </div>
               )}
             </div>
@@ -365,10 +369,10 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
                 )}
               </div>
 
-              {/* Register Final Balance Form - Show if admin and balance not yet received */}
-              {isAdmin && (paymentData?.paymentStatus === 'balance-required' || paymentData?.paymentStatus === 'upfront-paid') && !paymentData?.balancePaidAt && (
+              {/* Payment Options - Show if balance not yet received */}
+              {(paymentData?.paymentStatus === 'balance-required' || paymentData?.paymentStatus === 'upfront-paid') && !paymentData?.balancePaidAt && (
                 <div className='mt-4 space-y-3'>
-                  {/* Stripe Payment Button for Venue */}
+                  {/* Stripe Payment Button - Available to all users */}
                   <div>
                     <p className='text-xs font-medium text-zinc-600 mb-2'>Pagamento Online</p>
                     <PayWithStripeButton
@@ -381,25 +385,29 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
                     />
                   </div>
 
-                  {/* Separator */}
-                  <div className='relative'>
-                    <div className='absolute inset-0 flex items-center'>
-                      <span className='w-full border-t' />
-                    </div>
-                    <div className='relative flex justify-center text-xs uppercase'>
-                      <span className='bg-white px-2 text-zinc-500'>oppure</span>
-                    </div>
-                  </div>
+                  {/* Manual Registration - Admin only */}
+                  {isAdmin && (
+                    <>
+                      {/* Separator */}
+                      <div className='relative'>
+                        <div className='absolute inset-0 flex items-center'>
+                          <span className='w-full border-t' />
+                        </div>
+                        <div className='relative flex justify-center text-xs uppercase'>
+                          <span className='bg-white px-2 text-zinc-500'>oppure</span>
+                        </div>
+                      </div>
 
-                  {/* Manual Registration for Admin */}
-                  <div>
-                    <p className='text-xs font-medium text-zinc-600 mb-2'>Registrazione Manuale (Admin)</p>
-                    <RegisterPaymentForm
-                      eventId={eventId}
-                      paymentType='final-balance'
-                      expectedAmount={paymentData.finalBalanceAmount ? parseFloat(paymentData.finalBalanceAmount) : undefined}
-                    />
-                  </div>
+                      <div>
+                        <p className='text-xs font-medium text-zinc-600 mb-2'>Registrazione Manuale (Admin)</p>
+                        <RegisterPaymentForm
+                          eventId={eventId}
+                          paymentType='final-balance'
+                          expectedAmount={paymentData.finalBalanceAmount ? parseFloat(paymentData.finalBalanceAmount) : undefined}
+                        />
+                      </div>
+                    </>
+                  )}
                 </div>
               )}
             </div>
