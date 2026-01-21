@@ -155,6 +155,8 @@ export async function getContracts(
           payrollConsultantEmail: events.payrollConsultantEmail,
           eventType: events.eventType,
           paymentDate: events.paymentDate,
+          tecnicalRiderUrl: events.tecnicalRiderUrl,
+          tecnicalRiderName: events.tecnicalRiderName,
         },
 
         artistManager: {

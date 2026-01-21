@@ -50,7 +50,10 @@ export default function PdfUploadInput() {
   };
 
   const onDeleteHandler = () => {
-    setValue('tecnicalRiderDocument', undefined);
+    setValue('tecnicalRiderDocument', undefined, {
+      shouldDirty: true,
+      shouldValidate: true,
+    });
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -90,7 +93,10 @@ export default function PdfUploadInput() {
 
     const url = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/${process.env.NEXT_PUBLIC_SUPABASE_BUCKET_NAME}/${path}`;
 
-    setValue('tecnicalRiderDocument', { url, name: fileName });
+    setValue('tecnicalRiderDocument', { url, name: fileName }, {
+      shouldDirty: true,
+      shouldValidate: true,
+    });
   };
 
   return (
