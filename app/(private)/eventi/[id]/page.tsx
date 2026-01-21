@@ -304,6 +304,7 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
                         </div>
                       </div>
 
+                      {/* Manual Registration */}
                       <div>
                         <p className='text-xs font-medium text-zinc-600 mb-2'>Registrazione Manuale (Admin)</p>
                         <RegisterPaymentForm
@@ -398,6 +399,7 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
                         </div>
                       </div>
 
+                      {/* Manual Registration */}
                       <div>
                         <p className='text-xs font-medium text-zinc-600 mb-2'>Registrazione Manuale (Admin)</p>
                         <RegisterPaymentForm
