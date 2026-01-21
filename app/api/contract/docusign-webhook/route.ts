@@ -140,9 +140,9 @@ export async function POST(req: NextRequest) {
     
     console.log('[docusign-webhook] Previous contract status:', prevStatus);
 
-    if (prevStatus === 'signed') {
-      console.log('[docusign-webhook] ⚠️ Contract already marked as signed; skipping update:', contractId);
-      return NextResponse.json({ success: true, message: 'Already signed; nothing to do.' }, { status: 200 });
+    if (prevStatus === 'voided') {
+      console.log('[docusign-webhook] ⚠️ Contract already marked as voided; skipping update:', contractId);
+      return NextResponse.json({ success: true, message: 'Already voided; nothing to do.' }, { status: 200 });
     }
 
     // Get contract eventId for payment activation
@@ -157,20 +157,20 @@ export async function POST(req: NextRequest) {
 
     console.log('[docusign-webhook] Starting database transaction...');
     await database.transaction(async (tx) => {
-      console.log('[docusign-webhook] Updating contract status to SIGNED...');
-      // Update contract to signed
+      console.log('[docusign-webhook] Updating contract status to VOIDED...');
+      // Update contract to voided (archived/signed)
       await tx
         .update(contracts)
-        .set({ fileUrl, fileName: finalFileName, status: 'signed' })
+        .set({ fileUrl, fileName: finalFileName, status: 'voided' })
         .where(eq(contracts.id, contractId));
       
-      console.log('[docusign-webhook] ✅ Contract status updated to SIGNED');
+      console.log('[docusign-webhook] ✅ Contract status updated to VOIDED');
 
       console.log('[docusign-webhook] Inserting contract history...');
       await tx.insert(contractHistory).values({
         contractId,
         fromStatus: prevStatus,
-        toStatus: 'signed',
+        toStatus: 'voided',
         fileUrl,
         fileName: finalFileName,
         changedByUserId: null,
@@ -233,7 +233,7 @@ export async function POST(req: NextRequest) {
     });
 
     console.log('[docusign-webhook] ✅✅✅ Transaction completed successfully');
-    console.log('[docusign-webhook] Contract ID:', contractId, 'updated to SIGNED');
+    console.log('[docusign-webhook] Contract ID:', contractId, 'updated to VOIDED (signed/archived)');
 
     // Revalidate event page if eventId exists
     if (eventId) {

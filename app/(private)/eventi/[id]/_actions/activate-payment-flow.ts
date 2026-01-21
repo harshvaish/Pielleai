@@ -77,23 +77,23 @@ export async function activatePaymentFlowIfContractSigned(eventId: number) {
               fileUrl = `storage://${bucket}/${storagePath}`;
             }
 
-            // Update contract to signed
+            // Update contract to voided (archived/signed)
             await database
               .update(contracts)
-              .set({ fileUrl, fileName: finalFileName, status: 'signed' })
+              .set({ fileUrl, fileName: finalFileName, status: 'voided' })
               .where(eq(contracts.id, contractData.id));
 
             await database.insert(contractHistory).values({
               contractId: contractData.id,
               fromStatus: contractData.status,
-              toStatus: 'signed',
+              toStatus: 'voided',
               fileUrl,
               fileName: finalFileName,
               changedByUserId: null,
               note: 'Auto-synced from DocuSign on page load.',
             });
 
-            console.log('[activatePaymentFlow] ✅ Contract updated to signed');
+            console.log('[activatePaymentFlow] ✅ Contract updated to voided');
           }
         }
       } catch (docusignError) {
@@ -130,9 +130,9 @@ export async function activatePaymentFlowIfContractSigned(eventId: number) {
     console.log('[activatePaymentFlow] Payment status:', eventData.paymentStatus);
     console.log('[activatePaymentFlow] Total cost:', eventData.totalCost);
 
-    // If contract is signed and payment is still pending, activate payment flow
+    // If contract is signed or voided (archived/signed) and payment is still pending, activate payment flow
     if (
-      updatedContract?.status === 'signed' &&
+      (updatedContract?.status === 'voided' || updatedContract?.status === 'signed') &&
       eventData?.paymentStatus === 'pending'
     ) {
       console.log('[activatePaymentFlow] Activating payment flow...');
