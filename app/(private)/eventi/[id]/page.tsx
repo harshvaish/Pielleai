@@ -20,6 +20,7 @@ import PayWithStripeButton from './_components/PayWithStripeButton';
 import PaymentSuccessHandler from './_components/PaymentSuccessHandler';
 import SyncContractButton from './_components/SyncContractButton';
 import { activatePaymentFlowIfContractSigned } from './_actions/activate-payment-flow';
+import Link from 'next/link';
 
 const EVENT_TYPE_LABELS: Record<EventType, string> = {
   'dj-set': 'DJ set',
@@ -125,9 +126,34 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
       {/* Event Details Section */}
       <section className='bg-white p-6 rounded-2xl space-y-4'>
         <div className='flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4'>
-          <div className='space-y-1'>
+          <div className='space-y-3'>
             <div className='text-xl font-bold'>{eventTitle}</div>
-            <div className='text-sm text-zinc-500'>{event.venue.name}</div>
+            <div className='flex flex-wrap gap-2'>
+              <Link href={`/artisti/${event.artist.slug}`}>
+                <Badge variant='secondary' className='cursor-pointer hover:bg-zinc-200 transition-colors'>
+                  Artista: {artistLabel}
+                </Badge>
+              </Link>
+              {event.artistManager && (
+                <Link href={`/manager-artisti/${event.artistManager.id}`}>
+                  <Badge variant='secondary' className='cursor-pointer hover:bg-zinc-200 transition-colors'>
+                    Manager Artista: {event.artistManager.name} {event.artistManager.surname}
+                  </Badge>
+                </Link>
+              )}
+              <Link href={`/locali/${event.venue.slug}`}>
+                <Badge variant='secondary' className='cursor-pointer hover:bg-zinc-200 transition-colors'>
+                  Locale: {event.venue.name}
+                </Badge>
+              </Link>
+              {event.venueManager && (
+                <Link href={`/promoter-locali/${event.venueManager.id}`}>
+                  <Badge variant='secondary' className='cursor-pointer hover:bg-zinc-200 transition-colors'>
+                    Manager Locale: {event.venueManager.name} {event.venueManager.surname}
+                  </Badge>
+                </Link>
+              )}
+            </div>
           </div>
           <div className='flex items-center gap-2'>
             <EventStatusBadge status={event.status} />

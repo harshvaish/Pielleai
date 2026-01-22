@@ -622,13 +622,27 @@ export type EventSummary = {
     name: string;
     surname: string;
     stageName: string | null;
+    slug: string;
   };
   venue: {
     id: number;
     name: string;
     city: string | null;
     address: string | null;
+    slug: string;
   };
+  artistManager: {
+    id: string;
+    profileId: number;
+    name: string;
+    surname: string;
+  } | null;
+  venueManager: {
+    id: string;
+    profileId: number;
+    name: string;
+    surname: string;
+  } | null;
 };
 
 export type EventsTableFilters = {
