@@ -31,7 +31,7 @@ export type RevisionHistoryEntry = {
   protocolNumber: string | null;
   reason: string | null;
   description: string | null;
-  createdAt: string | null;
+  createdAt: Date | string | null;
   createdBy: string | null;
   changes: RevisionChange[];
 };
@@ -43,13 +43,13 @@ type RevisionRow = {
   protocolNumber: string | null;
   revisionReason: string | null;
   revisionDescription: string | null;
-  revisionCreatedAt: string | null;
+  revisionCreatedAt: Date | string | null;
   revisionCreatedByName: string | null;
   title: string | null;
   status: EventStatus;
   eventType: string | null;
-  availabilityStart: string;
-  availabilityEnd: string;
+  availabilityStart: Date | string;
+  availabilityEnd: Date | string;
   artistId: number;
   artistLabel: string;
   venueId: number;
@@ -80,7 +80,7 @@ type RevisionRow = {
   soundCheckEnd: string | null;
   tecnicalRiderUrl: string | null;
   tecnicalRiderName: string | null;
-  paymentDate: string | null;
+  paymentDate: Date | string | null;
   contractSigning: boolean;
   depositInvoiceIssuing: boolean;
   depositReceiptVerification: boolean;
@@ -96,16 +96,16 @@ type RevisionRow = {
 
 const formatBoolean = (value: boolean | null | undefined): string => (value ? 'Si' : 'No');
 
-const formatDateTime = (value: string | null | undefined): string => {
+const formatDateTime = (value: Date | string | null | undefined): string => {
   if (!value) return '-';
-  const parsed = new Date(value);
+  const parsed = value instanceof Date ? value : new Date(value);
   if (Number.isNaN(parsed.getTime())) return '-';
   return format(parsed, 'dd/MM/yyyy HH:mm', { locale: it });
 };
 
-const formatDate = (value: string | null | undefined): string => {
+const formatDate = (value: Date | string | null | undefined): string => {
   if (!value) return '-';
-  const parsed = new Date(value);
+  const parsed = value instanceof Date ? value : new Date(value);
   if (Number.isNaN(parsed.getTime())) return '-';
   return format(parsed, 'dd/MM/yyyy', { locale: it });
 };

@@ -18,9 +18,9 @@ export type EventOption = {
   venueLabel: string;
 };
 
-const formatDateLabel = (start?: string | null): string => {
+const formatDateLabel = (start?: string | Date | null): string => {
   if (!start) return '-';
-  const parsed = new Date(start);
+  const parsed = start instanceof Date ? start : new Date(start);
   if (Number.isNaN(parsed.getTime())) return '-';
   return parsed.toLocaleDateString('it-IT', {
     day: '2-digit',

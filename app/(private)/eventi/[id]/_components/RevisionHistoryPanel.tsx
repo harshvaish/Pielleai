@@ -5,9 +5,9 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import type { RevisionHistoryEntry } from '@/lib/data/events/get-event-revision-history';
 
-const formatTimestamp = (value?: string | null) => {
+const formatTimestamp = (value?: string | Date | null) => {
   if (!value) return '-';
-  const parsed = new Date(value);
+  const parsed = value instanceof Date ? value : new Date(value);
   if (Number.isNaN(parsed.getTime())) return '-';
   return format(parsed, 'dd/MM/yyyy HH:mm', { locale: it });
 };
