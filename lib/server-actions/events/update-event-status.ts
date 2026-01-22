@@ -12,6 +12,7 @@ import { isBefore } from 'date-fns';
 import { and, eq, ne, count, inArray, sql } from 'drizzle-orm';
 import { z } from 'zod/v4';
 import { sendEventConfirmedEmail } from '../send-event-confirmed-email';
+import { buildEventProtocolNumber } from '@/lib/utils/event-revisions';
 
 export async function updateEventStatus(
   eventId: number,
@@ -49,6 +50,8 @@ export async function updateEventStatus(
       .select({
         id: events.id,
         status: events.status,
+        masterEventId: events.masterEventId,
+        protocolNumber: events.protocolNumber,
         artistId: events.artistId,
 
         artist: {
@@ -103,9 +106,18 @@ export async function updateEventStatus(
 
     await database.transaction(async (tx) => {
       // STEP 1: HANDLE EVENT --------------------------------------------------------
+      const protocolNumber =
+        newStatus === 'ended' && !oldEvent.protocolNumber && !oldEvent.masterEventId
+          ? buildEventProtocolNumber(oldEvent.id, 0)
+          : undefined;
+
       await tx
         .update(events)
-        .set({ status: newStatus, updatedAt: now })
+        .set({
+          status: newStatus,
+          updatedAt: now,
+          ...(protocolNumber ? { protocolNumber } : {}),
+        })
         .where(eq(events.id, eventId));
 
       // STEP 3: HANDLE CONFLICTS --------------------------------------------------------

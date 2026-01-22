@@ -179,6 +179,7 @@ export const artistAvailabilities = pgTable(
     }).notNull(),
     endDate: timestamp('end_date', { precision: 6, withTimezone: true, mode: 'string' }).notNull(),
     status: availabilityStatus().default('available').notNull(),
+    isRevision: boolean('is_revision').default(false).notNull(),
     createdAt: timestamp('created_at', { precision: 6, withTimezone: true, mode: 'string' })
       .defaultNow()
       .notNull(),
@@ -324,6 +325,17 @@ export const events = pgTable(
     tourManagerEmail: text('tour_manager_email'),
     hasConflict: boolean('has_conflict').default(false).notNull(),
     status: eventStatus().default('proposed').notNull(),
+    masterEventId: integer('master_event_id'),
+    revisionNumber: integer('revision_number').default(0).notNull(),
+    protocolNumber: text('protocol_number'),
+    revisionReason: text('revision_reason'),
+    revisionDescription: text('revision_description'),
+    revisionCreatedByUserId: text('revision_created_by_user_id'),
+    revisionCreatedAt: timestamp('revision_created_at', {
+      precision: 6,
+      withTimezone: true,
+      mode: 'string',
+    }),
     hotelCost: numeric('hotel_cost'),
     restaurantCost: numeric('restaurant_cost'),
     eventType:text('event_type'),
@@ -414,7 +426,19 @@ export const events = pgTable(
       table.venueId.asc().nullsLast().op('timestamptz_ops'),
       table.createdAt.desc().nullsFirst().op('timestamptz_ops'),
     ),
+    index('idx_events_master_event_id').using(
+      'btree',
+      table.masterEventId.asc().nullsLast().op('int4_ops'),
+    ),
+    index('idx_events_master_event_rev').using(
+      'btree',
+      table.masterEventId.asc().nullsLast().op('int4_ops'),
+      table.revisionNumber.asc().nullsLast().op('int4_ops'),
+    ),
     index('idx_events_venue_id').using('btree', table.venueId.asc().nullsLast().op('int4_ops')),
+    uniqueIndex('ux_events_protocol_number')
+      .using('btree', table.protocolNumber.asc().nullsLast().op('text_ops'))
+      .where(sql`${table.protocolNumber} IS NOT NULL`),
     uniqueIndex('ux_events_one_confirmed_per_availability')
       .using('btree', table.availabilityId.asc().nullsLast().op('int4_ops'))
       .where(sql`(status = 'confirmed'::event_status)`),
@@ -442,6 +466,16 @@ export const events = pgTable(
       columns: [table.venueId],
       foreignColumns: [venues.id],
       name: 'fk_events_venue',
+    }).onDelete('restrict'),
+    foreignKey({
+      columns: [table.masterEventId],
+      foreignColumns: [table.id],
+      name: 'fk_events_master_event',
+    }).onDelete('restrict'),
+    foreignKey({
+      columns: [table.revisionCreatedByUserId],
+      foreignColumns: [users.id],
+      name: 'fk_events_revision_created_by_user',
     }).onDelete('restrict'),
     unique('unique_artist_availability_venue').on(
       table.artistId,

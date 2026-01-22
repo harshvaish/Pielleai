@@ -526,6 +526,13 @@ export type EventType = "dj-set" | "live" | "festival";
 export type Event = {
   id: number;
   title?: string | null;
+  masterEventId?: number | null;
+  revisionNumber?: number | null;
+  protocolNumber?: string | null;
+  revisionReason?: string | null;
+  revisionDescription?: string | null;
+  revisionCreatedByUserId?: string | null;
+  revisionCreatedAt?: string | null;
   artist: ArtistSelectData;
   availability: ArtistAvailability;
   venue: VenueSelectData;
@@ -613,6 +620,9 @@ export type ArtistEventListItem = {
 export type EventSummary = {
   id: number;
   title?: string | null;
+  masterEventId?: number | null;
+  revisionNumber?: number | null;
+  protocolNumber?: string | null;
   status: EventStatus;
   eventType: EventType | null;
   startDate: Date;

@@ -18,6 +18,7 @@ import {
 import { Event, EventNote, EventsTableFilters } from '@/lib/types';
 import { and, count, desc, eq, inArray, sql } from 'drizzle-orm';
 import { contracts, contractEmailCcs, contractHistory } from '../../../drizzle/schema';
+import { latestRevisionFilter } from './revision-helpers';
 
 const venueManagerProfile = alias(profiles, 'venueManagerProfile');
 const venueManagerUser = alias(users, 'venueManagerUser');
@@ -83,6 +84,7 @@ export async function getEvents(
 
     // Build reusable filters
     const filters = and(
+      latestRevisionFilter,
       status.length > 0 ? inArray(events.status, status) : undefined,
       conflict ? eq(events.hasConflict, true) : undefined,
       artistIds.length > 0 ? inArray(events.artistId, artistIds.map(Number)) : undefined,
@@ -146,6 +148,13 @@ export async function getEvents(
         venueManagerProfileSurname: venueManagerProfile.surname,
 
         status: events.status,
+        masterEventId: events.masterEventId,
+        revisionNumber: events.revisionNumber,
+        protocolNumber: events.protocolNumber,
+        revisionReason: events.revisionReason,
+        revisionDescription: events.revisionDescription,
+        revisionCreatedByUserId: events.revisionCreatedByUserId,
+        revisionCreatedAt: events.revisionCreatedAt,
         hasConflict: events.hasConflict,
 
         artistManager: {

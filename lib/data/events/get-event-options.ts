@@ -1,13 +1,14 @@
 'server only';
 
-import { desc, eq } from 'drizzle-orm';
+import { and, desc, eq } from 'drizzle-orm';
 
 import { database } from '@/lib/database/connection';
 import { AppError } from '@/lib/classes/AppError';
 import getSession from '@/lib/data/auth/get-session';
 import { generateEventTitle } from '@/lib/utils/generate-event-title';
 
-import { events, artists, venues, artistAvailabilities } from '../../../drizzle/schema';
+import { events, artists, venues, artistAvailabilities } from '@/lib/database/schema';
+import { latestRevisionFilter } from './revision-helpers';
 
 export type EventOption = {
   id: number;
@@ -60,6 +61,7 @@ export async function getEventOptions(limit = 1000): Promise<EventOption[]> {
     .innerJoin(artists, eq(events.artistId, artists.id))
     .innerJoin(venues, eq(events.venueId, venues.id))
     .leftJoin(artistAvailabilities, eq(events.availabilityId, artistAvailabilities.id))
+    .where(and(latestRevisionFilter))
     .orderBy(desc(artistAvailabilities.startDate))
     .limit(limit);
 

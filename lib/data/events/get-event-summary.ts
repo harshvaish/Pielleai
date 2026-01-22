@@ -18,6 +18,9 @@ export async function getEventSummary(eventId: number): Promise<EventSummary | n
         title: events.title,
         status: events.status,
         eventType: events.eventType as any,
+        masterEventId: events.masterEventId,
+        revisionNumber: events.revisionNumber,
+        protocolNumber: events.protocolNumber,
         startDate: artistAvailabilities.startDate,
         endDate: artistAvailabilities.endDate,
         artist: {

@@ -21,6 +21,10 @@ import PaymentSuccessHandler from './_components/PaymentSuccessHandler';
 import SyncContractButton from './_components/SyncContractButton';
 import { activatePaymentFlowIfContractSigned } from './_actions/activate-payment-flow';
 import Link from 'next/link';
+import { getEventRevisionContext } from '@/lib/data/events/get-event-revision-context';
+import { getEventRevisionHistory } from '@/lib/data/events/get-event-revision-history';
+import CreateRevisionDialog from './_components/CreateRevisionDialog';
+import RevisionHistoryPanel from './_components/RevisionHistoryPanel';
 
 const EVENT_TYPE_LABELS: Record<EventType, string> = {
   'dj-set': 'DJ set',
@@ -56,13 +60,25 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
     notFound();
   }
 
-  const event = await getEventSummary(eventId);
+  const revisionContext = await getEventRevisionContext(eventId);
+  if (!revisionContext) {
+    notFound();
+  }
+
+  const isAdmin = hasRole(user, ['admin']);
+  const resolvedEventId = isAdmin ? eventId : revisionContext.latestEventId;
+
+  if (!isAdmin && resolvedEventId !== eventId) {
+    redirect(`/eventi/${resolvedEventId}`);
+  }
+
+  const event = await getEventSummary(resolvedEventId);
   if (!event) {
     notFound();
   }
 
   // Automatically activate payment flow if contract is signed
-  await activatePaymentFlowIfContractSigned(eventId);
+  await activatePaymentFlowIfContractSigned(resolvedEventId);
 
   // Get payment data
   const [paymentData] = await database
@@ -82,7 +98,7 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
       fullyPaidAt: events.fullyPaidAt,
     })
     .from(events)
-    .where(eq(events.id, eventId));
+    .where(eq(events.id, resolvedEventId));
 
   // Get contract status
   const [contractData] = await database
@@ -95,14 +111,14 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
       envelopeId: contracts.envelopeId,
     })
     .from(contracts)
-    .where(eq(contracts.eventId, eventId));
+    .where(eq(contracts.eventId, resolvedEventId));
 
   const startLabel = format(toZonedTime(event.startDate, TIME_ZONE), 'dd/MM/yyyy, HH:mm');
   const endLabel = format(toZonedTime(event.endDate, TIME_ZONE), 'dd/MM/yyyy, HH:mm');
   const artistName = `${event.artist.name} ${event.artist.surname}`.trim();
   const artistLabel = event.artist.stageName?.trim() || artistName;
   const eventTypeLabel = event.eventType ? EVENT_TYPE_LABELS[event.eventType] : null;
-  const isAdmin = hasRole(user, ['admin']);
+  const revisionHistory = isAdmin ? await getEventRevisionHistory(resolvedEventId) : [];
   const eventTitle =
     event.title?.trim() ||
     generateEventTitle(artistLabel, event.venue.name, event.startDate, event.endDate);
@@ -117,10 +133,13 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
 
   return (
     <div className='max-w-3xl space-y-6'>
-      <PaymentSuccessHandler eventId={eventId} />
+      <PaymentSuccessHandler eventId={resolvedEventId} />
       
-      <div className='flex justify-between items-center'>
+      <div className='flex justify-between items-center gap-4'>
         <BackButton />
+        {isAdmin && event.status === 'ended' && (
+          <CreateRevisionDialog eventId={event.id} />
+        )}
       </div>
 
       {/* Event Details Section */}
@@ -155,9 +174,13 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
               )}
             </div>
           </div>
-          <div className='flex items-center gap-2'>
+          <div className='flex items-center gap-2 flex-wrap'>
             <EventStatusBadge status={event.status} />
             {eventTypeLabel && <Badge variant='secondary'>{eventTypeLabel}</Badge>}
+            {event.protocolNumber && <Badge variant='secondary'>Protocollo: {event.protocolNumber}</Badge>}
+            {typeof event.revisionNumber === 'number' && (
+              <Badge variant='outline'>Revisione v{event.revisionNumber}</Badge>
+            )}
           </div>
         </div>
 
@@ -182,6 +205,10 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
         </div>
       </section>
 
+      {isAdmin && revisionHistory.length > 0 && (
+        <RevisionHistoryPanel history={revisionHistory} currentEventId={event.id} />
+      )}
+
       {/* Contract Status Section */}
       <section className='bg-white p-6 rounded-2xl space-y-4'>
         <div className='flex justify-between items-center'>
@@ -190,7 +217,7 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
             <SyncContractButton
               contractId={contractData.id}
               envelopeId={contractData.envelopeId}
-              eventId={eventId}
+              eventId={event.id}
             />
           )}
         </div>
@@ -313,10 +340,10 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
                   <div>
                     <p className='text-xs font-medium text-zinc-600 mb-2'>Pagamento Online</p>
                     <PayWithStripeButton
-                      eventId={eventId}
+                      eventId={event.id}
                       paymentType='upfront'
                       amount={paymentData.upfrontPaymentAmount ? parseFloat(paymentData.upfrontPaymentAmount) : 0}
-                      eventTitle={`Evento #${eventId}`}
+                      eventTitle={`Evento #${event.id}`}
                       venueName={event.venue.name}
                       disabled={!paymentData.upfrontPaymentAmount}
                     />
@@ -339,7 +366,7 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
                       <div>
                         <p className='text-xs font-medium text-zinc-600 mb-2'>Registrazione Manuale (Admin)</p>
                         <RegisterPaymentForm
-                          eventId={eventId}
+                          eventId={event.id}
                           paymentType='upfront'
                           expectedAmount={paymentData.upfrontPaymentAmount ? parseFloat(paymentData.upfrontPaymentAmount) : undefined}
                         />
@@ -408,10 +435,10 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
                   <div>
                     <p className='text-xs font-medium text-zinc-600 mb-2'>Pagamento Online</p>
                     <PayWithStripeButton
-                      eventId={eventId}
+                      eventId={event.id}
                       paymentType='final-balance'
                       amount={paymentData.finalBalanceAmount ? parseFloat(paymentData.finalBalanceAmount) : 0}
-                      eventTitle={`Evento #${eventId}`}
+                      eventTitle={`Evento #${event.id}`}
                       venueName={event.venue.name}
                       disabled={!paymentData.finalBalanceAmount}
                     />
@@ -434,7 +461,7 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
                       <div>
                         <p className='text-xs font-medium text-zinc-600 mb-2'>Registrazione Manuale (Admin)</p>
                         <RegisterPaymentForm
-                          eventId={eventId}
+                          eventId={event.id}
                           paymentType='final-balance'
                           expectedAmount={paymentData.finalBalanceAmount ? parseFloat(paymentData.finalBalanceAmount) : undefined}
                         />

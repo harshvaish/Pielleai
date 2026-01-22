@@ -12,7 +12,8 @@ import {
   eventNotes,
 } from '@/lib/database/schema';
 import { Event, EventNote } from '@/lib/types';
-import { desc, eq, inArray } from 'drizzle-orm';
+import { and, eq, inArray } from 'drizzle-orm';
+import { latestRevisionFilter } from './revision-helpers';
 
 export async function getEventsToApprove(): Promise<{ data: Event[] }> {
   try {
@@ -47,6 +48,13 @@ export async function getEventsToApprove(): Promise<{ data: Event[] }> {
         },
 
         status: events.status,
+        masterEventId: events.masterEventId,
+        revisionNumber: events.revisionNumber,
+        protocolNumber: events.protocolNumber,
+        revisionReason: events.revisionReason,
+        revisionDescription: events.revisionDescription,
+        revisionCreatedByUserId: events.revisionCreatedByUserId,
+        revisionCreatedAt: events.revisionCreatedAt,
         hasConflict: events.hasConflict,
 
         artistManager: {
@@ -113,7 +121,7 @@ export async function getEventsToApprove(): Promise<{ data: Event[] }> {
       .leftJoin(profiles, eq(events.artistManagerProfileId, profiles.id))
       .leftJoin(users, eq(profiles.userId, users.id))
       .leftJoin(moCoordinators, eq(events.moCoordinatorId, moCoordinators.id))
-      .where(eq(events.status, 'proposed'))
+      .where(and(latestRevisionFilter, eq(events.status, 'proposed')))
       .orderBy(artistAvailabilities.startDate);
 
     const eventIds = eventsResult.map((e) => e.id);

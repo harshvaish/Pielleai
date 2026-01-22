@@ -5,6 +5,7 @@ import { database } from '@/lib/database/connection';
 import { artistAvailabilities, artists, events, venues } from '@/lib/database/schema';
 import { ArtistEventListItem, ArtistEventsTableFilters } from '@/lib/types';
 import { and, count, eq, inArray, sql } from 'drizzle-orm';
+import { latestRevisionFilter } from './revision-helpers';
 
 const MAX_RANGE_END = new Date('9999-12-31T23:59:59.999Z');
 
@@ -32,6 +33,7 @@ export async function getArtistEvents(
 
   try {
     const filters = and(
+      latestRevisionFilter,
       eq(events.artistId, artistId),
       status.length > 0 ? inArray(events.status, status) : undefined,
       venueIds.length > 0 ? inArray(events.venueId, venueIds.map(Number)) : undefined,

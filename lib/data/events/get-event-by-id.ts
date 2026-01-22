@@ -81,6 +81,13 @@ export async function getEventById(user: User, eventId: number): Promise<Event |
         venueManagerProfileSurname: venueManagerProfile.surname,
 
         status: events.status,
+        masterEventId: events.masterEventId,
+        revisionNumber: events.revisionNumber,
+        protocolNumber: events.protocolNumber,
+        revisionReason: events.revisionReason,
+        revisionDescription: events.revisionDescription,
+        revisionCreatedByUserId: events.revisionCreatedByUserId,
+        revisionCreatedAt: events.revisionCreatedAt,
         hasConflict: events.hasConflict,
 
         artistManager: {

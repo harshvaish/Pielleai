@@ -12,7 +12,8 @@ import {
   moCoordinators,
 } from '@/lib/database/schema';
 import { Event } from '@/lib/types';
-import { and, desc, eq, gt, inArray } from 'drizzle-orm';
+import { and, eq, gt, inArray } from 'drizzle-orm';
+import { latestRevisionFilter } from './revision-helpers';
 
 export async function getVenueManagerEvents(profileId: number): Promise<{ data: Event[] }> {
   const limit = PAGINATED_TABLE_ROWS_X_PAGE;
@@ -27,6 +28,7 @@ export async function getVenueManagerEvents(profileId: number): Promise<{ data: 
 
     // Build reusable filters
     const filters = and(
+      latestRevisionFilter,
       inArray(events.status, ['proposed', 'pre-confirmed', 'confirmed']),
       inArray(events.venueId, managedVenueIds),
       gt(artistAvailabilities.startDate, new Date()),
@@ -61,6 +63,13 @@ export async function getVenueManagerEvents(profileId: number): Promise<{ data: 
         },
 
         status: events.status,
+        masterEventId: events.masterEventId,
+        revisionNumber: events.revisionNumber,
+        protocolNumber: events.protocolNumber,
+        revisionReason: events.revisionReason,
+        revisionDescription: events.revisionDescription,
+        revisionCreatedByUserId: events.revisionCreatedByUserId,
+        revisionCreatedAt: events.revisionCreatedAt,
         hasConflict: events.hasConflict,
 
         artistManager: {

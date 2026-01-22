@@ -28,6 +28,7 @@ import {
   createEventStatusTimestamps,
   type PaymentStatus,
 } from '@/lib/utils/payment-flow';
+import { buildEventProtocolNumber } from '@/lib/utils/event-revisions';
 
 export const updateEvent = async (
   eventId: number,
@@ -72,6 +73,8 @@ export const updateEvent = async (
       .select({
         id: events.id,
         status: events.status,
+        masterEventId: events.masterEventId,
+        protocolNumber: events.protocolNumber,
         artist: {
           name: artists.name,
           surname: artists.surname,
@@ -96,6 +99,9 @@ export const updateEvent = async (
       .limit(1);
 
     if (!oldEvent) throw new AppError('Evento non trovato.');
+    if (oldEvent.status === 'ended' && !oldEvent.masterEventId) {
+      throw new AppError('Evento concluso: crea una revisione per modificarlo.');
+    }
 
     if (!newAvailability.startDate || !newAvailability.endDate) {
       throw new AppError('Seleziona una data e un orario validi.');
@@ -300,6 +306,11 @@ export const updateEvent = async (
       newAvailability.id = oldEvent.availability.id;
 
       // STEP 2: HANDLE EVENT --------------------------------------------------------
+      const protocolNumber =
+        updatedStatus === 'ended' && !oldEvent.protocolNumber && !oldEvent.masterEventId
+          ? buildEventProtocolNumber(oldEvent.id, 0)
+          : undefined;
+
       await tx
         .update(events)
         .set({
@@ -309,6 +320,7 @@ export const updateEvent = async (
           venueId,
 
           status: updatedStatus,
+          ...(protocolNumber ? { protocolNumber } : {}),
 
           artistManagerProfileId: artistManagerProfileId || null,
           tourManagerEmail: validation.data.tourManagerEmail || null,

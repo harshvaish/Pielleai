@@ -10,7 +10,8 @@ import {
   users,
 } from '@/lib/database/schema';
 import { CalendarEvent, EventsCalendarFilters } from '@/lib/types';
-import { and, desc, eq, inArray, sql } from 'drizzle-orm';
+import { and, eq, inArray, sql } from 'drizzle-orm';
+import { latestRevisionFilter } from './revision-helpers';
 
 export async function getCalendarEvents({
   status,
@@ -27,6 +28,7 @@ export async function getCalendarEvents({
 
     // Build reusable filters
     const filters = and(
+      latestRevisionFilter,
       status.length > 0 ? inArray(events.status, status) : undefined,
       artistIds.length > 0 ? inArray(events.artistId, artistIds.map(Number)) : undefined,
       venueIds.length > 0 ? inArray(events.venueId, venueIds.map(Number)) : undefined,

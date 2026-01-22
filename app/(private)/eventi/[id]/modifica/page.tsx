@@ -8,6 +8,7 @@ import { getVenuesCached } from '@/lib/cache/venues';
 import { getMoCoordinatorsCached } from '@/lib/cache/mo-coordinators';
 import UpdateEventForm from '../../_components/update/UpdateEventForm';
 import { getEventById } from '@/lib/data/events/get-event-by-id';
+import CreateRevisionDialog from '../_components/CreateRevisionDialog';
 
 type UpdateEventPageProps = {
   params: Promise<{ id: string }>;
@@ -42,6 +43,23 @@ export default async function UpdateEventPage({ params }: UpdateEventPageProps) 
     notFound();
   }
 
+  if (event.status === 'ended' && !event.masterEventId) {
+    return (
+      <div className='max-w-3xl space-y-4'>
+        <div className='flex items-center justify-between -mt-1'>
+          <BackButton />
+        </div>
+        <section className='bg-white p-6 rounded-2xl space-y-4'>
+          <h1 className='text-2xl font-bold'>Evento concluso</h1>
+          <p className='text-sm text-zinc-600'>
+            Questo evento e concluso e non puo essere modificato direttamente. Crea una
+            revisione per apportare correzioni mantenendo lo storico.
+          </p>
+          <CreateRevisionDialog eventId={event.id} />
+        </section>
+      </div>
+    );
+  }
   const [artists, venues, moCoordinators] = await Promise.all([
     getArtistsCached(),
     getVenuesCached(),
