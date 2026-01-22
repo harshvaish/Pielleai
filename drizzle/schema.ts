@@ -206,6 +206,7 @@ export const artistAvailabilities = pgTable(
   ],
 );
 
+
 export const accounts = pgTable(
   'accounts',
   {

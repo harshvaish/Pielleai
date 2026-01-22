@@ -11,7 +11,7 @@ import ConflictFilterButton from "@/app/(private)/eventi/_components/filters/Con
 import ExportButton from "@/app/(private)/eventi/_components/ExportButton";
 import getSession from "@/lib/data/auth/get-session";
 import { getUserProfileIdCached } from "@/lib/cache/users";
-import { getEvents } from "@/lib/data/events/get-events";
+import { getOtherDocuments } from "@/lib/data/documents/get-other-documents";
 import { getArtistsCached } from "@/lib/cache/artists";
 import { getArtistManagersCached } from "@/lib/cache/artist-managers";
 import { getVenuesCached } from "@/lib/cache/venues";
@@ -23,6 +23,9 @@ import Link from "next/link";
 import { Briefcase, ChevronRight, FileText, Mail, MapPin, User } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { AVATAR_FALLBACK } from "@/lib/constants";
+import { PAGINATED_TABLE_ROWS_X_PAGE } from "@/lib/constants";
+
+export const dynamic = "force-dynamic";
 
 type OtherDocumentsPageProps = {
   searchParams?: Promise<{
@@ -46,13 +49,13 @@ type DateAndTime = {
 function formatDateAndTime(
   availability:
     | {
-        startDate: Date | string;
-        endDate: Date | string;
+        startDate: Date | string | null;
+        endDate: Date | string | null;
       }
     | null
     | undefined
 ): DateAndTime {
-  if (!availability) {
+  if (!availability || !availability.startDate || !availability.endDate) {
     return { date: "-", time: "-" };
   }
 
@@ -75,8 +78,6 @@ function formatDateAndTime(
 
   return { date, time };
 }
-
-export const dynamic = "force-dynamic";
 
 export default async function OtherDocumentsPage({
   searchParams,
@@ -124,23 +125,78 @@ export default async function OtherDocumentsPage({
     notFound();
   }
 
-  const [{ data: events, totalPages }, artists, artistManagers, venues] =
-    await Promise.all([
-      getEvents(user, filters),
-      getArtistsCached(isArtistManager ? profileId! : undefined),
-      isAdmin ? getArtistManagersCached() : Promise.resolve([]),
-      getVenuesCached(isVenueManager ? profileId! : undefined),
-    ]);
+  const [otherDocuments, artists, artistManagers, venues] = await Promise.all([
+    getOtherDocuments(500),
+    getArtistsCached(isArtistManager ? profileId! : undefined),
+    isAdmin ? getArtistManagersCached() : Promise.resolve([]),
+    getVenuesCached(isVenueManager ? profileId! : undefined),
+  ]);
 
-  const sortedEvents = [...events].sort((a, b) => {
-    const aStart = a.availability?.startDate
-      ? new Date(a.availability.startDate).getTime()
+  let filteredDocuments = otherDocuments;
+  if (filters.status?.length) {
+    const allowed = new Set(filters.status);
+    filteredDocuments = filteredDocuments.filter((doc) =>
+      allowed.has(doc.event.status as EventStatus)
+    );
+  }
+
+  if (filters.conflict) {
+    filteredDocuments = filteredDocuments.filter((doc) => doc.event.hasConflict);
+  }
+
+  if (filters.artistIds?.length) {
+    const ids = new Set(filters.artistIds.map(Number));
+    filteredDocuments = filteredDocuments.filter((doc) =>
+      ids.has(doc.event.artist.id)
+    );
+  }
+
+  if (filters.artistManagerIds?.length) {
+    const ids = new Set(filters.artistManagerIds.map(Number));
+    filteredDocuments = filteredDocuments.filter((doc) =>
+      doc.event.artistManager ? ids.has(doc.event.artistManager.id) : false
+    );
+  }
+
+  if (filters.venueIds?.length) {
+    const ids = new Set(filters.venueIds.map(Number));
+    filteredDocuments = filteredDocuments.filter((doc) =>
+      ids.has(doc.event.venue.id)
+    );
+  }
+
+  if (filters.startDate || filters.endDate) {
+    const start = filters.startDate ? filters.startDate.getTime() : null;
+    const end = filters.endDate ? filters.endDate.getTime() : null;
+    filteredDocuments = filteredDocuments.filter((doc) => {
+      const startDate = doc.event.availability?.startDate
+        ? new Date(doc.event.availability.startDate).getTime()
+        : null;
+      if (!startDate) return false;
+      if (start !== null && startDate < start) return false;
+      if (end !== null && startDate > end) return false;
+      return true;
+    });
+  }
+
+  filteredDocuments = [...filteredDocuments].sort((a, b) => {
+    const aStart = a.event.availability?.startDate
+      ? new Date(a.event.availability.startDate).getTime()
       : 0;
-    const bStart = b.availability?.startDate
-      ? new Date(b.availability.startDate).getTime()
+    const bStart = b.event.availability?.startDate
+      ? new Date(b.event.availability.startDate).getTime()
       : 0;
     return sort === "desc" ? bStart - aStart : aStart - bStart;
   });
+
+  const totalPages = Math.max(
+    1,
+    Math.ceil(filteredDocuments.length / PAGINATED_TABLE_ROWS_X_PAGE)
+  );
+  const paginatedDocuments = filteredDocuments.slice(
+    (currentPage - 1) * PAGINATED_TABLE_ROWS_X_PAGE,
+    currentPage * PAGINATED_TABLE_ROWS_X_PAGE
+  );
 
   return (
     <div className="h-full flex flex-col gap-4">
@@ -206,23 +262,20 @@ export default async function OtherDocumentsPage({
         </div>
       </div>
 
-      {sortedEvents.length > 0 ? (
+      {paginatedDocuments.length > 0 ? (
         <div className="flex flex-col gap-4">
-          {sortedEvents.map((event) => {
-            const { date, time } = formatDateAndTime(event.availability);
-            const docName = event.contract?.fileName || "Documento.pdf";
+          {paginatedDocuments.map((doc) => {
+            const { date, time } = formatDateAndTime(doc.event.availability);
             return (
               <div
-                key={event.id}
+                key={doc.url}
                 className="rounded-2xl border border-zinc-100 bg-white p-4"
               >
                 <div className="grid gap-4 md:grid-cols-[160px_1fr_auto]">
                   <div className="flex flex-col gap-2 md:border-r md:pr-4">
                     <div className="flex flex-wrap items-center gap-2">
-                      <EventStatusBadge status={event.status} size="sm" />
-                      {event.hasConflict && (
-                        <EventConflictBadge size="sm" />
-                      )}
+                      <EventStatusBadge status={doc.event.status as any} size="sm" />
+                      {doc.event.hasConflict && <EventConflictBadge size="sm" />}
                     </div>
                     <div className="text-sm font-semibold text-zinc-800">
                       {date}
@@ -231,48 +284,39 @@ export default async function OtherDocumentsPage({
                   </div>
 
                   <div className="flex flex-col gap-3">
+                    <div className="text-sm font-semibold text-zinc-800">
+                      {doc.event.title}
+                    </div>
                     <div className="flex flex-wrap items-center gap-3 text-sm">
-                      <ArtistsBadge
-                        artists={[event.artist]}
-                        userRole={user.role}
-                      />
-                      <DocumentVenuesBadge
-                        userRole={user.role}
-                        venues={[event.venue]}
-                      />
+                      <ArtistsBadge artists={[doc.event.artist]} userRole={user.role} />
+                      <DocumentVenuesBadge userRole={user.role} venues={[doc.event.venue]} />
                     </div>
 
                     <div className="flex flex-wrap items-center gap-4 text-xs text-zinc-500">
                       <span className="inline-flex items-center gap-1.5">
                         <MapPin className="h-4 w-4 text-zinc-400" />
                         <span className="text-zinc-400">Locale</span>
-                        <span className="text-zinc-700">
-                          Club "{event.venue.name}"
-                        </span>
+                        <span className="text-zinc-700">Club "{doc.event.venue.name}"</span>
                       </span>
                       <span className="inline-flex items-center gap-1.5">
                         <Briefcase className="h-4 w-4 text-zinc-400" />
                         <span className="text-zinc-400">Manager</span>
-                        {event.artistManager ? (
+                        {doc.event.artistManager ? (
                           <Link
-                            href={`/manager-artisti/${event.artistManager.id}`}
+                            href={`/manager-artisti/${doc.event.artistManager.id}`}
                             className="inline-flex items-center gap-2 rounded-full bg-zinc-100 px-2 py-1 text-xs font-medium text-zinc-700 hover:bg-zinc-200"
                           >
                             <Avatar className="h-4 w-4">
                               <AvatarImage
-                                src={
-                                  event.artistManager.avatarUrl ||
-                                  AVATAR_FALLBACK
-                                }
+                                src={doc.event.artistManager.avatarUrl || AVATAR_FALLBACK}
                               />
                               <AvatarFallback>
-                                {event.artistManager.name
+                                {doc.event.artistManager.name
                                   .substring(0, 1)
                                   .toUpperCase()}
                               </AvatarFallback>
                             </Avatar>
-                            {event.artistManager.name}{" "}
-                            {event.artistManager.surname}
+                            {doc.event.artistManager.name} {doc.event.artistManager.surname}
                           </Link>
                         ) : (
                           <span className="text-zinc-700">-</span>
@@ -282,45 +326,48 @@ export default async function OtherDocumentsPage({
                         <User className="h-4 w-4 text-zinc-400" />
                         <span className="text-zinc-400">Tour manager</span>
                         <span className="text-zinc-700">
-                          {event.artist.tourManagerName ||
-                          event.artist.tourManagerSurname
-                            ? `${event.artist.tourManagerName ?? ""} ${
-                                event.artist.tourManagerSurname ?? ""
+                          {doc.event.artist.tourManagerName ||
+                          doc.event.artist.tourManagerSurname
+                            ? `${doc.event.artist.tourManagerName ?? ""} ${
+                                doc.event.artist.tourManagerSurname ?? ""
                               }`.trim()
-                            : event.tourManagerEmail || "-"}
+                            : doc.event.tourManagerEmail || "-"}
                         </span>
                       </span>
                       <span className="inline-flex items-center gap-1.5">
                         <Mail className="h-4 w-4 text-zinc-400" />
                         <span className="text-zinc-400">Amministrazione</span>
                         <span className="text-zinc-700">
-                          {event.payrollConsultantEmail || "-"}
+                          {doc.event.payrollConsultantEmail || "-"}
                         </span>
                       </span>
                     </div>
 
                     <div className="flex flex-wrap items-center gap-2 text-xs text-zinc-500">
                       <FileText className="h-4 w-4 text-zinc-400" />
-                      <span>Documento</span>
-                      {event.contract?.fileUrl ? (
-                        <a
-                          href={event.contract.fileUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-zinc-700 hover:underline"
-                        >
-                          <FileText className="h-4 w-4 text-zinc-400" />
-                          {docName}
-                        </a>
-                      ) : (
-                        <span className="text-zinc-400">Mancante</span>
-                      )}
+                      <a
+                        href={doc.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-zinc-700 hover:underline"
+                      >
+                        Other
+                      </a>
+                      <a
+                        href={doc.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-zinc-700 hover:underline"
+                      >
+                        <FileText className="h-4 w-4 text-zinc-400" />
+                        {doc.name}
+                      </a>
                     </div>
                   </div>
 
                   <div className="flex items-center justify-end">
                     <Link
-                      href={`/eventi/${event.id}/modifica`}
+                      href={`/eventi/${doc.event.id}/modifica`}
                       aria-label="Open event details"
                       className="inline-flex items-center text-zinc-400 hover:text-zinc-600"
                     >
@@ -336,12 +383,12 @@ export default async function OtherDocumentsPage({
         <section className="flex flex-col justify-center items-center bg-white rounded-2xl p-8">
           <h2 className="text-base font-bold">Nessun documento</h2>
           <div className="text-sm font-medium text-zinc-400">
-            Aggiungi un evento per vedere i documenti.
+            Carica un documento per vederlo qui.
           </div>
         </section>
       )}
 
-      {sortedEvents.length > 0 && (
+      {filteredDocuments.length > 0 && (
         <TablePagination
           totalPages={totalPages}
           currentPage={currentPage}

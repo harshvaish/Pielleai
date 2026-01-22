@@ -806,6 +806,7 @@ export const artistAvailabilities = pgTable(
   ],
 );
 
+
 export const artistLanguages = pgTable(
   'artist_languages',
   {

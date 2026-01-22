@@ -1,4 +1,3 @@
-import { TablePagination } from "../_components/form/TablePagination";
 import type { ContractFilterStatus } from "./_components/filters/StatusFilterButton";
 import { hasRole, resolveNextPath, splitCsv } from "@/lib/utils";
 import Link from "next/link";
@@ -20,17 +19,24 @@ import {
 } from "lucide-react";
 import { getContracts } from "@/lib/data/contracts/get-contracts";
 import { getPaginatedArtists } from "@/lib/data/artists/get-paginated-artists";
-import ExportButton from "./_components/ExportButton";
+import ContractsExportButton from "./_components/ExportButton";
 import { JSX } from "react";
 import ResendDocuSignButton from "./_components/ResendDocuSignButton";
 import DocumentVenuesBadge from "../_components/Badges/DocumentVenuesBadge";
 import ArtistsBadge from "../_components/Badges/ArtistsBadge";
 import ManagersBadge from "../_components/Badges/ManagersBadge";
 import EventStatusBadge from "../_components/Badges/EventStatusBadge";
+import ExportButton from "../_components/ExportButton";
 import { AVATAR_FALLBACK } from "@/lib/constants";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ArtistsTableFilters } from "@/lib/types";
 import { generateEventTitle } from "@/lib/utils/generate-event-title";
+import { getOtherDocuments } from "@/lib/data/documents/get-other-documents";
+import { getEventOptions } from "@/lib/data/events/get-event-options";
+import UploadDocumentDialog from "./_components/UploadDocumentDialog";
+import UploadArtistDocumentDialog from "./_components/UploadArtistDocumentDialog";
+import { getArtistsCached } from "@/lib/cache/artists";
+import { getArtistOtherDocuments } from "@/lib/data/documents/get-artist-other-documents";
 
 type EventsPageProps = {
   searchParams?: Promise<{
@@ -286,12 +292,14 @@ function mapStatus(
 }
 
 function formatDateAndTime(
-  availability: {
-    startDate: string;
-    endDate: string;
-  } | null
+  availability:
+    | {
+        startDate: string | null;
+        endDate: string | null;
+      }
+    | null
 ): { date: string; time: string } {
-  if (!availability) {
+  if (!availability || !availability.startDate || !availability.endDate) {
     return { date: "—", time: "—" };
   }
 
@@ -493,7 +501,8 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
     zoneIds: [],
   };
 
-  const [api, artistsResult] = await Promise.all([
+  const [api, artistsResult, otherDocuments, eventOptions, artistsOptions, artistOtherDocuments] =
+    await Promise.all([
     getContracts(user, {
       currentPage,
       startDate: sp?.start ?? "",
@@ -505,6 +514,10 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
       sort,
     }),
     getPaginatedArtists(artistFilters),
+    getOtherDocuments(),
+    isAdmin ? getEventOptions() : Promise.resolve([]),
+    isAdmin ? getArtistsCached() : Promise.resolve([]),
+    getArtistOtherDocuments(),
   ]);
   const artists = artistsResult.data;
 
@@ -521,7 +534,9 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
     Object.entries(sp ?? {}).filter(([, v]) => v != null)
   );
   const previewContracts = contracts.slice(0, 3);
+  const previewOtherDocuments = otherDocuments;
   const previewArtists = artists.slice(0, 3);
+  const previewArtistOtherDocuments = artistOtherDocuments.slice(0, 3);
   const buildEventTitle = (contract: ContractCard) => {
     const existingTitle = contract.event.title?.trim();
     if (existingTitle) return existingTitle;
@@ -589,7 +604,21 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
             </div>
           </div>
         </div>
-        {isAdmin && activeTab === "eventi" && <ExportButton filters={filters} />}
+        {isAdmin && activeTab === "eventi" && (
+          <div className="flex items-center gap-2">
+            <UploadDocumentDialog events={eventOptions} />
+            <ContractsExportButton filters={filters} />
+          </div>
+        )}
+        {isAdmin && activeTab === "artisti" && (
+          <div className="flex items-center gap-2">
+            <UploadArtistDocumentDialog artists={artistsOptions} />
+            <ExportButton
+              endpoint="/api/artists/export"
+              filename="export-artisti.csv"
+            />
+          </div>
+        )}
       </div>
 
       {activeTab === "eventi" ? (
@@ -926,113 +955,136 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
                 Vedi tutto <ChevronRight className="size-4" />
               </Link>
             </div>
-            {previewContracts.length ? (
+            {previewOtherDocuments.length ? (
               <div className="divide-y divide-zinc-100">
-                {previewContracts.map((contract) => (
-                  <div
-                    key={`other-${contract.id}`}
-                    className="grid gap-4 px-4 py-4 md:grid-cols-[170px_1fr_auto]"
-                  >
-                    <div className="flex flex-col gap-2 md:border-r md:pr-4">
-                      <span className="text-xs font-semibold text-zinc-800">
-                        {contract.date}
-                      </span>
-                      <span className="text-xs text-zinc-500">
-                        {contract.time}
-                      </span>
-                    </div>
-                    <div className="flex flex-col gap-3">
-                      <div className="text-sm font-semibold text-zinc-800">
-                        {buildEventTitle(contract)}
-                      </div>
-                      <div className="flex flex-wrap items-center gap-3 text-sm">
-                        <ArtistsBadge
-                          artists={[contract.artist]}
-                          userRole={user.role}
+                {previewOtherDocuments.map((doc) => {
+                  const { date, time } = formatDateAndTime(
+                    doc.event.availability
+                  );
+                  return (
+                    <div
+                      key={`other-${doc.url}`}
+                      className="grid gap-4 px-4 py-4 md:grid-cols-[160px_1fr_auto]"
+                    >
+                      <div className="flex flex-col gap-2 md:border-r md:pr-4">
+                        <EventStatusBadge
+                          status={doc.event.status as any}
+                          size="sm"
                         />
-                        <DocumentVenuesBadge
-                          userRole={user.role}
-                          venues={[contract.venue]}
-                        />
+                        <div className="text-sm font-semibold text-zinc-800">
+                          {date}
+                        </div>
+                        <div className="text-xs text-zinc-500">{time}</div>
                       </div>
-                      <div className="flex flex-wrap items-center gap-4 text-xs text-zinc-500">
-                        <span className="inline-flex items-center gap-1.5">
-                          <MapPin className="h-4 w-4 text-zinc-400" />
-                          <span className="text-zinc-400">Locale</span>
-                          <span className="text-zinc-700">
-                            Club "{contract.venue.name}"
+
+                      <div className="flex flex-col gap-3">
+                        <div className="text-sm font-semibold text-zinc-800">
+                          {doc.event.title}
+                        </div>
+                        <div className="flex flex-wrap items-center gap-3 text-sm">
+                          <ArtistsBadge
+                            artists={[doc.event.artist]}
+                            userRole={user.role}
+                          />
+                          <DocumentVenuesBadge
+                            userRole={user.role}
+                            venues={[doc.event.venue]}
+                          />
+                        </div>
+
+                        <div className="flex flex-wrap items-center gap-4 text-xs text-zinc-500">
+                          <span className="inline-flex items-center gap-1.5">
+                            <MapPin className="h-4 w-4 text-zinc-400" />
+                            <span className="text-zinc-400">Locale</span>
+                            <span className="text-zinc-700">
+                              Club "{doc.event.venue.name}"
+                            </span>
                           </span>
-                        </span>
-                        <span className="inline-flex items-center gap-1.5">
-                          <Briefcase className="h-4 w-4 text-zinc-400" />
-                          <span className="text-zinc-400">Manager</span>
-                        {contract.artistManager ? (
-                          <Link
-                            href={`/manager-artisti/${contract.artistManager.id}`}
-                            className="inline-flex items-center gap-2 rounded-full bg-zinc-100 px-2 py-1 text-xs font-medium text-zinc-700 hover:bg-zinc-200"
-                          >
-                            <Avatar className="h-4 w-4">
-                              <AvatarImage
-                                src={
-                                  contract.artistManager.avatarUrl ||
-                                  AVATAR_FALLBACK
-                                }
-                              />
-                              <AvatarFallback>
-                                {contract.artistManager.name
-                                  .substring(0, 1)
-                                  .toUpperCase()}
-                              </AvatarFallback>
-                            </Avatar>
-                            {contract.artistManager.name}{" "}
-                            {contract.artistManager.surname}
-                          </Link>
-                        ) : (
-                          <span className="text-zinc-700">-</span>
-                        )}
-                        </span>
-                        <span className="inline-flex items-center gap-1.5">
-                          <User className="h-4 w-4 text-zinc-400" />
-                          <span className="text-zinc-400">Tour manager</span>
-                          <span className="text-zinc-700">
-                            {contract.artist.tourManagerName ||
-                            contract.artist.tourManagerSurname
-                              ? `${contract.artist.tourManagerName ?? ""} ${
-                                  contract.artist.tourManagerSurname ?? ""
-                                }`.trim()
-                              : contract.event.tourManagerEmail || "-"}
+                          <span className="inline-flex items-center gap-1.5">
+                            <Briefcase className="h-4 w-4 text-zinc-400" />
+                            <span className="text-zinc-400">Manager</span>
+                            {doc.event.artistManager ? (
+                              <Link
+                                href={`/manager-artisti/${doc.event.artistManager.id}`}
+                                className="inline-flex items-center gap-2 rounded-full bg-zinc-100 px-2 py-1 text-xs font-medium text-zinc-700 hover:bg-zinc-200"
+                              >
+                                <Avatar className="h-4 w-4">
+                                  <AvatarImage
+                                    src={
+                                      doc.event.artistManager.avatarUrl ||
+                                      AVATAR_FALLBACK
+                                    }
+                                  />
+                                  <AvatarFallback>
+                                    {doc.event.artistManager.name
+                                      .substring(0, 1)
+                                      .toUpperCase()}
+                                  </AvatarFallback>
+                                </Avatar>
+                                {doc.event.artistManager.name}{" "}
+                                {doc.event.artistManager.surname}
+                              </Link>
+                            ) : (
+                              <span className="text-zinc-700">-</span>
+                            )}
                           </span>
-                        </span>
-                        <span className="inline-flex items-center gap-1.5">
-                          <Mail className="h-4 w-4 text-zinc-400" />
-                          <span className="text-zinc-400">
-                            Amministrazione
+                          <span className="inline-flex items-center gap-1.5">
+                            <User className="h-4 w-4 text-zinc-400" />
+                            <span className="text-zinc-400">Tour manager</span>
+                            <span className="text-zinc-700">
+                              {doc.event.artist.tourManagerName ||
+                              doc.event.artist.tourManagerSurname
+                                ? `${doc.event.artist.tourManagerName ?? ""} ${
+                                    doc.event.artist.tourManagerSurname ?? ""
+                                  }`.trim()
+                                : doc.event.tourManagerEmail || "-"}
+                            </span>
                           </span>
-                          <span className="text-zinc-700">
-                            {contract.event.payrollConsultantEmail || "-"}
+                          <span className="inline-flex items-center gap-1.5">
+                            <Mail className="h-4 w-4 text-zinc-400" />
+                            <span className="text-zinc-400">
+                              Amministrazione
+                            </span>
+                            <span className="text-zinc-700">
+                              {doc.event.payrollConsultantEmail || "-"}
+                            </span>
                           </span>
-                        </span>
-                      </div>
-                      <div className="flex flex-wrap items-center gap-2 text-xs text-zinc-500">
-                        <FileText className="h-4 w-4 text-zinc-400" />
-                        <span>Documento</span>
-                        <span className="inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-zinc-700">
+                        </div>
+
+                        <div className="flex flex-wrap items-center gap-2 text-xs text-zinc-500">
                           <FileText className="h-4 w-4 text-zinc-400" />
-                          Documento.pdf
-                        </span>
+                          <a
+                            href={doc.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-zinc-700 hover:underline"
+                          >
+                            Other
+                          </a>
+                          <a
+                            href={doc.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-zinc-700 hover:underline"
+                          >
+                            <FileText className="h-4 w-4 text-zinc-400" />
+                            {doc.name}
+                          </a>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center justify-end">
+                        <Link
+                          href={`/eventi/${doc.event.id}/modifica`}
+                          aria-label="Open event details"
+                          className="inline-flex items-center text-zinc-400 hover:text-zinc-600"
+                        >
+                          <ChevronRight className="h-4 w-4 translate-y-[0.5px]" />
+                        </Link>
                       </div>
                     </div>
-                    <div className="flex items-center justify-end">
-                      <Link
-                        href={`/documents/${contract.id}`}
-                        aria-label="Open document details"
-                        className="inline-flex items-center text-zinc-400 hover:text-zinc-600"
-                      >
-                        <ChevronRight className="h-4 w-4 translate-y-[0.5px]" />
-                      </Link>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             ) : (
               <div className="px-4 py-6 text-sm text-zinc-500">
@@ -1041,13 +1093,6 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
             )}
           </section>
 
-          {hasContracts && (
-            <TablePagination
-              totalPages={totalPages}
-              currentPage={currentPage}
-              searchParams={sp ?? {}}
-            />
-          )}
         </div>
       ) : (
         <div className="grid gap-4 lg:grid-cols-2">
@@ -1277,43 +1322,43 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
             <div className="flex items-center justify-between border-b border-zinc-100 px-4 py-3">
               <h2 className="text-sm font-semibold text-zinc-800">Other</h2>
               <Link
-                href="/documents/other"
+                href="/documents/artist-other"
                 className="inline-flex items-center gap-1 text-xs text-zinc-500 hover:text-zinc-700"
               >
                 Vedi tutto <ChevronRight className="size-4" />
               </Link>
             </div>
-            {previewArtists.length ? (
+            {previewArtistOtherDocuments.length ? (
               <div className="divide-y divide-zinc-100">
-                {previewArtists.map((artist) => (
+                {previewArtistOtherDocuments.map((doc) => (
                   <div
-                    key={`other-artist-${artist.id}`}
+                    key={`other-artist-${doc.url}`}
                     className="flex flex-col gap-3 px-4 py-4"
                   >
                     <div className="flex items-start justify-between gap-4">
                       <div className="flex items-center gap-3">
                         <Avatar className="h-8 w-8">
                           <AvatarImage
-                            src={artist.avatarUrl || AVATAR_FALLBACK}
+                            src={doc.artist.avatarUrl || AVATAR_FALLBACK}
                           />
                           <AvatarFallback>
-                            {artist.stageName.substring(0, 1).toUpperCase()}
+                            {doc.artist.stageName.substring(0, 1).toUpperCase()}
                           </AvatarFallback>
                         </Avatar>
                         <div className="min-w-0">
                           <Link
-                            href={`/artisti/${artist.slug}`}
+                            href={`/artisti/${doc.artist.slug}`}
                             className="text-xs font-semibold text-zinc-800"
                           >
-                            @{artist.stageName}
+                            @{doc.artist.stageName}
                           </Link>
                           <div className="text-[10px] text-zinc-500">
-                            {artist.name} {artist.surname}
+                            {doc.artist.name} {doc.artist.surname}
                           </div>
                         </div>
                       </div>
                       <Link
-                        href={`/artisti/${artist.slug}`}
+                        href={`/artisti/${doc.artist.slug}`}
                         aria-label="Open artist details"
                         className="inline-flex items-center text-zinc-400 hover:text-zinc-600"
                       >
@@ -1327,7 +1372,7 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
                         <span className="text-zinc-400">Manager</span>
                         <ManagersBadge
                           userRole={user.role}
-                          managers={artist.managers}
+                          managers={doc.artist.managers}
                           pathSegment="manager-artisti"
                         />
                       </span>
@@ -1335,7 +1380,7 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
                         <Mail className="h-4 w-4 text-zinc-400" />
                         <span className="text-zinc-400">Email</span>
                         <span className="text-zinc-700">
-                          {artist.email || "-"}
+                          {doc.artist.email || "-"}
                         </span>
                       </span>
                     </div>
@@ -1343,18 +1388,17 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
                     <div className="flex flex-wrap items-center gap-2 text-xs text-zinc-500">
                       <FileText className="h-4 w-4 text-zinc-400" />
                       <span>Documento</span>
-                      {artist.taxCodeFileUrl ? (
-                        <a
-                          href={artist.taxCodeFileUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-1.5 text-zinc-600 hover:underline"
-                        >
-                          <FileText className="h-4 w-4 text-zinc-400" />
-                          {artist.taxCodeFileName ?? "Documento.pdf"}
-                        </a>
-                      ) : (
-                        <span className="text-zinc-400">Mancante</span>
+                      <a
+                        href={doc.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-1.5 text-zinc-600 hover:underline"
+                      >
+                        <FileText className="h-4 w-4 text-zinc-400" />
+                        {doc.name}
+                      </a>
+                      {doc.uploadedAt && (
+                        <span className="text-zinc-400">· {doc.uploadedAt}</span>
                       )}
                     </div>
                   </div>
