@@ -6,10 +6,24 @@ import ManagersBadge from '@/app/(private)/_components/Badges/ManagersBadge';
 import TourManagerBadge from '@/app/(private)/_components/Badges/TourManagerBadge';
 import ZonesBadge from '@/app/(private)/_components/Badges/ZonesBadge';
 import ArtistDocumentUpload from '../ArtistDocumentUpload';
+import ArtistOtherDocumentUpload from '../ArtistOtherDocumentUpload';
+import type { ArtistOtherDocument } from '@/lib/data/documents/get-artist-other-documents';
+import Link from 'next/link';
+import { FileText } from 'lucide-react';
 
-type PersonalDataTabProps = { tabValue: string; data: ArtistData; userRole: UserRole };
+type PersonalDataTabProps = {
+  tabValue: string;
+  data: ArtistData;
+  userRole: UserRole;
+  artistOtherDocuments: ArtistOtherDocument[];
+};
 
-export default function PersonalDataTab({ tabValue, data, userRole }: PersonalDataTabProps) {
+export default function PersonalDataTab({
+  tabValue,
+  data,
+  userRole,
+  artistOtherDocuments,
+}: PersonalDataTabProps) {
   let languagesString = '';
 
   data.languages.forEach((lang, index) => {
@@ -24,6 +38,7 @@ export default function PersonalDataTab({ tabValue, data, userRole }: PersonalDa
     data.gender && !(data.gender === 'non-binary' && !hasBirthPlace && hasPlaceholderBirthDate)
       ? GENDERS_LABELS[data.gender]
       : '-';
+  const latestOtherDocument = artistOtherDocuments[0] ?? null;
 
   return (
     <TabsContent
@@ -77,7 +92,34 @@ export default function PersonalDataTab({ tabValue, data, userRole }: PersonalDa
             fileUrl={data.idCardFileUrl}
             fileName={data.idCardFileName}
           />
+
+          <span className='text-sm font-semibold text-zinc-600'>Passport</span>
+          <ArtistDocumentUpload
+            artistId={data.id}
+            label='Passport'
+            docType='passport'
+            fileUrl={data.passportFileUrl}
+            fileName={data.passportFileName}
+          />
+
+          <span className='text-sm font-semibold text-zinc-600'>Other</span>
+          <div className='flex flex-wrap items-center gap-2'>
+            {latestOtherDocument ? (
+              <a
+                href={latestOtherDocument.url}
+                target='_blank'
+                rel='noopener noreferrer'
+                className='text-sm text-zinc-500 hover:underline'
+              >
+                {latestOtherDocument.name}
+              </a>
+            ) : (
+              <span className='text-sm text-zinc-400'>Nessun file caricato</span>
+            )}
+            <ArtistOtherDocumentUpload artistId={data.id} />
+          </div>
         </div>
+
       </div>
       <div className='bg-white py-8 px-6 rounded-2xl'>
         {/* managers */}

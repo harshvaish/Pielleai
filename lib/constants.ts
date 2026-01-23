@@ -69,7 +69,7 @@ export const NAVBAR_LINKS: NavbarLink[] = [
     iconSrc: '/images/navbar-icons/venues.svg',
     iconAlt: 'icona Locali',
     visibleTo: ['admin', 'venue-manager', 'artist-manager'],
-    separator: false,
+    separator: true,
   },
   {
     label: 'Documenti',
@@ -77,7 +77,7 @@ export const NAVBAR_LINKS: NavbarLink[] = [
     iconSrc: '/images/navbar-icons/contract-management.svg',
     iconAlt: 'icona Documents',
     visibleTo: ['admin', 'venue-manager', 'artist-manager'],
-    separator: false,
+    separator: true,
   },
   {
     label: 'Finanze',

@@ -5,6 +5,7 @@ import EventStatusBadge from '@/app/(private)/_components/Badges/EventStatusBadg
 import ResendDocuSignButton from '@/app/(private)/documents/_components/ResendDocuSignButton';
 import { AVATAR_FALLBACK } from '@/lib/constants';
 import { Event, UserRole } from '@/lib/types';
+import type { ArtistOtherDocument } from '@/lib/data/documents/get-artist-other-documents';
 import { JSX } from 'react';
 import { CalendarDays, Check, ChevronRight, Clock, FileText, PartyPopper, X } from 'lucide-react';
 
@@ -68,6 +69,9 @@ type DocumentsTabProps = {
   userRole: UserRole;
   contracts: any[];
   events: Event[];
+  passportFileUrl: string | null;
+  passportFileName: string | null;
+  artistOtherDocuments: ArtistOtherDocument[];
 };
 
 const STATUS_STYLES: Record<
@@ -290,14 +294,86 @@ export default function DocumentsTab({
   userRole,
   contracts,
   events,
+  passportFileUrl,
+  passportFileName,
+  artistOtherDocuments,
 }: DocumentsTabProps) {
   const mappedContracts = contracts.map(mapContract);
+  const previewArtistOtherDocuments = artistOtherDocuments.slice(0, 3);
 
   return (
     <TabsContent
       value={tabValue}
       className='mt-6'
     >
+      <div className='grid gap-6 lg:grid-cols-2 mb-6'>
+        <section className='bg-white rounded-2xl border border-zinc-100'>
+          <div className='flex items-center justify-between border-b border-zinc-100 px-4 py-3'>
+            <h2 className='text-sm font-semibold text-zinc-800'>Passport</h2>
+          </div>
+          <div className='px-4 py-4'>
+            <div className='flex flex-wrap items-center gap-2 text-xs text-zinc-500'>
+              <FileText className='h-4 w-4 text-zinc-400' />
+              <span>Passport</span>
+              {passportFileUrl ? (
+                <a
+                  href={passportFileUrl}
+                  target='_blank'
+                  rel='noopener noreferrer'
+                  className='inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-zinc-700 hover:underline'
+                >
+                  <FileText className='h-4 w-4 text-zinc-400' />
+                  {passportFileName ?? 'Passport.pdf'}
+                </a>
+              ) : (
+                <span className='text-zinc-400'>Mancante</span>
+              )}
+            </div>
+          </div>
+        </section>
+
+        <section className='bg-white rounded-2xl border border-zinc-100'>
+          <div className='flex items-center justify-between border-b border-zinc-100 px-4 py-3'>
+            <h2 className='text-sm font-semibold text-zinc-800'>Other</h2>
+            <a
+              href='/documents/artist-other'
+              className='inline-flex items-center gap-1 text-xs text-zinc-500 hover:text-zinc-700'
+            >
+              Vedi tutto <ChevronRight className='size-4' />
+            </a>
+          </div>
+          {previewArtistOtherDocuments.length ? (
+            <div className='divide-y divide-zinc-100'>
+              {previewArtistOtherDocuments.map((doc) => (
+                <div
+                  key={`artist-other-${doc.url}`}
+                  className='flex flex-wrap items-center gap-2 px-4 py-4 text-xs text-zinc-500'
+                >
+                  <FileText className='h-4 w-4 text-zinc-400' />
+                  <span>Documento</span>
+                  <a
+                    href={doc.url}
+                    target='_blank'
+                    rel='noopener noreferrer'
+                    className='inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-zinc-700 hover:underline'
+                  >
+                    <FileText className='h-4 w-4 text-zinc-400' />
+                    {doc.name}
+                  </a>
+                  {doc.uploadedAt && (
+                    <span className='text-zinc-400'>· {doc.uploadedAt}</span>
+                  )}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className='px-4 py-6 text-sm text-zinc-500'>
+              Nessun documento disponibile.
+            </div>
+          )}
+        </section>
+      </div>
+
       <div className='grid gap-6 lg:grid-cols-2'>
         <section className='bg-white rounded-2xl border border-zinc-100'>
           <div className='flex items-center justify-between border-b border-zinc-100 px-4 py-3'>

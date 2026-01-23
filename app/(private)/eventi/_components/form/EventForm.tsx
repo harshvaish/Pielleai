@@ -20,6 +20,7 @@ import { Separator } from "@/components/ui/separator";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import PdfUploadInput from "@/app/(private)/eventi/_components/form/PdfUploadInput";
+import OtherTechnicalSheetUploadInput from "@/app/(private)/eventi/_components/form/OtherTechnicalSheetUploadInput";
 import { Checkbox } from "@/components/ui/checkbox";
 import VenueSelect from "./VenueSelect";
 import ArtistManagerSelect from "./ArtistManagerSelect";
@@ -592,7 +593,7 @@ export default function EventForm({
         </TabsContent>
 
         <TabsContent value="b" className="flex flex-col gap-4 p-2">
-          <div className="grid sm:grid-cols-2 gap-4">
+          <div className="grid sm:grid-cols-3 gap-4">
             <div className="flex flex-col">
               <div className="text-sm font-semibold mb-2">Cachet lordo</div>
               <Input
@@ -1092,6 +1093,13 @@ export default function EventForm({
                   {errors.tecnicalRiderDocument.message as string}
                 </p>
               )}
+            </div>
+
+            <div className="flex flex-col">
+              <div className="text-sm font-semibold mb-2">
+                Other
+              </div>
+              <OtherTechnicalSheetUploadInput />
             </div>
           </div>
         </TabsContent>

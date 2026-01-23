@@ -28,7 +28,7 @@ import { pdfUploadSchema } from "@/lib/validation/pdf-upload-schema";
 import { ApiResponse, ArtistSelectData } from "@/lib/types";
 import { updateArtistDocuments } from "@/lib/server-actions/artists/update-artist-documents";
 
-type DocumentType = "tax-code" | "id-card" | "other";
+type DocumentType = "tax-code" | "id-card" | "passport" | "other";
 
 type UploadArtistDocumentDialogProps = {
   artists: ArtistSelectData[];
@@ -244,7 +244,11 @@ export default function UploadArtistDocumentDialog({
         documentType === "other" ? { artistId: selectedArtistId } : undefined;
       const { url, fileName } = await uploadFile(selectedFile, endpoint, payload);
 
-      if (documentType === "tax-code" || documentType === "id-card") {
+      if (
+        documentType === "tax-code" ||
+        documentType === "id-card" ||
+        documentType === "passport"
+      ) {
         const response = await updateArtistDocuments(selectedArtistId, {
           type: documentType,
           fileName,
@@ -319,6 +323,7 @@ export default function UploadArtistDocumentDialog({
               <SelectContent>
                 <SelectItem value="tax-code">Fiscal Code</SelectItem>
                 <SelectItem value="id-card">ID Card</SelectItem>
+                <SelectItem value="passport">Passport</SelectItem>
                 <SelectItem value="other">Other</SelectItem>
               </SelectContent>
             </Select>

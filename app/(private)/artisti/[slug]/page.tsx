@@ -36,6 +36,7 @@ import { getMoCoordinatorsCached } from '@/lib/cache/mo-coordinators';
 import ManageArtistManagersButton from './_components/ManageArtistManagersButton';
 import { getContracts } from '@/lib/data/contracts/get-contracts';
 import { getEvents } from '@/lib/data/events/get-events';
+import { getArtistOtherDocuments } from '@/lib/data/documents/get-artist-other-documents';
 
 type ArtistDetailPageProps = {
   params: Promise<{ slug: string }>;
@@ -105,7 +106,7 @@ export default async function ArtistDetailPage({ params, searchParams }: ArtistD
 
   const sp = searchParams ? await searchParams : {};
 
-  const [contractsResponse, eventsResponse] = await Promise.all([
+  const [contractsResponse, eventsResponse, otherDocuments] = await Promise.all([
     getContracts(user, {
       currentPage: null,
       status: ['all'],
@@ -124,7 +125,11 @@ export default async function ArtistDetailPage({ params, searchParams }: ArtistD
       startDate: null,
       endDate: null,
     }),
+    getArtistOtherDocuments(200),
   ]);
+  const artistOtherDocuments = otherDocuments.filter(
+    (doc) => doc.artist.id === userData.id,
+  );
 
   return (
     <div className='max-w-full overflow-x-hidden'>
@@ -293,6 +298,7 @@ export default async function ArtistDetailPage({ params, searchParams }: ArtistD
           tabValue='a'
           data={userData}
           userRole={user.role}
+          artistOtherDocuments={artistOtherDocuments}
         />
         <BillingDataTab
           tabValue='b'
@@ -317,6 +323,9 @@ export default async function ArtistDetailPage({ params, searchParams }: ArtistD
           userRole={user.role}
           contracts={contractsResponse.data ?? []}
           events={eventsResponse.data ?? []}
+          passportFileUrl={userData.passportFileUrl}
+          passportFileName={userData.passportFileName}
+          artistOtherDocuments={artistOtherDocuments}
         />
       </Tabs>
     </div>

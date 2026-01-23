@@ -1318,7 +1318,117 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
             )}
           </section>
 
-          <section className="rounded-2xl border border-zinc-100 bg-white lg:col-span-2">
+          <section className="rounded-2xl border border-zinc-100 bg-white">
+            <div className="flex items-center justify-between border-b border-zinc-100 px-4 py-3">
+              <h2 className="text-sm font-semibold text-zinc-800">Passport</h2>
+              <Link
+                href="/documents/passport"
+                className="inline-flex items-center gap-1 text-xs text-zinc-500 hover:text-zinc-700"
+              >
+                Vedi tutto <ChevronRight className="size-4" />
+              </Link>
+            </div>
+            {previewArtists.length ? (
+              <div className="divide-y divide-zinc-100">
+                {previewArtists.map((artist) => {
+                  return (
+                    <div
+                      key={`passport-${artist.id}`}
+                      className="flex flex-col gap-3 px-4 py-4"
+                    >
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex items-center gap-3">
+                          <Avatar className="h-8 w-8">
+                            <AvatarImage
+                              src={artist.avatarUrl || AVATAR_FALLBACK}
+                            />
+                            <AvatarFallback>
+                              {artist.stageName.substring(0, 1).toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="min-w-0">
+                            <Link
+                              href={`/artisti/${artist.slug}`}
+                              className="text-xs font-semibold text-zinc-800"
+                            >
+                              @{artist.stageName}
+                            </Link>
+                            <div className="text-[10px] text-zinc-500">
+                              {artist.name} {artist.surname}
+                            </div>
+                          </div>
+                        </div>
+                        <Link
+                          href={`/artisti/${artist.slug}`}
+                          aria-label="Open artist details"
+                          className="inline-flex items-center text-zinc-400 hover:text-zinc-600"
+                        >
+                          <ChevronRight className="size-4" />
+                        </Link>
+                      </div>
+
+                      <div className="flex flex-wrap items-center gap-4 text-xs text-zinc-500">
+                        <span className="inline-flex items-center gap-1.5">
+                          <Briefcase className="h-4 w-4 text-zinc-400" />
+                          <span className="text-zinc-400">Manager</span>
+                          <ManagersBadge
+                            userRole={user.role}
+                            managers={artist.managers}
+                            pathSegment="manager-artisti"
+                          />
+                        </span>
+                        <span className="inline-flex items-center gap-1.5">
+                          <User className="h-4 w-4 text-zinc-400" />
+                          <span className="text-zinc-400">Tour manager</span>
+                          <span className="text-zinc-700">
+                            {artist.tourManagerName ||
+                            artist.tourManagerSurname
+                              ? `${artist.tourManagerName ?? ""} ${
+                                  artist.tourManagerSurname ?? ""
+                                }`.trim()
+                              : artist.tourManagerEmail || "-"}
+                          </span>
+                        </span>
+                        <span className="inline-flex items-center gap-1.5">
+                          <Mail className="h-4 w-4 text-zinc-400" />
+                          <span className="text-zinc-400">
+                            Amministrazione
+                          </span>
+                          <span className="text-zinc-700">
+                            {artist.email || "-"}
+                          </span>
+                        </span>
+                      </div>
+
+                      <div className="flex flex-wrap items-center gap-2 text-xs text-zinc-500">
+                        <FileText className="h-4 w-4 text-zinc-400" />
+                        <span>Passport</span>
+                      {artist.passportFileUrl ? (
+                        <a
+                          href={artist.passportFileUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-1.5 text-zinc-600 hover:underline"
+                        >
+                          <FileText className="h-4 w-4 text-zinc-400" />
+                          {artist.passportFileName ?? "Passport.pdf"}
+                        </a>
+                      ) : (
+                        <span className="text-zinc-400">Mancante</span>
+                      )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="px-4 py-6 text-sm text-zinc-500">
+                Nessun documento disponibile.
+              </div>
+            )}
+          </section>
+
+          <section className="rounded-2xl border border-zinc-100 bg-white">
             <div className="flex items-center justify-between border-b border-zinc-100 px-4 py-3">
               <h2 className="text-sm font-semibold text-zinc-800">Other</h2>
               <Link

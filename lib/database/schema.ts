@@ -156,6 +156,8 @@ export const artists = pgTable(
     taxCodeFileName: text('tax_code_file_name'),
     idCardFileUrl: text('id_card_file_url'),
     idCardFileName: text('id_card_file_name'),
+    passportFileUrl: text('passport_file_url'),
+    passportFileName: text('passport_file_name'),
     ipiCode: text('ipi_code'),
     bicCode: text('bic_code'),
     abaRoutingNumber: varchar('aba_routing_number', { length: 20 }),

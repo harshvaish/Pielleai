@@ -101,6 +101,8 @@ export async function getPaginatedArtists({
         taxCodeFileName: artists.taxCodeFileName,
         idCardFileUrl: artists.idCardFileUrl,
         idCardFileName: artists.idCardFileName,
+        passportFileUrl: artists.passportFileUrl,
+        passportFileName: artists.passportFileName,
         tourManagerEmail: artists.tourManagerEmail,
         tourManagerName: artists.tourManagerName,
         tourManagerSurname: artists.tourManagerSurname,

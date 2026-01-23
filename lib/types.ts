@@ -222,6 +222,8 @@ export type ArtistData = {
   taxCodeFileName: string | null;
   idCardFileUrl: string | null;
   idCardFileName: string | null;
+  passportFileUrl: string | null;
+  passportFileName: string | null;
   ipiCode: string | null;
   bicCode: string | null;
   abaRoutingNumber: string | null;
@@ -277,6 +279,8 @@ export type ArtistTableData = Pick<
   | 'taxCodeFileName'
   | 'idCardFileUrl'
   | 'idCardFileName'
+  | 'passportFileUrl'
+  | 'passportFileName'
   | 'tourManagerEmail'
   | 'tourManagerName'
   | 'tourManagerSurname'

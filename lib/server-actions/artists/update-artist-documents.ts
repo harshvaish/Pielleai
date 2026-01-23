@@ -13,14 +13,14 @@ import { ServerActionResponse } from '@/lib/types';
 
 const artistDocumentsSchema = z.object({
   artistId: z.number().int().positive(),
-  type: z.enum(['tax-code', 'id-card']),
+  type: z.enum(['tax-code', 'id-card', 'passport']),
   fileName: z.string().min(1),
   fileUrl: z.string().url(),
 });
 
 export const updateArtistDocuments = async (
   artistId: number,
-  payload: { type: 'tax-code' | 'id-card'; fileName: string; fileUrl: string },
+  payload: { type: 'tax-code' | 'id-card' | 'passport'; fileName: string; fileUrl: string },
 ): Promise<ServerActionResponse<null>> => {
   try {
     const { session, user } = await getSession();
@@ -48,10 +48,15 @@ export const updateArtistDocuments = async (
             taxCodeFileUrl: validation.data.fileUrl,
             taxCodeFileName: validation.data.fileName,
           }
-        : {
-            idCardFileUrl: validation.data.fileUrl,
-            idCardFileName: validation.data.fileName,
-          };
+        : validation.data.type === 'id-card'
+          ? {
+              idCardFileUrl: validation.data.fileUrl,
+              idCardFileName: validation.data.fileName,
+            }
+          : {
+              passportFileUrl: validation.data.fileUrl,
+              passportFileName: validation.data.fileName,
+            };
 
     const updated = await database
       .update(artists)
