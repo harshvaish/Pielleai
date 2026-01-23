@@ -36,27 +36,24 @@ export default async function CreateEventPage() {
   ]);
 
   return (
-    <div className='max-w-5xl space-y-4'>
-      <div className='flex items-center justify-between -mt-1'>
+    <div className='max-w-5xl space-y-2'>
+      <div className='flex items-center justify-between -mt-2'>
         <BackButton />
       </div>
-      <h1 className='text-2xl font-bold'>Crea evento</h1>
-      <section className='bg-white p-6 rounded-2xl'>
-        {isAdmin ? (
-          <CreateEventForm
-            artists={artists}
-            venues={venues}
-            moCoordinators={moCoordinators}
-            userRole={user.role}
-          />
-        ) : (
-          <CreateEventRequestForm
-            artists={artists}
-            venues={venues}
-            userRole={user.role}
-          />
-        )}
-      </section>
+      {isAdmin ? (
+        <CreateEventForm
+          artists={artists}
+          venues={venues}
+          moCoordinators={moCoordinators}
+          userRole={user.role}
+        />
+      ) : (
+        <CreateEventRequestForm
+          artists={artists}
+          venues={venues}
+          userRole={user.role}
+        />
+      )}
     </div>
   );
 }

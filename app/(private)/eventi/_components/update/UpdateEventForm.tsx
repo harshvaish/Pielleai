@@ -206,39 +206,43 @@ export default function UpdateEventForm({
     <section className='max-h-full overflow-y-auto'>
       <FormProvider {...methods}>
         <form
-          className='flex flex-col gap-4 p-2'
+          className='flex flex-col gap-2 p-2'
           onSubmit={handleSubmit(onSubmit)}
           noValidate={true}
         >
-          <div className='text-2xl font-bold mb-4'>{eventTitle}</div>
-
-          <EventForm
-            artists={artists}
-            venues={venues}
-            moCoordinators={moCoordinators}
-            event={event}
-            mode="update"
-            userRole={userRole}
-            closeDialog={closeDialog}
-          />
-
-          <div className='flex justify-between'>
-            <Button
-              type='button'
-              onClick={handleCancel}
-              variant='ghost'
-              className='text-destructive'
-              disabled={isSubmitting}
-            >
-              <X /> Annulla
-            </Button>
-            <Button
-              type='submit'
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? 'Salvataggio...' : 'Salva'}
-            </Button>
+          <div className='flex items-center justify-between gap-4'>
+            <h1 className='text-2xl font-bold'>Modifica evento</h1>
+            <div className='flex items-center gap-2'>
+              <Button
+                type='button'
+                onClick={handleCancel}
+                variant='ghost'
+                className='text-destructive'
+                disabled={isSubmitting}
+              >
+                <X /> Annulla
+              </Button>
+              <Button
+                type='submit'
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? 'Salvataggio...' : 'Salva'}
+              </Button>
+            </div>
           </div>
+          <div className='text-sm text-zinc-500'>{eventTitle}</div>
+
+          <section className='bg-white p-6 rounded-2xl'>
+            <EventForm
+              artists={artists}
+              venues={venues}
+              moCoordinators={moCoordinators}
+              event={event}
+              mode="update"
+              userRole={userRole}
+              closeDialog={closeDialog}
+            />
+          </section>
         </form>
       </FormProvider>
     </section>

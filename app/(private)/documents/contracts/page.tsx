@@ -139,6 +139,7 @@ export type ContractCard = {
 
   event: {
     id: number;
+    title: string | null;
     availabilityId: number;
     status: string;
     eventType: string | null;
@@ -375,6 +376,7 @@ function mapContract(c: any): ContractCard {
     },
     event: {
       id: c.event.id,
+      title: c.event.title ?? null,
       availabilityId: c.event.availabilityId,
       status: c.event.status,
       eventType: c.event.eventType ?? null,
@@ -398,6 +400,11 @@ function mapContract(c: any): ContractCard {
       createdAt: h.createdAt,
     })),
   };
+}
+
+function getContractDisplayName(contract: ContractCard): string {
+  const title = contract.event.title?.trim();
+  return title || contract.fileName || "Contratto.pdf";
 }
 
 export const dynamic = "force-dynamic";
@@ -676,7 +683,7 @@ export default async function ContractsPage({
                               rel="noopener noreferrer"
                               className="text-zinc-700 hover:underline"
                             >
-                              {contract.fileName}
+                              {getContractDisplayName(contract)}
                             </a>
                           </span>
                         ) : (

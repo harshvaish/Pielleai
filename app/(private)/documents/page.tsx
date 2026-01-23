@@ -437,6 +437,11 @@ function mapContract(c: any): ContractCard {
   };
 }
 
+function getContractDisplayName(contract: ContractCard): string {
+  const title = contract.event.title?.trim();
+  return title || contract.fileName || "Contratto.pdf";
+}
+
 export const dynamic = "force-dynamic";
 
 export default async function EventsPage({ searchParams }: EventsPageProps) {
@@ -758,7 +763,7 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
                                 rel="noopener noreferrer"
                                 className="text-zinc-700 hover:underline"
                               >
-                                {contract.fileName ?? "Contratto.pdf"}
+                                {getContractDisplayName(contract)}
                               </a>
                             </span>
                           ) : (

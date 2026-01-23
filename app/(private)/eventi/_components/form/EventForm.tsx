@@ -394,7 +394,7 @@ export default function EventForm({
   };
   return (
     <>
-      <div className="flex justify-between items-center gap-2">
+      <div className="grid gap-4 md:grid-cols-3">
         <div className="flex flex-col">
           <div className="flex items-center justify-between gap-2 mb-2">
             <div className="text-sm font-semibold">Artista</div>
@@ -434,6 +434,16 @@ export default function EventForm({
         </div>
 
         <div className="flex flex-col">
+          <div className="text-sm font-semibold mb-2">Data</div>
+          {<ArtistAvailabilitySelectWithCreate />}
+          {errors.availability && (
+            <p className="text-xs text-destructive mt-2">
+              Seleziona una disponibilità valida.
+            </p>
+          )}
+        </div>
+
+        <div className="flex flex-col">
           <div className="text-sm font-semibold mb-2">Stato</div>
           <Controller
             control={control}
@@ -465,16 +475,6 @@ export default function EventForm({
             </p>
           )}
         </div>
-      </div>
-
-      <div className="flex flex-col">
-        <div className="text-sm font-semibold mb-2">Data</div>
-        {<ArtistAvailabilitySelectWithCreate />}
-        {errors.availability && (
-          <p className="text-xs text-destructive mt-2">
-            Seleziona una disponibilità valida.
-          </p>
-        )}
       </div>
 
       <div className="grid sm:grid-cols-2 gap-4">

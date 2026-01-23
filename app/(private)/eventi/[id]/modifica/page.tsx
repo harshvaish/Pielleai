@@ -45,8 +45,8 @@ export default async function UpdateEventPage({ params }: UpdateEventPageProps) 
 
   if (event.status === 'ended' && !event.masterEventId) {
     return (
-      <div className='max-w-3xl space-y-4'>
-        <div className='flex items-center justify-between -mt-1'>
+      <div className='max-w-3xl space-y-2'>
+        <div className='flex items-center justify-between -mt-2'>
           <BackButton />
         </div>
         <section className='bg-white p-6 rounded-2xl space-y-4'>
@@ -67,20 +67,17 @@ export default async function UpdateEventPage({ params }: UpdateEventPageProps) 
   ]);
 
   return (
-    <div className='max-w-5xl space-y-4'>
-      <div className='flex items-center justify-between -mt-1'>
+    <div className='max-w-5xl space-y-2'>
+      <div className='flex items-center justify-between -mt-2'>
         <BackButton />
       </div>
-      <h1 className='text-2xl font-bold'>Modifica evento</h1>
-      <section className='bg-white p-6 rounded-2xl'>
-        <UpdateEventForm
-          event={event}
-          artists={artists}
-          venues={venues}
-          moCoordinators={moCoordinators}
-          userRole={user.role}
-        />
-      </section>
+      <UpdateEventForm
+        event={event}
+        artists={artists}
+        venues={venues}
+        moCoordinators={moCoordinators}
+        userRole={user.role}
+      />
     </div>
   );
 }

@@ -70,33 +70,38 @@ export default function CreateEventRequestForm({
     <section className='max-h-full overflow-y-auto'>
       <FormProvider {...methods}>
         <form
-          className='flex flex-col gap-4 p-2'
+          className='flex flex-col gap-2 p-2'
           onSubmit={handleSubmit(onSubmit)}
           noValidate={true}
         >
-          <EventRequestForm
-            artists={artists}
-            venues={venues}
-            userRole={userRole}
-          />
-
-          <div className='flex justify-between'>
-            <Button
-              type='button'
-              onClick={handleCancel}
-              variant='ghost'
-              className='text-destructive'
-              disabled={isSubmitting}
-            >
-              <X /> Annulla
-            </Button>
-            <Button
-              type='submit'
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? 'Creazione evento...' : 'Crea evento'}
-            </Button>
+          <div className='flex items-center justify-between gap-4'>
+            <h1 className='text-2xl font-bold'>Crea evento</h1>
+            <div className='flex items-center gap-2'>
+              <Button
+                type='button'
+                onClick={handleCancel}
+                variant='ghost'
+                className='text-destructive'
+                disabled={isSubmitting}
+              >
+                <X /> Annulla
+              </Button>
+              <Button
+                type='submit'
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? 'Creazione evento...' : 'Crea evento'}
+              </Button>
+            </div>
           </div>
+
+          <section className='bg-white p-6 rounded-2xl'>
+            <EventRequestForm
+              artists={artists}
+              venues={venues}
+              userRole={userRole}
+            />
+          </section>
         </form>
       </FormProvider>
     </section>

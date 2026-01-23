@@ -60,6 +60,7 @@ type ContractCard = {
   };
   event: {
     id: number;
+    title: string | null;
     status: string;
   };
 };
@@ -263,9 +264,15 @@ function mapContract(c: any): ContractCard {
     },
     event: {
       id: c.event.id,
+      title: c.event.title ?? null,
       status: c.event.status,
     },
   };
+}
+
+function getContractDisplayName(contract: ContractCard): string {
+  const title = contract.event.title?.trim();
+  return title || contract.fileName || 'Contratto.pdf';
 }
 
 function getBackendStatusLabel(status: string) {
@@ -437,7 +444,7 @@ export default function DocumentsTab({
                               rel='noopener noreferrer'
                               className='text-zinc-700 hover:underline'
                             >
-                              {contract.fileName}
+                              {getContractDisplayName(contract)}
                             </a>
                           </span>
                         ) : (
