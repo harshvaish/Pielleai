@@ -298,7 +298,9 @@ h2 {
     b) presso il locale <strong>{{VENUE_NAME}} {{VENUE_CITY}}</strong> (di seguito denominata la “VENUE”)
   </p>
   <p>
-    c) con inizio alle ore <strong>{{EVENT_TIME}}</strong> circa
+    c) con inizio alle ore <strong>{{EVENT_START_TIME}}</strong> circa del
+    <strong>{{EVENT_START_DATE}}</strong> e fine alle ore
+    <strong>{{EVENT_END_TIME}}</strong> circa del <strong>{{EVENT_END_DATE}}</strong>
   </p>
   </ul>
 
@@ -635,7 +637,10 @@ i) nell’ipotesi in cui, per malattia, infortunio o altra causa di forza maggio
     // Event
     EVENT_TYPE: DATA.eventType ?? "",
     EVENT_DATE: DATA.eventDate ?? "",
-    EVENT_TIME: DATA.eventTime ?? "22:00",
+    EVENT_START_DATE: DATA.eventStartDate ?? "",
+    EVENT_END_DATE: DATA.eventEndDate ?? "",
+    EVENT_START_TIME: DATA.eventStartTime ?? "22:00",
+    EVENT_END_TIME: DATA.eventEndTime ?? "23:00",
     PAYMENT_DATE : DATA.paymentDate ?? "",
     UPFRONT_PAYMENT : DATA.upfrontPayment ?? "",
     TOTAL_COST : DATA.totalCost ?? "",
@@ -653,5 +658,4 @@ i) nell’ipotesi in cui, per malattia, infortunio o altra causa di forza maggio
 
 </body>
 </html>
-
 

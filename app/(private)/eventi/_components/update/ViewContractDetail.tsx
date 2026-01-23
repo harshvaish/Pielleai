@@ -19,7 +19,10 @@ type ContractData = {
 
   eventType?: string;
   eventDate: string;
-  eventTime: string;
+  eventStartDate: string;
+  eventEndDate: string;
+  eventStartTime: string;
+  eventEndTime: string;
 
   transportationsCost: string;
   totalCost: string;
@@ -122,7 +125,10 @@ export async function generateFilledContractHtml(
 
     EVENT_TYPE: data.eventType ?? "",
     EVENT_DATE: data.eventDate,
-    EVENT_TIME: data.eventTime,
+    EVENT_START_DATE: data.eventStartDate,
+    EVENT_END_DATE: data.eventEndDate,
+    EVENT_START_TIME: data.eventStartTime,
+    EVENT_END_TIME: data.eventEndTime,
 
     TRANSPORTATION_COST: data.transportationsCost,
     TOTAL_COST: data.totalCost,
@@ -157,14 +163,21 @@ export default function ViewContractDetail({
 
   const contractId = watch("contractId");
 
-  const getTimeRange = (start?: Date | string, end?: Date | string): string => {
-    if (!start || !end) return "";
-    return `${format(new Date(start), "HH:mm", { locale: it })} – ${format(
-      new Date(end),
-      "HH:mm",
-      { locale: it }
-    )}`;
+  const formatDate = (value?: Date | string): string => {
+    if (!value) return "";
+    return format(new Date(value), "dd/MM/yyyy", { locale: it });
   };
+
+  const formatTime = (value?: Date | string): string => {
+    if (!value) return "";
+    return format(new Date(value), "HH:mm", { locale: it });
+  };
+
+  const startDateValue = event.availability?.startDate;
+  const endDateValue = event.availability?.endDate;
+  const startDate = formatDate(startDateValue);
+  const endDate = formatDate(endDateValue);
+  const isMultiDay = Boolean(startDate && endDate && startDate !== endDate);
 
   const CONTRACT_DATA: ContractData = {
     artistName: `${event.artist.name} ${event.artist.surname}`,
@@ -177,13 +190,11 @@ export default function ViewContractDetail({
     venueCity: event.venue?.city ?? "",
 
     eventType: formatEventType(event.eventType),
-    eventDate: event.availability?.startDate
-      ? format(new Date(event.availability.startDate), "dd/MM/yyyy")
-      : "",
-    eventTime: getTimeRange(
-      event.availability?.startDate,
-      event.availability?.endDate
-    ),
+    eventDate: isMultiDay ? `${startDate} - ${endDate}` : startDate,
+    eventStartDate: startDate,
+    eventEndDate: endDate || startDate,
+    eventStartTime: formatTime(startDateValue),
+    eventEndTime: formatTime(endDateValue) || formatTime(startDateValue),
     totalCost: event?.totalCost ?? "0",
     upfrontPayment: event?.depositCost ?? "0",
     transportationsCost: event?.transportationsCost ?? "0",

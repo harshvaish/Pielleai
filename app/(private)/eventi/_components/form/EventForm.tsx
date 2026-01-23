@@ -480,7 +480,7 @@ export default function EventForm({
       <div className="grid sm:grid-cols-2 gap-4">
         <div className="flex flex-col">
           <div className="flex items-center justify-between gap-2 mb-2">
-            <div className="text-sm font-semibold">Località</div>
+            <div className="text-sm font-semibold">Locale</div>
             {canCreateVenue && (
               <QuickCreateVenueDialog
                 userRole={userRole}
@@ -554,7 +554,7 @@ export default function EventForm({
           </div>
 
           <div className="flex flex-col">
-            <div className="text-sm font-semibold mb-2">Tour manager</div>
+            <div className="text-sm font-semibold mb-2">Email Tour Manager</div>
             <Input
               type="email"
               {...register("tourManagerEmail")}
