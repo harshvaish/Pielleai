@@ -14,7 +14,7 @@ type ShowMoreProps = RBCShowMoreProps<CalendarEvent> & {
   userRole: UserRole;
 };
 
-export default function ShowMore({ slotDate, events, userRole }: ShowMoreProps) {
+export default function ShowMore({ slotDate, events, count, userRole }: ShowMoreProps) {
   const [open, setOpen] = useState<boolean>(false);
   const date = format(slotDate, 'dd/MM/yyyy');
 
@@ -27,7 +27,7 @@ export default function ShowMore({ slotDate, events, userRole }: ShowMoreProps) 
         className='max-w-full h-auto self-end py-1 px-1 shadow-none hover:bg-zinc-100 overflow-hidden'
         onClick={() => setOpen(true)}
       >
-        <span className='text-[10px] font-semibold line-clamp-1'>Altri eventi</span>
+        <span className='text-[10px] font-semibold line-clamp-1'>+{count} altri eventi</span>
         <ChevronDown
           width={14}
           height={14}
