@@ -2,6 +2,7 @@ import { clsx, type ClassValue } from 'clsx';
 import { View } from 'react-big-calendar';
 import { twMerge } from 'tailwind-merge';
 import {
+  addDays,
   format,
   startOfWeek,
   endOfWeek,
@@ -68,6 +69,30 @@ export function buildCalendarLabel(date: Date, view: View): string {
 
       // 31 Dicembre 2025 - 06 Gennaio 2026
       return `${format(start, 'd MMMM yyyy', { locale: it })} - ${format(end, 'dd MMMM yyyy', { locale: it })}`.replace(
+        /\b\w/g,
+        (c) => c.toUpperCase(),
+      );
+    }
+
+    case 'agenda': {
+      const start = startOfDay(date);
+      const end = addDays(start, 30);
+
+      const sameMonth = start.getMonth() === end.getMonth();
+      const sameYear = start.getFullYear() === end.getFullYear();
+
+      if (sameMonth) {
+        return format(start, 'MMMM yyyy', { locale: it }).replace(/\b\w/g, (c) => c.toUpperCase());
+      }
+
+      if (sameYear) {
+        return `${format(start, 'MMMM', { locale: it })} - ${format(end, 'MMMM yyyy', { locale: it })}`.replace(
+          /\b\w/g,
+          (c) => c.toUpperCase(),
+        );
+      }
+
+      return `${format(start, 'MMMM yyyy', { locale: it })} - ${format(end, 'MMMM yyyy', { locale: it })}`.replace(
         /\b\w/g,
         (c) => c.toUpperCase(),
       );
@@ -243,6 +268,11 @@ export function calculateRange(date: Date, view: View): { start: Date; end: Date
       };
     case 'month':
       return { start: startOfMonth(date), end: endOfMonth(date) };
+    case 'agenda': {
+      const start = startOfDay(date);
+      const end = endOfDay(addDays(start, 30));
+      return { start, end };
+    }
     default:
       return { start: startOfDay(date), end: endOfDay(date) };
   }

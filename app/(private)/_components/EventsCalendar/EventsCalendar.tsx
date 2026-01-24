@@ -10,7 +10,7 @@ import {
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import './calendar-overrides.css';
 import { endOfDay, format, getDay, parse, startOfDay, startOfWeek } from 'date-fns';
-import { CALENDAR_VIEWS, TIME_ZONE } from '@/lib/constants';
+import { EVENTS_CALENDAR_VIEWS, TIME_ZONE } from '@/lib/constants';
 import ShowMore from './ShowMore';
 import { useEffect, useState } from 'react';
 import {
@@ -29,6 +29,9 @@ import { it } from 'date-fns/locale';
 import { Skeleton } from '@/components/ui/skeleton';
 import WeekEvent from './WeekEvent';
 import MonthEvent from './MonthEvent';
+import ScheduleDate from './ScheduleDate';
+import ScheduleEvent from './ScheduleEvent';
+import ScheduleTime from './ScheduleTime';
 import ConfirmDialog from '@/app/_components/ConfirmDialog';
 import EventContent from './EventContent';
 import { Toolbar } from './Toolbar';
@@ -135,8 +138,9 @@ export default function EventsCalendar({ userRole, artists, venues }: EventsCale
         onNavigate={onNavigateHandler}
         onView={onViewHandler}
         view={view}
-        views={CALENDAR_VIEWS}
+        views={EVENTS_CALENDAR_VIEWS}
         defaultView='week'
+        length={30}
         toolbar
         showAllEvents={false}
         components={{
@@ -151,6 +155,7 @@ export default function EventsCalendar({ userRole, artists, venues }: EventsCale
           day: { event: WeekEvent },
           week: { header: WeekHeader, event: WeekEvent },
           month: { header: MonthHeader, event: MonthEvent },
+          agenda: { date: ScheduleDate, time: ScheduleTime, event: ScheduleEvent },
           showMore: (props) => (
             <ShowMore
               {...(props as RBCShowMoreProps<CalendarEvent>)}

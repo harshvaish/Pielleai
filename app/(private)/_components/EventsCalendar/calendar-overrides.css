@@ -171,3 +171,137 @@
   background-color: var(--color-gray-600);
   opacity: 0.6;
 }
+
+/* === Schedule (Agenda) view === */
+.rbc-agenda-view {
+  border: none;
+}
+
+.rbc-agenda-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.rbc-agenda-table thead {
+  display: none;
+}
+
+.rbc-agenda-content {
+  border-top: none;
+}
+
+.rbc-agenda-date-cell {
+  width: 96px;
+  padding: 12px 10px;
+  vertical-align: top;
+  border-right: 1px solid #f4f4f5;
+}
+
+.rbc-agenda-time-cell {
+  width: 120px;
+  padding: 10px;
+  font-size: 12px;
+  color: #71717a;
+  vertical-align: top;
+}
+
+.rbc-agenda-event-cell {
+  padding: 10px 12px;
+  border-bottom: 1px solid #f4f4f5;
+}
+
+.schedule-date {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.schedule-date-weekday {
+  font-size: 11px;
+  font-weight: 600;
+  color: #71717a;
+  letter-spacing: 0.02em;
+}
+
+.schedule-date-number {
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  background: #f4f4f5;
+  color: #18181b;
+  font-size: 14px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.schedule-date-month {
+  font-size: 10px;
+  font-weight: 600;
+  color: #a1a1aa;
+}
+
+.schedule-time {
+  display: inline-flex;
+  font-size: 12px;
+  font-weight: 500;
+  color: #71717a;
+}
+
+.schedule-event {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.schedule-event-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #18181b;
+}
+
+.schedule-event-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 500;
+  color: #71717a;
+}
+
+.schedule-event-separator {
+  font-size: 10px;
+  color: #d4d4d8;
+}
+
+.rbc-agenda-view tr.proposed .rbc-agenda-event-cell {
+  border-left: 3px solid var(--color-blue-600);
+  background-color: var(--color-blue-50);
+}
+
+.rbc-agenda-view tr.pre-confirmed .rbc-agenda-event-cell {
+  border-left: 3px solid var(--color-amber-600);
+  background-color: var(--color-amber-50);
+}
+
+.rbc-agenda-view tr.confirmed .rbc-agenda-event-cell {
+  border-left: 3px solid var(--color-lime-600);
+  background-color: var(--color-lime-50);
+}
+
+.rbc-agenda-view tr.conflict .rbc-agenda-event-cell {
+  border-left: 3px solid var(--color-rose-600);
+  background-color: var(--color-rose-50);
+}
+
+.rbc-agenda-view tr.rejected .rbc-agenda-event-cell {
+  border-left: 3px solid var(--color-red-600);
+  background-color: var(--color-red-50);
+}
+
+.rbc-agenda-view tr.ended .rbc-agenda-event-cell {
+  border-left: 3px solid var(--color-gray-600);
+  background-color: var(--color-gray-50);
+}

@@ -116,6 +116,7 @@ export const NEW_USER_TIME = 1000 * 60 * 60 * 24 * 7; // 1 week
 
 // calendars
 export const CALENDAR_VIEWS: View[] = ['day', 'week', 'month'];
+export const EVENTS_CALENDAR_VIEWS: View[] = ['day', 'week', 'month', 'agenda'];
 
 //genders
 export const GENDERS_LABELS: Record<Gender, string> = {

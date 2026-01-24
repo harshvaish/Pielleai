@@ -2,7 +2,7 @@
 
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { CALENDAR_VIEWS } from '@/lib/constants';
+import { EVENTS_CALENDAR_VIEWS } from '@/lib/constants';
 import { buildCalendarLabel } from '@/lib/utils';
 import { ToolbarProps as RbcToolbarProps } from 'react-big-calendar';
 import {
@@ -59,7 +59,7 @@ export function Toolbar({
       <div className='flex flex-col sm:flex-row justify-end items-end gap-4'>
         {/* view switch */}
         <div className='max-w-max flex gap-1 bg-zinc-50 rounded-xl'>
-          {CALENDAR_VIEWS.map((v) => (
+          {EVENTS_CALENDAR_VIEWS.map((v) => (
             <Button
               key={v}
               size='sm'
@@ -67,7 +67,13 @@ export function Toolbar({
               onClick={() => onView(v)}
               className={`py-1.5 px-3 rounded-lg ${view === v ? 'bg-zinc-100 text-zinc-700' : 'bg-transparent text-zinc-500'}`}
             >
-              {v === 'day' ? 'Giorno' : v === 'week' ? 'Settimana' : 'Mese'}
+              {v === 'day'
+                ? 'Giorno'
+                : v === 'week'
+                  ? 'Settimana'
+                  : v === 'month'
+                    ? 'Mese'
+                    : 'Schedule'}
             </Button>
           ))}
         </div>
