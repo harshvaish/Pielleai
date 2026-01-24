@@ -9,10 +9,10 @@ import {
 } from 'react-big-calendar';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import './calendar-overrides.css';
-import { endOfDay, format, getDay, parse, startOfDay, startOfWeek } from 'date-fns';
+import { addDays, addMonths, addWeeks, endOfDay, format, getDay, parse, startOfDay, startOfWeek } from 'date-fns';
 import { EVENTS_CALENDAR_VIEWS, TIME_ZONE } from '@/lib/constants';
 import ShowMore from './ShowMore';
-import { useEffect, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import {
   ArtistSelectData,
   CalendarEvent,
@@ -39,6 +39,9 @@ import { useSearchParams } from 'next/navigation';
 import { fromZonedTime, toZonedTime } from 'date-fns-tz';
 import WeekHeader from '../Calendar/WeekHeader';
 import MonthHeader from '../Calendar/MonthHeader';
+import { useMediaQuery } from '@/lib/hooks/useMediaQuery';
+import { Button } from '@/components/ui/button';
+import { X } from 'lucide-react';
 
 const locales = { it };
 
@@ -52,6 +55,10 @@ type EventsCalendarProps = {
 
 export default function EventsCalendar({ userRole, artists, venues }: EventsCalendarProps) {
   const searchParams = useSearchParams();
+  const isDesktop = useMediaQuery('(min-width: 1024px)');
+  const panelRef = useRef<HTMLDivElement | null>(null);
+  const calendarWrapRef = useRef<HTMLDivElement | null>(null);
+  const anchorElRef = useRef<HTMLElement | null>(null);
 
   const [calendarDate, setCalendarDate] = useState<Date>(new Date());
   const [calendarRange, setCalendarRange] = useState<{ start: Date; end: Date }>(() =>
@@ -62,6 +69,13 @@ export default function EventsCalendar({ userRole, artists, venues }: EventsCale
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [dialogOpen, setDialogOpen] = useState<boolean>(false);
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
+  const [anchorRect, setAnchorRect] = useState<DOMRect | null>(null);
+  const [panelPosition, setPanelPosition] = useState<{
+    top: number;
+    left: number;
+    placement: 'left' | 'right';
+    arrowTop: number;
+  } | null>(null);
 
   const isAdmin = userRole === 'admin';
 
@@ -93,6 +107,38 @@ export default function EventsCalendar({ userRole, artists, venues }: EventsCale
     setCalendarRange(calculateRange(newDate, view));
   };
 
+  const onToolbarNavigate = (action: 'PREV' | 'NEXT' | 'TODAY') => {
+    if (action === 'TODAY') {
+      const today = new Date();
+      setCalendarDate(today);
+      setCalendarRange(calculateRange(today, view));
+      return;
+    }
+
+    const direction = action === 'PREV' ? -1 : 1;
+    let nextDate = calendarDate;
+
+    switch (view) {
+      case 'day':
+        nextDate = addDays(calendarDate, direction);
+        break;
+      case 'week':
+        nextDate = addWeeks(calendarDate, direction);
+        break;
+      case 'month':
+        nextDate = addMonths(calendarDate, direction);
+        break;
+      case 'agenda':
+        nextDate = addDays(calendarDate, 30 * direction);
+        break;
+      default:
+        nextDate = addDays(calendarDate, direction);
+    }
+
+    setCalendarDate(nextDate);
+    setCalendarRange(calculateRange(nextDate, view));
+  };
+
   const onViewHandler = (nextView: View) => {
     setView(nextView);
     setCalendarRange(calculateRange(calendarDate, nextView));
@@ -117,6 +163,88 @@ export default function EventsCalendar({ userRole, artists, venues }: EventsCale
     );
   }, [response]);
 
+  useEffect(() => {
+    if (!isDesktop || !selectedEvent) return;
+
+    const handlePointerDown = (event: MouseEvent) => {
+      const target = event.target as HTMLElement | null;
+      if (!target) return;
+      if (panelRef.current?.contains(target)) return;
+      if (target.closest('.rbc-event, .rbc-agenda-event-cell, .rbc-show-more')) return;
+      setSelectedEvent(null);
+    };
+
+    document.addEventListener('mousedown', handlePointerDown);
+    return () => document.removeEventListener('mousedown', handlePointerDown);
+  }, [isDesktop, selectedEvent]);
+
+  useEffect(() => {
+    if (!isDesktop || !selectedEvent) return;
+
+    let frame = 0;
+    const updateAnchorRect = () => {
+      if (!anchorElRef.current) return;
+      setAnchorRect(anchorElRef.current.getBoundingClientRect());
+    };
+
+    const onScroll = () => {
+      if (frame) return;
+      frame = window.requestAnimationFrame(() => {
+        frame = 0;
+        updateAnchorRect();
+      });
+    };
+
+    const scrollTargets = Array.from(
+      calendarWrapRef.current?.querySelectorAll(
+        '.rbc-time-content, .rbc-agenda-content, .rbc-month-view',
+      ) ?? [],
+    );
+
+    scrollTargets.forEach((el) => el.addEventListener('scroll', onScroll, { passive: true }));
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll);
+
+    updateAnchorRect();
+
+    return () => {
+      scrollTargets.forEach((el) => el.removeEventListener('scroll', onScroll));
+      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('resize', onScroll);
+      if (frame) window.cancelAnimationFrame(frame);
+    };
+  }, [isDesktop, selectedEvent]);
+
+  useLayoutEffect(() => {
+    if (!isDesktop || !selectedEvent || !anchorRect || !calendarWrapRef.current) {
+      setPanelPosition(null);
+      return;
+    }
+
+    const containerRect = calendarWrapRef.current.getBoundingClientRect();
+    const outOfView =
+      anchorRect.bottom < containerRect.top || anchorRect.top > containerRect.bottom;
+    if (outOfView) {
+      setPanelPosition(null);
+      return;
+    }
+    const panelWidth = 360;
+    const padding = 12;
+    const placement: 'right' = 'right';
+    const rawLeft = anchorRect.right - containerRect.left + padding;
+    const left = Math.min(Math.max(rawLeft, 8), containerRect.width - panelWidth - 8);
+    const panelHeight = panelRef.current?.offsetHeight ?? 420;
+    const rawTop = anchorRect.top - containerRect.top;
+    const top =
+      view === 'agenda'
+        ? rawTop
+        : Math.min(Math.max(rawTop, 8), containerRect.height - panelHeight - 8);
+    const anchorCenterY = anchorRect.top - containerRect.top + anchorRect.height / 2;
+    const arrowTop = Math.min(Math.max(anchorCenterY - top - 8, 12), panelHeight - 12);
+
+    setPanelPosition({ top, left, placement, arrowTop });
+  }, [isDesktop, selectedEvent, anchorRect, view]);
+
   const selectedEventTitle = selectedEvent
     ? selectedEvent.title?.trim() ||
       generateEventTitle(
@@ -128,66 +256,144 @@ export default function EventsCalendar({ userRole, artists, venues }: EventsCale
       )
     : '';
 
+  useEffect(() => {
+    if (selectedEvent) return;
+    anchorElRef.current = null;
+    setAnchorRect(null);
+  }, [selectedEvent]);
+
   return (
     <div className='relative'>
       {isLoading && <Skeleton className='absolute inset-0 z-50 opacity-60 rounded-xl' />}
-      <BigCalendar
-        localizer={localizer}
-        culture='it'
-        date={calendarDate}
-        onNavigate={onNavigateHandler}
-        onView={onViewHandler}
-        view={view}
-        views={EVENTS_CALENDAR_VIEWS}
-        defaultView='week'
-        length={30}
-        toolbar
-        showAllEvents={false}
-        components={{
-          toolbar: (props) => (
-            <Toolbar
-              {...(props as RBCToolbarProps<CalendarEvent, object>)}
-              filters={filters}
-              artists={artists}
-              venues={venues}
-            />
-          ),
-          day: { event: WeekEvent },
-          week: { header: WeekHeader, event: WeekEvent },
-          month: { header: MonthHeader, event: MonthEvent },
-          agenda: { date: ScheduleDate, time: ScheduleTime, event: ScheduleEvent },
-          showMore: (props) => (
-            <ShowMore
-              {...(props as RBCShowMoreProps<CalendarEvent>)}
-              userRole={userRole}
-            />
-          ),
-        }}
-        events={events}
-        style={{ minHeight: '600px' }}
-        eventPropGetter={eventPropGetter}
-        onSelectEvent={(ev) => {
-          setSelectedEvent(ev as CalendarEvent);
-          setDialogOpen(true);
-        }}
+      <Toolbar
+        {...({
+          date: calendarDate,
+          view,
+          onNavigate: onToolbarNavigate,
+          onView: onViewHandler,
+          views: EVENTS_CALENDAR_VIEWS,
+          label: '',
+          localizer: { messages: {} },
+        } as RBCToolbarProps<CalendarEvent, object>)}
+        filters={filters}
+        artists={artists}
+        venues={venues}
       />
-
-      <ConfirmDialog
-        open={dialogOpen}
-        onOpenChange={(open) => {
-          setDialogOpen(open);
-          if (!open) window.setTimeout(() => setSelectedEvent(null), 200);
-        }}
-        title={selectedEvent ? selectedEventTitle : 'Evento'}
-        description={`Consulta i dati principali dell'evento, per vederne tutti i dettagli ${isAdmin ? 'o per fare modifiche ' : ''}vai alla sezione eventi.`}
+      <div
+        ref={calendarWrapRef}
+        className='relative'
       >
-        {selectedEvent && (
-          <EventContent
-            userRole={userRole}
-            event={selectedEvent}
-          />
+        <BigCalendar
+          localizer={localizer}
+          culture='it'
+          date={calendarDate}
+          onNavigate={onNavigateHandler}
+          onView={onViewHandler}
+          view={view}
+          views={EVENTS_CALENDAR_VIEWS}
+          defaultView='week'
+          length={30}
+          toolbar={false}
+          showAllEvents={false}
+          components={{
+            day: { event: WeekEvent },
+            week: { header: WeekHeader, event: WeekEvent },
+            month: { header: MonthHeader, event: MonthEvent },
+            agenda: { date: ScheduleDate, time: ScheduleTime, event: ScheduleEvent },
+            showMore: (props) => (
+              <ShowMore
+                {...(props as RBCShowMoreProps<CalendarEvent>)}
+                userRole={userRole}
+              />
+            ),
+          }}
+          events={events}
+          style={{ minHeight: '600px' }}
+          eventPropGetter={eventPropGetter}
+          onSelectEvent={(ev, e) => {
+            const rawTarget = e?.target as HTMLElement | null;
+            const scheduleClickTarget = rawTarget?.closest('.schedule-event-click');
+            if (view === 'agenda' && !scheduleClickTarget) return;
+
+            const anchorTarget =
+              (view === 'agenda' ? scheduleClickTarget : null) ||
+              rawTarget?.closest('.rbc-event') ||
+              rawTarget?.closest('.rbc-agenda-event-cell') ||
+              scheduleClickTarget;
+            if (anchorTarget) {
+              anchorElRef.current = anchorTarget as HTMLElement;
+              setAnchorRect(anchorTarget.getBoundingClientRect());
+            }
+            setSelectedEvent(ev as CalendarEvent);
+            if (!isDesktop) setDialogOpen(true);
+          }}
+        />
+
+        {isDesktop && selectedEvent && (
+          <aside
+            ref={panelRef}
+            className='absolute z-20 w-[360px] max-h-[calc(100%-2rem)] rounded-2xl border bg-white/95 p-4 shadow-xl backdrop-blur'
+            style={
+              panelPosition
+                ? { top: panelPosition.top, left: panelPosition.left }
+                : { top: 80, right: 24 }
+            }
+          >
+            {panelPosition && (
+              <span
+                className={`absolute top-0 h-3 w-3 rotate-45 border bg-white/95 ${panelPosition.placement === 'right' ? '-left-1.5 border-b-0 border-r-0' : '-right-1.5 border-b-0 border-l-0'}`}
+                style={{ top: panelPosition.arrowTop }}
+              />
+            )}
+            <div className='flex items-start justify-between gap-2'>
+              <div>
+                <div className='text-lg font-semibold text-zinc-900'>
+                  {selectedEventTitle}
+                </div>
+                <div className='text-sm text-zinc-500'>
+                  {`Consulta i dati principali dell'evento, per vederne tutti i dettagli ${isAdmin ? 'o per fare modifiche ' : ''}vai alla sezione eventi.`}
+                </div>
+              </div>
+              <Button
+                size='icon'
+                variant='ghost'
+                className='shrink-0'
+                onClick={() => setSelectedEvent(null)}
+              >
+                <X className='size-4' />
+              </Button>
+            </div>
+
+            <div className='mt-4 max-h-[calc(100%-7rem)] overflow-y-auto'>
+              <EventContent
+                userRole={userRole}
+                event={selectedEvent}
+              />
+            </div>
+          </aside>
         )}
-      </ConfirmDialog>
+      </div>
+
+      {!isDesktop && (
+        <ConfirmDialog
+          open={dialogOpen}
+          onOpenChange={(open) => {
+            setDialogOpen(open);
+            if (!open) window.setTimeout(() => setSelectedEvent(null), 200);
+          }}
+          modal={false}
+          showOverlay={false}
+          title={selectedEvent ? selectedEventTitle : 'Evento'}
+          description={`Consulta i dati principali dell'evento, per vederne tutti i dettagli ${isAdmin ? 'o per fare modifiche ' : ''}vai alla sezione eventi.`}
+        >
+          {selectedEvent && (
+            <EventContent
+              userRole={userRole}
+              event={selectedEvent}
+            />
+          )}
+        </ConfirmDialog>
+      )}
     </div>
   );
 }

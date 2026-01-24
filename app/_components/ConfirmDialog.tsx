@@ -42,6 +42,8 @@ type ConfirmDialogProps = {
     | 'ghost'
     | null
     | undefined;
+  modal?: boolean;
+  showOverlay?: boolean;
   children?: ReactNode;
 };
 
@@ -59,6 +61,8 @@ export default function ConfirmDialog({
   confirmButtonVariant,
   loadingLabel = 'Attendere...',
   isLoading = false,
+  modal = true,
+  showOverlay = true,
   children,
 }: ConfirmDialogProps) {
   const isDesktop = useMediaQuery('(min-width: 768px)');
@@ -72,11 +76,13 @@ export default function ConfirmDialog({
     <Dialog
       open={open}
       onOpenChange={onOpenChange}
+      modal={modal}
     >
       <DialogContent
         onInteractOutside={(e) => {
           e.preventDefault();
         }}
+        showOverlay={showOverlay}
         className='grid grid-rows-[min-content_min-content_1fr] overflow-hidden'
       >
         <DialogTitle className={isTitleHidden ? 'hidden' : ''}>{title}</DialogTitle>

@@ -2,11 +2,12 @@ import { format } from 'date-fns';
 import { it } from 'date-fns/locale';
 
 type ScheduleDateProps = {
-  day: Date;
+  day?: Date;
   label?: string;
 };
 
 export default function ScheduleDate({ day }: ScheduleDateProps) {
+  if (!day) return null;
   const weekday = format(day, 'EEE', { locale: it }).toUpperCase();
   const month = format(day, 'MMM', { locale: it }).toUpperCase();
   const dayNumber = format(day, 'd', { locale: it });
