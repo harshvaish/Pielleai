@@ -65,10 +65,10 @@ export default function EventTile({
   return (
     <>
       {/* MOBILE */}
-      <div className='xl:hidden space-y-2 rounded-2xl p-2 md:p-4'>
-        <div className='flex justify-between items-center gap-4'>
+      <div className='xl:hidden space-y-1.5 rounded-2xl p-2 md:p-3'>
+        <div className='flex justify-between items-center gap-2'>
           <div className='flex items-center gap-2'>
-            <EventStatusBadge status={event.status} />
+            <EventStatusBadge status={event.status} size='xs' />
             {userRole === 'admin' && event.hasConflict && <EventConflictBadge />}
           </div>
 
@@ -88,10 +88,10 @@ export default function EventTile({
           )}
         </div>
 
-        <div className='text-sm font-semibold text-zinc-800'>{eventTitle}</div>
+        <div className='text-[13px] font-semibold text-zinc-800'>{eventTitle}</div>
 
-        <div className='flex flex-col sm:flex-row justify-between sm:items-end gap-4'>
-          <div className='flex justify-between items-center gap-4'>
+        <div className='flex flex-col sm:flex-row justify-between sm:items-end gap-2'>
+          <div className='flex justify-between items-center gap-3'>
             <ArtistsBadge
               artists={[event.artist]}
               userRole={userRole}
@@ -106,13 +106,13 @@ export default function EventTile({
             )}
           </div>
 
-          <div className='flex items-center gap-4'>
-            <div className='flex items-center gap-1 text-sm text-zinc-700'>
+          <div className='flex items-center gap-3'>
+            <div className='flex items-center gap-1 text-xs text-zinc-700'>
               <CalendarDays className='size-3 text-zinc-700' />
               <span>{eventDate}</span>
             </div>
 
-            <div className='flex items-center gap-1 text-sm text-zinc-700'>
+            <div className='flex items-center gap-1 text-xs text-zinc-700'>
               <Clock className='size-3 text-zinc-700' />
               <span>
                 {eventStartTime} - {eventEndTime}
@@ -121,7 +121,7 @@ export default function EventTile({
           </div>
         </div>
 
-        <Separator className='my-4' />
+        <Separator className='my-3' />
 
         <div className='flex justify-between items-center gap-4'>
           <div className='flex items-center gap-1'>
@@ -180,13 +180,13 @@ export default function EventTile({
           </div>
         )}
 
-        <Separator className='my-4' />
+        <Separator className='my-3' />
 
         <div className={cn('grid gap-2', isVenueManager ? '' : 'grid-cols-2')}>
           <Button
             asChild
             variant='outline'
-            size='sm'
+            size='xs'
             className='w-full'
           >
             <Link href={`/eventi/${event.id}`}>
@@ -238,24 +238,24 @@ export default function EventTile({
       </div>
 
       {/* DESKTOP */}
-      <div className='max-h-max hidden xl:flex flex-col gap-3 hover:bg-zinc-50 rounded-2xl p-6'>
-        <div className='text-sm font-semibold text-zinc-800'>{eventTitle}</div>
-        <div className='flex justify-between items-center gap-4'>
-          <div className='grid grid-cols-[max-content_1fr] gap-4'>
+      <div className='max-h-max hidden xl:flex flex-col gap-2 hover:bg-zinc-50 rounded-2xl p-4'>
+        <div className='text-[13px] font-semibold text-zinc-800'>{eventTitle}</div>
+        <div className='flex justify-between items-center gap-3'>
+          <div className='grid grid-cols-[max-content_1fr] gap-3'>
             {/* time info */}
-            <div className='w-40 flex flex-col gap-1 justify-center pe-4 border-r'>
-              <EventStatusBadge status={event.status} />
+            <div className='w-32 flex flex-col gap-1 justify-center pe-3 border-r'>
+              <EventStatusBadge status={event.status} size='xs' />
 
               {userRole === 'admin' && event.hasConflict && <EventConflictBadge />}
-              <div className='text-lg font-semibold capitalize'>{eventDate}</div>
-              <div className='text-zinc-500 font-medium'>
+              <div className='text-base font-semibold capitalize'>{eventDate}</div>
+              <div className='text-sm text-zinc-500 font-medium'>
                 {eventStartTime} - {eventEndTime}
               </div>
             </div>
 
             {/* general info */}
-            <div className='space-y-4'>
-              <div className='flex justify-start items-center gap-4'>
+            <div className='space-y-3'>
+              <div className='flex justify-start items-center gap-3'>
                 <ArtistsBadge
                   artists={[event.artist]}
                   userRole={userRole}
@@ -271,7 +271,7 @@ export default function EventTile({
                   </div>
                 )}
               </div>
-              <div className='grid grid-cols-2 gap-4'>
+              <div className='grid grid-cols-2 gap-3'>
                 <div className='flex items-center gap-4'>
                   <div className='flex items-center gap-1'>
                     <Image
@@ -291,7 +291,7 @@ export default function EventTile({
                 </div>
 
                 {isAdmin && event.artistManager && (
-                  <div className='flex items-center gap-4'>
+                  <div className='flex items-center gap-3'>
                     <div className='flex items-center gap-1'>
                       <Image
                         className='w-4 h-4'
@@ -313,7 +313,7 @@ export default function EventTile({
                 )}
 
                 {isAdmin && event.tourManagerEmail && (
-                  <div className='flex items-center gap-4'>
+                  <div className='flex items-center gap-3'>
                     <div className='flex items-center gap-1'>
                       <Image
                         className='w-4 h-4'
@@ -334,11 +334,11 @@ export default function EventTile({
             </div>
           </div>
 
-          <div className='flex items-center gap-2'>
+          <div className='flex items-center gap-1.5'>
             <Button
               asChild
               variant='outline'
-              size='sm'
+              size='xs'
             >
               <Link href={`/eventi/${event.id}`}>
                 <Eye className='size-4' />
@@ -404,7 +404,8 @@ export default function EventTile({
                   className={cn(
                     "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-2xl text-sm font-semibold transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
                     'bg-zinc-200 text-secondary-foreground hover:bg-zinc-200/80', // secondary variant
-                    'h-10 min-w-20 rounded-xl gap-1.5 px-3 has-[>svg]:px-2.5', // sm size
+                    'h-8 min-w-16 rounded-lg gap-1.5 px-2.5 has-[>svg]:px-2', // xs size
+                    'text-xs',
                   )}
                 >
                   Modifica <ChevronDown />

@@ -63,7 +63,7 @@ export default async function DashboardPage() {
 
       {/* events requests section */}
       {eventsToApprove.data.length > 0 && (
-        <section className='bg-white p-4 rounded-2xl'>
+        <section className='bg-white p-3 rounded-2xl'>
           <div className='flex justify-between items-center gap-2'>
             <h2 className='text-base font-bold'>Richieste di evento</h2>
             <Link
@@ -75,8 +75,8 @@ export default async function DashboardPage() {
               <ChevronRight className='size-4' />
             </Link>
           </div>
-          <Separator className='my-4' />
-          <div className='max-h-80 space-y-4 overflow-y-auto'>
+          <Separator className='my-3' />
+          <div className='max-h-80 space-y-2 overflow-y-auto'>
             {eventsToApprove.data.map((event) => (
               <EventTile
                 key={event.id}

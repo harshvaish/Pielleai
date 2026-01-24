@@ -43,7 +43,7 @@ export default function UpdateEventStatusButton({ event, newStatus, buttonLabel,
     <>
       <Button
         variant={buttonVariant}
-        size='sm'
+        size='xs'
         onClick={() => setOpen(true)}
         disabled={loading}
       >

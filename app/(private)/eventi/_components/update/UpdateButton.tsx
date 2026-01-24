@@ -14,7 +14,7 @@ export default function UpdateButton({ event }: UpdateButtonProps) {
     <Button
       asChild
       variant='secondary'
-      size='sm'
+      size='xs'
     >
       <Link href={`/eventi/${event.id}/modifica`}>
         <Pencil /> Modifica

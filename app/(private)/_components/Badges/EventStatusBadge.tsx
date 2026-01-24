@@ -7,7 +7,7 @@ import { JSX } from 'react';
 type EventStatusBadgeProps = {
   status: EventStatus;
   variant?: 'primary' | 'secondary';
-  size?: 'lg' | 'md' | 'sm';
+  size?: 'lg' | 'md' | 'sm' | 'xs';
 };
 
 const styles: Record<EventStatus, { text: string; bg: string; icon: JSX.Element }> = {
@@ -58,7 +58,8 @@ const styles: Record<EventStatus, { text: string; bg: string; icon: JSX.Element 
   },
 };
 
-const sizes: Record<'sm' | 'md' | 'lg', string> = {
+const sizes: Record<'xs' | 'sm' | 'md' | 'lg', string> = {
+  xs: 'text-[11px] px-1.5 py-0.5 gap-1',
   sm: 'text-xs px-1.5 py-0.5 gap-1',
   md: 'text-sm px-2 py-1 gap-2',
   lg: 'text-base px-3 py-1.5 gap-2.5',
