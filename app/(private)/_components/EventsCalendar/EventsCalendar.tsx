@@ -195,11 +195,15 @@ export default function EventsCalendar({ userRole, artists, venues }: EventsCale
       });
     };
 
-    const scrollTargets = Array.from(
+    const scrollTargets = new Set<Element>(
       calendarWrapRef.current?.querySelectorAll(
-        '.rbc-time-content, .rbc-agenda-content, .rbc-month-view',
+        '.rbc-time-content, .rbc-agenda-content, .rbc-agenda-view, .rbc-month-view',
       ) ?? [],
     );
+    const anchorScrollParent = anchorElRef.current?.closest(
+      '.rbc-agenda-content, .rbc-agenda-view, .rbc-time-content, .rbc-month-view',
+    );
+    if (anchorScrollParent) scrollTargets.add(anchorScrollParent);
 
     scrollTargets.forEach((el) => el.addEventListener('scroll', onScroll, { passive: true }));
     window.addEventListener('scroll', onScroll, { passive: true });
