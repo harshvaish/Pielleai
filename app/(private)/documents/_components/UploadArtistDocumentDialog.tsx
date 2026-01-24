@@ -290,7 +290,7 @@ export default function UploadArtistDocumentDialog({
     >
       <Button
         type="button"
-        size="sm"
+        size="xs"
         variant="outline"
         onClick={() => setOpen(true)}
       >

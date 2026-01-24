@@ -97,7 +97,7 @@ export default function FiltersButton({
       trigger={
         <Button
           variant={active ? 'secondary' : 'outline'}
-          size='sm'
+          size='xs'
           disabled={isPending}
         >
           <ListFilter />
@@ -139,14 +139,14 @@ export default function FiltersButton({
       <div className='grid grid-cols-2 gap-2'>
         <Button
           variant='ghost'
-          size='sm'
+          size='xs'
           onClick={resetHandler}
         >
           <Eraser />
           Pulisci
         </Button>
         <Button
-          size='sm'
+          size='xs'
           disabled={isPending}
           onClick={submitHandler}
         >

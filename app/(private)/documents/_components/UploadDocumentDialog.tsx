@@ -306,7 +306,7 @@ export default function UploadDocumentDialog({ events }: UploadDocumentDialogPro
     >
       <Button
         type="button"
-        size="sm"
+        size="xs"
         variant="outline"
         onClick={() => setOpen(true)}
       >

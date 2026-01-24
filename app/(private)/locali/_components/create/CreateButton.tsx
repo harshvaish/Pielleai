@@ -31,7 +31,7 @@ export default function CreateButton({
   venueManagers,
   buttonLabel = 'Aggiungi',
   buttonVariant,
-  buttonSize = 'sm',
+  buttonSize = 'xs',
 }: CreateButtonProps) {
   const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
   return (

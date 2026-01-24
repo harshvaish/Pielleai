@@ -522,8 +522,8 @@ export default function EventForm({
           <TabsTrigger value="a">Contatti</TabsTrigger>
           <TabsTrigger value="b">Finanze</TabsTrigger>
           <TabsTrigger value="c">Scheda tecnica</TabsTrigger>
-          <TabsTrigger value="d">Attività</TabsTrigger>
           {mode == "update" && <TabsTrigger value="e">Contratto</TabsTrigger>}
+          <TabsTrigger value="d">Attività</TabsTrigger>
         </TabsList>
         <TabsContent value="a" className="flex flex-col gap-4 p-2">
           <div className="flex flex-col">
@@ -1104,324 +1104,6 @@ export default function EventForm({
           </div>
         </TabsContent>
 
-        <TabsContent value="d" className="flex flex-col gap-4 p-2">
-          <div className="text-sm font-semibold">Trattativa pre-evento</div>
-
-          <div className="flex flex-col">
-            <Controller
-              control={control}
-              name="contractSigning"
-              render={({ field }) => (
-                <label
-                  htmlFor="contractSigning"
-                  className={cn(
-                    "flex items-center gap-2 text-sm cursor-pointer",
-                    field.value && "text-zinc-400",
-                    errors.contractSigning && "text-destructive"
-                  )}
-                >
-                  <Checkbox
-                    id="contractSigning"
-                    checked={field.value}
-                    onCheckedChange={(checked) =>
-                      field.onChange(checked === true)
-                    }
-                  />
-                  Firma del contratto
-                </label>
-              )}
-            />
-            {errors.contractSigning && (
-              <p className="text-xs text-destructive">
-                {errors.contractSigning.message as string}
-              </p>
-            )}
-          </div>
-
-          <div className="flex flex-col">
-            <Controller
-              control={control}
-              name="depositInvoiceIssuing"
-              render={({ field }) => (
-                <label
-                  htmlFor="depositInvoiceIssuing"
-                  className={cn(
-                    "flex items-center gap-2 text-sm cursor-pointer",
-                    field.value && "text-zinc-400",
-                    errors.depositInvoiceIssuing && "text-destructive"
-                  )}
-                >
-                  <Checkbox
-                    id="depositInvoiceIssuing"
-                    checked={field.value}
-                    onCheckedChange={(checked) =>
-                      field.onChange(checked === true)
-                    }
-                  />
-                  Emissione fattura acconto
-                </label>
-              )}
-            />
-            {errors.depositInvoiceIssuing && (
-              <p className="text-xs text-destructive">
-                {errors.depositInvoiceIssuing.message as string}
-              </p>
-            )}
-          </div>
-
-          <div className="flex flex-col">
-            <Controller
-              control={control}
-              name="depositReceiptVerification"
-              render={({ field }) => (
-                <label
-                  htmlFor="depositReceiptVerification"
-                  className={cn(
-                    "flex items-center gap-2 text-sm cursor-pointer",
-                    field.value && "text-zinc-400",
-                    errors.depositReceiptVerification && "text-destructive"
-                  )}
-                >
-                  <Checkbox
-                    id="depositReceiptVerification"
-                    checked={field.value}
-                    onCheckedChange={(checked) =>
-                      field.onChange(checked === true)
-                    }
-                  />
-                  Verifica ricezione acconto
-                </label>
-              )}
-            />
-            {errors.depositReceiptVerification && (
-              <p className="text-xs text-destructive">
-                {errors.depositReceiptVerification.message as string}
-              </p>
-            )}
-          </div>
-
-          <div className="flex flex-col">
-            <Controller
-              control={control}
-              name="techSheetSubmission"
-              render={({ field }) => (
-                <label
-                  htmlFor="techSheetSubmission"
-                  className={cn(
-                    "flex items-center gap-2 text-sm cursor-pointer",
-                    field.value && "text-zinc-400",
-                    errors.techSheetSubmission && "text-destructive"
-                  )}
-                >
-                  <Checkbox
-                    id="techSheetSubmission"
-                    checked={field.value}
-                    onCheckedChange={(checked) =>
-                      field.onChange(checked === true)
-                    }
-                  />
-                  Recupero e invio scheda tecnica
-                </label>
-              )}
-            />
-            {errors.techSheetSubmission && (
-              <p className="text-xs text-destructive">
-                {errors.techSheetSubmission.message as string}
-              </p>
-            )}
-          </div>
-
-          <div className="flex flex-col">
-            <Controller
-              control={control}
-              name="artistEngagement"
-              render={({ field }) => (
-                <label
-                  htmlFor="artistEngagement"
-                  className={cn(
-                    "flex items-center gap-2 text-sm cursor-pointer",
-                    field.value && "text-zinc-400",
-                    errors.artistEngagement && "text-destructive"
-                  )}
-                >
-                  <Checkbox
-                    id="artistEngagement"
-                    checked={field.value}
-                    onCheckedChange={(checked) =>
-                      field.onChange(checked === true)
-                    }
-                  />
-                  Incarico artista
-                </label>
-              )}
-            />
-            {errors.artistEngagement && (
-              <p className="text-xs text-destructive">
-                {errors.artistEngagement.message as string}
-              </p>
-            )}
-          </div>
-
-          <div className="flex flex-col">
-            <Controller
-              control={control}
-              name="professionalsEngagement"
-              render={({ field }) => (
-                <label
-                  htmlFor="professionalsEngagement"
-                  className={cn(
-                    "flex items-center gap-2 text-sm cursor-pointer",
-                    field.value && "text-zinc-400",
-                    errors.professionalsEngagement && "text-destructive"
-                  )}
-                >
-                  <Checkbox
-                    id="professionalsEngagement"
-                    checked={field.value}
-                    onCheckedChange={(checked) =>
-                      field.onChange(checked === true)
-                    }
-                  />
-                  Incarico professionisti
-                </label>
-              )}
-            />
-            {errors.professionalsEngagement && (
-              <p className="text-xs text-destructive">
-                {errors.professionalsEngagement.message as string}
-              </p>
-            )}
-          </div>
-
-          <div className="flex flex-col">
-            <Controller
-              control={control}
-              name="accompanyingPersonsEngagement"
-              render={({ field }) => (
-                <label
-                  htmlFor="accompanyingPersonsEngagement"
-                  className={cn(
-                    "flex items-center gap-2 text-sm cursor-pointer",
-                    field.value && "text-zinc-400",
-                    errors.accompanyingPersonsEngagement && "text-destructive"
-                  )}
-                >
-                  <Checkbox
-                    id="accompanyingPersonsEngagement"
-                    checked={field.value}
-                    onCheckedChange={(checked) =>
-                      field.onChange(checked === true)
-                    }
-                  />
-                  Ingaggio accompagnatori
-                </label>
-              )}
-            />
-            {errors.accompanyingPersonsEngagement && (
-              <p className="text-xs text-destructive">
-                {errors.accompanyingPersonsEngagement.message as string}
-              </p>
-            )}
-          </div>
-
-          <div className="text-sm font-semibold">Giorno dell&apos;evento</div>
-
-          <div className="flex flex-col">
-            <Controller
-              control={control}
-              name="performance"
-              render={({ field }) => (
-                <label
-                  htmlFor="performance"
-                  className={cn(
-                    "flex items-center gap-2 text-sm cursor-pointer",
-                    field.value && "text-zinc-400",
-                    errors.performance && "text-destructive"
-                  )}
-                >
-                  <Checkbox
-                    id="performance"
-                    checked={field.value}
-                    onCheckedChange={(checked) =>
-                      field.onChange(checked === true)
-                    }
-                  />
-                  Esibizione
-                </label>
-              )}
-            />
-            {errors.performance && (
-              <p className="text-xs text-destructive">
-                {errors.performance.message as string}
-              </p>
-            )}
-          </div>
-
-          <div className="text-sm font-semibold">Post evento</div>
-
-          <div className="flex flex-col">
-            <Controller
-              control={control}
-              name="postDateFeedback"
-              render={({ field }) => (
-                <label
-                  htmlFor="postDateFeedback"
-                  className={cn(
-                    "flex items-center gap-2 text-sm cursor-pointer",
-                    field.value && "text-zinc-400",
-                    errors.postDateFeedback && "text-destructive"
-                  )}
-                >
-                  <Checkbox
-                    id="postDateFeedback"
-                    checked={field.value}
-                    onCheckedChange={(checked) =>
-                      field.onChange(checked === true)
-                    }
-                  />
-                  Feedback post-evento
-                </label>
-              )}
-            />
-            {errors.postDateFeedback && (
-              <p className="text-xs text-destructive">
-                {errors.postDateFeedback.message as string}
-              </p>
-            )}
-          </div>
-
-          <div className="flex flex-col">
-            <Controller
-              control={control}
-              name="bordereau"
-              render={({ field }) => (
-                <label
-                  htmlFor="bordereau"
-                  className={cn(
-                    "flex items-center gap-2 text-sm cursor-pointer",
-                    field.value && "text-zinc-400",
-                    errors.bordereau && "text-destructive"
-                  )}
-                >
-                  <Checkbox
-                    id="bordereau"
-                    checked={field.value}
-                    onCheckedChange={(checked) =>
-                      field.onChange(checked === true)
-                    }
-                  />
-                  Borderò a carico del locale
-                </label>
-              )}
-            />
-            {errors.bordereau && (
-              <p className="text-xs text-destructive">
-                {errors.bordereau.message as string}
-              </p>
-            )}
-          </div>
-        </TabsContent>
-
         <TabsContent value="e" className="flex flex-col gap-6 p-2">
           <div className="flex justify-between items-start">
             <div className="flex flex-col gap-1">
@@ -1942,6 +1624,324 @@ export default function EventForm({
               </AccordionContent>
             </AccordionItem>
           </Accordion>
+        </TabsContent>
+
+        <TabsContent value="d" className="flex flex-col gap-4 p-2">
+          <div className="text-sm font-semibold">Trattativa pre-evento</div>
+
+          <div className="flex flex-col">
+            <Controller
+              control={control}
+              name="contractSigning"
+              render={({ field }) => (
+                <label
+                  htmlFor="contractSigning"
+                  className={cn(
+                    "flex items-center gap-2 text-sm cursor-pointer",
+                    field.value && "text-zinc-400",
+                    errors.contractSigning && "text-destructive"
+                  )}
+                >
+                  <Checkbox
+                    id="contractSigning"
+                    checked={field.value}
+                    onCheckedChange={(checked) =>
+                      field.onChange(checked === true)
+                    }
+                  />
+                  Firma del contratto
+                </label>
+              )}
+            />
+            {errors.contractSigning && (
+              <p className="text-xs text-destructive">
+                {errors.contractSigning.message as string}
+              </p>
+            )}
+          </div>
+
+          <div className="flex flex-col">
+            <Controller
+              control={control}
+              name="depositInvoiceIssuing"
+              render={({ field }) => (
+                <label
+                  htmlFor="depositInvoiceIssuing"
+                  className={cn(
+                    "flex items-center gap-2 text-sm cursor-pointer",
+                    field.value && "text-zinc-400",
+                    errors.depositInvoiceIssuing && "text-destructive"
+                  )}
+                >
+                  <Checkbox
+                    id="depositInvoiceIssuing"
+                    checked={field.value}
+                    onCheckedChange={(checked) =>
+                      field.onChange(checked === true)
+                    }
+                  />
+                  Emissione fattura acconto
+                </label>
+              )}
+            />
+            {errors.depositInvoiceIssuing && (
+              <p className="text-xs text-destructive">
+                {errors.depositInvoiceIssuing.message as string}
+              </p>
+            )}
+          </div>
+
+          <div className="flex flex-col">
+            <Controller
+              control={control}
+              name="depositReceiptVerification"
+              render={({ field }) => (
+                <label
+                  htmlFor="depositReceiptVerification"
+                  className={cn(
+                    "flex items-center gap-2 text-sm cursor-pointer",
+                    field.value && "text-zinc-400",
+                    errors.depositReceiptVerification && "text-destructive"
+                  )}
+                >
+                  <Checkbox
+                    id="depositReceiptVerification"
+                    checked={field.value}
+                    onCheckedChange={(checked) =>
+                      field.onChange(checked === true)
+                    }
+                  />
+                  Verifica ricezione acconto
+                </label>
+              )}
+            />
+            {errors.depositReceiptVerification && (
+              <p className="text-xs text-destructive">
+                {errors.depositReceiptVerification.message as string}
+              </p>
+            )}
+          </div>
+
+          <div className="flex flex-col">
+            <Controller
+              control={control}
+              name="techSheetSubmission"
+              render={({ field }) => (
+                <label
+                  htmlFor="techSheetSubmission"
+                  className={cn(
+                    "flex items-center gap-2 text-sm cursor-pointer",
+                    field.value && "text-zinc-400",
+                    errors.techSheetSubmission && "text-destructive"
+                  )}
+                >
+                  <Checkbox
+                    id="techSheetSubmission"
+                    checked={field.value}
+                    onCheckedChange={(checked) =>
+                      field.onChange(checked === true)
+                    }
+                  />
+                  Recupero e invio scheda tecnica
+                </label>
+              )}
+            />
+            {errors.techSheetSubmission && (
+              <p className="text-xs text-destructive">
+                {errors.techSheetSubmission.message as string}
+              </p>
+            )}
+          </div>
+
+          <div className="flex flex-col">
+            <Controller
+              control={control}
+              name="artistEngagement"
+              render={({ field }) => (
+                <label
+                  htmlFor="artistEngagement"
+                  className={cn(
+                    "flex items-center gap-2 text-sm cursor-pointer",
+                    field.value && "text-zinc-400",
+                    errors.artistEngagement && "text-destructive"
+                  )}
+                >
+                  <Checkbox
+                    id="artistEngagement"
+                    checked={field.value}
+                    onCheckedChange={(checked) =>
+                      field.onChange(checked === true)
+                    }
+                  />
+                  Incarico artista
+                </label>
+              )}
+            />
+            {errors.artistEngagement && (
+              <p className="text-xs text-destructive">
+                {errors.artistEngagement.message as string}
+              </p>
+            )}
+          </div>
+
+          <div className="flex flex-col">
+            <Controller
+              control={control}
+              name="professionalsEngagement"
+              render={({ field }) => (
+                <label
+                  htmlFor="professionalsEngagement"
+                  className={cn(
+                    "flex items-center gap-2 text-sm cursor-pointer",
+                    field.value && "text-zinc-400",
+                    errors.professionalsEngagement && "text-destructive"
+                  )}
+                >
+                  <Checkbox
+                    id="professionalsEngagement"
+                    checked={field.value}
+                    onCheckedChange={(checked) =>
+                      field.onChange(checked === true)
+                    }
+                  />
+                  Incarico professionisti
+                </label>
+              )}
+            />
+            {errors.professionalsEngagement && (
+              <p className="text-xs text-destructive">
+                {errors.professionalsEngagement.message as string}
+              </p>
+            )}
+          </div>
+
+          <div className="flex flex-col">
+            <Controller
+              control={control}
+              name="accompanyingPersonsEngagement"
+              render={({ field }) => (
+                <label
+                  htmlFor="accompanyingPersonsEngagement"
+                  className={cn(
+                    "flex items-center gap-2 text-sm cursor-pointer",
+                    field.value && "text-zinc-400",
+                    errors.accompanyingPersonsEngagement && "text-destructive"
+                  )}
+                >
+                  <Checkbox
+                    id="accompanyingPersonsEngagement"
+                    checked={field.value}
+                    onCheckedChange={(checked) =>
+                      field.onChange(checked === true)
+                    }
+                  />
+                  Ingaggio accompagnatori
+                </label>
+              )}
+            />
+            {errors.accompanyingPersonsEngagement && (
+              <p className="text-xs text-destructive">
+                {errors.accompanyingPersonsEngagement.message as string}
+              </p>
+            )}
+          </div>
+
+          <div className="text-sm font-semibold">Giorno dell&apos;evento</div>
+
+          <div className="flex flex-col">
+            <Controller
+              control={control}
+              name="performance"
+              render={({ field }) => (
+                <label
+                  htmlFor="performance"
+                  className={cn(
+                    "flex items-center gap-2 text-sm cursor-pointer",
+                    field.value && "text-zinc-400",
+                    errors.performance && "text-destructive"
+                  )}
+                >
+                  <Checkbox
+                    id="performance"
+                    checked={field.value}
+                    onCheckedChange={(checked) =>
+                      field.onChange(checked === true)
+                    }
+                  />
+                  Esibizione
+                </label>
+              )}
+            />
+            {errors.performance && (
+              <p className="text-xs text-destructive">
+                {errors.performance.message as string}
+              </p>
+            )}
+          </div>
+
+          <div className="text-sm font-semibold">Post evento</div>
+
+          <div className="flex flex-col">
+            <Controller
+              control={control}
+              name="postDateFeedback"
+              render={({ field }) => (
+                <label
+                  htmlFor="postDateFeedback"
+                  className={cn(
+                    "flex items-center gap-2 text-sm cursor-pointer",
+                    field.value && "text-zinc-400",
+                    errors.postDateFeedback && "text-destructive"
+                  )}
+                >
+                  <Checkbox
+                    id="postDateFeedback"
+                    checked={field.value}
+                    onCheckedChange={(checked) =>
+                      field.onChange(checked === true)
+                    }
+                  />
+                  Feedback post-evento
+                </label>
+              )}
+            />
+            {errors.postDateFeedback && (
+              <p className="text-xs text-destructive">
+                {errors.postDateFeedback.message as string}
+              </p>
+            )}
+          </div>
+
+          <div className="flex flex-col">
+            <Controller
+              control={control}
+              name="bordereau"
+              render={({ field }) => (
+                <label
+                  htmlFor="bordereau"
+                  className={cn(
+                    "flex items-center gap-2 text-sm cursor-pointer",
+                    field.value && "text-zinc-400",
+                    errors.bordereau && "text-destructive"
+                  )}
+                >
+                  <Checkbox
+                    id="bordereau"
+                    checked={field.value}
+                    onCheckedChange={(checked) =>
+                      field.onChange(checked === true)
+                    }
+                  />
+                  Borderò a carico del locale
+                </label>
+              )}
+            />
+            {errors.bordereau && (
+              <p className="text-xs text-destructive">
+                {errors.bordereau.message as string}
+              </p>
+            )}
+          </div>
         </TabsContent>
       </Tabs>
     </>

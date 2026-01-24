@@ -76,7 +76,7 @@ export function FiltersButton({ filters, artists, venues }: FiltersButtonProps) 
     <ResponsivePopover
       trigger={
         <Button
-          size='sm'
+          size='xs'
           variant={active ? 'secondary' : 'outline'}
           disabled={isPending}
         >
@@ -128,7 +128,7 @@ export function FiltersButton({ filters, artists, venues }: FiltersButtonProps) 
                 />
                 <EventStatusBadge
                   status={s}
-                  size='sm'
+                  size='xs'
                 />
               </label>
             );
@@ -138,14 +138,14 @@ export function FiltersButton({ filters, artists, venues }: FiltersButtonProps) 
         <div className='grid grid-cols-2 gap-2'>
           <Button
             variant='ghost'
-            size='sm'
+            size='xs'
             onClick={resetHandler}
           >
             <Eraser />
             Pulisci
           </Button>
           <Button
-            size='sm'
+            size='xs'
             disabled={isPending}
             onClick={submitHandler}
           >

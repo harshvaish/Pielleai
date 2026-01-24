@@ -142,7 +142,7 @@ export default async function TechnicalRidePage({
   });
 
   return (
-    <div className="h-full flex flex-col gap-4">
+    <div className="h-full flex flex-col gap-2">
       <div className="flex items-center justify-between gap-3">
         <BackButton />
         <div className="flex items-center gap-2">
@@ -150,7 +150,7 @@ export default async function TechnicalRidePage({
         </div>
       </div>
 
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-2">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h1 className="text-xl md:text-2xl font-bold">Technical Ride</h1>
           <div className="flex items-center gap-2">
@@ -170,7 +170,7 @@ export default async function TechnicalRidePage({
                   page: "1",
                 },
               }}
-              className="inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-white px-3 py-2 text-xs font-medium text-zinc-600 hover:text-zinc-800"
+              className="inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-white px-2.5 py-1.5 text-xs font-medium text-zinc-600 hover:text-zinc-800"
             >
               Ordina{" "}
               <span className="text-zinc-400">
@@ -180,11 +180,11 @@ export default async function TechnicalRidePage({
           </div>
         </div>
 
-        <div className="flex flex-col lg:flex-row justify-between items-end lg:items-center gap-4 overflow-hidden">
-          <div className="max-w-full bg-white flex items-center gap-1 p-1 rounded-2xl overflow-auto">
+        <div className="flex flex-col lg:flex-row justify-between items-end lg:items-center gap-3 overflow-hidden">
+          <div className="max-w-full bg-white flex items-center gap-1 p-0.5 rounded-xl overflow-auto">
             <Link
               href={{ query: { ...allStatusQuery, page: "1" } }}
-              className={`inline-flex items-center rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+              className={`inline-flex items-center rounded-md px-2.5 py-1 text-sm font-medium transition-colors ${
                 !sp?.status
                   ? "bg-zinc-100 text-zinc-900"
                   : "text-zinc-500 hover:text-zinc-700"

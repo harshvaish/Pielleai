@@ -43,7 +43,7 @@ export default function ZoneSelect({ initialValue, zones, onConfirm }: ZoneSelec
       trigger={
         <Button
           variant='outline'
-          size='sm'
+          size='xs'
           className={cn('min-w-40 w-full justify-between text-sm bg-white')}
         >
           {value.length > 0 ? (
@@ -95,7 +95,7 @@ export default function ZoneSelect({ initialValue, zones, onConfirm }: ZoneSelec
           <div className='grid grid-cols-2 gap-2 p-2 border-t'>
             <Button
               variant='ghost'
-              size='sm'
+              size='xs'
               onClick={resetHandler}
             >
               <Eraser />
@@ -106,7 +106,7 @@ export default function ZoneSelect({ initialValue, zones, onConfirm }: ZoneSelec
                 onConfirm(value);
                 setOpen(false);
               }}
-              size='sm'
+              size='xs'
             >
               Conferma
             </Button>

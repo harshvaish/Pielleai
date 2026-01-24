@@ -27,7 +27,7 @@ export default function CreateButton({
   countries,
   buttonLabel = 'Aggiungi',
   buttonVariant,
-  buttonSize = 'sm',
+  buttonSize = 'xs',
 }: CreateButtonProps) {
   const [open, setOpen] = useState<boolean>(false);
   return (

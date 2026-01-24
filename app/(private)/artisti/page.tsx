@@ -95,7 +95,7 @@ export default async function ArtistsPage({ searchParams }: ArtistsPageProps) {
     ]);
 
   return (
-    <div className='h-full grid grid-rows-[min-content_1fr_min-content] gap-4'>
+    <div className='h-full grid grid-rows-[min-content_1fr_min-content] gap-2'>
       <div className='md:flex justify-between items-center gap-2'>
         <h1 className='text-2xl font-bold'>Artisti</h1>
         {!isVenueManager && (

@@ -72,7 +72,7 @@ export default function ArtistEventsDatesFilterButton({
       trigger={
         <Button
           variant={active ? 'secondary' : 'outline'}
-          size='sm'
+          size='xs'
           disabled={isPending}
         >
           <CalendarIcon />
@@ -94,14 +94,14 @@ export default function ArtistEventsDatesFilterButton({
       <div className='w-full grid grid-cols-2 gap-2'>
         <Button
           variant='ghost'
-          size='sm'
+          size='xs'
           onClick={resetHandler}
         >
           <Eraser />
           Pulisci
         </Button>
         <Button
-          size='sm'
+          size='xs'
           onClick={submitHandler}
           disabled={isPending}
         >

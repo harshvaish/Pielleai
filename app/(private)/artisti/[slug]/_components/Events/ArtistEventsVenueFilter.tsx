@@ -56,7 +56,7 @@ export default function ArtistEventsVenueFilter({ venues }: ArtistEventsVenueFil
       trigger={
         <Button
           variant={active ? 'secondary' : 'outline'}
-          size='sm'
+          size='xs'
           disabled={isPending}
         >
           <ListFilter />
@@ -74,13 +74,13 @@ export default function ArtistEventsVenueFilter({ venues }: ArtistEventsVenueFil
       <div className='grid grid-cols-2 gap-2'>
         <Button
           variant='ghost'
-          size='sm'
+          size='xs'
           onClick={() => setVenueIds([])}
         >
           Pulisci
         </Button>
         <Button
-          size='sm'
+          size='xs'
           onClick={submitHandler}
           disabled={isPending}
         >

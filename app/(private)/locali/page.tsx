@@ -94,7 +94,7 @@ export default async function VenuesPage({ searchParams }: VenuesPageProps) {
   ]);
 
   return (
-    <div className='h-full grid grid-rows-[min-content_1fr_min-content] gap-4'>
+    <div className='h-full grid grid-rows-[min-content_1fr_min-content] gap-2'>
       <div className='md:flex justify-between items-center gap-2'>
         <h1 className='text-2xl font-bold'>Locali</h1>
         {!isArtistManager && (

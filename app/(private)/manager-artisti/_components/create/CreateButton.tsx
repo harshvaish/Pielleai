@@ -20,7 +20,7 @@ export default function CreateButton({
   countries,
   buttonLabel = 'Aggiungi',
   buttonVariant,
-  buttonSize = 'sm',
+  buttonSize = 'xs',
 }: {
   languages: Language[];
   countries: Country[];

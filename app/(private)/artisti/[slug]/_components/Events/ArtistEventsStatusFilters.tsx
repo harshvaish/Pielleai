@@ -37,14 +37,14 @@ export default function ArtistEventsStatusFilters() {
   };
 
   return (
-    <div className='max-w-full bg-white flex items-center gap-1 p-1 rounded-2xl overflow-auto'>
+    <div className='max-w-full bg-white flex items-center gap-1 p-0.5 rounded-xl overflow-auto'>
       {ALL_STATUSES.map((status) => {
         const isActive = selectedStatuses.includes(status);
         return (
           <Button
             key={status}
             variant={isActive ? 'secondary' : 'ghost'}
-            size='sm'
+            size='xs'
             onClick={() => onToggle(status)}
             disabled={isPending}
           >

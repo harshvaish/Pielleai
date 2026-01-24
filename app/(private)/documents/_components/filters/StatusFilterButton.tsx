@@ -50,7 +50,7 @@ export default function StatusFilterButton({ status, label }: StatusFilterButton
   return (
     <Button
       variant={isActive ? 'secondary' : 'ghost'}
-      size='sm'
+      size='xs'
       onClick={onClickHandler}
       disabled={isPending}
     >

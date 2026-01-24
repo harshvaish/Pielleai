@@ -70,7 +70,7 @@ export default function ExportButton({ filters }: ExportButtonProps) {
       trigger={
         <Button
           variant={'outline'}
-          size='sm'
+          size='xs'
           disabled={isPending}
         >
           <Download className={isPending ? 'animate-spin' : ''} />
@@ -99,7 +99,7 @@ export default function ExportButton({ filters }: ExportButtonProps) {
 
       <div className='grid grid-cols-2 gap-2'>
         <Button
-          size='sm'
+          size='xs'
           variant='ghost'
           disabled={isPending}
           onClick={() => setOpen(false)}
@@ -107,7 +107,7 @@ export default function ExportButton({ filters }: ExportButtonProps) {
           Annulla
         </Button>
         <Button
-          size='sm'
+          size='xs'
           disabled={isPending}
           onClick={onClickHandler}
         >

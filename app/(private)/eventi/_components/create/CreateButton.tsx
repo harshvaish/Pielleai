@@ -35,7 +35,7 @@ export default function CreateButton({
   forceLink = false,
   buttonLabel = 'Aggiungi',
   buttonVariant,
-  buttonSize = 'sm',
+  buttonSize = 'xs',
 }: CreateButtonProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 

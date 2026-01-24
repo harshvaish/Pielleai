@@ -109,7 +109,7 @@ export default function FiltersButton({ userRole, filters, venueManagers }: Filt
         <Button
           disabled={isPending}
           variant={active ? 'secondary' : 'outline'}
-          size='sm'
+          size='xs'
         >
           <ListFilter />
           Filtri
@@ -194,14 +194,14 @@ export default function FiltersButton({ userRole, filters, venueManagers }: Filt
         <div className='grid grid-cols-2 gap-4'>
           <Button
             variant='ghost'
-            size='sm'
+            size='xs'
             onClick={resetHandler}
           >
             <Eraser />
             Pulisci
           </Button>
           <Button
-            size='sm'
+            size='xs'
             disabled={isPending}
             onClick={submitHandler}
           >

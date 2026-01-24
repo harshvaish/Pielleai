@@ -33,7 +33,7 @@ export default function ConflictFilterButton() {
   return (
     <Button
       variant={isActive ? 'secondary' : 'outline'}
-      size='sm'
+      size='xs'
       onClick={onClickHandler}
       disabled={isPending}
     >

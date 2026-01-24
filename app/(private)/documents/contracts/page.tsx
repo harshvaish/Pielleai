@@ -507,7 +507,7 @@ export default async function ContractsPage({
   }
 
   return (
-    <div className="h-full grid grid-rows-[min-content_min-content_min-content_1fr_min-content] gap-4">
+    <div className="h-full grid grid-rows-[min-content_min-content_min-content_1fr_min-content] gap-2">
       <div className="flex items-center justify-between gap-3">
         <BackButton />
         {isAdmin && <ExportButton filters={filters} />}
@@ -517,8 +517,8 @@ export default async function ContractsPage({
         <h1 className="text-xl md:text-2xl font-bold">Contratti</h1>
       </div>
 
-      <div className="w-full flex flex-col lg:flex-row justify-between items-end lg:items-center gap-4 overflow-hidden">
-        <div className="max-w-full bg-white flex items-center gap-1 p-1 rounded-2xl overflow-auto">
+      <div className="w-full flex flex-col lg:flex-row justify-between items-end lg:items-center gap-3 overflow-hidden">
+        <div className="max-w-full bg-white flex items-center gap-1 p-0.5 rounded-xl overflow-auto">
           <StatusFilterButton status="all" label="Tutti" />
           <StatusFilterButton status="to-sign" label="Da firmare" />
           <StatusFilterButton status="signed" label="Firmato" />

@@ -38,7 +38,7 @@ export default function PrivateLayoutShell({ user, children }: PrivateLayoutShel
         onToggleNav={toggleNav}
         isNavCollapsed={isNavCollapsed}
       />
-      <div className='flex-grow grid md:grid-cols-[max-content_1fr] md:gap-8 p-4 md:p-8 overflow-hidden'>
+      <div className='flex-grow grid md:grid-cols-[max-content_1fr] md:gap-6 px-4 pb-4 pt-3 md:px-8 md:pb-6 md:pt-5 overflow-hidden'>
         <nav
           className={cn(
             'hidden max-h-max md:flex flex-col gap-1 bg-white rounded-2xl transition-all',
@@ -61,7 +61,7 @@ export default function PrivateLayoutShell({ user, children }: PrivateLayoutShel
             );
           })}
         </nav>
-        <main className='flex flex-col gap-3 md:gap-6 overflow-y-auto'>{children}</main>
+        <main className='flex flex-col gap-2 md:gap-4 overflow-y-auto'>{children}</main>
       </div>
     </>
   );

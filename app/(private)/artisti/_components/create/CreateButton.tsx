@@ -35,7 +35,7 @@ export default function CreateButton({
   artistManagers,
   buttonLabel = 'Aggiungi',
   buttonVariant,
-  buttonSize = 'sm',
+  buttonSize = 'xs',
 }: CreateButtonProps) {
   const [open, setOpen] = useState<boolean>(false);
 

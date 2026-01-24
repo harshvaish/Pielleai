@@ -79,7 +79,7 @@ export default async function ArtistManagersPage({ searchParams }: ArtistManager
   ]);
 
   return (
-    <div className='h-full grid grid-rows-[min-content_1fr_min-content] gap-4'>
+    <div className='h-full grid grid-rows-[min-content_1fr_min-content] gap-2'>
       <div className='md:flex justify-between items-center gap-2'>
         <h1 className='text-2xl font-bold'>Manager Artisti</h1>
         <div className='flex items-center gap-2 mt-2 md:mt-0'>
