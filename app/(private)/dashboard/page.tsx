@@ -1,4 +1,5 @@
 import { Separator } from '@/components/ui/separator';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import UserToApproveTile from './_components/UserToApproveTile';
 import EventTile from '../_components/EventTile/EventTile';
 import Link from 'next/link';
@@ -45,58 +46,70 @@ export default async function DashboardPage() {
   return (
     <>
       <h1 className='text-xl md:text-2xl font-bold'>Dashboard</h1>
-      {/* signup requests section */}
-      {usersToApprove.length > 0 && (
-        <section className='bg-white p-4 rounded-2xl'>
-          <h2 className='text-base font-bold'>Richieste registrazione</h2>
-          <Separator className='my-4' />
-          <div className='max-h-80 space-y-4 overflow-y-auto'>
-            {usersToApprove.map((user) => (
-              <UserToApproveTile
-                key={user.id}
-                user={user}
-              />
-            ))}
-          </div>
-        </section>
-      )}
+      <Tabs defaultValue='requests'>
+        <TabsList className='bg-white p-1 rounded-xl w-fit'>
+          <TabsTrigger value='requests'>Requests</TabsTrigger>
+          <TabsTrigger value='calendar'>Calendar</TabsTrigger>
+        </TabsList>
 
-      {/* events requests section */}
-      {eventsToApprove.data.length > 0 && (
-        <section className='bg-white p-3 rounded-2xl'>
-          <div className='flex justify-between items-center gap-2'>
-            <h2 className='text-base font-bold'>Richieste di evento</h2>
-            <Link
-              href='/eventi'
-              prefetch={false}
-              className='flex items-center gap-2 text-sm font-medium transition-all hover:gap-1'
-            >
-              Vedi tutto
-              <ChevronRight className='size-4' />
-            </Link>
-          </div>
-          <Separator className='my-3' />
-          <div className='max-h-80 space-y-2 overflow-y-auto'>
-            {eventsToApprove.data.map((event) => (
-              <EventTile
-                key={event.id}
-                userRole={user.role}
-                event={event}
-                artists={artists}
-                venues={venues}
-              />
-            ))}
-          </div>
-        </section>
-      )}
-      {/* calendar section */}
-      <section className='bg-white p-4 rounded-2xl'>
-        <EventsCalendar
-          userRole={user.role}
-          artists={artists}
-          venues={venues}
-        />
-      </section>
+        <TabsContent value='requests' className='space-y-4'>
+          {/* signup requests section */}
+          {usersToApprove.length > 0 && (
+            <section className='bg-white p-4 rounded-2xl'>
+              <h2 className='text-base font-bold'>Richieste registrazione</h2>
+              <Separator className='my-4' />
+              <div className='max-h-80 space-y-4 overflow-y-auto'>
+                {usersToApprove.map((user) => (
+                  <UserToApproveTile
+                    key={user.id}
+                    user={user}
+                  />
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* events requests section */}
+          {eventsToApprove.data.length > 0 && (
+            <section className='bg-white p-3 rounded-2xl'>
+              <div className='flex justify-between items-center gap-2'>
+                <h2 className='text-base font-bold'>Richieste di evento</h2>
+                <Link
+                  href='/eventi'
+                  prefetch={false}
+                  className='flex items-center gap-2 text-sm font-medium transition-all hover:gap-1'
+                >
+                  Vedi tutto
+                  <ChevronRight className='size-4' />
+                </Link>
+              </div>
+              <Separator className='my-3' />
+              <div className='max-h-80 space-y-2 overflow-y-auto'>
+                {eventsToApprove.data.map((event) => (
+                  <EventTile
+                    key={event.id}
+                    userRole={user.role}
+                    event={event}
+                    artists={artists}
+                    venues={venues}
+                  />
+                ))}
+              </div>
+            </section>
+          )}
+        </TabsContent>
+
+        <TabsContent value='calendar'>
+          {/* calendar section */}
+          <section className='bg-white p-4 rounded-2xl'>
+            <EventsCalendar
+              userRole={user.role}
+              artists={artists}
+              venues={venues}
+            />
+          </section>
+        </TabsContent>
+      </Tabs>
     </>
   );
 }
