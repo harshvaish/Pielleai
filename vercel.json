@@ -4,5 +4,11 @@
       "main": false,
       "staging": false
     }
-  }
+  },
+  "crons": [
+    {
+      "path": "/api/cron/trigger-review-requests",
+      "schedule": "0 * * * *"
+    }
+  ]
 }

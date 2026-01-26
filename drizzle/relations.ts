@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm/relations";
-import { artists, artistAvailabilities, users, accounts, countries, subdivisions, events, profiles, moCoordinators, venues, eventNotes, profileNotes, artistNotes, sessions, artistZones, zones, managerArtists, languages, profileLanguages, artistLanguages,contracts, contractEmailCcs, contractHistory } from "./schema";
+import { artists, artistAvailabilities, users, accounts, countries, subdivisions, events, profiles, moCoordinators, venues, eventNotes, profileNotes, artistNotes, sessions, artistZones, zones, managerArtists, languages, profileLanguages, artistLanguages,contracts, contractEmailCcs, contractHistory, reviewRequests, reviews } from "./schema";
 export const artistAvailabilitiesRelations = relations(artistAvailabilities, ({one, many}) => ({
 	artist: one(artists, {
 		fields: [artistAvailabilities.artistId],
@@ -312,5 +312,56 @@ export const contractHistoryRelations = relations(contractHistory, ({ one }) => 
   contract: one(contracts, {
     fields: [contractHistory.contractId],
     references: [contracts.id],
+  }),
+}));
+
+// review_requests ↔ core entities
+
+export const reviewRequestsRelations = relations(reviewRequests, ({ one, many }) => ({
+  event: one(events, {
+    fields: [reviewRequests.eventId],
+    references: [events.id],
+  }),
+  recipient: one(users, {
+    fields: [reviewRequests.recipientUserId],
+    references: [users.id],
+  }),
+  review: one(reviews, {
+    fields: [reviewRequests.id],
+    references: [reviews.reviewRequestId],
+  }),
+}));
+
+export const reviewsRelations = relations(reviews, ({ one }) => ({
+  reviewRequest: one(reviewRequests, {
+    fields: [reviews.reviewRequestId],
+    references: [reviewRequests.id],
+  }),
+  event: one(events, {
+    fields: [reviews.eventId],
+    references: [events.id],
+  }),
+  reviewer: one(users, {
+    fields: [reviews.reviewerId],
+    references: [users.id],
+    relationName: "reviews_reviewer_id_users_id"
+  }),
+  artist: one(artists, {
+    fields: [reviews.artistId],
+    references: [artists.id],
+  }),
+  venue: one(venues, {
+    fields: [reviews.venueId],
+    references: [venues.id],
+  }),
+  markedAsInappropriateByAdmin: one(users, {
+    fields: [reviews.markedAsInappropriateByAdminId],
+    references: [users.id],
+    relationName: "reviews_marked_as_inappropriate_by_admin_id_users_id"
+  }),
+  deletedByAdmin: one(users, {
+    fields: [reviews.deletedByAdminId],
+    references: [users.id],
+    relationName: "reviews_deleted_by_admin_id_users_id"
   }),
 }));

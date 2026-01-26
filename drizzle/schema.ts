@@ -28,6 +28,7 @@ export const eventStatus = pgEnum('event_status', [
   'confirmed',
   'rejected',
   'ended',
+  'completed',
 ]);
 export const profileGenders = pgEnum('profile_genders', ['male', 'female', 'non-binary']);
 export const userRoles = pgEnum('user_roles', ['user', 'artist-manager', 'venue-manager', 'admin']);
@@ -1107,6 +1108,15 @@ export const contractStatus = pgEnum('contract_status', [
   'declined'
 ]);
 
+export const reviewStatus = pgEnum('review_status', [
+  'pending',
+  'completed',
+  'modified',
+  'deleted',
+]);
+
+export const reviewType = pgEnum('review_type', ['artist_reviews_venue', 'venue_reviews_artist']);
+
 // ========== contracts ==========
 export const contracts = pgTable(
   'contracts',
@@ -1198,5 +1208,170 @@ export const contractHistory = pgTable(
       foreignColumns: [contracts.id],
       name: 'contract_history_contract_id_fkey',
     }).onDelete('cascade'),
+  ],
+);
+
+// ========== review_requests ==========
+export const reviewRequests = pgTable(
+  'review_requests',
+  {
+    id: integer().default(sql`generated always as identity`).primaryKey().notNull(),
+    eventId: integer('event_id').notNull(),
+    reviewType: reviewType('review_type').notNull(),
+    
+    // Recipient info
+    recipientEmail: text('recipient_email').notNull(),
+    recipientUserId: text('recipient_user_id'),
+    
+    // Token for secure access
+    reviewToken: uuid('review_token').defaultRandom().notNull(),
+    
+    status: reviewStatus().default('pending').notNull(),
+    
+    // Email tracking
+    emailSentAt: timestamp('email_sent_at', { precision: 6, withTimezone: true, mode: 'string' }),
+    emailResendCount: integer('email_resend_count').default(0).notNull(),
+    lastEmailResendAt: timestamp('last_email_resend_at', {
+      precision: 6,
+      withTimezone: true,
+      mode: 'string',
+    }),
+    
+    createdAt: timestamp('created_at', { precision: 6, withTimezone: true, mode: 'string' })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp('updated_at', { precision: 6, withTimezone: true, mode: 'string' })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    foreignKey({
+      columns: [table.eventId],
+      foreignColumns: [events.id],
+      name: 'review_requests_event_id_fkey',
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [table.recipientUserId],
+      foreignColumns: [users.id],
+      name: 'review_requests_user_id_fkey',
+    }).onDelete('set null'),
+    uniqueIndex('ux_review_request_event_type')
+      .using('btree', table.eventId.asc().nullsLast(), table.reviewType.asc().nullsLast()),
+    uniqueIndex('ux_review_request_token')
+      .using('btree', table.reviewToken.asc().nullsLast()),
+    index('idx_review_requests_event_id').using('btree', table.eventId.asc().nullsLast()),
+    index('idx_review_requests_status').using('btree', table.status.asc().nullsLast()),
+    index('idx_review_requests_token').using('btree', table.reviewToken.asc().nullsLast()),
+  ],
+);
+
+// ========== reviews ==========
+export const reviews = pgTable(
+  'reviews',
+  {
+    id: integer().default(sql`generated always as identity`).primaryKey().notNull(),
+    reviewRequestId: integer('review_request_id').notNull(),
+    eventId: integer('event_id').notNull(),
+    reviewType: reviewType('review_type').notNull(),
+    
+    // Reviewer info
+    reviewerId: text('reviewer_id'),
+    reviewerEmail: text('reviewer_email').notNull(),
+    
+    // Entity being reviewed
+    artistId: integer('artist_id'),
+    venueId: integer('venue_id'),
+    
+    // Rating fields (1-5 scale)
+    // Artist reviews Venue
+    hospitalityRating: integer('hospitality_rating'),
+    technicalQualityRating: integer('technical_quality_rating'),
+    agreementsRespectRating: integer('agreements_respect_rating'),
+    staffTreatmentRating: integer('staff_treatment_rating'),
+    organizationalQualityRating: integer('organizational_quality_rating'),
+    
+    // Venue reviews Artist
+    punctualityRating: integer('punctuality_rating'),
+    professionalismRating: integer('professionalism_rating'),
+    audienceEngagementRating: integer('audience_engagement_rating'),
+    setlistRespectRating: integer('setlist_respect_rating'),
+    logisticReadinessRating: integer('logistic_readiness_rating'),
+    
+    // Free text comment
+    comment: text(),
+    
+    // Admin moderation
+    markedAsInappropriate: boolean('marked_as_inappropriate').default(false).notNull(),
+    markedAsInappropriateAt: timestamp('marked_as_inappropriate_at', { precision: 6, withTimezone: true, mode: 'string' }),
+    markedAsInappropriateByAdminId: text('marked_as_inappropriate_by_admin_id'),
+    deletedByAdminId: text('deleted_by_admin_id'),
+    deletedAt: timestamp('deleted_at', { precision: 6, withTimezone: true, mode: 'string' }),
+    
+    createdAt: timestamp('created_at', { precision: 6, withTimezone: true, mode: 'string' })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp('updated_at', { precision: 6, withTimezone: true, mode: 'string' })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    foreignKey({
+      columns: [table.reviewRequestId],
+      foreignColumns: [reviewRequests.id],
+      name: 'reviews_review_request_id_fkey',
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [table.eventId],
+      foreignColumns: [events.id],
+      name: 'reviews_event_id_fkey',
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [table.reviewerId],
+      foreignColumns: [users.id],
+      name: 'reviews_reviewer_id_fkey',
+    }).onDelete('set null'),
+    foreignKey({
+      columns: [table.artistId],
+      foreignColumns: [artists.id],
+      name: 'reviews_artist_id_fkey',
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [table.venueId],
+      foreignColumns: [venues.id],
+      name: 'reviews_venue_id_fkey',
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [table.markedAsInappropriateByAdminId],
+      foreignColumns: [users.id],
+      name: 'reviews_marked_as_inappropriate_by_admin_id_fkey',
+    }).onDelete('set null'),
+    foreignKey({
+      columns: [table.deletedByAdminId],
+      foreignColumns: [users.id],
+      name: 'reviews_deleted_by_admin_id_fkey',
+    }).onDelete('set null'),
+    uniqueIndex('ux_review_one_per_request')
+      .using('btree', table.reviewRequestId.asc().nullsLast()),
+    index('idx_reviews_event_id').using('btree', table.eventId.asc().nullsLast()),
+    index('idx_reviews_artist_id').using('btree', table.artistId.asc().nullsLast()),
+    index('idx_reviews_venue_id').using('btree', table.venueId.asc().nullsLast()),
+    index('idx_reviews_reviewer_id').using('btree', table.reviewerId.asc().nullsLast()),
+    check('chk_review_ratings_range_1_5', sql`(
+      (hospitality_rating IS NULL OR (hospitality_rating >= 1 AND hospitality_rating <= 5)) AND
+      (technical_quality_rating IS NULL OR (technical_quality_rating >= 1 AND technical_quality_rating <= 5)) AND
+      (agreements_respect_rating IS NULL OR (agreements_respect_rating >= 1 AND agreements_respect_rating <= 5)) AND
+      (staff_treatment_rating IS NULL OR (staff_treatment_rating >= 1 AND staff_treatment_rating <= 5)) AND
+      (organizational_quality_rating IS NULL OR (organizational_quality_rating >= 1 AND organizational_quality_rating <= 5)) AND
+      (punctuality_rating IS NULL OR (punctuality_rating >= 1 AND punctuality_rating <= 5)) AND
+      (professionalism_rating IS NULL OR (professionalism_rating >= 1 AND professionalism_rating <= 5)) AND
+      (audience_engagement_rating IS NULL OR (audience_engagement_rating >= 1 AND audience_engagement_rating <= 5)) AND
+      (setlist_respect_rating IS NULL OR (setlist_respect_rating >= 1 AND setlist_respect_rating <= 5)) AND
+      (logistic_readiness_rating IS NULL OR (logistic_readiness_rating >= 1 AND logistic_readiness_rating <= 5))
+    )`),
+    check('chk_review_comment_length', sql`(comment IS NULL OR length(comment) <= 300)`),
+    check('chk_review_entity', sql`(
+      (review_type = 'artist_reviews_venue' AND venue_id IS NOT NULL AND artist_id IS NULL) OR
+      (review_type = 'venue_reviews_artist' AND artist_id IS NOT NULL AND venue_id IS NULL)
+    )`),
   ],
 );
