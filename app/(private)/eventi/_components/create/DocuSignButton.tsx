@@ -157,8 +157,11 @@ export default function DocuSignButton({
 
   const getTimeRange = (start?: Date | string, end?: Date | string): string => {
     if (!start || !end) return "";
-    return `${format(new Date(start), "HH:mm", { locale: it })} – ${format(
-      new Date(end),
+    // Parse as local time to avoid timezone shifts
+    const startDate = typeof start === 'string' ? new Date(start.replace('Z', '')) : start;
+    const endDate = typeof end === 'string' ? new Date(end.replace('Z', '')) : end;
+    return `${format(startDate, "HH:mm", { locale: it })} – ${format(
+      endDate,
       "HH:mm",
       { locale: it }
     )}`;
@@ -176,7 +179,7 @@ export default function DocuSignButton({
 
     eventType: formatEventType(event.eventType),
     eventDate: event.availability?.startDate
-      ? format(new Date(event.availability.startDate), "dd/MM/yyyy")
+      ? format(new Date(event.availability.startDate.replace('Z', '')), "dd/MM/yyyy")
       : "",
     eventTime: getTimeRange(
       event.availability?.startDate,
@@ -186,7 +189,7 @@ export default function DocuSignButton({
     upfrontPayment: event?.depositCost ?? "0",
     transportationsCost: event?.transportationsCost ?? "0",
     paymentDate: event?.paymentDate
-      ? format(new Date(event?.paymentDate), "dd/MM/yyyy")
+      ? format(new Date(event?.paymentDate.replace('Z', '')), "dd/MM/yyyy")
       : "",
 
     totalFee: event.event?.totalCost ?? "€0",

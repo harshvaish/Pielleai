@@ -104,13 +104,13 @@ export default function DocuSignButton() {
 
         eventType: formatEventType(values.eventType),
         eventDate: values.eventDate
-          ? format(new Date(values.eventDate), "dd/MM/yyyy", { locale: it })
+          ? format(new Date(String(values.eventDate).replace('Z', '')), "dd/MM/yyyy", { locale: it })
           : "",
         eventTime: buildEventTime(values.eventStartTime, values.eventEndTime),
 
         totalFee: String(values.totalCost ?? ""),
         paymentDate: values.paymentDate
-          ? format(new Date(values.paymentDate), "dd/MM/yyyy", {
+          ? format(new Date(String(values.paymentDate).replace('Z', '')), "dd/MM/yyyy", {
               locale: it,
             })
           : "",
