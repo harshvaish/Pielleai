@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef, useState } from "react";
+import React, { useMemo, useRef, useState } from "react";
 import { Upload, Download, Trash2 } from "lucide-react";
 import { cn, getFileMagicNumber, isValidPdfMagicNumber } from "@/lib/utils";
 import { useFormContext } from "react-hook-form";
@@ -9,6 +9,8 @@ import { ApiResponse } from "@/lib/types";
 import { pdfUploadSchema } from "@/lib/validation/pdf-upload-schema";
 import { deleteContractFile } from "@/lib/server-actions/contracts/delete-contract-file";
 import { EventFormSchema } from "@/lib/validation/event-form-schema";
+import { getContractPreviewUrl } from "@/lib/utils/contract-preview";
+import { generateEventTitle } from "@/lib/utils/generate-event-title";
 
 export default function UploadPdf() {
   const [uploading, setUploading] = useState(false);
@@ -19,6 +21,42 @@ export default function UploadPdf() {
   const contractId = watch("contractId");
   const contractStatus = watch("contractStatus");
   const isVoided = contractStatus === "voided";
+  const artistFullName = watch("artistFullName");
+  const artistStageName = watch("artistStageName");
+  const venueName = watch("venueName");
+  const eventDate = watch("eventDate");
+  const eventStartTime = watch("eventStartTime");
+  const eventEndTime = watch("eventEndTime");
+
+  const displayName = useMemo(() => {
+    if (!displayPdf) return "";
+    const artistLabel =
+      (artistStageName || "").trim() ||
+      (artistFullName || "").trim();
+    const venueLabel = (venueName || "").trim();
+
+    if (artistLabel && venueLabel && eventDate) {
+      const start = new Date(
+        `${eventDate}T${eventStartTime || "00:00"}`
+      );
+      const end = new Date(
+        `${eventDate}T${eventEndTime || eventStartTime || "00:00"}`
+      );
+      if (!Number.isNaN(start.getTime()) && !Number.isNaN(end.getTime())) {
+        return `${generateEventTitle(artistLabel, venueLabel, start, end)}.pdf`;
+      }
+    }
+
+    return displayPdf.name || "Contratto.pdf";
+  }, [
+    displayPdf,
+    artistFullName,
+    artistStageName,
+    venueName,
+    eventDate,
+    eventStartTime,
+    eventEndTime,
+  ]);
 
   /* ---------------- UPLOAD ---------------- */
   const onUpload = async (file: File) => {
@@ -99,7 +137,10 @@ export default function UploadPdf() {
   /* ---------------- DOWNLOAD ---------------- */
   const onDownload = () => {
     if (!displayPdf?.url) return;
-    window.open(displayPdf.url, "_blank", "noopener,noreferrer");
+    const previewUrl =
+      getContractPreviewUrl(displayPdf.url, displayName) ||
+      displayPdf.url;
+    window.open(previewUrl, "_blank", "noopener,noreferrer");
   };
 
   /* ---------------- DELETE ---------------- */
@@ -144,7 +185,7 @@ export default function UploadPdf() {
           <div className="flex items-center gap-2 bg-white border border-zinc-300 rounded-full px-4 py-1.5 shadow-sm">
             <Upload className="w-4 h-4 text-zinc-500" />
             <span className="text-sm font-medium truncate max-w-[220px]">
-              {displayPdf.name}
+              {displayName}
             </span>
           </div>
 

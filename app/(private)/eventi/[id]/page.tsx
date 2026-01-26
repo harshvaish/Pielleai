@@ -15,6 +15,7 @@ import { database } from '@/lib/database/connection';
 import { events, contracts } from '@/drizzle/schema';
 import { eq } from 'drizzle-orm';
 import { generateEventTitle } from '@/lib/utils/generate-event-title';
+import { getContractPreviewUrl } from '@/lib/utils/contract-preview';
 import RegisterPaymentForm from './_components/RegisterPaymentForm';
 import PayWithStripeButton from './_components/PayWithStripeButton';
 import PaymentSuccessHandler from './_components/PaymentSuccessHandler';
@@ -250,7 +251,10 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
             <>
               <span className='font-semibold text-zinc-600'>Documento</span>
               <a
-                href={contractData.fileUrl}
+                href={
+                  getContractPreviewUrl(contractData.fileUrl, `${eventTitle}.pdf`) ||
+                  contractData.fileUrl
+                }
                 target='_blank'
                 rel='noopener noreferrer'
                 className='text-blue-600 hover:underline'

@@ -16,6 +16,7 @@ import { getArtistsCached } from "@/lib/cache/artists";
 import { getArtistManagersCached } from "@/lib/cache/artist-managers";
 import { getVenuesCached } from "@/lib/cache/venues";
 import { hasRole, resolveNextPath, splitCsv } from "@/lib/utils";
+import { getContractPreviewUrl } from "@/lib/utils/contract-preview";
 import { AVATAR_FALLBACK } from "@/lib/constants";
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
@@ -678,7 +679,10 @@ export default async function ContractsPage({
                           <span className="flex items-center bg-white border border-zinc-300 rounded-lg px-2 py-1.5">
                             <FileText className="h-4 w-4 text-zinc-400" />
                             <a
-                              href={contract.fileUrl}
+                              href={getContractPreviewUrl(
+                                contract.fileUrl,
+                                getContractDisplayName(contract),
+                              ) || contract.fileUrl}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="text-zinc-700 hover:underline"

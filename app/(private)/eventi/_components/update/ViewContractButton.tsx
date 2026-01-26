@@ -4,12 +4,14 @@ import { Button } from "@/components/ui/button";
 import { EventFormSchema } from "@/lib/validation/event-form-schema";
 import { useFormContext } from "react-hook-form";
 import { toast } from "sonner";
+import { getContractPreviewUrl } from "@/lib/utils/contract-preview";
 
 export default function ViewContractButton() {
   const { watch } = useFormContext<EventFormSchema>();
 
   const contractDocument = watch("contractDocument");
   const fileUrl = contractDocument?.url;
+  const fileName = contractDocument?.name;
 
   const handleClick = () => {
     if (!fileUrl) {
@@ -17,7 +19,8 @@ export default function ViewContractButton() {
       return;
     }
 
-    window.open(fileUrl, "_blank", "noopener,noreferrer");
+    const previewUrl = getContractPreviewUrl(fileUrl, fileName) ?? fileUrl;
+    window.open(previewUrl, "_blank", "noopener,noreferrer");
   };
 
   return (
