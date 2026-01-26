@@ -208,7 +208,7 @@ export default function EventDateTimeSelect() {
         size="sm"
         variant="outline"
         className={cn(
-          "justify-start text-sm font-normal",
+          "h-10 w-full justify-start text-sm font-normal overflow-hidden",
           selectedAvailability ?? "text-zinc-400",
           errors.availability && "border-destructive"
         )}
@@ -216,7 +216,7 @@ export default function EventDateTimeSelect() {
         disabled={!selectedArtistId}
       >
         <CalendarIcon className="mr-2 h-4 w-4" />
-        {label}
+        <span className="truncate whitespace-nowrap">{label}</span>
       </Button>
 
       <Dialog open={open} onOpenChange={setOpen} modal={false}>

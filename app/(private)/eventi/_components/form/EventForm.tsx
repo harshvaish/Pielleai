@@ -394,7 +394,7 @@ export default function EventForm({
   };
   return (
     <>
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-6 md:grid-cols-3">
         <div className="flex flex-col">
           <div className="flex items-center justify-between gap-2 mb-2">
             <div className="text-sm font-semibold">Artista</div>
@@ -477,7 +477,7 @@ export default function EventForm({
         </div>
       </div>
 
-      <div className="grid sm:grid-cols-2 gap-4">
+      <div className="grid sm:grid-cols-2 gap-6 mt-4">
         <div className="flex flex-col">
           <div className="flex items-center justify-between gap-2 mb-2">
             <div className="text-sm font-semibold">Locale</div>
@@ -517,7 +517,7 @@ export default function EventForm({
         </div>
       </div>
 
-      <Tabs defaultValue="a" className="bg-zinc-50 p-1 rounded-2xl border">
+      <Tabs defaultValue="a" className="mt-4 bg-zinc-50 p-1 rounded-2xl border">
         <TabsList className="w-full justify-start gap-4 bg-white p-1 rounded-xl overflow-x-auto">
           <TabsTrigger value="a">Contatti</TabsTrigger>
           <TabsTrigger value="b">Finanze</TabsTrigger>

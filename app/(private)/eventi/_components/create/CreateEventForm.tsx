@@ -113,24 +113,27 @@ export default function CreateEventForm({
     <section className='max-h-full overflow-y-auto'>
       <FormProvider {...methods}>
         <form
-          className='flex flex-col gap-2 p-2'
+          className='flex flex-col gap-1 pt-1 pb-2 px-2'
           onSubmit={handleSubmit(onSubmit)}
           noValidate={true}
         >
-          <div className='flex items-center justify-between gap-4'>
+          <div className='flex items-center justify-between gap-3'>
             <h1 className='text-2xl font-bold'>Crea evento</h1>
-            <div className='flex items-center gap-2'>
+            <div className='flex items-center gap-1.5'>
               <Button
                 type='button'
+                size='sm'
                 onClick={handleCancel}
                 variant='ghost'
-                className='text-destructive'
+                className='text-destructive h-8 px-2'
                 disabled={isSubmitting}
               >
                 <X /> Annulla
               </Button>
               <Button
                 type='submit'
+                size='sm'
+                className='h-8 px-3'
                 disabled={isSubmitting}
               >
                 {isSubmitting ? 'Creazione evento...' : 'Crea evento'}

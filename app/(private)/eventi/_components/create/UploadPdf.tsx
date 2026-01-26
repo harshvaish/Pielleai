@@ -24,6 +24,12 @@ export default function LocalPdfUpload() {
 
   /* ---------------- FORM VALUE (SINGLE SOURCE) ---------------- */
   const displayPdf = watch("contractDocument");
+  const artistStageName = watch("artistStageName");
+  const artistFullName = watch("artistFullName");
+  const venueName = watch("venueName");
+  const artistName = (artistStageName || artistFullName || "").trim();
+  const eventLabel =
+    artistName && venueName ? `${artistName} x ${venueName}` : "";
 
   /* ---------------- UPLOAD ---------------- */
   const onUpload = async (file: File) => {
@@ -153,7 +159,7 @@ export default function LocalPdfUpload() {
           <div className="flex items-center gap-2 bg-white border border-zinc-300 rounded-full px-4 py-1.5 shadow-sm">
             <Upload className="w-4 h-4 text-zinc-500" />
             <span className="text-sm font-medium truncate max-w-[220px]">
-              {displayPdf.name}
+              {eventLabel || displayPdf.name}
             </span>
           </div>
 

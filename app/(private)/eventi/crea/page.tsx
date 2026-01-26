@@ -36,7 +36,7 @@ export default async function CreateEventPage() {
   ]);
 
   return (
-    <div className='max-w-5xl space-y-2'>
+    <div className='max-w-5xl space-y-1'>
       <div className='flex items-center justify-between -mt-2'>
         <BackButton />
       </div>
