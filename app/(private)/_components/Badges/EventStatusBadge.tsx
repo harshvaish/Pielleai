@@ -70,6 +70,12 @@ export default function EventStatusBadge({
   variant = 'primary',
   size = 'md',
 }: EventStatusBadgeProps) {
+  // Safety check: if status is undefined or not in styles, use default
+  if (!status || !styles[status]) {
+    console.warn('EventStatusBadge: Invalid status received:', status);
+    return null;
+  }
+  
   const style = styles[status];
 
   return (

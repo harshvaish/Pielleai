@@ -37,9 +37,17 @@ export default function EventTile({
   const isArtistManager = userRole === 'artist-manager';
   const isVenueManager = userRole === 'venue-manager';
 
-  const eventDate = format(event.availability.startDate, 'dd MMM yyyy', { locale: it });
-  const eventStartTime = format(event.availability.startDate, 'HH:mm', { locale: it });
-  const eventEndTime = format(event.availability.endDate, 'HH:mm', { locale: it });
+  // Get dates (already Date objects from type definition)
+  const startDate = new Date(event.availability.startDate);
+  const endDate = new Date(event.availability.endDate);
+  
+  const isSameDay = format(startDate, 'yyyy-MM-dd') === format(endDate, 'yyyy-MM-dd');
+  
+  const eventStartDate = format(startDate, 'dd MMM yyyy', { locale: it });
+  const eventEndDate = format(endDate, 'dd MMM yyyy', { locale: it });
+  const eventStartTime = format(startDate, 'HH:mm', { locale: it });
+  const eventEndTime = format(endDate, 'HH:mm', { locale: it });
+  
   const eventTitle =
     event.title?.trim() ||
     generateEventTitle(
@@ -109,14 +117,20 @@ export default function EventTile({
           <div className='flex items-center gap-3'>
             <div className='flex items-center gap-1 text-xs text-zinc-700'>
               <CalendarDays className='size-3 text-zinc-700' />
-              <span>{eventDate}</span>
+              {isSameDay ? (
+                <span>{eventStartDate}</span>
+              ) : (
+                <span>{eventStartDate} - {eventEndDate}</span>
+              )}
             </div>
 
             <div className='flex items-center gap-1 text-xs text-zinc-700'>
               <Clock className='size-3 text-zinc-700' />
-              <span>
-                {eventStartTime} - {eventEndTime}
-              </span>
+              {isSameDay ? (
+                <span>{eventStartTime} - {eventEndTime}</span>
+              ) : (
+                <span>{eventStartTime} - {eventEndTime}</span>
+              )}
             </div>
           </div>
         </div>
@@ -247,10 +261,21 @@ export default function EventTile({
               <EventStatusBadge status={event.status} size='xs' />
 
               {userRole === 'admin' && event.hasConflict && <EventConflictBadge />}
-              <div className='text-base font-semibold capitalize'>{eventDate}</div>
-              <div className='text-sm text-zinc-500 font-medium'>
-                {eventStartTime} - {eventEndTime}
-              </div>
+              {isSameDay ? (
+                <>
+                  <div className='text-base font-semibold capitalize'>{eventStartDate}</div>
+                  <div className='text-sm text-zinc-500 font-medium'>
+                    {eventStartTime} - {eventEndTime}
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className='text-sm font-semibold capitalize'>{eventStartDate}</div>
+                  <div className='text-xs text-zinc-500 font-medium'>{eventStartTime}</div>
+                  <div className='text-sm font-semibold capitalize'>{eventEndDate}</div>
+                  <div className='text-xs text-zinc-500 font-medium'>{eventEndTime}</div>
+                </>
+              )}
             </div>
 
             {/* general info */}
