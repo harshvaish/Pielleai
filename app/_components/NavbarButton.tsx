@@ -31,7 +31,7 @@ export default function NavbarButton({ user }: NavbarButtonProps) {
           <SheetTrigger asChild>
             <Button
               variant='ghost'
-              className='w-10 h-10'
+              className='w-9 h-9'
             >
               <Menu className='size-5' />
             </Button>
@@ -98,17 +98,17 @@ export default function NavbarButton({ user }: NavbarButtonProps) {
           onOpenChange={setIsOpen}
         >
           <PopoverTrigger asChild>
-            <div className='w-40 flex flex-nowrap justify-between items-center gap-2 bg-zinc-50 hover:bg-white p-2 rounded-2xl hover:cursor-pointer transition-colors'>
-              <Avatar className='w-8 h-8'>
+            <div className='w-36 flex flex-nowrap justify-between items-center gap-2 bg-zinc-50 hover:bg-white px-2 py-1.5 rounded-2xl hover:cursor-pointer transition-colors'>
+              <Avatar className='w-7 h-7'>
                 <AvatarFallback className='bg-zinc-200'>
                   {user.name.substring(0, 1).toUpperCase()}
                 </AvatarFallback>
               </Avatar>
 
-              <span className='grow text-sm font-semibold truncate text-zinc-700'>{user.name}</span>
+              <span className='grow text-xs font-semibold truncate text-zinc-700'>{user.name}</span>
 
               <ChevronDown
-                className={cn('shrink-0 size-4 transition-transform', isOpen ? 'rotate-180' : '')}
+                className={cn('shrink-0 size-3.5 transition-transform', isOpen ? 'rotate-180' : '')}
               />
             </div>
           </PopoverTrigger>
