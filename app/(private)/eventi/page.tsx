@@ -8,6 +8,8 @@ import DatesFilterButton from './_components/filters/DatesFilterButton';
 import { hasRole, resolveNextPath, splitCsv } from '@/lib/utils';
 import { getArtistsCached } from '@/lib/cache/artists';
 import { getArtistManagersCached } from '@/lib/cache/artist-managers';
+import { getMoCoordinatorsCached } from '@/lib/cache/mo-coordinators';
+import { getProfessionalsCached } from '@/lib/cache/professionals';
 import { getVenuesCached } from '@/lib/cache/venues';
 import { eventsFiltersSchema } from '@/lib/validation/filters/events-filters-schema';
 import { notFound, redirect } from 'next/navigation';
@@ -70,11 +72,20 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
     notFound();
   }
 
-  const [{ data: events, totalPages }, artists, artistManagers, venues] = await Promise.all([
+  const [
+    { data: events, totalPages },
+    artists,
+    artistManagers,
+    venues,
+    moCoordinators,
+    professionals,
+  ] = await Promise.all([
     getEvents(user, filters),
     getArtistsCached(isArtistManager ? profileId! : undefined),
     isAdmin ? getArtistManagersCached() : Promise.resolve([]),
     getVenuesCached(isVenueManager ? profileId! : undefined),
+    isAdmin ? getMoCoordinatorsCached() : Promise.resolve([]),
+    isAdmin ? getProfessionalsCached() : Promise.resolve([]),
   ]);
   return (
     <div className='h-full grid grid-rows-[min-content_1fr_min-content] gap-2'>
@@ -106,7 +117,15 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
         </div>
         <div className='flex flex-wrap items-center gap-2'>
           {isAdmin && <ExportButton filters={filters} />}
-          {(isAdmin || isVenueManager) && <CreateButton />}
+          {(isAdmin || isVenueManager) && (
+            <CreateButton
+              userRole={user.role}
+              artists={artists}
+              venues={venues}
+              moCoordinators={isAdmin ? moCoordinators : undefined}
+              professionals={isAdmin ? professionals : undefined}
+            />
+          )}
           {isAdmin && <ConflictFilterButton />}
           <FiltersButton
             userRole={user.role}

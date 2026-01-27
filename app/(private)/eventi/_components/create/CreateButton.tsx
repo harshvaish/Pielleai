@@ -12,7 +12,7 @@ import { Button, buttonVariants } from '@/components/ui/button';
 import { VariantProps } from 'class-variance-authority';
 import { Plus } from 'lucide-react';
 import { useState } from 'react';
-import { ArtistSelectData, MoCoordinator, UserRole, VenueSelectData } from '@/lib/types';
+import { ArtistSelectData, MoCoordinator, ProfessionalSelectData, UserRole, VenueSelectData } from '@/lib/types';
 import CreateEventForm from './CreateEventForm';
 import CreateEventRequestForm from './CreateEventRequestForm';
 
@@ -21,6 +21,7 @@ type CreateButtonProps = {
   artists?: ArtistSelectData[];
   venues?: VenueSelectData[];
   moCoordinators?: MoCoordinator[];
+  professionals?: ProfessionalSelectData[];
   forceLink?: boolean;
   buttonLabel?: string;
   buttonVariant?: VariantProps<typeof buttonVariants>['variant'];
@@ -32,6 +33,7 @@ export default function CreateButton({
   artists,
   venues,
   moCoordinators,
+  professionals,
   forceLink = false,
   buttonLabel = 'Aggiungi',
   buttonVariant,
@@ -44,7 +46,7 @@ export default function CreateButton({
     !userRole ||
     !artists ||
     !venues ||
-    (userRole === 'admin' && !moCoordinators)
+    (userRole === 'admin' && (!moCoordinators || !professionals))
   ) {
     return (
       <Button
@@ -91,6 +93,7 @@ export default function CreateButton({
             artists={artists!}
             venues={venues!}
             moCoordinators={moCoordinators!}
+            professionals={professionals!}
             userRole={userRole}
             closeDialog={() => setIsDialogOpen(false)}
           />
