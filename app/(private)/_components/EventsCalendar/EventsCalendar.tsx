@@ -332,6 +332,7 @@ export default function EventsCalendar({ userRole, artists, venues }: EventsCale
         <BigCalendar
           localizer={localizer}
           culture='it'
+          messages={{ allDay: 'All day' }}
           date={calendarDate}
           onNavigate={onNavigateHandler}
           onView={onViewHandler}
