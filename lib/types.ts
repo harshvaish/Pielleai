@@ -764,6 +764,7 @@ export interface CalendarEvent extends RbcEvent {
     name: string | null;
     surname: string | null;
   };
+  venueManager?: VenueManagerSelectData | null;
   status: EventStatus;
   hasConflict: boolean;
 
