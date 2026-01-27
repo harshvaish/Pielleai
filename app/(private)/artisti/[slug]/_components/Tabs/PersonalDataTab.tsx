@@ -1,4 +1,5 @@
 import { Separator } from '@/components/ui/separator';
+import { Badge } from '@/components/ui/badge';
 import { TabsContent } from '@/components/ui/tabs';
 import { ArtistData, UserRole } from '@/lib/types';
 import { GENDERS_LABELS } from '@/lib/constants';
@@ -74,6 +75,22 @@ export default function PersonalDataTab({
 
           <span className='text-sm font-semibold text-zinc-600'>Lingue</span>
           <span className='text-sm font-medium text-zinc-500'>{languagesString}</span>
+
+          <span className='text-sm font-semibold text-zinc-600'>Categorie</span>
+          <div className='flex flex-wrap items-center gap-2'>
+            {data.categories?.length ? (
+              data.categories.map((category) => (
+                <Badge
+                  key={category}
+                  variant='secondary'
+                >
+                  {category}
+                </Badge>
+              ))
+            ) : (
+              <span className='text-sm font-medium text-zinc-500'>-</span>
+            )}
+          </div>
 
           <span className='text-sm font-semibold text-zinc-600'>Codice Fiscale</span>
           <ArtistDocumentUpload

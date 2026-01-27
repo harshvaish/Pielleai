@@ -655,6 +655,7 @@ export const artists = pgTable(
     xUsername: text('x_username'),
     xFollowers: integer('x_followers'),
     xCreatedAt: date('x_created_at'),
+    categories: text('categories').array(),
     createdAt: timestamp('created_at', { precision: 6, withTimezone: true, mode: 'string' })
       .defaultNow()
       .notNull(),

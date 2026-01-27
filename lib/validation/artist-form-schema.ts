@@ -43,6 +43,13 @@ const optionalId = z.preprocess((val) => {
   return undefined;
 }, idValidation.optional());
 
+const categoryValidation = z
+  .string('Campo malformato.')
+  .min(2, 'Minimo 2 caratteri.')
+  .max(50, 'Massimo 50 caratteri.')
+  .regex(/^[\p{L}\p{N}\s&'’./-]+$/u, 'Può contenere solo lettere, numeri e simboli comuni.')
+  .trim();
+
 export const artistS1FormSchema = z.object({
   avatarUrl: optionalString(avatarUrlValidation),
 
@@ -55,6 +62,8 @@ export const artistS1FormSchema = z.object({
   ),
 
   bio: optionalString(bioValidation),
+
+  categories: optionalArray(z.array(categoryValidation).max(10, 'Massimo 10 categorie.')),
 
   phone: optionalString(phoneValidation),
 

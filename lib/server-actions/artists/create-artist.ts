@@ -166,6 +166,7 @@ export const createArtist = async (
         surname: data.surname || fallbackSurname,
         stageName: data.stageName || fallbackStageName,
         bio: data.bio || '',
+        categories: data.categories ?? [],
         email: fallbackEmail,
         phone: data.phone || '',
         birthPlace: data.birthPlace || '',

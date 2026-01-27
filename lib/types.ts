@@ -196,6 +196,7 @@ export type ArtistData = {
   surname: string;
   stageName: string;
   bio: string;
+  categories: string[];
   phone: string;
   email: string;
   languages: Language[];

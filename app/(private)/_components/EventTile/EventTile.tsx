@@ -8,7 +8,7 @@ import UpdateEventStatusButton from './UpdateEventStatusButton';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import DeleteEventButton from './DeleteEventButton';
 import UpdateButton from '../../eventi/_components/update/UpdateButton';
-import { CalendarDays, Check, ChevronDown, Clock, Ellipsis, Eye, X } from 'lucide-react';
+import { CalendarDays, Check, ChevronDown, Ellipsis, Eye, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Separator } from '@/components/ui/separator';
 import EventStatusBadge from '../Badges/EventStatusBadge';
@@ -18,7 +18,6 @@ import ManagersBadge from '../Badges/ManagersBadge';
 import EventConflictBadge from '../Badges/EventConflictBadge';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { generateEventTitle } from '@/lib/utils/generate-event-title';
 
 type EventTileProps = {
   userRole: UserRole;
@@ -48,15 +47,6 @@ export default function EventTile({
   const eventStartTime = format(startDate, 'HH:mm', { locale: it });
   const eventEndTime = format(endDate, 'HH:mm', { locale: it });
   
-  const eventTitle =
-    event.title?.trim() ||
-    generateEventTitle(
-      event.artist.stageName?.trim() || `${event.artist.name} ${event.artist.surname}`.trim(),
-      event.venue.name,
-      event.availability.startDate,
-      event.availability.endDate,
-    );
-
   const activityCount = Object.values({
     contractSigning: event.contractSigning,
     depositInvoiceIssuing: event.depositInvoiceIssuing,
@@ -73,11 +63,34 @@ export default function EventTile({
   return (
     <>
       {/* MOBILE */}
-      <div className='xl:hidden space-y-1.5 rounded-2xl p-2 md:p-3'>
-        <div className='flex justify-between items-center gap-2'>
-          <div className='flex items-center gap-2'>
+      <div className='xl:hidden space-y-2 rounded-2xl p-2 md:p-3'>
+        <div className='flex justify-between items-start gap-2'>
+          <div className='flex flex-wrap items-center gap-2'>
+            <ArtistsBadge
+              artists={[event.artist]}
+              userRole={userRole}
+            />
+            <span className='text-xs text-zinc-400'>x</span>
+            <VenuesBadge
+              userRole={userRole}
+              venues={[event.venue]}
+            />
+            <span className='text-xs text-zinc-400'>—</span>
+            <span className='text-[13px] font-semibold text-zinc-800'>
+              {isSameDay ? eventStartDate : `${eventStartDate} - ${eventEndDate}`}
+            </span>
             <EventStatusBadge status={event.status} size='xs' />
             {userRole === 'admin' && event.hasConflict && <EventConflictBadge />}
+            {isAdmin && (
+              <div className='flex items-center gap-1'>
+                <div className='w-3 h-3 flex justify-center items-center bg-zinc-400 rounded-xs'>
+                  <Check className='size-2 text-white' />
+                </div>
+                <span className='text-xs text-zinc-400 font-normal'>
+                  Attività completate: {activityCount}/10
+                </span>
+              </div>
+            )}
           </div>
 
           {isAdmin && (
@@ -96,64 +109,22 @@ export default function EventTile({
           )}
         </div>
 
-        <div className='text-[13px] font-semibold text-zinc-800'>{eventTitle}</div>
-
-        <div className='flex flex-col sm:flex-row justify-between sm:items-end gap-2'>
-          <div className='flex justify-between items-center gap-3'>
-            <ArtistsBadge
-              artists={[event.artist]}
-              userRole={userRole}
-            />
-            {isAdmin && (
-              <div className='flex items-center gap-2'>
-                <div className='w-3 h-3 flex justify-center items-center bg-zinc-400 rounded-xs'>
-                  <Check className='size-2 text-white' />
-                </div>
-                <span className='text-xs text-zinc-400 font-normal'>{activityCount}/10</span>
-              </div>
-            )}
+        <div className='space-y-1'>
+          <div className='flex items-center gap-2 text-xs text-zinc-700'>
+            <CalendarDays className='size-3 text-zinc-700' />
+            <span>{eventStartDate}</span>
+            <span className='text-zinc-400'>•</span>
+            <span>{eventStartTime}</span>
           </div>
-
-          <div className='flex items-center gap-3'>
-            <div className='flex items-center gap-1 text-xs text-zinc-700'>
-              <CalendarDays className='size-3 text-zinc-700' />
-              {isSameDay ? (
-                <span>{eventStartDate}</span>
-              ) : (
-                <span>{eventStartDate} - {eventEndDate}</span>
-              )}
-            </div>
-
-            <div className='flex items-center gap-1 text-xs text-zinc-700'>
-              <Clock className='size-3 text-zinc-700' />
-              {isSameDay ? (
-                <span>{eventStartTime} - {eventEndTime}</span>
-              ) : (
-                <span>{eventStartTime} - {eventEndTime}</span>
-              )}
-            </div>
+          <div className='flex items-center gap-2 text-xs text-zinc-700'>
+            <CalendarDays className='size-3 text-zinc-700' />
+            <span>{eventEndDate}</span>
+            <span className='text-zinc-400'>•</span>
+            <span>{eventEndTime}</span>
           </div>
         </div>
 
         <Separator className='my-3' />
-
-        <div className='flex justify-between items-center gap-4'>
-          <div className='flex items-center gap-1'>
-            <Image
-              className='w-4 h-4'
-              src='/images/navbar-icons/venues.svg'
-              alt='icona geolocalizzazione'
-              width={16}
-              height={16}
-              loading='lazy'
-            />
-            <span className='text-xs text-zinc-600'>Location</span>
-          </div>
-          <VenuesBadge
-            userRole={userRole}
-            venues={[event.venue]}
-          />
-        </div>
 
         {isAdmin && event.artistManager && (
           <div className='flex justify-between items-center gap-4'>
@@ -166,13 +137,35 @@ export default function EventTile({
                 height={16}
                 loading='lazy'
               />
-              <span className='text-xs text-zinc-600'>Manager</span>
+              <span className='text-xs text-zinc-600'>Artist Manager</span>
             </div>
 
             <ManagersBadge
               userRole={userRole}
               managers={[event.artistManager]}
               pathSegment='manager-artisti'
+            />
+          </div>
+        )}
+
+        {event.venue.manager && (
+          <div className='flex justify-between items-center gap-4'>
+            <div className='flex items-center gap-1'>
+              <Image
+                className='w-4 h-4'
+                src='/images/navbar-icons/artist-managers.svg'
+                alt='icona valigetta'
+                width={16}
+                height={16}
+                loading='lazy'
+              />
+              <span className='text-xs text-zinc-600'>Venue Manager</span>
+            </div>
+
+            <ManagersBadge
+              userRole={userRole}
+              managers={[event.venue.manager]}
+              pathSegment='promoter-locali'
             />
           </div>
         )}
@@ -252,110 +245,115 @@ export default function EventTile({
       </div>
 
       {/* DESKTOP */}
-      <div className='max-h-max hidden xl:flex flex-col gap-2 hover:bg-zinc-50 rounded-2xl p-4'>
-        <div className='text-[13px] font-semibold text-zinc-800'>{eventTitle}</div>
-        <div className='flex justify-between items-center gap-3'>
-          <div className='grid grid-cols-[max-content_1fr] gap-3'>
-            {/* time info */}
-            <div className='w-32 flex flex-col gap-1 justify-center pe-3 border-r'>
+      <div className='max-h-max hidden xl:flex flex-col gap-3 hover:bg-zinc-50 rounded-2xl p-4'>
+        <div className='flex justify-between items-start gap-3'>
+          <div className='space-y-3'>
+            <div className='flex flex-wrap items-center gap-2'>
+              <ArtistsBadge
+                artists={[event.artist]}
+                userRole={userRole}
+              />
+              <span className='text-xs text-zinc-400'>x</span>
+              <VenuesBadge
+                userRole={userRole}
+                venues={[event.venue]}
+              />
+              <span className='text-xs text-zinc-400'>—</span>
+              <span className='text-[13px] font-semibold text-zinc-800'>
+                {isSameDay ? eventStartDate : `${eventStartDate} - ${eventEndDate}`}
+              </span>
               <EventStatusBadge status={event.status} size='xs' />
-
               {userRole === 'admin' && event.hasConflict && <EventConflictBadge />}
-              {isSameDay ? (
-                <>
-                  <div className='text-base font-semibold capitalize'>{eventStartDate}</div>
-                  <div className='text-sm text-zinc-500 font-medium'>
-                    {eventStartTime} - {eventEndTime}
+              {isAdmin && (
+                <div className='flex items-center gap-1'>
+                  <div className='w-3 h-3 flex justify-center items-center bg-zinc-400 rounded-xs'>
+                    <Check className='size-2 text-white' />
                   </div>
-                </>
-              ) : (
-                <>
-                  <div className='text-sm font-semibold capitalize'>{eventStartDate}</div>
-                  <div className='text-xs text-zinc-500 font-medium'>{eventStartTime}</div>
-                  <div className='text-sm font-semibold capitalize'>{eventEndDate}</div>
-                  <div className='text-xs text-zinc-500 font-medium'>{eventEndTime}</div>
-                </>
+                  <span className='text-xs text-zinc-400 font-normal'>
+                    Attività completate: {activityCount}/10
+                  </span>
+                </div>
               )}
             </div>
 
-            {/* general info */}
-            <div className='space-y-3'>
-              <div className='flex justify-start items-center gap-3'>
-                <ArtistsBadge
-                  artists={[event.artist]}
-                  userRole={userRole}
-                />
-                {isAdmin && (
-                  <div className='flex items-center gap-2'>
-                    <div className='w-3 h-3 flex justify-center items-center bg-zinc-400 rounded-xs'>
-                      <Check className='size-2 text-white' />
-                    </div>
-                    <span className='text-xs text-zinc-400 font-normal'>
-                      Attività completate: {activityCount}/10
-                    </span>
-                  </div>
-                )}
+            <div className='grid sm:grid-cols-2 gap-2'>
+              <div className='flex items-center gap-2 text-xs text-zinc-700'>
+                <CalendarDays className='size-3 text-zinc-700' />
+                <span>{eventStartDate}</span>
+                <span className='text-zinc-400'>•</span>
+                <span>{eventStartTime}</span>
               </div>
-              <div className='grid grid-cols-2 gap-3'>
-                <div className='flex items-center gap-4'>
+              <div className='flex items-center gap-2 text-xs text-zinc-700'>
+                <CalendarDays className='size-3 text-zinc-700' />
+                <span>{eventEndDate}</span>
+                <span className='text-zinc-400'>•</span>
+                <span>{eventEndTime}</span>
+              </div>
+            </div>
+
+            <div className='grid grid-cols-2 gap-3'>
+              {isAdmin && event.artistManager && (
+                <div className='flex items-center gap-3'>
                   <div className='flex items-center gap-1'>
                     <Image
                       className='w-4 h-4'
-                      src='/images/navbar-icons/venues.svg'
-                      alt='icona geolocalizzazione'
+                      src='/images/navbar-icons/artist-managers.svg'
+                      alt='icona valigetta'
                       width={16}
                       height={16}
                       loading='lazy'
                     />
-                    <span className='text-xs text-zinc-600'>Location</span>
+                    <span className='text-xs text-zinc-600'>Artist Manager</span>
                   </div>
-                  <VenuesBadge
+
+                  <ManagersBadge
                     userRole={userRole}
-                    venues={[event.venue]}
+                    managers={[event.artistManager]}
+                    pathSegment='manager-artisti'
                   />
                 </div>
+              )}
 
-                {isAdmin && event.artistManager && (
-                  <div className='flex items-center gap-3'>
-                    <div className='flex items-center gap-1'>
-                      <Image
-                        className='w-4 h-4'
-                        src='/images/navbar-icons/artist-managers.svg'
-                        alt='icona valigetta'
-                        width={16}
-                        height={16}
-                        loading='lazy'
-                      />
-                      <span className='text-xs text-zinc-600'>Manager</span>
-                    </div>
-
-                    <ManagersBadge
-                      userRole={userRole}
-                      managers={[event.artistManager]}
-                      pathSegment='manager-artisti'
+              {event.venue.manager && (
+                <div className='flex items-center gap-3'>
+                  <div className='flex items-center gap-1'>
+                    <Image
+                      className='w-4 h-4'
+                      src='/images/navbar-icons/artist-managers.svg'
+                      alt='icona valigetta'
+                      width={16}
+                      height={16}
+                      loading='lazy'
                     />
+                    <span className='text-xs text-zinc-600'>Venue Manager</span>
                   </div>
-                )}
 
-                {isAdmin && event.tourManagerEmail && (
-                  <div className='flex items-center gap-3'>
-                    <div className='flex items-center gap-1'>
-                      <Image
-                        className='w-4 h-4'
-                        src='/images/navbar-icons/artist-managers.svg'
-                        alt='icona valigetta'
-                        width={16}
-                        height={16}
-                        loading='lazy'
-                      />
-                      <span className='text-xs text-zinc-600'>Tour manager</span>
-                    </div>
-                    <span className='text-xs text-zinc-500 font-semibold'>
-                      {event.tourManagerEmail}
-                    </span>
+                  <ManagersBadge
+                    userRole={userRole}
+                    managers={[event.venue.manager]}
+                    pathSegment='promoter-locali'
+                  />
+                </div>
+              )}
+
+              {isAdmin && event.tourManagerEmail && (
+                <div className='flex items-center gap-3'>
+                  <div className='flex items-center gap-1'>
+                    <Image
+                      className='w-4 h-4'
+                      src='/images/navbar-icons/artist-managers.svg'
+                      alt='icona valigetta'
+                      width={16}
+                      height={16}
+                      loading='lazy'
+                    />
+                    <span className='text-xs text-zinc-600'>Tour manager</span>
                   </div>
-                )}
-              </div>
+                  <span className='text-xs text-zinc-500 font-semibold'>
+                    {event.tourManagerEmail}
+                  </span>
+                </div>
+              )}
             </div>
           </div>
 

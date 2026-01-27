@@ -86,7 +86,7 @@ export default async function DashboardPage() {
                 </Link>
               </div>
               <Separator className='my-3' />
-              <div className='max-h-80 space-y-2 overflow-y-auto'>
+              <div className='max-h-[32rem] space-y-2 overflow-y-auto'>
                 {eventsToApprove.data.map((event) => (
                   <EventTile
                     key={event.id}

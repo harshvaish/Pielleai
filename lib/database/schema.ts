@@ -135,6 +135,7 @@ export const artists = pgTable(
     surname: text().notNull(),
     stageName: text('stage_name').notNull(),
     bio: text('bio').notNull(),
+    categories: text('categories').array(),
     phone: text().notNull(),
     avatarUrl: text('avatar_url').notNull(),
     status: userStatus().notNull(),

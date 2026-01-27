@@ -31,11 +31,10 @@ export function Toolbar({
   const label = buildCalendarLabel(date, view);
 
   return (
-    <div className='flex flex-col lg:flex-row justify-between xl:items-center gap-4 mb-8'>
-      {/* Title & arrows */}
-      <div className='w-full grid grid-cols-[1fr_max-content] items-center gap-2'>
-        <div className='text-lg md:text-2xl font-bold capitalize truncate'>{label}</div>
+    <div className='flex flex-wrap items-center justify-between gap-3 mb-4'>
+      <div className='text-base md:text-lg font-semibold capitalize truncate'>{label}</div>
 
+      <div className='flex flex-wrap items-center gap-3'>
         <div className='flex items-center'>
           <Button
             size='icon'
@@ -54,10 +53,7 @@ export function Toolbar({
             <ChevronRight className='size-4 stroke-3' />
           </Button>
         </div>
-      </div>
 
-      <div className='flex flex-col sm:flex-row justify-end items-end gap-4'>
-        {/* view switch */}
         <div className='max-w-max flex gap-1 bg-zinc-50 rounded-xl'>
           {EVENTS_CALENDAR_VIEWS.map((v) => (
             <Button
@@ -78,7 +74,6 @@ export function Toolbar({
           ))}
         </div>
 
-        {/* filters button */}
         <FiltersButton
           filters={filters}
           artists={artists}

@@ -42,7 +42,7 @@ export default function PrivateLayoutShell({ user, children }: PrivateLayoutShel
         <nav
           className={cn(
             'hidden max-h-max md:flex flex-col gap-1 bg-white rounded-2xl transition-all',
-            isNavCollapsed ? 'w-16 p-2 items-center' : 'w-60 p-4',
+            isNavCollapsed ? 'w-14 p-2 items-center' : 'w-52 p-4',
           )}
         >
           {NAVBAR_LINKS.map((link) => {
