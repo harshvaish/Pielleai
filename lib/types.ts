@@ -8,6 +8,7 @@ import {
   userRoles,
   userStatus,
   venueTypes,
+  professionalRoles,
 } from './database/schema';
 
 // project
@@ -36,6 +37,7 @@ export type UserRole = (typeof userRoles.enumValues)[number];
 export type UserStatus = (typeof userStatus.enumValues)[number];
 export type VenueType = (typeof venueTypes.enumValues)[number];
 export type ContractStatus  = (typeof contractStatus.enumValues)[number];
+export type ProfessionalRole = (typeof professionalRoles.enumValues)[number];
 
 // users
 export type UserToApprove = {
@@ -602,6 +604,7 @@ export type Event = {
   bordereau: boolean;
 
   notes: EventNote[];
+  professionalIds?: number[];
 };
 
 export type ArtistEventListItem = {
@@ -671,6 +674,36 @@ export type EventGuest = {
   invitedAt: Date | null;
   createdAt: Date;
   updatedAt: Date;
+};
+
+export type Professional = {
+  id: number;
+  fullName: string;
+  role: ProfessionalRole;
+  roleDescription: string | null;
+  email: string | null;
+  phone: string | null;
+  competencies: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+export type ProfessionalSelectData = Pick<Professional, 'id' | 'fullName' | 'role'>;
+
+export type ProfessionalListItem = Professional & {
+  eventCount: number;
+};
+
+export type ProfessionalEvent = {
+  id: number;
+  title: string;
+};
+
+export type ProfessionalsTableFilters = {
+  currentPage: number;
+  fullName: string | null;
+  role: ProfessionalRole | null;
+  eventId: string | null;
 };
 
 export type EventsTableFilters = {

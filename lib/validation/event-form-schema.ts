@@ -67,6 +67,7 @@ tourManagerName: z.string().optional(),
   ),
 
   notes: z.array(z.string('Campo malformato.').min(3, 'Almeno 3 caratteri.')).optional(),
+  professionalIds: z.array(idValidation).optional(),
 
   moCost: z.number('Campo malformato.').positive('Può contenere solo numeri positivi.').optional(),
 

@@ -10,6 +10,7 @@ import {
   venues,
   events,
   eventNotes,
+  eventProfessionals,
   artistAvailabilities,
 } from '@/lib/database/schema';
 import { eventFormSchema, EventFormSchema } from '@/lib/validation/event-form-schema';
@@ -300,6 +301,16 @@ export const createEvent = async (data: EventFormSchema): Promise<ServerActionRe
 
       if (noteInserts.length > 0) {
         await tx.insert(eventNotes).values(noteInserts);
+      }
+
+      const professionalIds = validation.data.professionalIds || [];
+      if (professionalIds.length > 0) {
+        await tx.insert(eventProfessionals).values(
+          professionalIds.map((professionalId) => ({
+            eventId: newEventId,
+            professionalId,
+          })),
+        );
       }
 
       // STEP 3: HANDLE CONFLICTS --------------------------------------------------------

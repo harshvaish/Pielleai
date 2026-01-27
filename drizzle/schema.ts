@@ -44,6 +44,13 @@ export const userStatus = pgEnum('user_status', [
   'banned',
 ]);
 export const venueTypes = pgEnum('venue_types', ['small', 'medium', 'big']);
+export const professionalRoles = pgEnum('professional_roles', [
+  'journalist',
+  'technician',
+  'photographer',
+  'backstage',
+  'other',
+]);
 
 export const paymentStatus = pgEnum('payment_status', [
   'pending',
@@ -106,6 +113,14 @@ export const eventNotesIdSeq = pgSequence('event_notes_id_seq', {
   cycle: false,
 });
 export const eventGuestsIdSeq = pgSequence('event_guests_id_seq', {
+  startWith: '1',
+  increment: '1',
+  minValue: '1',
+  maxValue: '2147483647',
+  cache: '1',
+  cycle: false,
+});
+export const professionalsIdSeq = pgSequence('professionals_id_seq', {
   startWith: '1',
   increment: '1',
   minValue: '1',
@@ -806,6 +821,61 @@ export const eventGuests = pgTable(
       columns: [table.eventId],
       foreignColumns: [events.id],
       name: 'event_guests_event_id_fkey',
+    }).onDelete('cascade'),
+  ],
+);
+
+export const professionals = pgTable(
+  'professionals',
+  {
+    id: integer()
+      .default(sql`nextval('professionals_id_seq'::regclass)`)
+      .primaryKey()
+      .notNull(),
+    fullName: text('full_name').notNull(),
+    role: professionalRoles('role').notNull(),
+    roleDescription: text('role_description'),
+    email: text('email'),
+    phone: text('phone'),
+    competencies: text('competencies'),
+    createdAt: timestamp('created_at', { precision: 6, withTimezone: true, mode: 'string' })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp('updated_at', { precision: 6, withTimezone: true, mode: 'string' })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    index('idx_professionals_full_name').using('gin', table.fullName.asc().nullsLast().op('gin_trgm_ops')),
+    index('idx_professionals_role').using('btree', table.role.asc().nullsLast().op('enum_ops')),
+  ],
+);
+
+export const eventProfessionals = pgTable(
+  'event_professionals',
+  {
+    eventId: integer('event_id').notNull(),
+    professionalId: integer('professional_id').notNull(),
+    createdAt: timestamp('created_at', { precision: 6, withTimezone: true, mode: 'string' })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.eventId, table.professionalId] }),
+    index('idx_event_professionals_event_id').using('btree', table.eventId.asc().nullsLast().op('int4_ops')),
+    index('idx_event_professionals_professional_id').using(
+      'btree',
+      table.professionalId.asc().nullsLast().op('int4_ops'),
+    ),
+    foreignKey({
+      columns: [table.eventId],
+      foreignColumns: [events.id],
+      name: 'event_professionals_event_id_fkey',
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [table.professionalId],
+      foreignColumns: [professionals.id],
+      name: 'event_professionals_professional_id_fkey',
     }).onDelete('cascade'),
   ],
 );

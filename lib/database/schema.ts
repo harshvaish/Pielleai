@@ -44,6 +44,13 @@ export const userStatus = pgEnum('user_status', [
   'banned',
 ]);
 export const venueTypes = pgEnum('venue_types', ['small', 'medium', 'big']);
+export const professionalRoles = pgEnum('professional_roles', [
+  'journalist',
+  'technician',
+  'photographer',
+  'backstage',
+  'other',
+]);
 
 export const contractStatus = pgEnum('contract_status', [
   'all',
@@ -832,6 +839,52 @@ export const eventGuests = pgTable(
       columns: [table.eventId],
       foreignColumns: [events.id],
       name: 'event_guests_event_id_fkey',
+    }).onDelete('cascade'),
+  ],
+);
+
+export const professionals = pgTable(
+  'professionals',
+  {
+    id: serial().primaryKey().notNull(),
+    fullName: text('full_name').notNull(),
+    role: professionalRoles('role').notNull(),
+    roleDescription: text('role_description'),
+    email: text('email'),
+    phone: text('phone'),
+    competencies: text('competencies'),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    index('idx_professionals_full_name').using('gin', table.fullName.asc().nullsLast().op('gin_trgm_ops')),
+    index('idx_professionals_role').using('btree', table.role.asc().nullsLast().op('enum_ops')),
+  ],
+);
+
+export const eventProfessionals = pgTable(
+  'event_professionals',
+  {
+    eventId: integer('event_id').notNull(),
+    professionalId: integer('professional_id').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.eventId, table.professionalId] }),
+    index('idx_event_professionals_event_id').using('btree', table.eventId.asc().nullsLast().op('int4_ops')),
+    index('idx_event_professionals_professional_id').using(
+      'btree',
+      table.professionalId.asc().nullsLast().op('int4_ops'),
+    ),
+    foreignKey({
+      columns: [table.eventId],
+      foreignColumns: [events.id],
+      name: 'event_professionals_event_id_fkey',
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [table.professionalId],
+      foreignColumns: [professionals.id],
+      name: 'event_professionals_professional_id_fkey',
     }).onDelete('cascade'),
   ],
 );

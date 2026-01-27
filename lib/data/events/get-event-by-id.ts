@@ -10,6 +10,7 @@ import {
   artistAvailabilities,
   venues,
   eventNotes,
+  eventProfessionals,
   profiles,
   users,
   moCoordinators,
@@ -167,7 +168,7 @@ export async function getEventById(user: User, eventId: number): Promise<Event |
 
     const eventIds = eventsResult.map((e) => e.id);
 
-    const [notesResult, contractsResult] = await Promise.all([
+    const [notesResult, contractsResult, professionalsResult] = await Promise.all([
       database
         .select({
           id: eventNotes.id,
@@ -193,6 +194,13 @@ export async function getEventById(user: User, eventId: number): Promise<Event |
         .from(contracts)
         .where(inArray(contracts.eventId, eventIds))
         .orderBy(desc(contracts.createdAt)),
+      database
+        .select({
+          eventId: eventProfessionals.eventId,
+          professionalId: eventProfessionals.professionalId,
+        })
+        .from(eventProfessionals)
+        .where(inArray(eventProfessionals.eventId, eventIds)),
     ]);
 
     const contractIds = contractsResult.map((c) => c.id);
@@ -236,6 +244,12 @@ export async function getEventById(user: User, eventId: number): Promise<Event |
         content: row.content,
         createdAt: row.createdAt,
       });
+    }
+
+    const professionalsByEvent: Record<number, number[]> = {};
+    for (const row of professionalsResult) {
+      if (!professionalsByEvent[row.eventId]) professionalsByEvent[row.eventId] = [];
+      professionalsByEvent[row.eventId].push(row.professionalId);
     }
 
     const historiesByContract: Record<number, any[]> = {};
@@ -308,6 +322,7 @@ export async function getEventById(user: User, eventId: number): Promise<Event |
       },
       notes: notesByEvent[rest.id] || [],
       contract: latestContractByEvent[rest.id] ?? null,
+      professionalIds: professionalsByEvent[rest.id] || [],
     } as Event;
 
     if (!merged.artistManager?.id) merged.artistManager = null;

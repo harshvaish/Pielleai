@@ -64,6 +64,14 @@ export const NAVBAR_LINKS: NavbarLink[] = [
     separator: true,
   },
   {
+    label: 'Professionisti',
+    href: '/professionisti',
+    iconSrc: '/images/navbar-icons/artist-managers.svg',
+    iconAlt: 'icona Professionisti',
+    visibleTo: ['admin', 'artist-manager'],
+    separator: false,
+  },
+  {
     label: 'Promoter locali',
     href: '/promoter-locali',
     iconSrc: '/images/navbar-icons/venue-managers.svg',

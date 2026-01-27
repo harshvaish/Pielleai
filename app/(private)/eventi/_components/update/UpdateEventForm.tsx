@@ -6,7 +6,7 @@ import { toast } from 'sonner';
 import { X } from 'lucide-react';
 import { it } from 'date-fns/locale';
 import { format } from 'date-fns';
-import { ArtistSelectData, Event as DomainEvent, MoCoordinator, UserRole, VenueSelectData } from '@/lib/types';
+import { ArtistSelectData, Event as DomainEvent, MoCoordinator, ProfessionalSelectData, UserRole, VenueSelectData } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
 import { eventFormSchema } from '@/lib/validation/event-form-schema';
@@ -22,6 +22,7 @@ type UpdateEventFormProps = {
   artists: ArtistSelectData[];
   venues: VenueSelectData[];
   moCoordinators: MoCoordinator[];
+  professionals: ProfessionalSelectData[];
   userRole: UserRole;
   closeDialog?: () => void;
 };
@@ -51,6 +52,7 @@ export default function UpdateEventForm({
   artists,
   venues,
   moCoordinators,
+  professionals,
   userRole,
   closeDialog,
 }: UpdateEventFormProps) {
@@ -117,6 +119,7 @@ export default function UpdateEventForm({
       payrollConsultantEmail:
         event.payrollConsultantEmail || 'riccardo.gulisano@gmail.com',
       notes: event.notes.flatMap((note) => note.content) || [],
+      professionalIds: event.professionalIds ?? [],
      
       moCost: parseFloat(event.moCost || '') || undefined,
       venueManagerCost: parseFloat(event.venueManagerCost || '') || undefined,
@@ -282,6 +285,7 @@ export default function UpdateEventForm({
               artists={artists}
               venues={venues}
               moCoordinators={moCoordinators}
+              professionals={professionals}
               event={event}
               mode="update"
               userRole={userRole}

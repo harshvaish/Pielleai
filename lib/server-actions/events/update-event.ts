@@ -11,6 +11,7 @@ import {
   venues,
   events,
   eventNotes,
+  eventProfessionals,
 } from '@/lib/database/schema';
 import { eventFormSchema, EventFormSchema } from '@/lib/validation/event-form-schema';
 import { AppError } from '@/lib/classes/AppError';
@@ -413,6 +414,17 @@ export const updateEvent = async (
         }));
       if (notes.length) {
         await tx.insert(eventNotes).values(notes);
+      }
+
+      const professionalIds = validation.data.professionalIds || [];
+      await tx.delete(eventProfessionals).where(eq(eventProfessionals.eventId, eventId));
+      if (professionalIds.length) {
+        await tx.insert(eventProfessionals).values(
+          professionalIds.map((professionalId) => ({
+            eventId,
+            professionalId,
+          })),
+        );
       }
 
       // STEP 3: HANDLE CONFLICTS --------------------------------------------------------
