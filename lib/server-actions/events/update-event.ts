@@ -18,6 +18,7 @@ import getSession from '@/lib/data/auth/get-session';
 import { isBefore } from 'date-fns';
 import { recomputeConflicts } from '@/lib/data/events/recompute-conflicts';
 import { sendEventConfirmedEmail } from '../send-event-confirmed-email';
+import { triggerReviewRequests } from './trigger-review-requests';
 import { generateEventTitle } from '@/lib/utils/generate-event-title';
 import {
   canActivateUpfrontPayment,
@@ -75,14 +76,21 @@ export const updateEvent = async (
         status: events.status,
         masterEventId: events.masterEventId,
         protocolNumber: events.protocolNumber,
+        artistId: events.artistId,
+        venueId: events.venueId,
+        endedAt: events.endedAt,
         artist: {
           name: artists.name,
           surname: artists.surname,
           stageName: artists.stageName,
+          email: artists.email,
+          tourManagerEmail: artists.tourManagerEmail,
         },
         venue: {
           name: venues.name,
           address: venues.address,
+          billingEmail: venues.billingEmail,
+          billingPec: venues.billingPec,
         },
         availability: {
           id: artistAvailabilities.id,
@@ -451,6 +459,32 @@ export const updateEvent = async (
       }).catch((error) => {
         // Log error but don't fail the entire operation
         console.error('[updateEvent] - Failed to send notification email:', error);
+      });
+    }
+
+    // STEP 5: TRIGGER REVIEW REQUESTS IF EVENT STATUS CHANGED TO ENDED ----------------
+    if (updatedStatus === 'ended' && oldEvent.status !== 'ended') {
+      // Send review request emails asynchronously (don't block the response)
+      triggerReviewRequests({
+        id: oldEvent.id,
+        artistId: oldEvent.artistId,
+        venueId: oldEvent.venueId,
+        endedAt: eventTimestamps.endedAt ? eventTimestamps.endedAt.toISOString() : new Date().toISOString(),
+        artist: {
+          name: oldEvent.artist.name,
+          surname: oldEvent.artist.surname,
+          stageName: oldEvent.artist.stageName,
+          email: oldEvent.artist.email,
+          tourManagerEmail: oldEvent.artist.tourManagerEmail,
+        },
+        venue: {
+          name: oldEvent.venue.name,
+          billingEmail: oldEvent.venue.billingEmail,
+          billingPec: oldEvent.venue.billingPec,
+        },
+      }).catch((error) => {
+        // Log error but don't fail the entire operation
+        console.error('[updateEvent] - Failed to trigger review requests:', error);
       });
     }
 

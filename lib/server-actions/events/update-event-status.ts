@@ -13,6 +13,7 @@ import { and, eq, ne, count, inArray, sql } from 'drizzle-orm';
 import { z } from 'zod/v4';
 import { sendEventConfirmedEmail } from '../send-event-confirmed-email';
 import { buildEventProtocolNumber } from '@/lib/utils/event-revisions';
+import { triggerReviewRequests } from './trigger-review-requests';
 
 export async function updateEventStatus(
   eventId: number,
@@ -45,7 +46,7 @@ export async function updateEventStatus(
 
     const now = new Date();
 
-    // Fetch event + availability + artist + venue for email notification
+    // Fetch event + availability + artist + venue for email notification and reviews
     const [oldEvent] = await database
       .select({
         id: events.id,
@@ -53,16 +54,22 @@ export async function updateEventStatus(
         masterEventId: events.masterEventId,
         protocolNumber: events.protocolNumber,
         artistId: events.artistId,
+        venueId: events.venueId,
+        endedAt: events.endedAt,
 
         artist: {
           name: artists.name,
           surname: artists.surname,
           stageName: artists.stageName,
+          email: artists.email,
+          tourManagerEmail: artists.tourManagerEmail,
         },
 
         venue: {
           name: venues.name,
           address: venues.address,
+          billingEmail: venues.billingEmail,
+          billingPec: venues.billingPec,
         },
 
         availability: {
@@ -111,13 +118,20 @@ export async function updateEventStatus(
           ? buildEventProtocolNumber(oldEvent.id, 0)
           : undefined;
 
+      const updates: any = {
+        status: newStatus,
+        updatedAt: now,
+        ...(protocolNumber ? { protocolNumber } : {}),
+      };
+
+      // Set endedAt timestamp when marking as ended
+      if (newStatus === 'ended' && !oldEvent.endedAt) {
+        updates.endedAt = now.toISOString();
+      }
+
       await tx
         .update(events)
-        .set({
-          status: newStatus,
-          updatedAt: now,
-          ...(protocolNumber ? { protocolNumber } : {}),
-        })
+        .set(updates)
         .where(eq(events.id, eventId));
 
       // STEP 3: HANDLE CONFLICTS --------------------------------------------------------
@@ -156,6 +170,32 @@ export async function updateEventStatus(
       }).catch((error) => {
         // Log error but don't fail the entire operation
         console.error('[updateEventStatus] - Failed to send notification email:', error);
+      });
+    }
+
+    // STEP 5: TRIGGER REVIEW REQUESTS IF EVENT IS NOW ENDED --------------------------------
+    if (newStatus === 'ended' && oldEvent.status !== 'ended') {
+      // Send review request emails asynchronously (don't block the response)
+      triggerReviewRequests({
+        id: oldEvent.id,
+        artistId: oldEvent.artistId,
+        venueId: oldEvent.venueId,
+        endedAt: oldEvent.endedAt || now.toISOString(),
+        artist: {
+          name: oldEvent.artist.name,
+          surname: oldEvent.artist.surname,
+          stageName: oldEvent.artist.stageName,
+          email: oldEvent.artist.email,
+          tourManagerEmail: oldEvent.artist.tourManagerEmail,
+        },
+        venue: {
+          name: oldEvent.venue.name,
+          billingEmail: oldEvent.venue.billingEmail,
+          billingPec: oldEvent.venue.billingPec,
+        },
+      }).catch((error) => {
+        // Log error but don't fail the entire operation
+        console.error('[updateEventStatus] - Failed to trigger review requests:', error);
       });
     }
 

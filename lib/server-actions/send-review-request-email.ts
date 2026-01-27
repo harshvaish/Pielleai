@@ -126,6 +126,8 @@ export const sendReviewRequestEmail = async (
     };
 
     // Send email
+    console.log(`[sendReviewRequestEmail] Review URL: ${reviewUrl}`);
+    console.log(`[sendReviewRequestEmail] Sending to: ${recipientEmail}`);
     await sgMail.send(msg);
 
     return {

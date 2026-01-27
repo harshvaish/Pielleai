@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { database } from '@/lib/database/connection';
-import { events, reviewRequests, artists, venues } from '@/drizzle/schema';
-import { eq, and, isNull, lt, sql } from 'drizzle-orm';
+import { events, reviewRequests, reviews, artists, venues } from '@/drizzle/schema';
+import { eq, and, isNull, lt, or } from 'drizzle-orm';
 import { sendReviewRequestEmail } from '@/lib/server-actions/send-review-request-email';
 
 /**
  * POST /api/cron/trigger-review-requests
- * Cron job to automatically trigger review requests for completed events
- * Should be called 24 hours after events are marked as completed
+ * Cron job to send reminder emails for pending review requests
+ * Sends reminders 24 hours after the last email was sent, if review not yet submitted
  * 
  * This endpoint should be secured with a cron secret or API key
  */
@@ -21,119 +21,107 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Find all completed events that:
-    // 1. Have status 'completed'
-    // 2. Were completed at least 24 hours ago
-    // 3. Don't have review requests yet
     const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
 
-    const eligibleEvents = await database
+    // Find all pending review requests where:
+    // 1. Status is 'pending'
+    // 2. Email was sent at least 24 hours ago (initial or last resend)
+    // 3. No review has been submitted yet
+    const pendingRequests = await database
       .select({
+        request: reviewRequests,
         event: events,
         artist: artists,
         venue: venues,
       })
-      .from(events)
+      .from(reviewRequests)
+      .innerJoin(events, eq(reviewRequests.eventId, events.id))
       .leftJoin(artists, eq(events.artistId, artists.id))
       .leftJoin(venues, eq(events.venueId, venues.id))
       .where(
         and(
-          eq(events.status, 'completed'),
-          lt(events.endedAt, twentyFourHoursAgo.toISOString()),
-          isNull(events.rejectedAt) // Not rejected
+          eq(reviewRequests.status, 'pending'),
+          or(
+            // Last resend was 24+ hours ago
+            lt(reviewRequests.lastEmailResendAt, twentyFourHoursAgo.toISOString()),
+            // No resend yet, but initial email was 24+ hours ago
+            and(
+              isNull(reviewRequests.lastEmailResendAt),
+              lt(reviewRequests.emailSentAt, twentyFourHoursAgo.toISOString())
+            )
+          )
         )
       );
 
     const results = {
       processed: 0,
-      created: 0,
+      remindersSent: 0,
       errors: [] as string[],
     };
 
-    for (const { event, artist, venue } of eligibleEvents) {
-      if (!event || !artist || !venue) continue;
+    for (const { request, event, artist, venue } of pendingRequests) {
+      if (!request || !event || !artist || !venue) continue;
 
       try {
         results.processed++;
 
-        // Check if review requests already exist for this event
-        const existingRequests = await database
+        // Check if review has been submitted for this request
+        const existingReview = await database
           .select()
-          .from(reviewRequests)
-          .where(eq(reviewRequests.eventId, event.id));
+          .from(reviews)
+          .where(
+            and(
+              eq(reviews.reviewRequestId, request.id),
+              eq(reviews.eventId, request.eventId)
+            )
+          )
+          .limit(1);
 
-        if (existingRequests.length >= 2) {
-          // Both requests already exist
+        // Skip if review already submitted
+        if (existingReview.length > 0) {
+          console.log(`[Cron] Skipping request ${request.id} - review already submitted`);
+          
+          // Update status to completed
+          await database
+            .update(reviewRequests)
+            .set({ status: 'completed', updatedAt: new Date().toISOString() })
+            .where(eq(reviewRequests.id, request.id));
+          
           continue;
         }
 
-        const existingTypes = existingRequests.map((r: any) => r.reviewType);
+        console.log(`[Cron] Sending reminder for request ${request.id}, type: ${request.reviewType}`);
 
-        // Create review request for Artist to review Venue
-        if (!existingTypes.includes('artist_reviews_venue')) {
-          const artistEmail = artist.tourManagerEmail || artist.email;
-          
-          if (artistEmail) {
-            const [artistRequest] = await database
-              .insert(reviewRequests)
-              .values({
-                eventId: event.id,
-                reviewType: 'artist_reviews_venue',
-                recipientEmail: artistEmail,
-                recipientUserId: null, // Can be populated if you have user mapping
-                emailSentAt: new Date().toISOString(),
-              })
-              .returning();
+        // Send reminder email
+        await sendReviewRequestEmail(
+          request.recipientEmail,
+          request.reviewToken,
+          request.reviewType,
+          { ...event, artist, venue }
+        );
 
-            // Send email
-            await sendReviewRequestEmail(
-              artistEmail,
-              artistRequest.reviewToken,
-              'artist_reviews_venue',
-              { ...event, artist, venue }
-            );
+        // Update last resend timestamp
+        await database
+          .update(reviewRequests)
+          .set({
+            lastEmailResendAt: new Date().toISOString(),
+            emailResendCount: (request.emailResendCount || 0) + 1,
+            updatedAt: new Date().toISOString(),
+          })
+          .where(eq(reviewRequests.id, request.id));
 
-            results.created++;
-          }
-        }
-
-        // Create review request for Venue to review Artist
-        if (!existingTypes.includes('venue_reviews_artist')) {
-          const venueEmail = venue.billingEmail || venue.billingPec;
-          
-          if (venueEmail) {
-            const [venueRequest] = await database
-              .insert(reviewRequests)
-              .values({
-                eventId: event.id,
-                reviewType: 'venue_reviews_artist',
-                recipientEmail: venueEmail,
-                recipientUserId: null, // Can be populated if you have user mapping
-                emailSentAt: new Date().toISOString(),
-              })
-              .returning();
-
-            // Send email
-            await sendReviewRequestEmail(
-              venueEmail,
-              venueRequest.reviewToken,
-              'venue_reviews_artist',
-              { ...event, artist, venue }
-            );
-
-            results.created++;
-          }
-        }
+        results.remindersSent++;
+        console.log(`[Cron] Reminder sent for request ${request.id}`);
       } catch (error) {
-        console.error(`[Cron] Error processing event ${event.id}:`, error);
-        results.errors.push(`Event ${event.id}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        console.error(`[Cron] Error processing request ${request.id}:`, error);
+        results.errors.push(`Request ${request.id}: ${error instanceof Error ? error.message : 'Unknown error'}`);
       }
     }
 
     return NextResponse.json(
       {
         success: true,
-        message: 'Review requests processed',
+        message: 'Review reminder emails processed',
         stats: results,
       },
       { status: 200 }
