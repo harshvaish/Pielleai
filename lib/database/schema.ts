@@ -807,6 +807,42 @@ export const eventNotes = pgTable(
   ],
 );
 
+export const eventReviews = pgTable(
+  'event_reviews',
+  {
+    id: serial().primaryKey().notNull(),
+    eventId: integer('event_id').notNull(),
+    artistId: integer('artist_id').notNull(),
+    venueId: integer('venue_id').notNull(),
+    artistRating: numeric('artist_rating'),
+    venueRating: numeric('venue_rating'),
+    isValid: boolean('is_valid').default(true).notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    index('idx_event_reviews_event_id').using('btree', table.eventId.asc().nullsLast().op('int4_ops')),
+    index('idx_event_reviews_artist_id').using('btree', table.artistId.asc().nullsLast().op('int4_ops')),
+    index('idx_event_reviews_venue_id').using('btree', table.venueId.asc().nullsLast().op('int4_ops')),
+    index('idx_event_reviews_is_valid').using('btree', table.isValid.asc().nullsLast().op('bool_ops')),
+    foreignKey({
+      columns: [table.eventId],
+      foreignColumns: [events.id],
+      name: 'event_reviews_event_id_fkey',
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [table.artistId],
+      foreignColumns: [artists.id],
+      name: 'event_reviews_artist_id_fkey',
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [table.venueId],
+      foreignColumns: [venues.id],
+      name: 'event_reviews_venue_id_fkey',
+    }).onDelete('cascade'),
+  ],
+);
+
 export const artistAvailabilities = pgTable(
   'artist_availabilities',
   {

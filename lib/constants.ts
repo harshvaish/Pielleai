@@ -32,6 +32,14 @@ export const NAVBAR_LINKS: NavbarLink[] = [
     separator: false,
   },
   {
+    label: 'Artist & Venue Dashboard',
+    href: '/artist-venue-dashboard',
+    iconSrc: '/images/navbar-icons/dashboard.svg',
+    iconAlt: 'icona Artist & Venue Dashboard',
+    visibleTo: ['admin'],
+    separator: false,
+  },
+  {
     label: 'Eventi',
     href: '/eventi',
     iconSrc: '/images/navbar-icons/events.svg',

@@ -671,6 +671,23 @@ export type EventsTableFilters = {
   endDate: Date | null;
 };
 
+export type RatingDashboardType = 'artist' | 'venue';
+export type RatingDashboardSort = 'asc' | 'desc';
+
+export type RatingDashboardFilters = {
+  currentPage: number;
+  type: RatingDashboardType;
+  sort: RatingDashboardSort;
+};
+
+export type RatingDashboardRow = {
+  id: number;
+  slug: string;
+  name: string;
+  averageRating: number;
+  totalReviews: number;
+};
+
 export type ArtistEventsTableFilters = {
   currentPage: number | null;
   status: EventStatus[];
