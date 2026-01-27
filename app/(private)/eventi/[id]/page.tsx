@@ -15,6 +15,7 @@ import { database } from '@/lib/database/connection';
 import { events, contracts } from '@/drizzle/schema';
 import { eq } from 'drizzle-orm';
 import { generateEventTitle } from '@/lib/utils/generate-event-title';
+import { getContractPreviewUrl } from '@/lib/utils/contract-preview';
 import RegisterPaymentForm from './_components/RegisterPaymentForm';
 import PayWithStripeButton from './_components/PayWithStripeButton';
 import PaymentSuccessHandler from './_components/PaymentSuccessHandler';
@@ -25,6 +26,11 @@ import { getEventRevisionContext } from '@/lib/data/events/get-event-revision-co
 import { getEventRevisionHistory } from '@/lib/data/events/get-event-revision-history';
 import CreateRevisionDialog from './_components/CreateRevisionDialog';
 import RevisionHistoryPanel from './_components/RevisionHistoryPanel';
+import GuestParticipantSection from './_components/GuestParticipantSection';
+import { getEventGuests } from '@/lib/data/events/get-event-guests';
+import ProfessionalsSection from './_components/ProfessionalsSection';
+import { getEventProfessionals } from '@/lib/data/events/get-event-professionals';
+import { getProfessionalsCached } from '@/lib/cache/professionals';
 
 const EVENT_TYPE_LABELS: Record<EventType, string> = {
   'dj-set': 'DJ set',
@@ -119,6 +125,11 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
   const artistLabel = event.artist.stageName?.trim() || artistName;
   const eventTypeLabel = event.eventType ? EVENT_TYPE_LABELS[event.eventType] : null;
   const revisionHistory = isAdmin ? await getEventRevisionHistory(resolvedEventId) : [];
+  const eventGuests = isAdmin ? await getEventGuests(resolvedEventId) : [];
+  const eventProfessionals = hasRole(user, ['admin', 'artist-manager'])
+    ? await getEventProfessionals(resolvedEventId)
+    : [];
+  const allProfessionals = isAdmin ? await getProfessionalsCached() : [];
   const eventTitle =
     event.title?.trim() ||
     generateEventTitle(artistLabel, event.venue.name, event.startDate, event.endDate);
@@ -209,6 +220,19 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
         <RevisionHistoryPanel history={revisionHistory} currentEventId={event.id} />
       )}
 
+      {isAdmin && (
+        <GuestParticipantSection eventId={event.id} initialGuests={eventGuests} />
+      )}
+
+      {hasRole(user, ['admin', 'artist-manager']) && (
+        <ProfessionalsSection
+          eventId={event.id}
+          professionals={eventProfessionals}
+          allProfessionals={allProfessionals}
+          isAdmin={isAdmin}
+        />
+      )}
+
       {/* Contract Status Section */}
       <section className='bg-white p-6 rounded-2xl space-y-4'>
         <div className='flex justify-between items-center'>
@@ -250,7 +274,10 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
             <>
               <span className='font-semibold text-zinc-600'>Documento</span>
               <a
-                href={contractData.fileUrl}
+                href={
+                  getContractPreviewUrl(contractData.fileUrl, `${eventTitle}.pdf`) ||
+                  contractData.fileUrl
+                }
                 target='_blank'
                 rel='noopener noreferrer'
                 className='text-blue-600 hover:underline'

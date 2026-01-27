@@ -6,7 +6,7 @@ import { toast } from 'sonner';
 import { X } from 'lucide-react';
 import { it } from 'date-fns/locale';
 import { format } from 'date-fns';
-import { ArtistSelectData, Event as DomainEvent, MoCoordinator, UserRole, VenueSelectData } from '@/lib/types';
+import { ArtistSelectData, Event as DomainEvent, MoCoordinator, ProfessionalSelectData, UserRole, VenueSelectData } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
 import { eventFormSchema } from '@/lib/validation/event-form-schema';
@@ -15,12 +15,14 @@ import { updateEvent } from '@/lib/server-actions/events/update-event';
 import EventForm from '../form/EventForm';
 import { useState } from 'react';
 import { generateEventTitle } from '@/lib/utils/generate-event-title';
+import { generateAndUploadEventSummaryPdf } from '../utils/event-summary';
 
 type UpdateEventFormProps = {
   event: DomainEvent;
   artists: ArtistSelectData[];
   venues: VenueSelectData[];
   moCoordinators: MoCoordinator[];
+  professionals: ProfessionalSelectData[];
   userRole: UserRole;
   closeDialog?: () => void;
 };
@@ -50,6 +52,7 @@ export default function UpdateEventForm({
   artists,
   venues,
   moCoordinators,
+  professionals,
   userRole,
   closeDialog,
 }: UpdateEventFormProps) {
@@ -116,6 +119,7 @@ export default function UpdateEventForm({
       payrollConsultantEmail:
         event.payrollConsultantEmail || 'riccardo.gulisano@gmail.com',
       notes: event.notes.flatMap((note) => note.content) || [],
+      professionalIds: event.professionalIds ?? [],
      
       moCost: parseFloat(event.moCost || '') || undefined,
       venueManagerCost: parseFloat(event.venueManagerCost || '') || undefined,
@@ -183,6 +187,47 @@ export default function UpdateEventForm({
 
       if (response.success) {
         toast.success('Evento aggiornato!');
+        if (data.status === 'ended' && event.status !== 'ended') {
+          try {
+            await generateAndUploadEventSummaryPdf(event, {
+              status: 'ended',
+              startDate: data.availability?.startDate ?? null,
+              endDate: data.availability?.endDate ?? null,
+              eventType: data.eventType || null,
+              artistName: data.artistFullName || null,
+              artistStageName: data.artistStageName || null,
+              venueName: data.venueName || null,
+              venueAddress: data.venueAddress || null,
+              venueCompany: data.venueCompanyName || null,
+              venueVat: data.venueVatNumber || null,
+              artistManagerName: data.artistManagerFullName || null,
+              tourManagerEmail: data.tourManagerEmail || null,
+              payrollConsultantEmail: data.payrollConsultantEmail || null,
+              paymentDate: data.paymentDate || null,
+              totalCost: data.totalCost ?? null,
+              depositCost: data.depositCost ?? null,
+              transportationsCost: data.transportationsCost ?? null,
+              cashBalanceCost: data.cashBalanceCost ?? null,
+              moCost: data.moCost ?? null,
+              venueManagerCost: data.venueManagerCost ?? null,
+              artistNetCost: data.artistNetCost ?? null,
+              artistUpfrontCost: data.artistUpfrontCost ?? null,
+              hotel: data.hotel || null,
+              hotelCost: data.hotelCost ?? null,
+              restaurant: data.restaurant || null,
+              restaurantCost: data.restaurantCost ?? null,
+              eveningContact: data.eveningContact || null,
+              soundCheckStart: data.soundCheckStart || null,
+              soundCheckEnd: data.soundCheckEnd || null,
+              notes: data.notes || null,
+              protocolNumber: event.protocolNumber ?? null,
+            });
+            toast.success('PDF evento generato.');
+          } catch (error) {
+            console.error('Errore generazione PDF evento:', error);
+            toast.error('Errore durante la generazione del PDF evento.');
+          }
+        }
         if (closeDialog) {
           closeDialog();
         }
@@ -240,6 +285,7 @@ export default function UpdateEventForm({
               artists={artists}
               venues={venues}
               moCoordinators={moCoordinators}
+              professionals={professionals}
               event={event}
               mode="update"
               userRole={userRole}

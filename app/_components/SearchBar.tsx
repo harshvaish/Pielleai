@@ -54,7 +54,7 @@ export default function SearchBar() {
       {/* Use the input as the anchor (no trigger behavior) */}
       <PopoverAnchor asChild>
         <div className='relative w-full max-w-xs'>
-          <div className='absolute top-0 left-0 w-8 h-10 flex justify-center items-center pointer-events-none hover:cursor-text'>
+          <div className='absolute top-0 left-0 w-8 h-8 flex justify-center items-center pointer-events-none hover:cursor-text'>
             <Search className='size-4 text-zinc-700' />
           </div>
           <Input
@@ -70,13 +70,13 @@ export default function SearchBar() {
             onFocus={() => {
               if (search.trim().length > 0) setOpen(true);
             }}
-            placeholder='Cerca per artista, manager o locale'
+            placeholder='Cerca per artista, manager o locale (ragione sociale)'
             aria-expanded={open}
-            className='bg-white pl-8'
+            className='bg-white pl-8 h-8 text-sm'
           />
           {search.trim().length > 0 && (
             <div
-              className='absolute top-0 right-0 w-8 h-10 flex justify-center items-center hover:cursor-pointer'
+              className='absolute top-0 right-0 w-8 h-8 flex justify-center items-center hover:cursor-pointer'
               onClick={resetHandler}
             >
               <X className='size-4 text-zinc-500' />

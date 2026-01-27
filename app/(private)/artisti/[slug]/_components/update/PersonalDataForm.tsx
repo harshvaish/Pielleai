@@ -50,6 +50,7 @@ export default function PersonalDataForm({
       surname: userData.surname || '',
       stageName: userData.stageName || '',
       bio: userData.bio || '',
+      categories: userData.categories || [],
       phone: userData.phone || '',
       email: userData.email || '',
       birthDate: userData.birthDate || '',

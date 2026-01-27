@@ -37,6 +37,7 @@ import UploadDocumentDialog from "./_components/UploadDocumentDialog";
 import UploadArtistDocumentDialog from "./_components/UploadArtistDocumentDialog";
 import { getArtistsCached } from "@/lib/cache/artists";
 import { getArtistOtherDocuments } from "@/lib/data/documents/get-artist-other-documents";
+import { getContractPreviewUrl } from "@/lib/utils/contract-preview";
 
 type EventsPageProps = {
   searchParams?: Promise<{
@@ -757,12 +758,15 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
                           {contract.fileUrl ? (
                             <span className="inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-white px-3 py-1.5">
                               <FileText className="h-4 w-4 text-zinc-400" />
-                              <a
-                                href={contract.fileUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-zinc-700 hover:underline"
-                              >
+                            <a
+                              href={getContractPreviewUrl(
+                                contract.fileUrl,
+                                getContractDisplayName(contract),
+                              ) || contract.fileUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-zinc-700 hover:underline"
+                            >
                                 {getContractDisplayName(contract)}
                               </a>
                             </span>

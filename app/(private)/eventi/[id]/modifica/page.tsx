@@ -6,6 +6,7 @@ import { hasRole, resolveNextPath } from '@/lib/utils';
 import { getArtistsCached } from '@/lib/cache/artists';
 import { getVenuesCached } from '@/lib/cache/venues';
 import { getMoCoordinatorsCached } from '@/lib/cache/mo-coordinators';
+import { getProfessionalsCached } from '@/lib/cache/professionals';
 import UpdateEventForm from '../../_components/update/UpdateEventForm';
 import { getEventById } from '@/lib/data/events/get-event-by-id';
 import CreateRevisionDialog from '../_components/CreateRevisionDialog';
@@ -60,10 +61,11 @@ export default async function UpdateEventPage({ params }: UpdateEventPageProps) 
       </div>
     );
   }
-  const [artists, venues, moCoordinators] = await Promise.all([
+  const [artists, venues, moCoordinators, professionals] = await Promise.all([
     getArtistsCached(),
     getVenuesCached(),
     getMoCoordinatorsCached(),
+    getProfessionalsCached(),
   ]);
 
   return (
@@ -76,6 +78,7 @@ export default async function UpdateEventPage({ params }: UpdateEventPageProps) 
         artists={artists}
         venues={venues}
         moCoordinators={moCoordinators}
+        professionals={professionals}
         userRole={user.role}
       />
     </div>

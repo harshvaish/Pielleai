@@ -4,7 +4,7 @@ import { z } from 'zod/v4';
 import { AppError } from '@/lib/classes/AppError';
 import getSession from '@/lib/data/auth/get-session';
 import { database } from '@/lib/database/connection';
-import { artistAvailabilities, eventNotes, events } from '@/lib/database/schema';
+import { artistAvailabilities, eventNotes, events, eventProfessionals } from '@/lib/database/schema';
 import { ServerActionResponse } from '@/lib/types';
 import { buildEventProtocolNumber } from '@/lib/utils/event-revisions';
 import { desc, eq, or, sql } from 'drizzle-orm';
@@ -181,6 +181,20 @@ export async function createEventRevision(
             eventId: newEvent.id,
             writerId: note.writerId,
             content: note.content,
+          })),
+        );
+      }
+
+      const professionals = await tx
+        .select({ professionalId: eventProfessionals.professionalId })
+        .from(eventProfessionals)
+        .where(eq(eventProfessionals.eventId, latestEvent.id));
+
+      if (professionals.length) {
+        await tx.insert(eventProfessionals).values(
+          professionals.map((professional) => ({
+            eventId: newEvent.id,
+            professionalId: professional.professionalId,
           })),
         );
       }

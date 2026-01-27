@@ -14,6 +14,10 @@ import {
   artistAvailabilities,
   moCoordinators,
   eventNotes,
+  eventGuests,
+  professionals,
+  eventProfessionals,
+  eventReviews,
   artistLanguages,
   languages,
   artistZones,
@@ -68,7 +72,10 @@ export const artistsRelations = relations(artists, ({ one, many }) => ({
   }),
   artistNotes: many(artistNotes),
   events: many(events),
+  eventGuests: many(eventGuests),
+  eventProfessionals: many(eventProfessionals),
   artistAvailabilities: many(artistAvailabilities),
+  eventReviews: many(eventReviews),
   artistLanguages: many(artistLanguages),
   artistZones: many(artistZones),
   managerArtists: many(managerArtists),
@@ -201,6 +208,9 @@ export const venuesRelations = relations(venues, ({ one, many }) => ({
     relationName: 'venues_subdivisionId_subdivisions_id',
   }),
   events: many(events),
+  eventGuests: many(eventGuests),
+  eventProfessionals: many(eventProfessionals),
+  eventReviews: many(eventReviews),
 }));
 
 export const eventsRelations = relations(events, ({ one, many }) => ({
@@ -225,6 +235,9 @@ export const eventsRelations = relations(events, ({ one, many }) => ({
     references: [venues.id],
   }),
   eventNotes: many(eventNotes),
+  eventGuests: many(eventGuests),
+  eventProfessionals: many(eventProfessionals),
+  eventReviews: many(eventReviews),
 }));
 
 export const artistAvailabilitiesRelations = relations(artistAvailabilities, ({ one, many }) => ({
@@ -247,6 +260,43 @@ export const eventNotesRelations = relations(eventNotes, ({ one }) => ({
   user: one(users, {
     fields: [eventNotes.writerId],
     references: [users.id],
+  }),
+}));
+
+export const eventGuestsRelations = relations(eventGuests, ({ one }) => ({
+  event: one(events, {
+    fields: [eventGuests.eventId],
+    references: [events.id],
+  }),
+}));
+
+export const professionalsRelations = relations(professionals, ({ many }) => ({
+  eventProfessionals: many(eventProfessionals),
+}));
+
+export const eventProfessionalsRelations = relations(eventProfessionals, ({ one }) => ({
+  event: one(events, {
+    fields: [eventProfessionals.eventId],
+    references: [events.id],
+  }),
+  professional: one(professionals, {
+    fields: [eventProfessionals.professionalId],
+    references: [professionals.id],
+  }),
+}));
+
+export const eventReviewsRelations = relations(eventReviews, ({ one }) => ({
+  event: one(events, {
+    fields: [eventReviews.eventId],
+    references: [events.id],
+  }),
+  artist: one(artists, {
+    fields: [eventReviews.artistId],
+    references: [artists.id],
+  }),
+  venue: one(venues, {
+    fields: [eventReviews.venueId],
+    references: [venues.id],
   }),
 }));
 

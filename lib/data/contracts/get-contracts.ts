@@ -390,6 +390,14 @@ export async function getContracts(
           });
           historyByContract.set(item.id, arr);
         } catch (innerErr) {
+          const message = innerErr instanceof Error ? innerErr.message : String(innerErr);
+          if (message.includes('error (404)')) {
+            console.warn(
+              '[getContracts] envelope not found or access denied for contract',
+              item.id,
+            );
+            continue;
+          }
           console.error('[getContracts] error syncing envelope for contract', item.id, innerErr);
           // continue with next contract
         }

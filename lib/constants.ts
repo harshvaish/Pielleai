@@ -32,6 +32,14 @@ export const NAVBAR_LINKS: NavbarLink[] = [
     separator: false,
   },
   {
+    label: 'Artist & Venue Dashboard',
+    href: '/artist-venue-dashboard',
+    iconSrc: '/images/navbar-icons/dashboard.svg',
+    iconAlt: 'icona Artist & Venue Dashboard',
+    visibleTo: ['admin'],
+    separator: false,
+  },
+  {
     label: 'Eventi',
     href: '/eventi',
     iconSrc: '/images/navbar-icons/events.svg',
@@ -54,6 +62,14 @@ export const NAVBAR_LINKS: NavbarLink[] = [
     iconAlt: 'icona Artisti',
     visibleTo: ['admin', 'artist-manager', 'venue-manager'],
     separator: true,
+  },
+  {
+    label: 'Professionisti',
+    href: '/professionisti',
+    iconSrc: '/images/navbar-icons/artist-managers.svg',
+    iconAlt: 'icona Professionisti',
+    visibleTo: ['admin', 'artist-manager'],
+    separator: false,
   },
   {
     label: 'Promoter locali',

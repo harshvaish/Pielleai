@@ -8,6 +8,8 @@ import DatesFilterButton from './_components/filters/DatesFilterButton';
 import { hasRole, resolveNextPath, splitCsv } from '@/lib/utils';
 import { getArtistsCached } from '@/lib/cache/artists';
 import { getArtistManagersCached } from '@/lib/cache/artist-managers';
+import { getMoCoordinatorsCached } from '@/lib/cache/mo-coordinators';
+import { getProfessionalsCached } from '@/lib/cache/professionals';
 import { getVenuesCached } from '@/lib/cache/venues';
 import { eventsFiltersSchema } from '@/lib/validation/filters/events-filters-schema';
 import { notFound, redirect } from 'next/navigation';
@@ -70,46 +72,60 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
     notFound();
   }
 
-  const [{ data: events, totalPages }, artists, artistManagers, venues] = await Promise.all([
+  const [
+    { data: events, totalPages },
+    artists,
+    artistManagers,
+    venues,
+    moCoordinators,
+    professionals,
+  ] = await Promise.all([
     getEvents(user, filters),
     getArtistsCached(isArtistManager ? profileId! : undefined),
     isAdmin ? getArtistManagersCached() : Promise.resolve([]),
     getVenuesCached(isVenueManager ? profileId! : undefined),
+    isAdmin ? getMoCoordinatorsCached() : Promise.resolve([]),
+    isAdmin ? getProfessionalsCached() : Promise.resolve([]),
   ]);
   return (
-    <div className='h-full grid grid-rows-[min-content_min-content_1fr_min-content] gap-2'>
-      <div className='flex justify-between items-center'>
-        <h1 className='text-xl md:text-2xl font-bold'>Eventi</h1>
-        <div className='flex items-center gap-2'>
+    <div className='h-full grid grid-rows-[min-content_1fr_min-content] gap-2'>
+      <div className='flex flex-wrap items-center justify-between gap-3'>
+        <div className='flex flex-wrap items-center gap-3'>
+          <h1 className='text-xl md:text-2xl font-bold'>Eventi</h1>
+          <div className='max-w-full bg-white flex items-center gap-1 p-0.5 rounded-xl overflow-auto'>
+            <StatusFilterButton
+              status='proposed'
+              label='Proposto'
+            />
+            <StatusFilterButton
+              status='pre-confirmed'
+              label='Pre confermato'
+            />
+            <StatusFilterButton
+              status='confirmed'
+              label='Confermato'
+            />
+            <StatusFilterButton
+              status='rejected'
+              label='Rifiutato'
+            />
+            <StatusFilterButton
+              status='ended'
+              label='Finito'
+            />
+          </div>
+        </div>
+        <div className='flex flex-wrap items-center gap-2'>
           {isAdmin && <ExportButton filters={filters} />}
-          {(isAdmin || isVenueManager) && <CreateButton />}
-        </div>
-      </div>
-
-      <div className='w-full flex flex-col lg:flex-row justify-between items-end lg:items-center gap-3 overflow-hidden'>
-        <div className='max-w-full bg-white flex items-center gap-1 p-0.5 rounded-xl overflow-auto'>
-          <StatusFilterButton
-            status='proposed'
-            label='Proposto'
-          />
-          <StatusFilterButton
-            status='pre-confirmed'
-            label='Pre confermato'
-          />
-          <StatusFilterButton
-            status='confirmed'
-            label='Confermato'
-          />
-          <StatusFilterButton
-            status='rejected'
-            label='Rifiutato'
-          />
-          <StatusFilterButton
-            status='ended'
-            label='Finito'
-          />
-        </div>
-        <div className='flex items-center gap-2'>
+          {(isAdmin || isVenueManager) && (
+            <CreateButton
+              userRole={user.role}
+              artists={artists}
+              venues={venues}
+              moCoordinators={isAdmin ? moCoordinators : undefined}
+              professionals={isAdmin ? professionals : undefined}
+            />
+          )}
           {isAdmin && <ConflictFilterButton />}
           <FiltersButton
             userRole={user.role}

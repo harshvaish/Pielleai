@@ -4,7 +4,7 @@ import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
 import { X } from 'lucide-react';
-import { ArtistSelectData, MoCoordinator, UserRole, VenueSelectData } from '@/lib/types';
+import { ArtistSelectData, MoCoordinator, ProfessionalSelectData, UserRole, VenueSelectData } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
 import { EventFormSchema, eventFormSchema } from '@/lib/validation/event-form-schema';
@@ -16,6 +16,7 @@ type CreateEventFormProps = {
   artists: ArtistSelectData[];
   venues: VenueSelectData[];
   moCoordinators: MoCoordinator[];
+  professionals: ProfessionalSelectData[];
   userRole: UserRole;
   closeDialog?: () => void;
 };
@@ -24,6 +25,7 @@ export default function CreateEventForm({
   artists,
   venues,
   moCoordinators,
+  professionals,
   userRole,
   closeDialog,
 }: CreateEventFormProps) {
@@ -42,6 +44,7 @@ export default function CreateEventForm({
       tourManagerEmail: '',
       payrollConsultantEmail: 'riccardo.gulisano@gmail.com',
       notes: [],
+      professionalIds: [],
 
       moCost: undefined,
       venueManagerCost: undefined,
@@ -146,6 +149,7 @@ export default function CreateEventForm({
               artists={artists}
               venues={venues}
               moCoordinators={moCoordinators}
+              professionals={professionals}
               userRole={userRole}
               mode="create"
             />

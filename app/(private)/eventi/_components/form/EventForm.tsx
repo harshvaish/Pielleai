@@ -4,6 +4,7 @@ import {
   ArtistManagerSelectData,
   ArtistSelectData,
   MoCoordinator,
+  ProfessionalSelectData,
   UserRole,
   VenueSelectData,
 } from "@/lib/types";
@@ -57,6 +58,7 @@ type EventForm = {
   artists: ArtistSelectData[];
   venues: VenueSelectData[];
   moCoordinators: MoCoordinator[];
+  professionals: ProfessionalSelectData[];
   event?: any;
   mode: "create" | "update";
   userRole: UserRole;
@@ -76,6 +78,7 @@ export default function EventForm({
   artists,
   venues,
   moCoordinators,
+  professionals,
   mode,
   event,
   userRole,
@@ -93,9 +96,11 @@ export default function EventForm({
   const [extraArtists, setExtraArtists] = useState<ArtistSelectData[]>([]);
   const [extraVenues, setExtraVenues] = useState<VenueSelectData[]>([]);
   const [extraArtistManagers, setExtraArtistManagers] = useState<ArtistManagerSelectData[]>([]);
+  const [professionalsQuery, setProfessionalsQuery] = useState("");
   const canCreateArtist = userRole === "admin" || userRole === "artist-manager";
   const canCreateArtistManager = userRole === "admin";
   const canCreateVenue = userRole === "admin" || userRole === "venue-manager";
+  const canManageProfessionals = userRole === "admin";
 
   const artistOptions = useMemo(() => {
     const merged = [...artists, ...extraArtists];
@@ -118,6 +123,7 @@ export default function EventForm({
   const selectedVenueId = watch("venueId");
   const selectedVenue = venueOptions.find((venue) => venue.id == selectedVenueId);
   const selectedArtistId = watch("artistId");
+  const selectedProfessionalIds = watch("professionalIds") || [];
   const selectedArtist = useMemo(
     () => artistOptions.find((artist) => artist.id === selectedArtistId),
     [artistOptions, selectedArtistId]
@@ -144,6 +150,29 @@ export default function EventForm({
     contractStatus === "viewed" ||
     contractStatus === "declined";
   const lastArtistIdRef = useRef<number | undefined>(undefined);
+
+  const filteredProfessionals = useMemo(() => {
+    const query = professionalsQuery.trim().toLowerCase();
+    if (!query) return professionals;
+    return professionals.filter((professional) =>
+      professional.fullName.toLowerCase().includes(query),
+    );
+  }, [professionals, professionalsQuery]);
+
+  const toggleProfessional = (professionalId: number) => {
+    const next = selectedProfessionalIds.includes(professionalId)
+      ? selectedProfessionalIds.filter((id: number) => id !== professionalId)
+      : [...selectedProfessionalIds, professionalId];
+
+    setValue("professionalIds", next, {
+      shouldDirty: true,
+      shouldTouch: true,
+    });
+  };
+
+  useEffect(() => {
+    register("professionalIds");
+  }, [register]);
 
   // Calculate artistNetCost
   const artistNetCost = useMemo(() => {
@@ -590,6 +619,37 @@ export default function EventForm({
               </p>
             )}
           </div>
+
+          {canManageProfessionals && (
+            <div className="flex flex-col gap-3 rounded-2xl border bg-white p-4">
+              <div className="text-sm font-semibold">Professionisti associati</div>
+              <Input
+                placeholder="Cerca professionisti"
+                value={professionalsQuery}
+                onChange={(e) => setProfessionalsQuery(e.target.value)}
+              />
+              <div className="max-h-52 overflow-y-auto space-y-2">
+                {filteredProfessionals.length ? (
+                  filteredProfessionals.map((professional) => (
+                    <label
+                      key={professional.id}
+                      className="flex items-center gap-2 text-sm cursor-pointer"
+                    >
+                      <Checkbox
+                        checked={selectedProfessionalIds.includes(professional.id)}
+                        onCheckedChange={() => toggleProfessional(professional.id)}
+                      />
+                      <span>{professional.fullName}</span>
+                    </label>
+                  ))
+                ) : (
+                  <div className="text-xs text-zinc-400">
+                    Nessun professionista trovato.
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
         </TabsContent>
 
         <TabsContent value="b" className="flex flex-col gap-4 p-2">

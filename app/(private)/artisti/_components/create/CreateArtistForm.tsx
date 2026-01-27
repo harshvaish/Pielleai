@@ -67,6 +67,7 @@ export default function CreateArtistForm({
       surname: '',
       stageName: '',
       bio: '',
+      categories: [],
       phone: '',
       email: '',
       birthDate: '',

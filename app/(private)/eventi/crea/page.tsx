@@ -6,6 +6,7 @@ import { hasRole, resolveNextPath } from '@/lib/utils';
 import { getArtistsCached } from '@/lib/cache/artists';
 import { getVenuesCached } from '@/lib/cache/venues';
 import { getMoCoordinatorsCached } from '@/lib/cache/mo-coordinators';
+import { getProfessionalsCached } from '@/lib/cache/professionals';
 import CreateEventForm from '../_components/create/CreateEventForm';
 import CreateEventRequestForm from '../_components/create/CreateEventRequestForm';
 
@@ -29,10 +30,11 @@ export default async function CreateEventPage() {
   const isAdmin = user.role === 'admin';
   const isVenueManager = user.role === 'venue-manager';
 
-  const [artists, venues, moCoordinators] = await Promise.all([
+  const [artists, venues, moCoordinators, professionals] = await Promise.all([
     getArtistsCached(),
     getVenuesCached(isVenueManager ? profileId! : undefined),
     getMoCoordinatorsCached(),
+    isAdmin ? getProfessionalsCached() : Promise.resolve([]),
   ]);
 
   return (
@@ -45,6 +47,7 @@ export default async function CreateEventPage() {
           artists={artists}
           venues={venues}
           moCoordinators={moCoordinators}
+          professionals={professionals}
           userRole={user.role}
         />
       ) : (

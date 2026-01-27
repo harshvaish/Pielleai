@@ -45,12 +45,14 @@ export default async function DashboardPage() {
 
   return (
     <>
-      <h1 className='text-xl md:text-2xl font-bold'>Dashboard</h1>
       <Tabs defaultValue='requests'>
-        <TabsList className='bg-white p-1 rounded-xl w-fit'>
-          <TabsTrigger value='requests'>Requests</TabsTrigger>
-          <TabsTrigger value='calendar'>Calendar</TabsTrigger>
-        </TabsList>
+        <div className='mb-4 flex flex-wrap items-center justify-between gap-3'>
+          <h1 className='text-xl md:text-2xl font-bold'>Dashboard</h1>
+          <TabsList className='bg-white p-1 rounded-xl w-fit'>
+            <TabsTrigger value='requests'>Richieste</TabsTrigger>
+            <TabsTrigger value='calendar'>Calendario</TabsTrigger>
+          </TabsList>
+        </div>
 
         <TabsContent value='requests' className='space-y-4'>
           {/* signup requests section */}
@@ -84,7 +86,7 @@ export default async function DashboardPage() {
                 </Link>
               </div>
               <Separator className='my-3' />
-              <div className='max-h-80 space-y-2 overflow-y-auto'>
+              <div className='max-h-[32rem] space-y-2 overflow-y-auto'>
                 {eventsToApprove.data.map((event) => (
                   <EventTile
                     key={event.id}

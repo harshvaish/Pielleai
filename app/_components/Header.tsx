@@ -15,23 +15,23 @@ type HeaderProps = {
 
 export default function Header({ user, onToggleNav, isNavCollapsed }: HeaderProps) {
   return (
-    <header className='max-h-max flex justify-between items-center px-4 md:px-8 py-4 gap-4 border-b-1'>
+    <header className='max-h-max flex justify-between items-center px-4 md:px-8 py-2 gap-4 border-b-1'>
       <div className='flex items-center gap-2'>
         <Image
-          className='md:hidden w-10 h-10'
+          className='md:hidden w-8 h-8'
           src='/images/icon-black.svg'
           alt='logo Milano Ovest'
-          width={40}
-          height={40}
+          width={32}
+          height={32}
           priority
         />
 
         <Image
-          className='hidden md:block w-44'
+          className='hidden md:block w-36'
           src='/images/logo.svg'
           alt='logo con scritta Milano Ovest'
-          width={174}
-          height={40}
+          width={144}
+          height={32}
           priority
         />
 
@@ -39,7 +39,7 @@ export default function Header({ user, onToggleNav, isNavCollapsed }: HeaderProp
           <Button
             type='button'
             variant='ghost'
-            className='hidden md:inline-flex w-10 h-10'
+            className='hidden md:inline-flex w-9 h-9'
             onClick={onToggleNav}
             aria-label={isNavCollapsed ? 'Apri menu di navigazione' : 'Comprimi menu di navigazione'}
           >

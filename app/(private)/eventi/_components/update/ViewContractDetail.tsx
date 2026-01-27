@@ -165,12 +165,14 @@ export default function ViewContractDetail({
 
   const formatDate = (value?: Date | string): string => {
     if (!value) return "";
-    return format(new Date(value), "dd/MM/yyyy", { locale: it });
+    const dateStr = typeof value === 'string' ? value.replace('Z', '') : value;
+    return format(new Date(dateStr), "dd/MM/yyyy", { locale: it });
   };
 
   const formatTime = (value?: Date | string): string => {
     if (!value) return "";
-    return format(new Date(value), "HH:mm", { locale: it });
+    const dateStr = typeof value === 'string' ? value.replace('Z', '') : value;
+    return format(new Date(dateStr), "HH:mm", { locale: it });
   };
 
   const startDateValue = event.availability?.startDate;
@@ -199,7 +201,7 @@ export default function ViewContractDetail({
     upfrontPayment: event?.depositCost ?? "0",
     transportationsCost: event?.transportationsCost ?? "0",
     paymentDate: event?.paymentDate
-      ? format(new Date(event?.paymentDate), "dd/MM/yyyy")
+      ? format(new Date(String(event?.paymentDate).replace('Z', '')), "dd/MM/yyyy")
       : "",
 
     totalFee: event.event?.totalCost ?? "€0",

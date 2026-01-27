@@ -38,6 +38,7 @@ export async function getArtist(slug: string): Promise<ArtistData | null> {
         surname: artists.surname,
         stageName: artists.stageName,
         bio: artists.bio,
+        categories: artists.categories,
         phone: artists.phone,
         email: artists.email,
         birthDate: artists.birthDate,
@@ -131,6 +132,7 @@ export async function getArtist(slug: string): Promise<ArtistData | null> {
       subdivision: userResult[0].subdivision?.id ? userResult[0].subdivision : null,
       billingCountry: userResult[0].billingCountry?.id ? userResult[0].billingCountry : null,
       billingSubdivision: userResult[0].billingSubdivision?.id ? userResult[0].billingSubdivision : null,
+      categories: userResult[0].categories ?? [],
     };
 
     const [zonesResult, languagesResult, managersResult] = await Promise.all([

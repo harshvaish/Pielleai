@@ -2,11 +2,13 @@ import { Event as RbcEvent } from 'react-big-calendar';
 import {
   availabilityStatus,
   eventStatus,
+  eventGuestStatus,
   contractStatus,
   profileGenders,
   userRoles,
   userStatus,
   venueTypes,
+  professionalRoles,
 } from './database/schema';
 
 // project
@@ -29,11 +31,13 @@ export type ApiResponse<T = unknown> =
 // enums
 export type AvailabilityStatus = (typeof availabilityStatus.enumValues)[number];
 export type EventStatus = (typeof eventStatus.enumValues)[number];
+export type EventGuestStatus = (typeof eventGuestStatus.enumValues)[number];
 export type Gender = (typeof profileGenders.enumValues)[number];
 export type UserRole = (typeof userRoles.enumValues)[number];
 export type UserStatus = (typeof userStatus.enumValues)[number];
 export type VenueType = (typeof venueTypes.enumValues)[number];
 export type ContractStatus  = (typeof contractStatus.enumValues)[number];
+export type ProfessionalRole = (typeof professionalRoles.enumValues)[number];
 
 // users
 export type UserToApprove = {
@@ -196,6 +200,7 @@ export type ArtistData = {
   surname: string;
   stageName: string;
   bio: string;
+  categories: string[];
   phone: string;
   email: string;
   languages: Language[];
@@ -599,6 +604,7 @@ export type Event = {
   bordereau: boolean;
 
   notes: EventNote[];
+  professionalIds?: number[];
 };
 
 export type ArtistEventListItem = {
@@ -659,6 +665,47 @@ export type EventSummary = {
   } | null;
 };
 
+export type EventGuest = {
+  id: number;
+  eventId: number;
+  fullName: string;
+  email: string | null;
+  status: EventGuestStatus;
+  invitedAt: Date | null;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+export type Professional = {
+  id: number;
+  fullName: string;
+  role: ProfessionalRole;
+  roleDescription: string | null;
+  email: string | null;
+  phone: string | null;
+  competencies: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+export type ProfessionalSelectData = Pick<Professional, 'id' | 'fullName' | 'role'>;
+
+export type ProfessionalListItem = Professional & {
+  eventCount: number;
+};
+
+export type ProfessionalEvent = {
+  id: number;
+  title: string;
+};
+
+export type ProfessionalsTableFilters = {
+  currentPage: number;
+  fullName: string | null;
+  role: ProfessionalRole | null;
+  eventId: string | null;
+};
+
 export type EventsTableFilters = {
   currentPage: number | null;
   status: EventStatus[];
@@ -668,6 +715,23 @@ export type EventsTableFilters = {
   venueIds: string[];
   startDate: Date | null;
   endDate: Date | null;
+};
+
+export type RatingDashboardType = 'artist' | 'venue';
+export type RatingDashboardSort = 'asc' | 'desc';
+
+export type RatingDashboardFilters = {
+  currentPage: number;
+  type: RatingDashboardType;
+  sort: RatingDashboardSort;
+};
+
+export type RatingDashboardRow = {
+  id: number;
+  slug: string;
+  name: string;
+  averageRating: number;
+  totalReviews: number;
 };
 
 export type ArtistEventsTableFilters = {

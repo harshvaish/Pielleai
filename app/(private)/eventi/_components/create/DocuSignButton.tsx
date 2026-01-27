@@ -157,8 +157,11 @@ export default function DocuSignButton({
 
   const getTimeRange = (start?: Date | string, end?: Date | string): string => {
     if (!start || !end) return "";
-    return `${format(new Date(start), "HH:mm", { locale: it })} – ${format(
-      new Date(end),
+    // Convert to Date objects if needed
+    const startDate = start instanceof Date ? start : new Date(start);
+    const endDate = end instanceof Date ? end : new Date(end);
+    return `${format(startDate, "HH:mm", { locale: it })} – ${format(
+      endDate,
       "HH:mm",
       { locale: it }
     )}`;

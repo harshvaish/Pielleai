@@ -30,6 +30,12 @@ export const eventStatus = pgEnum('event_status', [
   'ended',
   'completed',
 ]);
+export const eventGuestStatus = pgEnum('event_guest_status', [
+  'to-invite',
+  'invited',
+  'attending',
+  'not-attending',
+]);
 export const profileGenders = pgEnum('profile_genders', ['male', 'female', 'non-binary']);
 export const userRoles = pgEnum('user_roles', ['user', 'artist-manager', 'venue-manager', 'admin']);
 export const userStatus = pgEnum('user_status', [
@@ -39,6 +45,13 @@ export const userStatus = pgEnum('user_status', [
   'banned',
 ]);
 export const venueTypes = pgEnum('venue_types', ['small', 'medium', 'big']);
+export const professionalRoles = pgEnum('professional_roles', [
+  'journalist',
+  'technician',
+  'photographer',
+  'backstage',
+  'other',
+]);
 
 export const paymentStatus = pgEnum('payment_status', [
   'pending',
@@ -93,6 +106,30 @@ export const countriesIdSeq = pgSequence('countries_id_seq', {
   cycle: false,
 });
 export const eventNotesIdSeq = pgSequence('event_notes_id_seq', {
+  startWith: '1',
+  increment: '1',
+  minValue: '1',
+  maxValue: '2147483647',
+  cache: '1',
+  cycle: false,
+});
+export const eventGuestsIdSeq = pgSequence('event_guests_id_seq', {
+  startWith: '1',
+  increment: '1',
+  minValue: '1',
+  maxValue: '2147483647',
+  cache: '1',
+  cycle: false,
+});
+export const professionalsIdSeq = pgSequence('professionals_id_seq', {
+  startWith: '1',
+  increment: '1',
+  minValue: '1',
+  maxValue: '2147483647',
+  cache: '1',
+  cycle: false,
+});
+export const eventReviewsIdSeq = pgSequence('event_reviews_id_seq', {
   startWith: '1',
   increment: '1',
   minValue: '1',
@@ -656,6 +693,7 @@ export const artists = pgTable(
     xUsername: text('x_username'),
     xFollowers: integer('x_followers'),
     xCreatedAt: date('x_created_at'),
+    categories: text('categories').array(),
     createdAt: timestamp('created_at', { precision: 6, withTimezone: true, mode: 'string' })
       .defaultNow()
       .notNull(),
@@ -754,6 +792,134 @@ export const eventNotes = pgTable(
       columns: [table.writerId],
       foreignColumns: [users.id],
       name: 'event_notes_writer_id_fkey',
+    }).onDelete('cascade'),
+  ],
+);
+
+export const eventGuests = pgTable(
+  'event_guests',
+  {
+    id: integer()
+      .default(sql`nextval('event_guests_id_seq'::regclass)`)
+      .primaryKey()
+      .notNull(),
+    eventId: integer('event_id').notNull(),
+    fullName: text('full_name').notNull(),
+    email: text('email'),
+    status: eventGuestStatus('status').default('to-invite').notNull(),
+    invitedAt: timestamp('invited_at', { precision: 6, withTimezone: true, mode: 'string' }),
+    createdAt: timestamp('created_at', { precision: 6, withTimezone: true, mode: 'string' })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp('updated_at', { precision: 6, withTimezone: true, mode: 'string' })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    index('idx_event_guests_event_id').using('btree', table.eventId.asc().nullsLast().op('int4_ops')),
+    index('idx_event_guests_status').using('btree', table.status.asc().nullsLast().op('enum_ops')),
+    foreignKey({
+      columns: [table.eventId],
+      foreignColumns: [events.id],
+      name: 'event_guests_event_id_fkey',
+    }).onDelete('cascade'),
+  ],
+);
+
+export const professionals = pgTable(
+  'professionals',
+  {
+    id: integer()
+      .default(sql`nextval('professionals_id_seq'::regclass)`)
+      .primaryKey()
+      .notNull(),
+    fullName: text('full_name').notNull(),
+    role: professionalRoles('role').notNull(),
+    roleDescription: text('role_description'),
+    email: text('email'),
+    phone: text('phone'),
+    competencies: text('competencies'),
+    createdAt: timestamp('created_at', { precision: 6, withTimezone: true, mode: 'string' })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp('updated_at', { precision: 6, withTimezone: true, mode: 'string' })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    index('idx_professionals_full_name').using('gin', table.fullName.asc().nullsLast().op('gin_trgm_ops')),
+    index('idx_professionals_role').using('btree', table.role.asc().nullsLast().op('enum_ops')),
+  ],
+);
+
+export const eventProfessionals = pgTable(
+  'event_professionals',
+  {
+    eventId: integer('event_id').notNull(),
+    professionalId: integer('professional_id').notNull(),
+    createdAt: timestamp('created_at', { precision: 6, withTimezone: true, mode: 'string' })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.eventId, table.professionalId] }),
+    index('idx_event_professionals_event_id').using('btree', table.eventId.asc().nullsLast().op('int4_ops')),
+    index('idx_event_professionals_professional_id').using(
+      'btree',
+      table.professionalId.asc().nullsLast().op('int4_ops'),
+    ),
+    foreignKey({
+      columns: [table.eventId],
+      foreignColumns: [events.id],
+      name: 'event_professionals_event_id_fkey',
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [table.professionalId],
+      foreignColumns: [professionals.id],
+      name: 'event_professionals_professional_id_fkey',
+    }).onDelete('cascade'),
+  ],
+);
+
+export const eventReviews = pgTable(
+  'event_reviews',
+  {
+    id: integer()
+      .default(sql`nextval('event_reviews_id_seq'::regclass)`)
+      .primaryKey()
+      .notNull(),
+    eventId: integer('event_id').notNull(),
+    artistId: integer('artist_id').notNull(),
+    venueId: integer('venue_id').notNull(),
+    artistRating: numeric('artist_rating'),
+    venueRating: numeric('venue_rating'),
+    isValid: boolean('is_valid').default(true).notNull(),
+    createdAt: timestamp('created_at', { precision: 6, withTimezone: true, mode: 'string' })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp('updated_at', { precision: 6, withTimezone: true, mode: 'string' })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    index('idx_event_reviews_event_id').using('btree', table.eventId.asc().nullsLast().op('int4_ops')),
+    index('idx_event_reviews_artist_id').using('btree', table.artistId.asc().nullsLast().op('int4_ops')),
+    index('idx_event_reviews_venue_id').using('btree', table.venueId.asc().nullsLast().op('int4_ops')),
+    index('idx_event_reviews_is_valid').using('btree', table.isValid.asc().nullsLast().op('bool_ops')),
+    foreignKey({
+      columns: [table.eventId],
+      foreignColumns: [events.id],
+      name: 'event_reviews_event_id_fkey',
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [table.artistId],
+      foreignColumns: [artists.id],
+      name: 'event_reviews_artist_id_fkey',
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [table.venueId],
+      foreignColumns: [venues.id],
+      name: 'event_reviews_venue_id_fkey',
     }).onDelete('cascade'),
   ],
 );

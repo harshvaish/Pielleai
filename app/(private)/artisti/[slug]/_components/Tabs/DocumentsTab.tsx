@@ -8,6 +8,7 @@ import { Event, UserRole } from '@/lib/types';
 import type { ArtistOtherDocument } from '@/lib/data/documents/get-artist-other-documents';
 import { JSX } from 'react';
 import { CalendarDays, Check, ChevronRight, Clock, FileText, PartyPopper, X } from 'lucide-react';
+import { getContractPreviewUrl } from '@/lib/utils/contract-preview';
 
 type BackendContractStatus =
   | 'draft'
@@ -439,7 +440,12 @@ export default function DocumentsTab({
                           <span className='flex items-center bg-white border border-zinc-300 rounded-lg px-2 py-1.5'>
                             <FileText className='h-4 w-4 text-zinc-400' />
                             <a
-                              href={contract.fileUrl}
+                              href={
+                                getContractPreviewUrl(
+                                  contract.fileUrl,
+                                  getContractDisplayName(contract),
+                                ) || contract.fileUrl
+                              }
                               target='_blank'
                               rel='noopener noreferrer'
                               className='text-zinc-700 hover:underline'
