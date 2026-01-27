@@ -14,6 +14,7 @@ import {
   artistAvailabilities,
   moCoordinators,
   eventNotes,
+  eventGuests,
   eventReviews,
   artistLanguages,
   languages,
@@ -69,6 +70,7 @@ export const artistsRelations = relations(artists, ({ one, many }) => ({
   }),
   artistNotes: many(artistNotes),
   events: many(events),
+  eventGuests: many(eventGuests),
   artistAvailabilities: many(artistAvailabilities),
   eventReviews: many(eventReviews),
   artistLanguages: many(artistLanguages),
@@ -203,6 +205,7 @@ export const venuesRelations = relations(venues, ({ one, many }) => ({
     relationName: 'venues_subdivisionId_subdivisions_id',
   }),
   events: many(events),
+  eventGuests: many(eventGuests),
   eventReviews: many(eventReviews),
 }));
 
@@ -228,6 +231,7 @@ export const eventsRelations = relations(events, ({ one, many }) => ({
     references: [venues.id],
   }),
   eventNotes: many(eventNotes),
+  eventGuests: many(eventGuests),
   eventReviews: many(eventReviews),
 }));
 
@@ -251,6 +255,13 @@ export const eventNotesRelations = relations(eventNotes, ({ one }) => ({
   user: one(users, {
     fields: [eventNotes.writerId],
     references: [users.id],
+  }),
+}));
+
+export const eventGuestsRelations = relations(eventGuests, ({ one }) => ({
+  event: one(events, {
+    fields: [eventGuests.eventId],
+    references: [events.id],
   }),
 }));
 

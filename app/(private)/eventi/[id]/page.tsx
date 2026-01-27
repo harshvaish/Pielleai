@@ -26,6 +26,8 @@ import { getEventRevisionContext } from '@/lib/data/events/get-event-revision-co
 import { getEventRevisionHistory } from '@/lib/data/events/get-event-revision-history';
 import CreateRevisionDialog from './_components/CreateRevisionDialog';
 import RevisionHistoryPanel from './_components/RevisionHistoryPanel';
+import GuestParticipantSection from './_components/GuestParticipantSection';
+import { getEventGuests } from '@/lib/data/events/get-event-guests';
 
 const EVENT_TYPE_LABELS: Record<EventType, string> = {
   'dj-set': 'DJ set',
@@ -120,6 +122,7 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
   const artistLabel = event.artist.stageName?.trim() || artistName;
   const eventTypeLabel = event.eventType ? EVENT_TYPE_LABELS[event.eventType] : null;
   const revisionHistory = isAdmin ? await getEventRevisionHistory(resolvedEventId) : [];
+  const eventGuests = isAdmin ? await getEventGuests(resolvedEventId) : [];
   const eventTitle =
     event.title?.trim() ||
     generateEventTitle(artistLabel, event.venue.name, event.startDate, event.endDate);
@@ -208,6 +211,10 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
 
       {isAdmin && revisionHistory.length > 0 && (
         <RevisionHistoryPanel history={revisionHistory} currentEventId={event.id} />
+      )}
+
+      {isAdmin && (
+        <GuestParticipantSection eventId={event.id} initialGuests={eventGuests} />
       )}
 
       {/* Contract Status Section */}

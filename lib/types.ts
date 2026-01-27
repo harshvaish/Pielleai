@@ -2,6 +2,7 @@ import { Event as RbcEvent } from 'react-big-calendar';
 import {
   availabilityStatus,
   eventStatus,
+  eventGuestStatus,
   contractStatus,
   profileGenders,
   userRoles,
@@ -29,6 +30,7 @@ export type ApiResponse<T = unknown> =
 // enums
 export type AvailabilityStatus = (typeof availabilityStatus.enumValues)[number];
 export type EventStatus = (typeof eventStatus.enumValues)[number];
+export type EventGuestStatus = (typeof eventGuestStatus.enumValues)[number];
 export type Gender = (typeof profileGenders.enumValues)[number];
 export type UserRole = (typeof userRoles.enumValues)[number];
 export type UserStatus = (typeof userStatus.enumValues)[number];
@@ -658,6 +660,17 @@ export type EventSummary = {
     name: string;
     surname: string;
   } | null;
+};
+
+export type EventGuest = {
+  id: number;
+  eventId: number;
+  fullName: string;
+  email: string | null;
+  status: EventGuestStatus;
+  invitedAt: Date | null;
+  createdAt: Date;
+  updatedAt: Date;
 };
 
 export type EventsTableFilters = {

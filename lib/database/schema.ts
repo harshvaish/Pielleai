@@ -29,6 +29,12 @@ export const eventStatus = pgEnum('event_status', [
   'rejected',
   'ended',
 ]);
+export const eventGuestStatus = pgEnum('event_guest_status', [
+  'to-invite',
+  'invited',
+  'attending',
+  'not-attending',
+]);
 export const profileGenders = pgEnum('profile_genders', ['male', 'female', 'non-binary']);
 export const userRoles = pgEnum('user_roles', ['user', 'artist-manager', 'venue-manager', 'admin']);
 export const userStatus = pgEnum('user_status', [
@@ -803,6 +809,29 @@ export const eventNotes = pgTable(
       columns: [table.writerId],
       foreignColumns: [users.id],
       name: 'event_notes_writer_id_fkey',
+    }).onDelete('cascade'),
+  ],
+);
+
+export const eventGuests = pgTable(
+  'event_guests',
+  {
+    id: serial().primaryKey().notNull(),
+    eventId: integer('event_id').notNull(),
+    fullName: text('full_name').notNull(),
+    email: text('email'),
+    status: eventGuestStatus('status').default('to-invite').notNull(),
+    invitedAt: timestamp('invited_at', { withTimezone: true }),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    index('idx_event_guests_event_id').using('btree', table.eventId.asc().nullsLast().op('int4_ops')),
+    index('idx_event_guests_status').using('btree', table.status.asc().nullsLast().op('enum_ops')),
+    foreignKey({
+      columns: [table.eventId],
+      foreignColumns: [events.id],
+      name: 'event_guests_event_id_fkey',
     }).onDelete('cascade'),
   ],
 );
