@@ -124,6 +124,7 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
               venues={venues}
               moCoordinators={isAdmin ? moCoordinators : undefined}
               professionals={isAdmin ? professionals : undefined}
+              forceLink
             />
           )}
           {isAdmin && <ConflictFilterButton />}

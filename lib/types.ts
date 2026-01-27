@@ -751,20 +751,22 @@ export type EventsCalendarFilters = {
   endDate?: Date;
 };
 
+export type CalendarManager = {
+  id: string | null;
+  profileId: number | null;
+  status: UserStatus | null;
+  avatarUrl: string | null;
+  name: string | null;
+  surname: string | null;
+};
+
 export interface CalendarEvent extends RbcEvent {
   id: number;
   title?: string | null;
   artist: ArtistSelectData;
   venue: VenueBadgeData;
-  artistManager: {
-    id: string | null;
-    profileId: number | null;
-    status: UserStatus | null;
-    avatarUrl: string | null;
-    name: string | null;
-    surname: string | null;
-  };
-  venueManager?: VenueManagerSelectData | null;
+  artistManager: CalendarManager;
+  venueManager?: CalendarManager | null;
   status: EventStatus;
   hasConflict: boolean;
 

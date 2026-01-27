@@ -14,7 +14,32 @@ export default function EventContent({ userRole, event }: EventContentProps) {
 
   const startLabel = event ? `${format(event.start, 'dd/MM/yyyy')} - ${format(event.start, 'HH:mm')}` : '';
   const endLabel = event ? `${format(event.end, 'dd/MM/yyyy')} - ${format(event.end, 'HH:mm')}` : '';
-  const venueManager = event.venueManager?.id ? [event.venueManager as VenueManagerSelectData] : [];
+  const artistManager =
+    event.artistManager?.id && event.artistManager.profileId && event.artistManager.name && event.artistManager.surname
+      ? [
+          {
+            id: event.artistManager.id,
+            profileId: event.artistManager.profileId,
+            status: event.artistManager.status,
+            avatarUrl: event.artistManager.avatarUrl,
+            name: event.artistManager.name,
+            surname: event.artistManager.surname,
+          } as ArtistManagerSelectData,
+        ]
+      : [];
+  const venueManager =
+    event.venueManager?.id && event.venueManager.profileId && event.venueManager.name && event.venueManager.surname
+      ? [
+          {
+            id: event.venueManager.id,
+            profileId: event.venueManager.profileId,
+            status: event.venueManager.status,
+            avatarUrl: event.venueManager.avatarUrl,
+            name: event.venueManager.name,
+            surname: event.venueManager.surname,
+          } as VenueManagerSelectData,
+        ]
+      : [];
 
   return (
     <div className='space-y-4 p-2'>
@@ -30,11 +55,11 @@ export default function EventContent({ userRole, event }: EventContentProps) {
       </div>
 
       <div className='space-y-2'>
-        {isAdmin && event.artistManager?.id && (
+        {isAdmin && artistManager.length > 0 && (
           <div className='flex items-center gap-2'>
             <span className='w-28 text-xs text-zinc-700 font-medium'>Manager</span>
             <ManagersBadge
-              managers={[event.artistManager as ArtistManagerSelectData]}
+              managers={artistManager}
               pathSegment='manager-artisti'
               userRole={userRole}
             />
