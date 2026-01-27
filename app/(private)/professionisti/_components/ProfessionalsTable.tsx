@@ -280,7 +280,7 @@ export default function ProfessionalsTable({ initialProfessionals, isAdmin }: Pr
               value={formState.email}
               onChange={(e) => setFormState((prev) => ({ ...prev, email: e.target.value }))}
             />
-            <Button onClick={handleCreate} disabled={isPending}>
+            <Button className='h-10 px-4 w-fit justify-self-start' onClick={handleCreate} disabled={isPending}>
               Aggiungi
             </Button>
           </div>

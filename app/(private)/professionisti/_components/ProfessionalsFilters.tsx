@@ -118,11 +118,11 @@ export default function ProfessionalsFilters({ showEventFilter, eventOptions }: 
         </div>
       )}
 
-      <div className='flex gap-2'>
-        <Button size='sm' onClick={applyFilters} disabled={isPending}>
+      <div className='flex gap-2 self-end'>
+        <Button size='sm' className='h-9 px-3' onClick={applyFilters} disabled={isPending}>
           Applica
         </Button>
-        <Button size='sm' variant='ghost' onClick={clearFilters} disabled={isPending}>
+        <Button size='sm' className='h-9 px-3' variant='ghost' onClick={clearFilters} disabled={isPending}>
           Reset
         </Button>
       </div>
