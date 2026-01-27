@@ -53,7 +53,7 @@ export async function getSearchItems(search: string): Promise<SearchItem[]> {
         role: sql<string>`'Locale'`,
       })
       .from(venues)
-      .where(ilike(venues.name, term));
+      .where(or(ilike(venues.name, term), ilike(venues.company, term)));
 
     // UNION the two queries, then select/limit
     const result = await union(profilesQuery, artistsQuery, venuesQuery).limit(5);

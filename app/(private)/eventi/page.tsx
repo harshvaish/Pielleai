@@ -77,39 +77,36 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
     getVenuesCached(isVenueManager ? profileId! : undefined),
   ]);
   return (
-    <div className='h-full grid grid-rows-[min-content_min-content_1fr_min-content] gap-2'>
-      <div className='flex justify-between items-center'>
-        <h1 className='text-xl md:text-2xl font-bold'>Eventi</h1>
-        <div className='flex items-center gap-2'>
+    <div className='h-full grid grid-rows-[min-content_1fr_min-content] gap-2'>
+      <div className='flex flex-wrap items-center justify-between gap-3'>
+        <div className='flex flex-wrap items-center gap-3'>
+          <h1 className='text-xl md:text-2xl font-bold'>Eventi</h1>
+          <div className='max-w-full bg-white flex items-center gap-1 p-0.5 rounded-xl overflow-auto'>
+            <StatusFilterButton
+              status='proposed'
+              label='Proposto'
+            />
+            <StatusFilterButton
+              status='pre-confirmed'
+              label='Pre confermato'
+            />
+            <StatusFilterButton
+              status='confirmed'
+              label='Confermato'
+            />
+            <StatusFilterButton
+              status='rejected'
+              label='Rifiutato'
+            />
+            <StatusFilterButton
+              status='ended'
+              label='Finito'
+            />
+          </div>
+        </div>
+        <div className='flex flex-wrap items-center gap-2'>
           {isAdmin && <ExportButton filters={filters} />}
           {(isAdmin || isVenueManager) && <CreateButton />}
-        </div>
-      </div>
-
-      <div className='w-full flex flex-col lg:flex-row justify-between items-end lg:items-center gap-3 overflow-hidden'>
-        <div className='max-w-full bg-white flex items-center gap-1 p-0.5 rounded-xl overflow-auto'>
-          <StatusFilterButton
-            status='proposed'
-            label='Proposto'
-          />
-          <StatusFilterButton
-            status='pre-confirmed'
-            label='Pre confermato'
-          />
-          <StatusFilterButton
-            status='confirmed'
-            label='Confermato'
-          />
-          <StatusFilterButton
-            status='rejected'
-            label='Rifiutato'
-          />
-          <StatusFilterButton
-            status='ended'
-            label='Finito'
-          />
-        </div>
-        <div className='flex items-center gap-2'>
           {isAdmin && <ConflictFilterButton />}
           <FiltersButton
             userRole={user.role}
