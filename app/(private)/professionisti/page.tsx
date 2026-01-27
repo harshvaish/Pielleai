@@ -6,9 +6,11 @@ import { ProfessionalsTableFilters } from '@/lib/types';
 import { professionalsFiltersSchema } from '@/lib/validation/filters/professionals-filters-schema';
 import { getPaginatedProfessionals } from '@/lib/data/professionals/get-paginated-professionals';
 import { TablePagination } from '../_components/form/TablePagination';
-import ProfessionalsFilters from './_components/ProfessionalsFilters';
 import ProfessionalsTable from './_components/ProfessionalsTable';
 import { getEventOptions } from '@/lib/data/events/get-event-options';
+import ExportButton from '../_components/ExportButton';
+import FiltersButton from './_components/filters/FiltersButton';
+import CreateButton from './_components/create/CreateButton';
 
 export const dynamic = 'force-dynamic';
 
@@ -59,14 +61,28 @@ export default async function ProfessionalsPage({ searchParams }: ProfessionalsP
   ]);
 
   return (
-    <div className='h-full grid grid-rows-[min-content_min-content_1fr_min-content] gap-3'>
-      <div className='flex items-center justify-between'>
-        <h1 className='text-xl md:text-2xl font-bold'>Professionisti</h1>
+    <div className='h-full min-h-0 grid grid-rows-[min-content_1fr_min-content] gap-2'>
+      <div className='md:flex justify-between items-center gap-2'>
+        <h1 className='text-2xl font-bold'>Professionisti</h1>
+        <div className='flex items-center gap-2 mt-2 md:mt-0'>
+          {isAdmin && (
+            <ExportButton
+              endpoint='/api/professionals/export'
+              filename='export-professionisti.csv'
+            />
+          )}
+          <FiltersButton
+            filters={filters}
+            showEventFilter={isAdmin}
+            eventOptions={eventOptions}
+          />
+          {isAdmin && <CreateButton />}
+        </div>
       </div>
 
-      <ProfessionalsFilters showEventFilter={isAdmin} eventOptions={eventOptions} />
-
-      <ProfessionalsTable initialProfessionals={data} isAdmin={isAdmin} />
+      <div className='min-h-0 overflow-y-auto pr-1'>
+        <ProfessionalsTable initialProfessionals={data} isAdmin={isAdmin} />
+      </div>
 
       {totalPages > 1 && (
         <TablePagination

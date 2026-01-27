@@ -5,6 +5,7 @@ import { getUserProfileIdCached } from '@/lib/cache/users';
 import { hasRole, resolveNextPath } from '@/lib/utils';
 import { getProfessionalById } from '@/lib/data/professionals/get-professional-by-id';
 import { ProfessionalRole } from '@/lib/types';
+import { ArrowLeft } from 'lucide-react';
 
 const ROLE_LABELS: Record<ProfessionalRole, string> = {
   journalist: 'Giornalista',
@@ -48,6 +49,13 @@ export default async function ProfessionalDetailPage({ params }: ProfessionalDet
 
   return (
     <div className='max-w-3xl space-y-4'>
+      <Link
+        href='/professionisti'
+        className='inline-flex items-center gap-2 text-sm font-semibold text-zinc-700 hover:text-zinc-900'
+      >
+        <ArrowLeft className='size-4' />
+        Indietro
+      </Link>
       <div className='bg-white rounded-2xl p-6 space-y-3'>
         <h1 className='text-2xl font-bold'>{professional.fullName}</h1>
         <div className='text-sm text-zinc-600'>

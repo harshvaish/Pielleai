@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState, useTransition } from 'react';
+import { useEffect, useMemo, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -10,9 +10,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogDescription, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import { Professional, ProfessionalListItem, ProfessionalRole } from '@/lib/types';
-import { createProfessional } from '@/lib/server-actions/professionals/create-professional';
 import { updateProfessional } from '@/lib/server-actions/professionals/update-professional';
 import { deleteProfessional } from '@/lib/server-actions/professionals/delete-professional';
+import StatusBadge from '@/app/(private)/_components/Badges/StatusBadge';
+import UserBadge from '@/app/(private)/_components/Badges/UserBadge';
+import { AVATAR_FALLBACK, NEW_USER_TIME } from '@/lib/constants';
 
 const ROLE_LABELS: Record<ProfessionalRole, string> = {
   journalist: 'Giornalista',
@@ -34,15 +36,6 @@ type ProfessionalFormState = {
   email: string;
   phone: string;
   competencies: string;
-};
-
-const defaultFormState: ProfessionalFormState = {
-  fullName: '',
-  role: 'journalist',
-  roleDescription: '',
-  email: '',
-  phone: '',
-  competencies: '',
 };
 
 function EditProfessionalDialog({
@@ -196,46 +189,11 @@ function EditProfessionalDialog({
 }
 
 export default function ProfessionalsTable({ initialProfessionals, isAdmin }: ProfessionalsTableProps) {
-  const router = useRouter();
   const [professionals, setProfessionals] = useState<ProfessionalListItem[]>(initialProfessionals);
-  const [formState, setFormState] = useState<ProfessionalFormState>(defaultFormState);
-  const [isPending, startTransition] = useTransition();
 
-  const canCreate = isAdmin;
-
-  const handleCreate = () => {
-    if (!formState.fullName.trim()) {
-      toast.error('Inserisci un nome valido.');
-      return;
-    }
-
-    startTransition(async () => {
-      const response = await createProfessional({
-        fullName: formState.fullName,
-        role: formState.role,
-        roleDescription: formState.role === 'other' ? formState.roleDescription : null,
-        email: formState.email || null,
-        phone: formState.phone || null,
-        competencies: formState.competencies || null,
-      });
-
-      if (!response.success || !response.data) {
-        toast.error(response.message || 'Creazione professionista non riuscita.');
-        return;
-      }
-
-      setProfessionals((prev) => [
-        {
-          ...response.data,
-          eventCount: 0,
-        },
-        ...prev,
-      ]);
-      setFormState(defaultFormState);
-      toast.success('Professionista creato.');
-      router.refresh();
-    });
-  };
+  useEffect(() => {
+    setProfessionals(initialProfessionals);
+  }, [initialProfessionals]);
 
   const handleUpdated = (updated: Professional) => {
     setProfessionals((prev) =>
@@ -250,82 +208,36 @@ export default function ProfessionalsTable({ initialProfessionals, isAdmin }: Pr
   const rows = useMemo(() => professionals, [professionals]);
 
   return (
-    <div className='space-y-4'>
-      {canCreate && (
-        <div className='space-y-3'>
-          <div className='grid grid-cols-1 lg:grid-cols-[2fr_1fr_1fr_1fr] gap-3'>
-            <Input
-              placeholder='Nome completo'
-              value={formState.fullName}
-              onChange={(e) => setFormState((prev) => ({ ...prev, fullName: e.target.value }))}
-            />
-            <Select
-              value={formState.role}
-              onValueChange={(value) => setFormState((prev) => ({ ...prev, role: value as ProfessionalRole }))}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder='Ruolo' />
-              </SelectTrigger>
-              <SelectContent>
-                {Object.entries(ROLE_LABELS).map(([value, label]) => (
-                  <SelectItem key={value} value={value}>
-                    {label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Input
-              type='email'
-              placeholder='Email'
-              value={formState.email}
-              onChange={(e) => setFormState((prev) => ({ ...prev, email: e.target.value }))}
-            />
-            <Button className='h-10 px-4 w-fit justify-self-start' onClick={handleCreate} disabled={isPending}>
-              Aggiungi
-            </Button>
-          </div>
-          <div className='grid grid-cols-1 lg:grid-cols-3 gap-3'>
-            <Input
-              placeholder='Telefono'
-              value={formState.phone}
-              onChange={(e) => setFormState((prev) => ({ ...prev, phone: e.target.value }))}
-            />
-            {formState.role === 'other' && (
-              <Input
-                placeholder='Descrizione ruolo'
-                value={formState.roleDescription}
-                onChange={(e) => setFormState((prev) => ({ ...prev, roleDescription: e.target.value }))}
-              />
-            )}
-            <Input
-              placeholder='Competenze / certificazioni'
-              value={formState.competencies}
-              onChange={(e) => setFormState((prev) => ({ ...prev, competencies: e.target.value }))}
-            />
-          </div>
-        </div>
-      )}
-
-      <div className='border rounded-2xl overflow-hidden'>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Nome</TableHead>
-              <TableHead>Ruolo</TableHead>
-              <TableHead>Email</TableHead>
-              <TableHead>Telefono</TableHead>
-              <TableHead className='w-28 text-right'>Eventi</TableHead>
-              <TableHead className='w-32'>Azioni</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {rows.length ? (
-              rows.map((professional) => (
+    <div className='border rounded-2xl overflow-hidden bg-white'>
+      <Table className='w-full'>
+        <TableHeader className='bg-zinc-50'>
+          <TableRow>
+            <TableHead>Nome</TableHead>
+            <TableHead>Ruolo</TableHead>
+            <TableHead>Email</TableHead>
+            <TableHead>Telefono</TableHead>
+            <TableHead className='w-28 text-right'>Eventi</TableHead>
+            <TableHead className='w-32'>Azioni</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {rows.length ? (
+            rows.map((professional) => {
+              const isNew =
+                new Date().getTime() - new Date(professional.createdAt).getTime() < NEW_USER_TIME;
+              return (
                 <TableRow key={professional.id}>
                   <TableCell className='font-medium'>
-                    <Link href={`/professionisti/${professional.id}`} className='hover:underline'>
-                      {professional.fullName}
-                    </Link>
+                    <div className='flex items-center flex-nowrap gap-3'>
+                      <UserBadge
+                        name={professional.fullName || '—'}
+                        surname={''}
+                        avatarUrl={AVATAR_FALLBACK}
+                        isDisabled={false}
+                        href={`/professionisti/${professional.id}`}
+                      />
+                      {isNew && <StatusBadge status='new' />}
+                    </div>
                   </TableCell>
                   <TableCell>
                     {ROLE_LABELS[professional.role]}
@@ -345,17 +257,17 @@ export default function ProfessionalsTable({ initialProfessionals, isAdmin }: Pr
                     />
                   </TableCell>
                 </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell colSpan={6} className='text-center text-sm text-zinc-500 py-6'>
-                  Nessun professionista disponibile.
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </div>
+              );
+            })
+          ) : (
+            <TableRow>
+              <TableCell colSpan={6} className='text-center text-sm text-zinc-500 py-6'>
+                Nessun professionista disponibile.
+              </TableCell>
+            </TableRow>
+          )}
+        </TableBody>
+      </Table>
     </div>
   );
 }

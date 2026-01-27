@@ -51,6 +51,7 @@ type EventsPageProps = {
     end?: string;
     sort?: "asc" | "desc";
     tab?: string;
+    doc?: string;
   }>;
 };
 
