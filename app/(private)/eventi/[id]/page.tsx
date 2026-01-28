@@ -31,6 +31,7 @@ import { getEventGuests } from '@/lib/data/events/get-event-guests';
 import ProfessionalsSection from './_components/ProfessionalsSection';
 import { getEventProfessionals } from '@/lib/data/events/get-event-professionals';
 import { getProfessionalsCached } from '@/lib/cache/professionals';
+import { HostedEventBadge } from '@/app/(private)/_components/Badges/HostedEventBadge';
 
 const EVENT_TYPE_LABELS: Record<EventType, string> = {
   'dj-set': 'DJ set',
@@ -145,6 +146,12 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
 
   return (
     <div className='max-w-3xl space-y-6'>
+      {/* Hosted Event Badge */}
+      {event.hostedEvent && (
+        <div className="flex justify-end">
+          <span className="mb-2"><HostedEventBadge /></span>
+        </div>
+      )}
       <PaymentSuccessHandler eventId={resolvedEventId} />
       
       <div className='flex justify-between items-center gap-4'>

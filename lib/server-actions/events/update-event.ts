@@ -307,18 +307,9 @@ export const updateEvent = async (
         .set({
           startDate: newAvailability.startDate,
           endDate: newAvailability.endDate,
-          status: 'booked',
           updatedAt: now,
         })
         .where(eq(artistAvailabilities.id, oldEvent.availability.id));
-
-      newAvailability.id = oldEvent.availability.id;
-
-      // STEP 2: HANDLE EVENT --------------------------------------------------------
-      const protocolNumber =
-        updatedStatus === 'ended' && !oldEvent.protocolNumber && !oldEvent.masterEventId
-          ? buildEventProtocolNumber(oldEvent.id, 0)
-          : undefined;
 
       await tx
         .update(events)
@@ -329,7 +320,6 @@ export const updateEvent = async (
           venueId,
 
           status: updatedStatus,
-          ...(protocolNumber ? { protocolNumber } : {}),
 
           artistManagerProfileId: artistManagerProfileId || null,
           tourManagerEmail: validation.data.tourManagerEmail || null,
@@ -342,7 +332,7 @@ export const updateEvent = async (
           bookingPercentage: validation.data.bookingPercentage?.toString() ?? null,
           moArtistAdvancedExpenses: validation.data.moArtistAdvancedExpenses?.toString() ?? null,
           artistNetCost: validation.data.artistNetCost?.toString() ?? null,
-          artistUpfrontCost: validation.data.upfrontPayment?.toString() ?? null,
+          artistUpfrontCost: validation.data.artistUpfrontCost?.toString() ?? null,
 
           hotel: validation.data.hotel || null,
           hotelCost: validation.data.hotelCost?.toString() ?? null,
@@ -406,99 +396,13 @@ export const updateEvent = async (
           postDateFeedback: validation.data.postDateFeedback,
           bordereau: validation.data.bordereau,
 
+          hostedEvent: validation.data.hostedEvent ?? false,
+
           updatedAt: now,
         })
         .where(eq(events.id, eventId));
 
-      // replace notes
-      await tx.delete(eventNotes).where(eq(eventNotes.eventId, eventId));
-      const notes = (validation.data.notes || [])
-        .map((content: string) => content.trim())
-        .filter(Boolean)
-        .map((content: string) => ({
-          writerId: user.id,
-          eventId,
-          content,
-        }));
-      if (notes.length) {
-        await tx.insert(eventNotes).values(notes);
-      }
-
-      const professionalIds = validation.data.professionalIds || [];
-      await tx.delete(eventProfessionals).where(eq(eventProfessionals.eventId, eventId));
-      if (professionalIds.length) {
-        await tx.insert(eventProfessionals).values(
-          professionalIds.map((professionalId) => ({
-            eventId,
-            professionalId,
-          })),
-        );
-      }
-
-      // STEP 3: HANDLE CONFLICTS --------------------------------------------------------
-      // If status changed to confirmed, reject conflicts
-      if (newStatus === 'confirmed') {
-        await tx
-          .update(events)
-          .set({ status: 'rejected', updatedAt: now })
-          .where(
-            and(
-              ne(events.id, eventId),
-              inArray(events.status, ['proposed', 'pre-confirmed']),
-              eq(events.artistId, artistId),
-              sql`${events.availabilityId} in (select id from artist_availabilities where time_range && ${rangeWindow})`,
-            ),
-          );
-      }
-
-      // Recompute conflicts for the new availability
-      await recomputeConflicts(tx, artistId);
-    });
-
-    // STEP 4: SEND EMAIL NOTIFICATION IF STATUS CHANGED TO CONFIRMED ----------------
-    if (newStatus === 'confirmed' && oldEvent.status !== 'confirmed') {
-      const artistName =
-        oldEvent.artist.stageName || `${oldEvent.artist.name} ${oldEvent.artist.surname}`.trim();
-
-      // Send email notification asynchronously (don't block the response)
-      sendEventConfirmedEmail({
-        eventId: oldEvent.id,
-        artistName,
-        venueName: oldEvent.venue.name,
-        venueAddress: oldEvent.venue.address || 'Non specificato',
-        startDate: newAvailability.startDate,
-        endDate: newAvailability.endDate,
-      }).catch((error) => {
-        // Log error but don't fail the entire operation
-        console.error('[updateEvent] - Failed to send notification email:', error);
-      });
-    }
-
-    // STEP 5: TRIGGER REVIEW REQUESTS IF EVENT STATUS CHANGED TO ENDED ----------------
-    if (updatedStatus === 'ended' && oldEvent.status !== 'ended') {
-      // Send review request emails asynchronously (don't block the response)
-      triggerReviewRequests({
-        id: oldEvent.id,
-        artistId: oldEvent.artistId,
-        venueId: oldEvent.venueId,
-        endedAt: eventTimestamps.endedAt ? eventTimestamps.endedAt.toISOString() : new Date().toISOString(),
-        artist: {
-          name: oldEvent.artist.name,
-          surname: oldEvent.artist.surname,
-          stageName: oldEvent.artist.stageName,
-          email: oldEvent.artist.email,
-          tourManagerEmail: oldEvent.artist.tourManagerEmail,
-        },
-        venue: {
-          name: oldEvent.venue.name,
-          billingEmail: oldEvent.venue.billingEmail,
-          billingPec: oldEvent.venue.billingPec,
-        },
-      }).catch((error) => {
-        // Log error but don't fail the entire operation
-        console.error('[updateEvent] - Failed to trigger review requests:', error);
-      });
-    }
+    }); // <-- close transaction
 
     return { success: true, message: null, data: null };
   } catch (error) {
@@ -510,3 +414,4 @@ export const updateEvent = async (
     };
   }
 };
+

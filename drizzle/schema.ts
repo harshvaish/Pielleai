@@ -436,6 +436,7 @@ export const events = pgTable(
     confirmedAt: timestamp('confirmed_at', { precision: 6, withTimezone: true, mode: 'string' }),
     rejectedAt: timestamp('rejected_at', { precision: 6, withTimezone: true, mode: 'string' }),
     endedAt: timestamp('ended_at', { precision: 6, withTimezone: true, mode: 'string' }),
+    hostedEvent: boolean('hosted_event').default(false).notNull(),
   },
   (table) => [
     index('idx_events_artist_id').using('btree', table.artistId.asc().nullsLast().op('int4_ops')),

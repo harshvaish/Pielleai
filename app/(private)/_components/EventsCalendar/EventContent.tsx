@@ -1,3 +1,4 @@
+import { HostedEventBadge } from '../Badges/HostedEventBadge';
 import { ArtistManagerSelectData, CalendarEvent, UserRole, VenueManagerSelectData } from '@/lib/types';
 import { format } from 'date-fns';
 import ManagersBadge from '../Badges/ManagersBadge';
@@ -10,6 +11,7 @@ type EventContentProps = {
 };
 
 export default function EventContent({ userRole, event }: EventContentProps) {
+    const showHosted = event.hostedEvent;
   const isAdmin = userRole === 'admin';
 
   const startLabel = event ? `${format(event.start, 'dd/MM/yyyy')} - ${format(event.start, 'HH:mm')}` : '';
@@ -43,6 +45,9 @@ export default function EventContent({ userRole, event }: EventContentProps) {
 
   return (
     <div className='space-y-4 p-2'>
+      {showHosted && (
+        <div className='mb-1'><HostedEventBadge /></div>
+      )}
       <div className='space-y-2 text-sm text-zinc-800'>
         <div className='flex items-center gap-3'>
           <span className='w-12 text-xs font-semibold text-zinc-500'>Inizio</span>

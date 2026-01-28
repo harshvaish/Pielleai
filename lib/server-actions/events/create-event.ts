@@ -283,11 +283,13 @@ export const createEvent = async (data: EventFormSchema): Promise<ServerActionRe
           performance: validation.data.performance,
           postDateFeedback: validation.data.postDateFeedback,
           bordereau: validation.data.bordereau,
+
+          hostedEvent: validation.data.hostedEvent ?? false,
         })
         .returning({ id: events.id });
 
       const newEventId = eventResult?.id;
-      if (!newEventId) {
+      if (typeof newEventId !== 'number') {
         throw new AppError('Inserimento evento non riuscito.');
       }
 

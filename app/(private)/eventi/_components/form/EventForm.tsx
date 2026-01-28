@@ -101,6 +101,9 @@ export default function EventForm({
   const canCreateArtistManager = userRole === "admin";
   const canCreateVenue = userRole === "admin" || userRole === "venue-manager";
   const canManageProfessionals = userRole === "admin";
+  const canEditHostedEvent = userRole === "admin";
+  // Hosted Event Checkbox
+  const hostedEvent = watch("hostedEvent");
 
   const artistOptions = useMemo(() => {
     const merged = [...artists, ...extraArtists];
@@ -504,6 +507,22 @@ export default function EventForm({
             </p>
           )}
         </div>
+      </div>
+
+      {/* Hosted Event Checkbox */}
+      <div className="flex items-center gap-2 mt-4">
+        <Checkbox
+          id="hostedEvent"
+          checked={!!hostedEvent}
+          disabled={!canEditHostedEvent}
+          onCheckedChange={(checked) => setValue("hostedEvent", !!checked, { shouldDirty: true })}
+        />
+        <label htmlFor="hostedEvent" className="text-sm select-none">
+          Evento ospitato
+        </label>
+        {!canEditHostedEvent && (
+          <span className="ml-2 text-xs text-muted-foreground">(sola lettura)</span>
+        )}
       </div>
 
       <div className="grid sm:grid-cols-2 gap-6 mt-4">

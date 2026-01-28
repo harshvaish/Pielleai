@@ -611,6 +611,8 @@ export type Event = {
   notes: EventNote[];
   professionalIds?: number[];
   accreditationList?: EventAccreditationGuest[];
+
+  hostedEvent: boolean;
 };
 
 export type ArtistEventListItem = {
@@ -783,7 +785,7 @@ export interface CalendarEvent extends RbcEvent {
   venueManager?: CalendarManager | null;
   status: EventStatus;
   hasConflict: boolean;
-
+  hostedEvent: boolean;
   start: Date;
   end: Date;
 }

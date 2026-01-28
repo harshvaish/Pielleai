@@ -160,6 +160,7 @@ export default function UpdateEventForm({
       performance: event.performance ?? false,
       postDateFeedback: event.postDateFeedback ?? false,
       bordereau: event.bordereau ?? false,
+      hostedEvent: event.hostedEvent ?? false,
       eventId: event.id,
       eventType: event.eventType ?? '',
       eventDate: availabilityStart ? format(availabilityStart, 'yyyy-MM-dd') : '',

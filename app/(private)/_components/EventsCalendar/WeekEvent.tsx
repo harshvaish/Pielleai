@@ -1,4 +1,6 @@
+
 'use client';
+import { HostedEventBadge } from '../Badges/HostedEventBadge';
 
 import { CalendarEvent } from '@/lib/types';
 import Image from 'next/image';
@@ -10,6 +12,7 @@ type WeekEventProps = {
 export default function WeekEvent({ event }: WeekEventProps) {
   return (
     <div className='space-y-2 p-1'>
+      {event.hostedEvent && <HostedEventBadge />}
       {/* artist */}
       <div className='flex items-center gap-1 text-[10px] font-semibold line-clamp-1'>
         <Image

@@ -1,3 +1,4 @@
+import { HostedEventBadge } from '../Badges/HostedEventBadge';
 import { CalendarEvent } from '@/lib/types';
 import { format } from 'date-fns';
 
@@ -14,6 +15,7 @@ export default function MonthEvent({ event }: MonthEventProps) {
       <span className='text-xs font-medium text-zinc-500'>{timeLabel}</span>
       {/* artist */}
       <span className='text-xs font-semibold truncate'>{event.artist.stageName}</span>
+      {event.hostedEvent && <HostedEventBadge />}
     </div>
   );
 }

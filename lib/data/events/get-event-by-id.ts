@@ -151,6 +151,7 @@ export async function getEventById(user: User, eventId: number): Promise<Event |
         bordereau: events.bordereau,
         eventType: events.eventType,
         paymentDate: events.paymentDate,
+        hostedEvent: events.hostedEvent,
       })
       .from(events)
       .innerJoin(artistAvailabilities, eq(events.availabilityId, artistAvailabilities.id))

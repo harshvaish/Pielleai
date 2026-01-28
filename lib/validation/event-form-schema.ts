@@ -278,6 +278,7 @@ tourManagerName: z.string().optional(),
       "Seleziona un'opzione valida.",
     )
     .optional(),
+  hostedEvent: z.boolean().optional(),
 });
 
 export type EventFormSchema = z.infer<typeof eventFormSchema>;
@@ -287,6 +288,7 @@ export const eventRequestFormSchema = eventFormSchema
     artistId: true,
     venueId: true,
     paymentDate: true,
+    hostedEvent: true,
   })
   .extend({
     availability: z.object(

@@ -18,6 +18,7 @@ import ManagersBadge from '../Badges/ManagersBadge';
 import EventConflictBadge from '../Badges/EventConflictBadge';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
+import { HostedEventBadge } from '../Badges/HostedEventBadge';
 
 type EventTileProps = {
   userRole: UserRole;
@@ -80,6 +81,9 @@ export default function EventTile({
               {isSameDay ? eventStartDate : `${eventStartDate} - ${eventEndDate}`}
             </span>
             <EventStatusBadge status={event.status} size='xs' />
+                        {event.hostedEvent && (
+                          <span className='ml-1'><HostedEventBadge /></span>
+                        )}
             {userRole === 'admin' && event.hasConflict && <EventConflictBadge />}
           </div>
 

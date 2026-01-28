@@ -583,6 +583,7 @@ export const venues = pgTable(
 export const events = pgTable(
   'events',
   {
+    hostedEvent: boolean('hosted_event').default(false).notNull(),
     id: serial().primaryKey().notNull(),
     title: text(),
     artistId: integer('artist_id').notNull(),

@@ -102,6 +102,7 @@ export async function getEvents(
     // Base query
     let baseQuery = database
       .select({
+        hostedEvent: events.hostedEvent,
         id: events.id,
         title: events.title,
 
@@ -391,13 +392,12 @@ export async function getEvents(
 
       const newObj = {
         ...rest,
+        hostedEvent: event.hostedEvent ?? false,
         venue: {
           ...rest.venue,
           manager: venueManager,
         },
         notes: notesByEvent[rest.id] || [],
-
-        // ✅ THIS is what you needed (contract response includes ccs)
         contract: latestContractByEvent[rest.id] ?? null,
       } as Event;
 
