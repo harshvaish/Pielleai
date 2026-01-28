@@ -187,14 +187,14 @@ export async function POST(
 
     // Add ratings based on review type
     if (reviewRequest.reviewType === 'artist_reviews_venue') {
-      reviewData.venueId = reviewRequest.event?.venueId;
+      reviewData.venueId = event.venueId;
       reviewData.hospitalityRating = body.hospitalityRating;
       reviewData.technicalQualityRating = body.technicalQualityRating;
       reviewData.agreementsRespectRating = body.agreementsRespectRating;
       reviewData.staffTreatmentRating = body.staffTreatmentRating;
       reviewData.organizationalQualityRating = body.organizationalQualityRating;
     } else {
-      reviewData.artistId = reviewRequest.event?.artistId;
+      reviewData.artistId = event.artistId;
       reviewData.punctualityRating = body.punctualityRating;
       reviewData.professionalismRating = body.professionalismRating;
       reviewData.audienceEngagementRating = body.audienceEngagementRating;
