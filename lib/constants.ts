@@ -96,6 +96,14 @@ export const NAVBAR_LINKS: NavbarLink[] = [
     separator: true,
   },
   {
+    label: 'Assistance',
+    href: '/assistenza',
+    iconSrc: '/images/question-icon.svg',
+    iconAlt: 'icona Assistance',
+    visibleTo: ['venue-manager', 'artist-manager'],
+    separator: true,
+  },
+  {
     label: 'Finanze',
     href: '/finanze',
     iconSrc: '/images/navbar-icons/finances.svg',
