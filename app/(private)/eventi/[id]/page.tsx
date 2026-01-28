@@ -31,6 +31,7 @@ import { getEventGuests } from '@/lib/data/events/get-event-guests';
 import ProfessionalsSection from './_components/ProfessionalsSection';
 import { getEventProfessionals } from '@/lib/data/events/get-event-professionals';
 import { getProfessionalsCached } from '@/lib/cache/professionals';
+import { getEventSummaryDocument } from '@/lib/data/documents/get-event-summary-document';
 
 const EVENT_TYPE_LABELS: Record<EventType, string> = {
   'dj-set': 'DJ set',
@@ -131,6 +132,8 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
     ? await getEventProfessionals(resolvedEventId)
     : [];
   const allProfessionals = isAdmin ? await getProfessionalsCached() : [];
+  const eventSummaryDoc =
+    event.status === 'ended' ? await getEventSummaryDocument(resolvedEventId) : null;
   const eventTitle =
     event.title?.trim() ||
     generateEventTitle(artistLabel, event.venue.name, event.startDate, event.endDate);
@@ -237,6 +240,33 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
           allProfessionals={allProfessionals}
           isAdmin={isAdmin}
         />
+      )}
+
+      {event.status === 'ended' && (
+        <section className='bg-white p-6 rounded-2xl space-y-4'>
+          <div className='flex items-center justify-between'>
+            <h2 className='text-lg font-bold'>Report evento</h2>
+            {eventSummaryDoc && (
+              <a
+                href={eventSummaryDoc.url}
+                target='_blank'
+                rel='noopener noreferrer'
+                className='text-sm text-blue-600 hover:underline'
+              >
+                Scarica PDF
+              </a>
+            )}
+          </div>
+          <Separator />
+          {eventSummaryDoc ? (
+            <div className='text-sm text-zinc-600'>
+              {eventSummaryDoc.name}
+              {eventSummaryDoc.uploadedAt ? ` · ${eventSummaryDoc.uploadedAt}` : ''}
+            </div>
+          ) : (
+            <div className='text-sm text-zinc-500'>PDF non disponibile.</div>
+          )}
+        </section>
       )}
 
       {/* Contract Status Section */}
