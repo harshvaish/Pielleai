@@ -180,7 +180,10 @@ export async function updateEventStatus(
         id: oldEvent.id,
         artistId: oldEvent.artistId,
         venueId: oldEvent.venueId,
-        endedAt: oldEvent.endedAt || now.toISOString(),
+        endedAt:
+          typeof oldEvent.endedAt === 'string' || oldEvent.endedAt == null
+            ? oldEvent.endedAt || now.toISOString()
+            : oldEvent.endedAt.toISOString(),
         artist: {
           name: oldEvent.artist.name,
           surname: oldEvent.artist.surname,
