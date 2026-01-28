@@ -12,7 +12,6 @@ export const professionalRoleValidation = z.enum([
 export const professionalNameValidation = z
   .string('Campo malformato.')
   .trim()
-  .min(2, 'Minimo 2 caratteri.')
   .max(100, 'Massimo 100 caratteri.');
 
 const emailValidation = z

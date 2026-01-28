@@ -307,11 +307,11 @@ export default function UploadDocumentDialog({ events }: UploadDocumentDialogPro
       <Button
         type="button"
         size="xs"
-        variant="outline"
+        variant="default"
         onClick={() => setOpen(true)}
       >
         <Plus className="h-4 w-4" />
-        Nuovo
+        Aggiungi
       </Button>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>

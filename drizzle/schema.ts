@@ -36,6 +36,13 @@ export const eventGuestStatus = pgEnum('event_guest_status', [
   'attending',
   'not-attending',
 ]);
+export const eventGuestOriginGroup = pgEnum('event_guest_origin_group', [
+  'artist',
+  'artist-manager',
+  'booking',
+  'major',
+]);
+export const eventGuestColorTag = pgEnum('event_guest_color_tag', ['green', 'yellow', 'red']);
 export const profileGenders = pgEnum('profile_genders', ['male', 'female', 'non-binary']);
 export const userRoles = pgEnum('user_roles', ['user', 'artist-manager', 'venue-manager', 'admin']);
 export const userStatus = pgEnum('user_status', [
@@ -322,6 +329,7 @@ export const events = pgTable(
     artistManagerProfileId: integer('artist_manager_profile_id'),
     availabilityId: integer('availability_id').notNull(),
     venueId: integer('venue_id').notNull(),
+    guestLimit: integer('guest_limit').default(50).notNull(),
     payrollConsultantEmail: text('payroll_consultant_email'),
     moCost: numeric('mo_cost'),
     venueManagerCost: numeric('venue_manager_cost'),
@@ -806,6 +814,8 @@ export const eventGuests = pgTable(
     eventId: integer('event_id').notNull(),
     fullName: text('full_name').notNull(),
     email: text('email'),
+    originGroup: eventGuestOriginGroup('origin_group').default('artist').notNull(),
+    colorTag: eventGuestColorTag('color_tag').default('green').notNull(),
     status: eventGuestStatus('status').default('to-invite').notNull(),
     invitedAt: timestamp('invited_at', { precision: 6, withTimezone: true, mode: 'string' }),
     createdAt: timestamp('created_at', { precision: 6, withTimezone: true, mode: 'string' })

@@ -42,8 +42,8 @@ export default function EventTile({
   
   const isSameDay = format(startDate, 'yyyy-MM-dd') === format(endDate, 'yyyy-MM-dd');
   
-  const eventStartDate = format(startDate, 'dd MMM yyyy', { locale: it });
-  const eventEndDate = format(endDate, 'dd MMM yyyy', { locale: it });
+  const eventStartDate = format(startDate, 'dd/MM/yyyy');
+  const eventEndDate = format(endDate, 'dd/MM/yyyy');
   const eventStartTime = format(startDate, 'HH:mm', { locale: it });
   const eventEndTime = format(endDate, 'HH:mm', { locale: it });
   
@@ -76,48 +76,52 @@ export default function EventTile({
               venues={[event.venue]}
             />
             <span className='text-xs text-zinc-400'>—</span>
-            <span className='text-[13px] font-semibold text-zinc-800'>
+            <span className='text-sm font-semibold text-zinc-800'>
               {isSameDay ? eventStartDate : `${eventStartDate} - ${eventEndDate}`}
             </span>
             <EventStatusBadge status={event.status} size='xs' />
             {userRole === 'admin' && event.hasConflict && <EventConflictBadge />}
+          </div>
+
+          <div className='flex items-center gap-2'>
             {isAdmin && (
               <div className='flex items-center gap-1'>
                 <div className='w-3 h-3 flex justify-center items-center bg-zinc-400 rounded-xs'>
                   <Check className='size-2 text-white' />
                 </div>
-                <span className='text-xs text-zinc-400 font-normal'>
+                <span className='text-sm text-zinc-400 font-normal'>
                   Attività completate: {activityCount}/10
                 </span>
               </div>
             )}
+            {isAdmin && (
+              <Popover>
+                <PopoverTrigger className='h-10 w-10 flex justify-center items-center'>
+                  <Ellipsis className='size-4 text-zinc-700' />
+                </PopoverTrigger>
+                <PopoverContent
+                  align='end'
+                  className='w-48 space-y-2'
+                >
+                  <UpdateButton event={event} />
+                  <DeleteEventButton event={event} />
+                </PopoverContent>
+              </Popover>
+            )}
           </div>
-
-          {isAdmin && (
-            <Popover>
-              <PopoverTrigger className='h-10 w-10 flex justify-center items-center'>
-                <Ellipsis className='size-4 text-zinc-700' />
-              </PopoverTrigger>
-              <PopoverContent
-                align='end'
-                className='w-48 space-y-2'
-              >
-                <UpdateButton event={event} />
-                <DeleteEventButton event={event} />
-              </PopoverContent>
-            </Popover>
-          )}
         </div>
 
         <div className='space-y-1'>
-          <div className='flex items-center gap-2 text-xs text-zinc-700'>
+          <div className='flex items-center gap-2 text-sm text-zinc-700'>
             <CalendarDays className='size-3 text-zinc-700' />
+            <span className='text-zinc-400'>Inizio</span>
             <span>{eventStartDate}</span>
             <span className='text-zinc-400'>•</span>
             <span>{eventStartTime}</span>
           </div>
-          <div className='flex items-center gap-2 text-xs text-zinc-700'>
+          <div className='flex items-center gap-2 text-sm text-zinc-700'>
             <CalendarDays className='size-3 text-zinc-700' />
+            <span className='text-zinc-400'>Fine</span>
             <span>{eventEndDate}</span>
             <span className='text-zinc-400'>•</span>
             <span>{eventEndTime}</span>
@@ -259,32 +263,24 @@ export default function EventTile({
                 venues={[event.venue]}
               />
               <span className='text-xs text-zinc-400'>—</span>
-              <span className='text-[13px] font-semibold text-zinc-800'>
+              <span className='text-sm font-semibold text-zinc-800'>
                 {isSameDay ? eventStartDate : `${eventStartDate} - ${eventEndDate}`}
               </span>
               <EventStatusBadge status={event.status} size='xs' />
               {userRole === 'admin' && event.hasConflict && <EventConflictBadge />}
-              {isAdmin && (
-                <div className='flex items-center gap-1'>
-                  <div className='w-3 h-3 flex justify-center items-center bg-zinc-400 rounded-xs'>
-                    <Check className='size-2 text-white' />
-                  </div>
-                  <span className='text-xs text-zinc-400 font-normal'>
-                    Attività completate: {activityCount}/10
-                  </span>
-                </div>
-              )}
             </div>
 
             <div className='grid sm:grid-cols-2 gap-2'>
-              <div className='flex items-center gap-2 text-xs text-zinc-700'>
+              <div className='flex items-center gap-2 text-sm text-zinc-700'>
                 <CalendarDays className='size-3 text-zinc-700' />
+                <span className='text-zinc-400'>Inizio</span>
                 <span>{eventStartDate}</span>
                 <span className='text-zinc-400'>•</span>
                 <span>{eventStartTime}</span>
               </div>
-              <div className='flex items-center gap-2 text-xs text-zinc-700'>
+              <div className='flex items-center gap-2 text-sm text-zinc-700'>
                 <CalendarDays className='size-3 text-zinc-700' />
+                <span className='text-zinc-400'>Fine</span>
                 <span>{eventEndDate}</span>
                 <span className='text-zinc-400'>•</span>
                 <span>{eventEndTime}</span>
@@ -357,7 +353,18 @@ export default function EventTile({
             </div>
           </div>
 
-          <div className='flex items-center gap-1.5'>
+          <div className='flex flex-col items-end gap-2'>
+            {isAdmin && (
+              <div className='flex items-center gap-1'>
+                <div className='w-3 h-3 flex justify-center items-center bg-zinc-400 rounded-xs'>
+                  <Check className='size-2 text-white' />
+                </div>
+                <span className='text-sm text-zinc-400 font-normal'>
+                  Attività completate: {activityCount}/10
+                </span>
+              </div>
+            )}
+            <div className='flex items-center gap-1.5'>
             <Button
               asChild
               variant='outline'
@@ -443,6 +450,7 @@ export default function EventTile({
                 </PopoverContent>
               </Popover>
             )}
+            </div>
           </div>
         </div>
       </div>

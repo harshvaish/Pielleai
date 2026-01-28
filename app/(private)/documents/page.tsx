@@ -38,6 +38,7 @@ import UploadArtistDocumentDialog from "./_components/UploadArtistDocumentDialog
 import { getArtistsCached } from "@/lib/cache/artists";
 import { getArtistOtherDocuments } from "@/lib/data/documents/get-artist-other-documents";
 import { getContractPreviewUrl } from "@/lib/utils/contract-preview";
+import DocumentTypeFilter from "./_components/filters/DocumentTypeFilter";
 
 type EventsPageProps = {
   searchParams?: Promise<{
@@ -50,6 +51,7 @@ type EventsPageProps = {
     end?: string;
     sort?: "asc" | "desc";
     tab?: string;
+    doc?: string;
   }>;
 };
 
@@ -539,6 +541,35 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
   const baseQuery = Object.fromEntries(
     Object.entries(sp ?? {}).filter(([, v]) => v != null)
   );
+  const baseQueryWithoutDoc = Object.fromEntries(
+    Object.entries(baseQuery).filter(([key]) => key !== "doc")
+  );
+  const eventDocumentOptions = [
+    { value: "all", label: "Tutti" },
+    { value: "contracts", label: "Contratti" },
+    { value: "technical-ride", label: "Technical Ride" },
+    { value: "other", label: "Other" },
+  ];
+  const artistDocumentOptions = [
+    { value: "all", label: "Tutti" },
+    { value: "fiscal-code", label: "Fiscal Code" },
+    { value: "tax-id", label: "Tax ID" },
+    { value: "passport", label: "Passport" },
+    { value: "other", label: "Other" },
+  ];
+  const rawDocumentFilter = sp?.doc ?? "all";
+  const eventFilterValues = new Set(eventDocumentOptions.map((option) => option.value));
+  const artistFilterValues = new Set(artistDocumentOptions.map((option) => option.value));
+  const documentFilter =
+    activeTab === "eventi"
+      ? eventFilterValues.has(rawDocumentFilter)
+        ? rawDocumentFilter
+        : "all"
+      : artistFilterValues.has(rawDocumentFilter)
+        ? rawDocumentFilter
+        : "all";
+  const eventsDocumentFilter = activeTab === "eventi" ? documentFilter : "all";
+  const artistsDocumentFilter = activeTab === "artisti" ? documentFilter : "all";
   const previewContracts = contracts.slice(0, 3);
   const previewOtherDocuments = otherDocuments;
   const previewArtists = artists.slice(0, 3);
@@ -582,53 +613,67 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
 
   return (
     <div className="h-full flex flex-col gap-4">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex flex-col gap-3">
-          <h1 className="text-xl md:text-2xl font-bold">Documenti</h1>
-          <div className="w-fit rounded-xl bg-zinc-100 p-1">
-            <div className="flex items-center gap-1">
-              <Link
-                href={{ query: { ...baseQuery, tab: "eventi" } }}
-                className={`px-3 py-1.5 text-sm font-medium rounded-lg transition ${
+      <div className="flex flex-wrap items-center gap-3">
+        <h1 className="text-xl md:text-2xl font-bold">Documenti</h1>
+        <div className="w-fit rounded-xl bg-zinc-100 p-1">
+          <div className="flex items-center gap-1">
+            <Link
+              href={{
+                query:
                   activeTab === "eventi"
-                    ? "bg-white text-zinc-900 shadow-sm"
-                    : "text-zinc-500 hover:text-zinc-700"
-                }`}
-              >
-                Eventi
-              </Link>
-              <Link
-                href={{ query: { ...baseQuery, tab: "artisti", page: "1" } }}
-                className={`px-3 py-1.5 text-sm font-medium rounded-lg transition ${
+                    ? { ...baseQuery, tab: "eventi" }
+                    : { ...baseQueryWithoutDoc, tab: "eventi" },
+              }}
+              className={`px-3 py-1.5 text-sm font-medium rounded-lg transition ${
+                activeTab === "eventi"
+                  ? "bg-white text-zinc-900 shadow-sm"
+                  : "text-zinc-500 hover:text-zinc-700"
+              }`}
+            >
+              Eventi
+            </Link>
+            <Link
+              href={{
+                query:
                   activeTab === "artisti"
-                    ? "bg-white text-zinc-900 shadow-sm"
-                    : "text-zinc-500 hover:text-zinc-700"
-                }`}
-              >
-                Artisti
-              </Link>
-            </div>
+                    ? { ...baseQuery, tab: "artisti", page: "1" }
+                    : { ...baseQueryWithoutDoc, tab: "artisti", page: "1" },
+              }}
+              className={`px-3 py-1.5 text-sm font-medium rounded-lg transition ${
+                activeTab === "artisti"
+                  ? "bg-white text-zinc-900 shadow-sm"
+                  : "text-zinc-500 hover:text-zinc-700"
+              }`}
+            >
+              Artisti
+            </Link>
           </div>
         </div>
+        <DocumentTypeFilter
+          value={documentFilter}
+          options={activeTab === "eventi" ? eventDocumentOptions : artistDocumentOptions}
+        />
+
         {isAdmin && activeTab === "eventi" && (
-          <div className="flex items-center gap-2">
-            <UploadDocumentDialog events={eventOptions} />
+          <div className="flex items-center gap-2 ml-auto">
             <ContractsExportButton filters={filters} />
+            <UploadDocumentDialog events={eventOptions} />
           </div>
         )}
         {isAdmin && activeTab === "artisti" && (
-          <div className="flex items-center gap-2">
-            <UploadArtistDocumentDialog artists={artistsOptions} />
+          <div className="flex items-center gap-2 ml-auto">
             <ExportButton
               endpoint="/api/artists/export"
               filename="export-artisti.csv"
             />
+            <UploadArtistDocumentDialog artists={artistsOptions} />
           </div>
         )}
       </div>
 
       {activeTab === "eventi" ? (
         <div className="flex flex-col gap-4">
+          {(eventsDocumentFilter === "all" || eventsDocumentFilter === "contracts") && (
           <section className="rounded-2xl border border-zinc-100 bg-white">
             <div className="flex items-center justify-between border-b border-zinc-100 px-4 py-3">
               <h2 className="text-sm font-semibold text-zinc-800">Contratti</h2>
@@ -801,7 +846,9 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
               </div>
             )}
           </section>
+          )}
 
+          {(eventsDocumentFilter === "all" || eventsDocumentFilter === "technical-ride") && (
           <section className="rounded-2xl border border-zinc-100 bg-white">
             <div className="flex items-center justify-between border-b border-zinc-100 px-4 py-3">
               <h2 className="text-sm font-semibold text-zinc-800">
@@ -953,7 +1000,9 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
               </div>
             )}
           </section>
+          )}
 
+          {(eventsDocumentFilter === "all" || eventsDocumentFilter === "other") && (
           <section className="rounded-2xl border border-zinc-100 bg-white">
             <div className="flex items-center justify-between border-b border-zinc-100 px-4 py-3">
               <h2 className="text-sm font-semibold text-zinc-800">Other</h2>
@@ -1101,10 +1150,12 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
               </div>
             )}
           </section>
+          )}
 
         </div>
       ) : (
         <div className="grid gap-4 lg:grid-cols-2">
+          {(artistsDocumentFilter === "all" || artistsDocumentFilter === "fiscal-code") && (
           <section className="rounded-2xl border border-zinc-100 bg-white">
             <div className="flex items-center justify-between border-b border-zinc-100 px-4 py-3">
               <h2 className="text-sm font-semibold text-zinc-800">
@@ -1216,10 +1267,12 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
               </div>
             )}
           </section>
+          )}
 
+          {(artistsDocumentFilter === "all" || artistsDocumentFilter === "tax-id") && (
           <section className="rounded-2xl border border-zinc-100 bg-white">
             <div className="flex items-center justify-between border-b border-zinc-100 px-4 py-3">
-              <h2 className="text-sm font-semibold text-zinc-800">ID Card</h2>
+              <h2 className="text-sm font-semibold text-zinc-800">Tax ID</h2>
               <Link
                 href="/documents/id-card"
                 className="inline-flex items-center gap-1 text-xs text-zinc-500 hover:text-zinc-700"
@@ -1299,34 +1352,36 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
                         </span>
                       </div>
 
-                      <div className="flex flex-wrap items-center gap-2 text-xs text-zinc-500">
+                    <div className="flex flex-wrap items-center gap-2 text-xs text-zinc-500">
+                      <FileText className="h-4 w-4 text-zinc-400" />
+                      <span>Tax ID</span>
+                    {artist.idCardFileUrl ? (
+                      <a
+                        href={artist.idCardFileUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-1.5 text-zinc-600 hover:underline"
+                      >
                         <FileText className="h-4 w-4 text-zinc-400" />
-                        <span>ID Card</span>
-                      {artist.idCardFileUrl ? (
-                        <a
-                          href={artist.idCardFileUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-1.5 text-zinc-600 hover:underline"
-                        >
-                          <FileText className="h-4 w-4 text-zinc-400" />
-                          {artist.idCardFileName ?? "ID Card.pdf"}
-                        </a>
-                      ) : (
-                        <span className="text-zinc-400">Mancante</span>
-                      )}
-                      </div>
+                        {artist.idCardFileName ?? "Tax ID.pdf"}
+                      </a>
+                    ) : (
+                      <span className="text-zinc-400">Mancante</span>
+                    )}
                     </div>
-                  );
-                })}
-              </div>
-            ) : (
-              <div className="px-4 py-6 text-sm text-zinc-500">
-                Nessun documento disponibile.
-              </div>
-            )}
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="px-4 py-6 text-sm text-zinc-500">
+              Nessun documento disponibile.
+            </div>
+          )}
           </section>
+          )}
 
+          {(artistsDocumentFilter === "all" || artistsDocumentFilter === "passport") && (
           <section className="rounded-2xl border border-zinc-100 bg-white">
             <div className="flex items-center justify-between border-b border-zinc-100 px-4 py-3">
               <h2 className="text-sm font-semibold text-zinc-800">Passport</h2>
@@ -1436,7 +1491,9 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
               </div>
             )}
           </section>
+          )}
 
+          {(artistsDocumentFilter === "all" || artistsDocumentFilter === "other") && (
           <section className="rounded-2xl border border-zinc-100 bg-white">
             <div className="flex items-center justify-between border-b border-zinc-100 px-4 py-3">
               <h2 className="text-sm font-semibold text-zinc-800">Other</h2>
@@ -1529,6 +1586,7 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
               </div>
             )}
           </section>
+          )}
         </div>
       )}
     </div>

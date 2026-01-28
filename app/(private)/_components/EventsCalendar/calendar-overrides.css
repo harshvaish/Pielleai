@@ -199,6 +199,7 @@
   padding: 12px 10px;
   vertical-align: top;
   border-right: 1px solid #f4f4f5;
+  background: #ffffff;
 }
 
 .rbc-agenda-time-cell {
@@ -232,7 +233,7 @@
   width: 32px;
   height: 32px;
   border-radius: 999px;
-  background: #f4f4f5;
+  background: transparent;
   color: #18181b;
   font-size: 14px;
   font-weight: 700;
@@ -289,6 +290,11 @@
 .schedule-event-separator {
   font-size: 10px;
   color: #d4d4d8;
+}
+
+.rbc-agenda-time-cell .rbc-continues-prior::before,
+.rbc-agenda-time-cell .rbc-continues-after::after {
+  content: '';
 }
 
 .rbc-agenda-view tr.proposed .rbc-agenda-event-cell {

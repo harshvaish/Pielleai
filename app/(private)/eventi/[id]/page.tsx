@@ -125,7 +125,8 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
   const artistLabel = event.artist.stageName?.trim() || artistName;
   const eventTypeLabel = event.eventType ? EVENT_TYPE_LABELS[event.eventType] : null;
   const revisionHistory = isAdmin ? await getEventRevisionHistory(resolvedEventId) : [];
-  const eventGuests = isAdmin ? await getEventGuests(resolvedEventId) : [];
+  const canViewAccreditation = hasRole(user, ['admin', 'artist-manager']);
+  const eventGuests = canViewAccreditation ? await getEventGuests(resolvedEventId) : [];
   const eventProfessionals = hasRole(user, ['admin', 'artist-manager'])
     ? await getEventProfessionals(resolvedEventId)
     : [];
@@ -220,8 +221,13 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
         <RevisionHistoryPanel history={revisionHistory} currentEventId={event.id} />
       )}
 
-      {isAdmin && (
-        <GuestParticipantSection eventId={event.id} initialGuests={eventGuests} />
+      {canViewAccreditation && (
+        <GuestParticipantSection
+          eventId={event.id}
+          initialGuests={eventGuests}
+          guestLimit={event.guestLimit ?? 50}
+          isAdmin={isAdmin}
+        />
       )}
 
       {hasRole(user, ['admin', 'artist-manager']) && (

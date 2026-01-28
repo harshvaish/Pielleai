@@ -11,7 +11,11 @@ import {
 } from '@/lib/database/schema';
 import { CalendarEvent, EventsCalendarFilters } from '@/lib/types';
 import { and, eq, inArray, sql } from 'drizzle-orm';
+import { alias } from 'drizzle-orm/pg-core';
 import { latestRevisionFilter } from './revision-helpers';
+
+const venueManagerProfile = alias(profiles, 'venueManagerProfile');
+const venueManagerUser = alias(users, 'venueManagerUser');
 
 export async function getCalendarEvents({
   status,
@@ -69,6 +73,15 @@ export async function getCalendarEvents({
           name: venues.name,
         },
 
+        venueManager: {
+          id: venueManagerUser.id,
+          status: venueManagerUser.status,
+          profileId: venueManagerProfile.id,
+          avatarUrl: venueManagerProfile.avatarUrl,
+          name: venueManagerProfile.name,
+          surname: venueManagerProfile.surname,
+        },
+
         status: events.status,
         hasConflict: events.hasConflict,
       })
@@ -78,6 +91,8 @@ export async function getCalendarEvents({
       .innerJoin(artists, eq(events.artistId, artists.id))
       .leftJoin(profiles, eq(events.artistManagerProfileId, profiles.id))
       .leftJoin(users, eq(profiles.userId, users.id))
+      .leftJoin(venueManagerProfile, eq(venues.managerProfileId, venueManagerProfile.id))
+      .leftJoin(venueManagerUser, eq(venueManagerProfile.userId, venueManagerUser.id))
       .where(filters)
       .orderBy(artistAvailabilities.startDate);
 

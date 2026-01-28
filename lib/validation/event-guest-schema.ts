@@ -7,6 +7,13 @@ export const eventGuestStatusValidation = z.enum([
   'attending',
   'not-attending',
 ]);
+export const eventGuestOriginGroupValidation = z.enum([
+  'artist',
+  'artist-manager',
+  'booking',
+  'major',
+]);
+export const eventGuestColorTagValidation = z.enum(['green', 'yellow', 'red']);
 
 export const eventGuestNameValidation = z
   .string('Campo malformato.')
@@ -25,12 +32,17 @@ export const createEventGuestSchema = z.object({
   eventId: idValidation,
   fullName: eventGuestNameValidation,
   email: eventGuestEmailValidation,
+  originGroup: eventGuestOriginGroupValidation,
+  colorTag: eventGuestColorTagValidation,
+  allowOverLimit: z.boolean().optional(),
 });
 
 export const updateEventGuestSchema = z.object({
   guestId: idValidation,
   fullName: eventGuestNameValidation,
   email: eventGuestEmailValidation,
+  originGroup: eventGuestOriginGroupValidation,
+  colorTag: eventGuestColorTagValidation,
   status: eventGuestStatusValidation,
 });
 
@@ -41,4 +53,8 @@ export const deleteEventGuestSchema = z.object({
 export const inviteEventGuestsSchema = z.object({
   eventId: idValidation,
   guestIds: z.array(idValidation).min(1, 'Seleziona almeno un invitato.'),
+});
+
+export const sendAccreditationListSchema = z.object({
+  eventId: idValidation,
 });

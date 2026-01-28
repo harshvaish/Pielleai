@@ -42,6 +42,10 @@ import MonthHeader from '../Calendar/MonthHeader';
 import { useMediaQuery } from '@/lib/hooks/useMediaQuery';
 import { Button } from '@/components/ui/button';
 import { X } from 'lucide-react';
+import ArtistsBadge from '../Badges/ArtistsBadge';
+import VenuesBadge from '../Badges/VenuesBadge';
+import EventStatusBadge from '../Badges/EventStatusBadge';
+import EventConflictBadge from '../Badges/EventConflictBadge';
 
 const locales = { it };
 
@@ -232,7 +236,7 @@ export default function EventsCalendar({ userRole, artists, venues }: EventsCale
       setPanelPosition(null);
       return;
     }
-    const panelWidth = 360;
+    const panelWidth = 460;
     const padding = 12;
     const placement: 'right' = 'right';
     const rawLeft = anchorRect.right - containerRect.left + padding;
@@ -266,6 +270,44 @@ export default function EventsCalendar({ userRole, artists, venues }: EventsCale
     setAnchorRect(null);
   }, [selectedEvent]);
 
+  const renderEventHeader = (event: CalendarEvent, showClose: boolean) => {
+    const startDate = format(event.start, 'dd/MM/yyyy');
+    const endDate = format(event.end, 'dd/MM/yyyy');
+    return (
+      <div className='flex items-start justify-between gap-3'>
+        <div className='flex flex-wrap items-center gap-2 text-sm font-semibold text-zinc-900'>
+          <ArtistsBadge
+            artists={[event.artist]}
+            userRole={userRole}
+          />
+          <span className='text-xs text-zinc-400'>x</span>
+          <VenuesBadge
+            userRole={userRole}
+            venues={[event.venue]}
+          />
+          <span className='text-xs text-zinc-400'>—</span>
+          <span className='text-xs font-semibold text-zinc-600'>
+            {startDate} - {endDate}
+          </span>
+        </div>
+        <div className='flex items-center gap-2'>
+          <EventStatusBadge status={event.status} size='xs' />
+          {isAdmin && event.hasConflict && <EventConflictBadge size='sm' />}
+          {showClose && (
+            <Button
+              size='icon'
+              variant='ghost'
+              className='shrink-0'
+              onClick={() => setSelectedEvent(null)}
+            >
+              <X className='size-4' />
+            </Button>
+          )}
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className='relative'>
       {isLoading && <Skeleton className='absolute inset-0 z-50 opacity-60 rounded-xl' />}
@@ -290,6 +332,7 @@ export default function EventsCalendar({ userRole, artists, venues }: EventsCale
         <BigCalendar
           localizer={localizer}
           culture='it'
+          messages={{ allDay: 'All day' }}
           date={calendarDate}
           onNavigate={onNavigateHandler}
           onView={onViewHandler}
@@ -336,7 +379,7 @@ export default function EventsCalendar({ userRole, artists, venues }: EventsCale
         {isDesktop && selectedEvent && (
           <aside
             ref={panelRef}
-            className='absolute z-20 w-[360px] max-h-[calc(100%-2rem)] rounded-2xl border bg-white/95 p-4 shadow-xl backdrop-blur'
+            className='absolute z-20 w-[460px] max-h-[calc(100%-2rem)] rounded-2xl border bg-white/95 p-5 shadow-xl backdrop-blur'
             style={
               panelPosition
                 ? { top: panelPosition.top, left: panelPosition.left }
@@ -349,26 +392,9 @@ export default function EventsCalendar({ userRole, artists, venues }: EventsCale
                 style={{ top: panelPosition.arrowTop }}
               />
             )}
-            <div className='flex items-start justify-between gap-2'>
-              <div>
-                <div className='text-lg font-semibold text-zinc-900'>
-                  {selectedEventTitle}
-                </div>
-                <div className='text-sm text-zinc-500'>
-                  {`Consulta i dati principali dell'evento, per vederne tutti i dettagli ${isAdmin ? 'o per fare modifiche ' : ''}vai alla sezione eventi.`}
-                </div>
-              </div>
-              <Button
-                size='icon'
-                variant='ghost'
-                className='shrink-0'
-                onClick={() => setSelectedEvent(null)}
-              >
-                <X className='size-4' />
-              </Button>
-            </div>
+            {renderEventHeader(selectedEvent, true)}
 
-            <div className='mt-4 max-h-[calc(100%-7rem)] overflow-y-auto'>
+            <div className='mt-4 max-h-[calc(100%-6rem)] overflow-y-auto'>
               <EventContent
                 userRole={userRole}
                 event={selectedEvent}
@@ -388,13 +414,18 @@ export default function EventsCalendar({ userRole, artists, venues }: EventsCale
           modal={false}
           showOverlay={false}
           title={selectedEvent ? selectedEventTitle : 'Evento'}
-          description={`Consulta i dati principali dell'evento, per vederne tutti i dettagli ${isAdmin ? 'o per fare modifiche ' : ''}vai alla sezione eventi.`}
+          description=''
+          isTitleHidden
+          isDescriptionHidden
         >
           {selectedEvent && (
-            <EventContent
-              userRole={userRole}
-              event={selectedEvent}
-            />
+            <div className='space-y-4'>
+              {renderEventHeader(selectedEvent, false)}
+              <EventContent
+                userRole={userRole}
+                event={selectedEvent}
+              />
+            </div>
           )}
         </ConfirmDialog>
       )}
