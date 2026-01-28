@@ -1,7 +1,7 @@
 'use server';
 
 import { database } from '@/lib/database/connection';
-import { eventGuests } from '@/lib/database/schema';
+import { eventGuests, events, venues, profiles, users } from '@/lib/database/schema';
 import { ServerActionResponse, EventGuest } from '@/lib/types';
 import getSession from '@/lib/data/auth/get-session';
 import { hasRole } from '@/lib/utils';
@@ -9,13 +9,15 @@ import {
   createEventGuestSchema,
   deleteEventGuestSchema,
   inviteEventGuestsSchema,
+  sendAccreditationListSchema,
   updateEventGuestSchema,
 } from '@/lib/validation/event-guest-schema';
 import { AppError } from '@/lib/classes/AppError';
-import { eq, inArray } from 'drizzle-orm';
+import { count, eq, inArray } from 'drizzle-orm';
 import { sendEventGuestInviteEmail } from '../send-event-guest-invite-email';
 import { getEventSummary } from '@/lib/data/events/get-event-summary';
 import { generateEventTitle } from '@/lib/utils/generate-event-title';
+import { sendEventAccreditationListEmail } from '../send-event-accreditation-list-email';
 
 const mapGuestRow = (guest: EventGuest) => guest;
 
@@ -24,12 +26,16 @@ export async function createEventGuest(
     eventId: number;
     fullName: string;
     email?: string | null;
+    originGroup: 'artist' | 'artist-manager' | 'booking' | 'major';
+    colorTag: 'green' | 'yellow' | 'red';
+    allowOverLimit?: boolean;
   },
 ): Promise<ServerActionResponse<EventGuest>> {
   try {
     const { session, user } = await getSession();
 
-    if (!session || !user || user.banned || !hasRole(user, ['admin'])) {
+    const isAdmin = Boolean(user && hasRole(user, ['admin']));
+    if (!session || !user || user.banned || !hasRole(user, ['admin', 'artist-manager'])) {
       throw new AppError('Operazione non autorizzata.');
     }
 
@@ -38,7 +44,33 @@ export async function createEventGuest(
       throw new AppError('Dati inviati non corretti.');
     }
 
-    const { eventId, fullName, email } = validation.data;
+    const { eventId, fullName, email, originGroup, colorTag, allowOverLimit } = validation.data;
+
+    const [eventRow] = await database
+      .select({ guestLimit: events.guestLimit })
+      .from(events)
+      .where(eq(events.id, eventId))
+      .limit(1);
+
+    if (!eventRow) {
+      throw new AppError('Evento non trovato.');
+    }
+
+    const [countRow] = await database
+      .select({ total: count() })
+      .from(eventGuests)
+      .where(eq(eventGuests.eventId, eventId));
+
+    const totalGuests = Number(countRow?.total ?? 0);
+    const limitReached = totalGuests >= eventRow.guestLimit;
+
+    if (limitReached && !allowOverLimit) {
+      throw new AppError('Limite invitati raggiunto.');
+    }
+
+    if (limitReached && allowOverLimit && !isAdmin) {
+      throw new AppError('Solo un admin puo superare il limite invitati.');
+    }
 
     const cleanedEmail = email?.trim().length ? email.trim() : null;
 
@@ -48,12 +80,16 @@ export async function createEventGuest(
         eventId,
         fullName: fullName.trim(),
         email: cleanedEmail,
+        originGroup,
+        colorTag,
       })
       .returning({
         id: eventGuests.id,
         eventId: eventGuests.eventId,
         fullName: eventGuests.fullName,
         email: eventGuests.email,
+        originGroup: eventGuests.originGroup,
+        colorTag: eventGuests.colorTag,
         status: eventGuests.status,
         invitedAt: eventGuests.invitedAt,
         createdAt: eventGuests.createdAt,
@@ -77,13 +113,15 @@ export async function updateEventGuest(
     guestId: number;
     fullName: string;
     email?: string | null;
+    originGroup: 'artist' | 'artist-manager' | 'booking' | 'major';
+    colorTag: 'green' | 'yellow' | 'red';
     status: 'to-invite' | 'invited' | 'attending' | 'not-attending';
   },
 ): Promise<ServerActionResponse<EventGuest>> {
   try {
     const { session, user } = await getSession();
 
-    if (!session || !user || user.banned || !hasRole(user, ['admin'])) {
+    if (!session || !user || user.banned || !hasRole(user, ['admin', 'artist-manager'])) {
       throw new AppError('Operazione non autorizzata.');
     }
 
@@ -92,7 +130,7 @@ export async function updateEventGuest(
       throw new AppError('Dati inviati non corretti.');
     }
 
-    const { guestId, fullName, email, status } = validation.data;
+    const { guestId, fullName, email, status, originGroup, colorTag } = validation.data;
     const cleanedEmail = email?.trim().length ? email.trim() : null;
 
     const [updated] = await database
@@ -100,6 +138,8 @@ export async function updateEventGuest(
       .set({
         fullName: fullName.trim(),
         email: cleanedEmail,
+        originGroup,
+        colorTag,
         status,
         updatedAt: new Date(),
       })
@@ -109,6 +149,8 @@ export async function updateEventGuest(
         eventId: eventGuests.eventId,
         fullName: eventGuests.fullName,
         email: eventGuests.email,
+        originGroup: eventGuests.originGroup,
+        colorTag: eventGuests.colorTag,
         status: eventGuests.status,
         invitedAt: eventGuests.invitedAt,
         createdAt: eventGuests.createdAt,
@@ -137,7 +179,7 @@ export async function deleteEventGuest(
   try {
     const { session, user } = await getSession();
 
-    if (!session || !user || user.banned || !hasRole(user, ['admin'])) {
+    if (!session || !user || user.banned || !hasRole(user, ['admin', 'artist-manager'])) {
       throw new AppError('Operazione non autorizzata.');
     }
 
@@ -169,7 +211,7 @@ export async function inviteEventGuests(
   try {
     const { session, user } = await getSession();
 
-    if (!session || !user || user.banned || !hasRole(user, ['admin'])) {
+    if (!session || !user || user.banned || !hasRole(user, ['admin', 'artist-manager'])) {
       throw new AppError('Operazione non autorizzata.');
     }
 
@@ -242,6 +284,146 @@ export async function inviteEventGuests(
     return {
       success: false,
       message: error instanceof AppError ? error.message : 'Invio inviti non riuscito.',
+      data: null,
+    };
+  }
+}
+
+export async function sendAccreditationList(
+  input: { eventId: number },
+): Promise<ServerActionResponse<{ invitedIds: number[]; failedEmails: string[] }>> {
+  try {
+    const { session, user } = await getSession();
+
+    if (!session || !user || user.banned || !hasRole(user, ['admin', 'artist-manager'])) {
+      throw new AppError('Operazione non autorizzata.');
+    }
+
+    const validation = sendAccreditationListSchema.safeParse(input);
+    if (!validation.success) {
+      throw new AppError('Dati inviati non corretti.');
+    }
+
+    const { eventId } = validation.data;
+
+    const event = await getEventSummary(eventId);
+    if (!event) {
+      throw new AppError('Evento non trovato.');
+    }
+
+    const [venueRow] = await database
+      .select({
+        venueName: venues.name,
+        venueEmail: venues.billingEmail,
+        venueManagerEmail: users.email,
+        venueManagerName: profiles.name,
+        venueManagerSurname: profiles.surname,
+      })
+      .from(events)
+      .innerJoin(venues, eq(events.venueId, venues.id))
+      .leftJoin(profiles, eq(venues.managerProfileId, profiles.id))
+      .leftJoin(users, eq(profiles.userId, users.id))
+      .where(eq(events.id, eventId))
+      .limit(1);
+
+    if (!venueRow) {
+      throw new AppError('Venue non trovata.');
+    }
+
+    const recipientEmail = venueRow.venueManagerEmail || venueRow.venueEmail;
+    if (!recipientEmail) {
+      throw new AppError('Email del locale non disponibile.');
+    }
+
+    const guests = await database
+      .select({
+        id: eventGuests.id,
+        fullName: eventGuests.fullName,
+        email: eventGuests.email,
+        originGroup: eventGuests.originGroup,
+        colorTag: eventGuests.colorTag,
+        status: eventGuests.status,
+      })
+      .from(eventGuests)
+      .where(eq(eventGuests.eventId, eventId))
+      .orderBy(eventGuests.createdAt);
+
+    if (guests.length === 0) {
+      throw new AppError('Nessun invitato presente.');
+    }
+
+    const artistName = `${event.artist.name} ${event.artist.surname}`.trim();
+    const artistLabel = event.artist.stageName?.trim() || artistName;
+    const eventTitle =
+      event.title?.trim() ||
+      generateEventTitle(artistLabel, event.venue.name, event.startDate, event.endDate);
+
+    const groupedGuests = guests.reduce<Record<string, typeof guests>>((acc, guest) => {
+      const key = guest.originGroup;
+      if (!acc[key]) acc[key] = [];
+      acc[key].push(guest);
+      return acc;
+    }, {});
+
+    const venueEmailResponse = await sendEventAccreditationListEmail({
+      email: recipientEmail,
+      venueName: venueRow.venueName,
+      venueManagerName: venueRow.venueManagerName
+        ? `${venueRow.venueManagerName} ${venueRow.venueManagerSurname ?? ''}`.trim()
+        : null,
+      eventTitle,
+      startDate: event.startDate,
+      endDate: event.endDate,
+      groups: groupedGuests,
+    });
+
+    if (!venueEmailResponse.success) {
+      throw new AppError(venueEmailResponse.message || 'Invio email al locale non riuscito.');
+    }
+
+    const failedEmails: string[] = [];
+
+    const guestsWithEmail = guests.filter((guest) => guest.email);
+
+    await Promise.all(
+      guestsWithEmail.map(async (guest) => {
+          const email = guest.email as string;
+          const response = await sendEventGuestInviteEmail({
+            email,
+            guestName: guest.fullName,
+            eventTitle,
+            venueName: event.venue.name,
+            startDate: event.startDate,
+            endDate: event.endDate,
+          });
+
+          if (!response.success) {
+            failedEmails.push(email);
+          }
+        }),
+    );
+
+    const guestsToInvite = guestsWithEmail.filter((guest) => guest.status === 'to-invite');
+    const invitedRows =
+      guestsToInvite.length > 0
+        ? await database
+            .update(eventGuests)
+            .set({ status: 'invited', invitedAt: new Date(), updatedAt: new Date() })
+            .where(inArray(eventGuests.id, guestsToInvite.map((guest) => guest.id)))
+            .returning({ id: eventGuests.id })
+        : [];
+
+    return {
+      success: true,
+      message: null,
+      data: { invitedIds: invitedRows.map((row) => row.id), failedEmails },
+    };
+  } catch (error) {
+    console.error('[sendAccreditationList] - Error:', error);
+
+    return {
+      success: false,
+      message: error instanceof AppError ? error.message : 'Invio lista accrediti non riuscito.',
       data: null,
     };
   }

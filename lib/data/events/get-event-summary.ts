@@ -21,6 +21,7 @@ export async function getEventSummary(eventId: number): Promise<EventSummary | n
         masterEventId: events.masterEventId,
         revisionNumber: events.revisionNumber,
         protocolNumber: events.protocolNumber,
+        guestLimit: events.guestLimit,
         startDate: artistAvailabilities.startDate,
         endDate: artistAvailabilities.endDate,
         artist: {

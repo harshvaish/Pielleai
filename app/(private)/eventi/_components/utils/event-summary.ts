@@ -6,7 +6,7 @@ import { it } from 'date-fns/locale';
 import { EVENT_STATUS_LABELS } from '@/lib/constants';
 import { generateEventTitle } from '@/lib/utils/generate-event-title';
 import { buildEventProtocolNumber } from '@/lib/utils/event-revisions';
-import type { Event, EventStatus, EventType } from '@/lib/types';
+import type { Event, EventAccreditationGuest, EventStatus, EventType } from '@/lib/types';
 
 type EventSummaryOverrides = {
   status?: EventStatus;
@@ -41,6 +41,7 @@ type EventSummaryOverrides = {
   soundCheckEnd?: string | null;
   notes?: string[] | null;
   protocolNumber?: string | null;
+  accreditationList?: EventAccreditationGuest[] | null;
 };
 
 type EventSummaryData = {
@@ -75,6 +76,8 @@ type EventSummaryData = {
   eveningContact: string;
   soundCheck: string;
   notes: string[];
+  accreditationList: EventAccreditationGuest[];
+  accreditationTotal: number;
   generatedAt: string;
 };
 
@@ -82,6 +85,19 @@ const EVENT_TYPE_LABELS: Record<EventType, string> = {
   'dj-set': 'DJ set',
   live: 'Live',
   festival: 'Festival',
+};
+
+const ACCREDITATION_GROUP_LABELS: Record<string, string> = {
+  artist: 'Artista',
+  'artist-manager': 'Manager Artista',
+  booking: 'Booking',
+  major: 'Major',
+};
+
+const ACCREDITATION_COLOR_LABELS: Record<string, string> = {
+  green: 'Verde',
+  yellow: 'Giallo',
+  red: 'Rosso',
 };
 
 const currencyFormatter = new Intl.NumberFormat('it-IT', {
@@ -191,6 +207,12 @@ const buildEventSummaryData = (
 
   const rawNotes = overrides.notes ?? event.notes?.map((note) => note.content) ?? [];
   const notes = rawNotes.map((note) => note.trim()).filter(Boolean);
+  const accreditationList = (overrides.accreditationList ?? event.accreditationList ?? []).map(
+    (guest) => ({
+      ...guest,
+      fullName: guest.fullName.trim(),
+    }),
+  );
 
   return {
     title,
@@ -226,6 +248,8 @@ const buildEventSummaryData = (
     eveningContact: fallbackText(overrides.eveningContact ?? event.eveningContact ?? ''),
     soundCheck,
     notes,
+    accreditationList,
+    accreditationTotal: accreditationList.length,
     generatedAt: format(new Date(), 'dd/MM/yyyy HH:mm', { locale: it }),
   };
 };
@@ -234,6 +258,59 @@ const buildEventSummaryHtml = (data: EventSummaryData): string => {
   const notesHtml = data.notes.length
     ? data.notes.map((note) => `<li>${escapeHtml(note)}</li>`).join('')
     : '<li>-</li>';
+  const accreditationGroups = data.accreditationList.reduce<Record<string, EventAccreditationGuest[]>>(
+    (acc, guest) => {
+      const key = guest.originGroup ?? 'other';
+      if (!acc[key]) acc[key] = [];
+      acc[key].push(guest);
+      return acc;
+    },
+    {},
+  );
+
+  const accreditationHtml = data.accreditationList.length
+    ? `
+      <div class="section">
+        <div class="section-title">Accrediti</div>
+        <div class="meta">Totale invitati: ${data.accreditationTotal}</div>
+        ${Object.entries(accreditationGroups)
+          .map(([groupKey, guests]) => {
+            const label = ACCREDITATION_GROUP_LABELS[groupKey] ?? groupKey;
+            const rows = guests
+              .map(
+                (guest) => `
+                  <tr>
+                    <td>${escapeHtml(guest.fullName)}</td>
+                    <td>${escapeHtml(guest.email ?? '-')}</td>
+                    <td>${escapeHtml(
+                      ACCREDITATION_COLOR_LABELS[guest.colorTag] ?? guest.colorTag,
+                    )}</td>
+                  </tr>
+                `,
+              )
+              .join('');
+            return `
+              <div class="subsection">
+                <div class="subsection-title">${escapeHtml(label)}</div>
+                <table class="table">
+                  <thead>
+                    <tr>
+                      <th>Nome</th>
+                      <th>Email</th>
+                      <th>Tag colore</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${rows || '<tr><td colspan="3">-</td></tr>'}
+                  </tbody>
+                </table>
+              </div>
+            `;
+          })
+          .join('')}
+      </div>
+    `
+    : '';
 
   return `
     <style>
@@ -246,11 +323,16 @@ const buildEventSummaryHtml = (data: EventSummaryData): string => {
       .meta { font-size: 11px; color: #666; margin-top: 6px; }
       .section { margin-top: 14px; }
       .section-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #555; margin-bottom: 6px; }
+      .subsection { margin-top: 10px; }
+      .subsection-title { font-size: 11px; font-weight: 700; margin-bottom: 4px; color: #444; }
       .grid { display: grid; grid-template-columns: 160px 1fr; gap: 6px 12px; font-size: 12px; }
       .label { color: #555; font-weight: 600; }
       .value { color: #111; }
       .notes { margin: 6px 0 0; padding-left: 18px; }
       .notes li { margin-bottom: 4px; }
+      .table { width: 100%; border-collapse: collapse; font-size: 12px; }
+      .table th, .table td { text-align: left; border-bottom: 1px solid #ddd; padding: 4px; }
+      .table th { background: #f5f5f5; }
     </style>
     <div class="summary">
       <div class="header">
@@ -322,6 +404,7 @@ const buildEventSummaryHtml = (data: EventSummaryData): string => {
         <div class="section-title">Note</div>
         <ul class="notes">${notesHtml}</ul>
       </div>
+      ${accreditationHtml}
     </div>
   `;
 };

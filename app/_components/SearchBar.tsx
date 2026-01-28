@@ -70,7 +70,7 @@ export default function SearchBar() {
             onFocus={() => {
               if (search.trim().length > 0) setOpen(true);
             }}
-            placeholder='Cerca per artista, manager o locale (ragione sociale)'
+            placeholder='Cerca per artista, manager o locale'
             aria-expanded={open}
             className='bg-white pl-8 h-8 text-sm'
           />

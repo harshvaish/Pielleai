@@ -11,11 +11,12 @@ import {
   venues,
   eventNotes,
   eventProfessionals,
+  eventGuests,
   profiles,
   users,
   moCoordinators,
 } from '@/lib/database/schema';
-import { Event, EventNote } from '@/lib/types';
+import { Event, EventAccreditationGuest, EventNote } from '@/lib/types';
 import { and, desc, eq, inArray } from 'drizzle-orm';
 import { contracts, contractEmailCcs, contractHistory } from '../../../drizzle/schema';
 
@@ -90,6 +91,7 @@ export async function getEventById(user: User, eventId: number): Promise<Event |
         revisionCreatedByUserId: events.revisionCreatedByUserId,
         revisionCreatedAt: events.revisionCreatedAt,
         hasConflict: events.hasConflict,
+        guestLimit: events.guestLimit,
 
         artistManager: {
           id: users.id,
@@ -168,7 +170,7 @@ export async function getEventById(user: User, eventId: number): Promise<Event |
 
     const eventIds = eventsResult.map((e) => e.id);
 
-    const [notesResult, contractsResult, professionalsResult] = await Promise.all([
+    const [notesResult, contractsResult, professionalsResult, guestsResult] = await Promise.all([
       database
         .select({
           id: eventNotes.id,
@@ -201,6 +203,19 @@ export async function getEventById(user: User, eventId: number): Promise<Event |
         })
         .from(eventProfessionals)
         .where(inArray(eventProfessionals.eventId, eventIds)),
+      database
+        .select({
+          id: eventGuests.id,
+          eventId: eventGuests.eventId,
+          fullName: eventGuests.fullName,
+          email: eventGuests.email,
+          originGroup: eventGuests.originGroup,
+          colorTag: eventGuests.colorTag,
+          status: eventGuests.status,
+        })
+        .from(eventGuests)
+        .where(inArray(eventGuests.eventId, eventIds))
+        .orderBy(eventGuests.createdAt),
     ]);
 
     const contractIds = contractsResult.map((c) => c.id);
@@ -250,6 +265,12 @@ export async function getEventById(user: User, eventId: number): Promise<Event |
     for (const row of professionalsResult) {
       if (!professionalsByEvent[row.eventId]) professionalsByEvent[row.eventId] = [];
       professionalsByEvent[row.eventId].push(row.professionalId);
+    }
+
+    const guestsByEvent: Record<number, EventAccreditationGuest[]> = {};
+    for (const row of guestsResult) {
+      if (!guestsByEvent[row.eventId]) guestsByEvent[row.eventId] = [];
+      guestsByEvent[row.eventId].push(row);
     }
 
     const historiesByContract: Record<number, any[]> = {};
@@ -323,6 +344,7 @@ export async function getEventById(user: User, eventId: number): Promise<Event |
       notes: notesByEvent[rest.id] || [],
       contract: latestContractByEvent[rest.id] ?? null,
       professionalIds: professionalsByEvent[rest.id] || [],
+      accreditationList: guestsByEvent[rest.id] || [],
     } as Event;
 
     if (!merged.artistManager?.id) merged.artistManager = null;

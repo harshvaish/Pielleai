@@ -3,6 +3,8 @@ import {
   availabilityStatus,
   eventStatus,
   eventGuestStatus,
+  eventGuestOriginGroup,
+  eventGuestColorTag,
   contractStatus,
   profileGenders,
   userRoles,
@@ -32,6 +34,8 @@ export type ApiResponse<T = unknown> =
 export type AvailabilityStatus = (typeof availabilityStatus.enumValues)[number];
 export type EventStatus = (typeof eventStatus.enumValues)[number];
 export type EventGuestStatus = (typeof eventGuestStatus.enumValues)[number];
+export type EventGuestOriginGroup = (typeof eventGuestOriginGroup.enumValues)[number];
+export type EventGuestColorTag = (typeof eventGuestColorTag.enumValues)[number];
 export type Gender = (typeof profileGenders.enumValues)[number];
 export type UserRole = (typeof userRoles.enumValues)[number];
 export type UserStatus = (typeof userStatus.enumValues)[number];
@@ -542,6 +546,7 @@ export type Event = {
   revisionDescription?: string | null;
   revisionCreatedByUserId?: string | null;
   revisionCreatedAt?: string | null;
+  guestLimit?: number;
   artist: ArtistSelectData;
   availability: ArtistAvailability;
   venue: VenueSelectData;
@@ -605,6 +610,7 @@ export type Event = {
 
   notes: EventNote[];
   professionalIds?: number[];
+  accreditationList?: EventAccreditationGuest[];
 };
 
 export type ArtistEventListItem = {
@@ -633,6 +639,7 @@ export type EventSummary = {
   masterEventId?: number | null;
   revisionNumber?: number | null;
   protocolNumber?: string | null;
+  guestLimit: number;
   status: EventStatus;
   eventType: EventType | null;
   startDate: Date;
@@ -670,11 +677,18 @@ export type EventGuest = {
   eventId: number;
   fullName: string;
   email: string | null;
+  originGroup: EventGuestOriginGroup;
+  colorTag: EventGuestColorTag;
   status: EventGuestStatus;
   invitedAt: Date | null;
   createdAt: Date;
   updatedAt: Date;
 };
+
+export type EventAccreditationGuest = Pick<
+  EventGuest,
+  'id' | 'eventId' | 'fullName' | 'email' | 'originGroup' | 'colorTag' | 'status'
+>;
 
 export type Professional = {
   id: number;

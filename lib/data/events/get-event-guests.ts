@@ -13,6 +13,8 @@ export async function getEventGuests(eventId: number): Promise<EventGuest[]> {
         eventId: eventGuests.eventId,
         fullName: eventGuests.fullName,
         email: eventGuests.email,
+        originGroup: eventGuests.originGroup,
+        colorTag: eventGuests.colorTag,
         status: eventGuests.status,
         invitedAt: eventGuests.invitedAt,
         createdAt: eventGuests.createdAt,
