@@ -13,7 +13,8 @@ import { eq } from 'drizzle-orm';
 const updateGuestLimitSchema = z.object({
   eventId: idValidation,
   guestLimit: z
-    .number({ invalid_type_error: 'Limite non valido.' })
+    .coerce
+    .number({ error: 'Limite non valido.' })
     .int('Limite non valido.')
     .min(1, 'Il limite minimo e 1.')
     .max(500, 'Il limite massimo e 500.'),
