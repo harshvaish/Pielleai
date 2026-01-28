@@ -637,6 +637,7 @@ export type ArtistEventListItem = {
 
 export type EventSummary = {
   id: number;
+  hostedEvent: boolean;
   title?: string | null;
   masterEventId?: number | null;
   revisionNumber?: number | null;

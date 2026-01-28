@@ -84,6 +84,7 @@ export async function getCalendarEvents({
 
         status: events.status,
         hasConflict: events.hasConflict,
+        hostedEvent: events.hostedEvent,
       })
       .from(events)
       .innerJoin(artistAvailabilities, eq(events.availabilityId, artistAvailabilities.id))
@@ -102,6 +103,7 @@ export async function getCalendarEvents({
         ...event,
         start: new Date(event.start),
         end: new Date(event.end),
+        hostedEvent: event.hostedEvent ?? false,
       };
     });
 
