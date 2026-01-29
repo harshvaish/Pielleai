@@ -136,6 +136,17 @@
   color: var(--color-gray-600);
 }
 
+/* Ensure finished events stay legible when selected */
+.rbc-event.ended.rbc-selected,
+.rbc-event.ended.rbc-selected .rbc-event-content,
+.rbc-event.ended.rbc-selected .rbc-event-content * {
+  color: #ffffff;
+}
+
+.rbc-event.ended.rbc-selected {
+  background-color: var(--color-gray-600);
+}
+
 /* Helper background badges for legends */
 .bg-proposed {
   background-color: var(--color-blue-600);
