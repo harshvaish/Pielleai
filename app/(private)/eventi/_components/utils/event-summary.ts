@@ -105,6 +105,17 @@ const currencyFormatter = new Intl.NumberFormat('it-IT', {
   currency: 'EUR',
 });
 
+const cleanupHtml2PdfArtifacts = (): void => {
+  if (typeof document === 'undefined') return;
+  document.querySelectorAll('.html2pdf__overlay').forEach((node) => {
+    if (node.parentNode) {
+      node.parentNode.removeChild(node);
+    } else {
+      node.remove();
+    }
+  });
+};
+
 const escapeHtml = (value: string): string =>
   value
     .replace(/&/g, '&amp;')
@@ -421,14 +432,67 @@ export async function generateEventSummaryPdfBlob(
 
   const { default: html2pdf } = await import('html2pdf.js');
 
-  const blob = await html2pdf()
-    .set({
-      margin: 10,
-      html2canvas: { scale: 2 },
-      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-    })
-    .from(container)
-    .outputPdf('blob');
+  let blob: Blob;
+  try {
+    blob = await html2pdf()
+      .set({
+        margin: 10,
+        html2canvas: {
+          scale: 2,
+          onclone: (doc: Document) => {
+            const style = doc.createElement('style');
+            style.innerHTML = `
+              :root {
+                --background: #ffffff;
+                --foreground: #111111;
+                --card: #ffffff;
+                --card-foreground: #111111;
+                --popover: #ffffff;
+                --popover-foreground: #111111;
+                --primary: #111111;
+                --primary-foreground: #ffffff;
+                --secondary: #f5f5f5;
+                --secondary-foreground: #111111;
+                --muted: #f5f5f5;
+                --muted-foreground: #666666;
+                --accent: #f5f5f5;
+                --accent-foreground: #111111;
+                --destructive: #dc2626;
+                --border: #dddddd;
+                --input: #dddddd;
+                --ring: #dddddd;
+                --chart-1: #f97316;
+                --chart-2: #14b8a6;
+                --chart-3: #1e3a8a;
+                --chart-4: #facc15;
+                --chart-5: #f59e0b;
+                --sidebar: #ffffff;
+                --sidebar-foreground: #111111;
+                --sidebar-primary: #111111;
+                --sidebar-primary-foreground: #ffffff;
+                --sidebar-accent: #f5f5f5;
+                --sidebar-accent-foreground: #111111;
+                --sidebar-border: #dddddd;
+                --sidebar-ring: #dddddd;
+              }
+              * {
+                color: #111111 !important;
+                background: #ffffff !important;
+                border-color: #dddddd !important;
+                outline-color: #dddddd !important;
+                box-shadow: none !important;
+              }
+            `;
+            doc.head.appendChild(style);
+          },
+        },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+      })
+      .from(container)
+      .outputPdf('blob');
+  } finally {
+    cleanupHtml2PdfArtifacts();
+  }
 
   return { blob, summary };
 }

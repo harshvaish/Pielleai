@@ -2,6 +2,8 @@ import getSession from '@/lib/data/auth/get-session';
 import { redirect } from 'next/navigation';
 import PrivateLayoutShell from './_components/PrivateLayoutShell';
 
+export const dynamic = 'force-dynamic';
+
 export default async function PrivateLayout({
   children,
 }: Readonly<{
