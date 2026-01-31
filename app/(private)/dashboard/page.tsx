@@ -46,7 +46,7 @@ export default async function DashboardPage() {
   return (
     <>
       <Tabs defaultValue='requests'>
-        <div className='mb-4 flex flex-wrap items-center justify-between gap-3'>
+        <div className='mb-4 flex flex-wrap items-center gap-3'>
           <h1 className='text-xl md:text-2xl font-bold'>Dashboard</h1>
           <TabsList className='bg-white p-1 rounded-xl w-fit'>
             <TabsTrigger value='requests'>Richieste</TabsTrigger>
@@ -86,7 +86,7 @@ export default async function DashboardPage() {
                 </Link>
               </div>
               <Separator className='my-3' />
-              <div className='max-h-[32rem] space-y-2 overflow-y-auto'>
+              <div className='max-h-[32rem] divide-y divide-zinc-200 overflow-y-auto'>
                 {eventsToApprove.data.map((event) => (
                   <EventTile
                     key={event.id}

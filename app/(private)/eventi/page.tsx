@@ -141,7 +141,7 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
 
       {/* events table section */}
       {events.length > 0 ? (
-        <div className='max-h-full flex flex-col gap-2 bg-white p-3 overflow-auto rounded-2xl'>
+        <div className='max-h-full flex flex-col divide-y divide-zinc-200 bg-white p-3 overflow-auto rounded-2xl'>
           {events.map((event) => (
             <EventTile
               key={event.id}

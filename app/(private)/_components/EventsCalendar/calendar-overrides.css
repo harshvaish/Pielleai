@@ -209,7 +209,7 @@
   width: 96px;
   padding: 12px 10px;
   vertical-align: top;
-  border-right: 1px solid #f4f4f5;
+  border-right: 1px solid #a1a1aa;
   background: #ffffff;
 }
 
@@ -219,11 +219,25 @@
   font-size: 12px;
   color: #71717a;
   vertical-align: top;
+  border-right: 1px solid #a1a1aa;
 }
 
 .rbc-agenda-event-cell {
   padding: 10px 12px;
-  border-bottom: 1px solid #f4f4f5;
+  border-bottom: 1px solid #a1a1aa;
+}
+
+.rbc-agenda-date-cell,
+.rbc-agenda-date-cell + .rbc-agenda-time-cell,
+.rbc-agenda-date-cell + .rbc-agenda-time-cell + .rbc-agenda-event-cell {
+  border-top: 1px solid #a1a1aa;
+  padding-top: 18px;
+}
+
+.rbc-agenda-table tbody tr:first-child .rbc-agenda-date-cell,
+.rbc-agenda-table tbody tr:first-child .rbc-agenda-date-cell + .rbc-agenda-time-cell,
+.rbc-agenda-table tbody tr:first-child .rbc-agenda-date-cell + .rbc-agenda-time-cell + .rbc-agenda-event-cell {
+  border-top: none;
 }
 
 .schedule-date {

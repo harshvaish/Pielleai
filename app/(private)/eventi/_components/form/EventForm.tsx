@@ -569,9 +569,9 @@ export default function EventForm({
         <TabsList className="w-full justify-start gap-4 bg-white p-1 rounded-xl overflow-x-auto">
           <TabsTrigger value="a">Contatti</TabsTrigger>
           <TabsTrigger value="b">Finanze</TabsTrigger>
-          <TabsTrigger value="c">Scheda tecnica</TabsTrigger>
+          <TabsTrigger value="c">Scheda di lavoro</TabsTrigger>
           {mode == "update" && <TabsTrigger value="e">Contratto</TabsTrigger>}
-          <TabsTrigger value="d">Attività</TabsTrigger>
+          <TabsTrigger value="d">Checklist</TabsTrigger>
         </TabsList>
         <TabsContent value="a" className="flex flex-col gap-4 p-2">
           <div className="flex flex-col">
@@ -621,7 +621,7 @@ export default function EventForm({
           </div>
 
           <div className="flex flex-col">
-            <div className="text-sm font-semibold mb-2">Ingaggi</div>
+            <div className="text-sm font-semibold mb-2">Ingaggi: consulente del lavoro</div>
             <Input
               type="email"
               {...register("payrollConsultantEmail")}
