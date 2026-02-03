@@ -51,6 +51,7 @@ export default function PersonalDataForm({
       stageName: userData.stageName || '',
       bio: userData.bio || '',
       categories: userData.categories || [],
+      capacityCategory: userData.capacityCategory || undefined,
       phone: userData.phone || '',
       email: userData.email || '',
       birthDate: userData.birthDate || '',

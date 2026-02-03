@@ -703,6 +703,7 @@ export const artists = pgTable(
     xFollowers: integer('x_followers'),
     xCreatedAt: date('x_created_at'),
     categories: text('categories').array(),
+    capacityCategory: venueTypes('capacity_category'),
     createdAt: timestamp('created_at', { precision: 6, withTimezone: true, mode: 'string' })
       .defaultNow()
       .notNull(),

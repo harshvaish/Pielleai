@@ -205,6 +205,7 @@ export type ArtistData = {
   stageName: string;
   bio: string;
   categories: string[];
+  capacityCategory: VenueType | null;
   phone: string;
   email: string;
   languages: Language[];
@@ -328,6 +329,32 @@ export type ArtistSelectData = Pick<
       'tourManagerEmail' | 'tourManagerName' | 'tourManagerSurname' | 'tourManagerPhone'
     >
   >;
+
+export type RecommendedArtistData = {
+  id: number;
+  slug: string;
+  avatarUrl: string;
+  stageName: string;
+  bio: string;
+  tiktokUrl: string | null;
+  facebookUrl: string | null;
+  instagramUrl: string | null;
+  xUrl: string | null;
+};
+
+export type RecommendedArtistsDebug = {
+  totalActive: number;
+  capacityMatch: number;
+  availabilityOk: number;
+  blockedAvailabilityCount: number;
+  eventConflictCount: number;
+  candidatesBeforeBudget: number;
+  cachetKnownCount: number;
+  missingCachetCount: number;
+  budgetOk: number;
+  budget: number | null;
+  venueType: VenueType;
+};
 
 // venue manager
 export type VenueManagersTableFilters = {

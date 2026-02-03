@@ -141,6 +141,7 @@ export const updateArtistPersonalData = async (
           stageName: validation.data.stageName || validation.data.name || 'Artista',
           bio: validation.data.bio || '',
           categories: validation.data.categories ?? [],
+          capacityCategory: validation.data.capacityCategory ?? null,
           email:
             validation.data.email?.trim() || '',
           phone: validation.data.phone || '',

@@ -23,6 +23,7 @@ import {
   bicCodeValidation,
   abaRoutingNumberValidation,
   sdiRecipientCodeValidation,
+  venueTypesEnumValidation,
 } from './_general';
 
 const optionalString = <T extends z.ZodTypeAny>(schema: T) =>
@@ -33,6 +34,9 @@ const optionalArray = <T extends z.ZodTypeAny>(schema: T) =>
     (val) => (Array.isArray(val) && val.length === 0 ? undefined : val),
     schema.optional(),
   );
+
+const optionalEnum = <T extends z.ZodTypeAny>(schema: T) =>
+  z.preprocess((val) => (val === '' ? undefined : val), schema.optional());
 
 const optionalId = z.preprocess((val) => {
   if (typeof val === 'number' && Number.isFinite(val) && val > 0) return val;
@@ -64,6 +68,8 @@ export const artistS1FormSchema = z.object({
   bio: optionalString(bioValidation),
 
   categories: optionalArray(z.array(categoryValidation).max(10, 'Massimo 10 categorie.')),
+
+  capacityCategory: optionalEnum(venueTypesEnumValidation),
 
   phone: optionalString(phoneValidation),
 

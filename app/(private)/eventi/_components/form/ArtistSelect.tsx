@@ -23,13 +23,33 @@ type ArtistSelectProps = {
   value: number; // artistId
   setValue: (newValue: number) => void;
   hasError: boolean;
+  openSignal?: number;
 };
 
-export default function ArtistSelect({ artists, value, setValue, hasError }: ArtistSelectProps) {
+export default function ArtistSelect({
+  artists,
+  value,
+  setValue,
+  hasError,
+  openSignal,
+}: ArtistSelectProps) {
   const [open, setOpen] = React.useState(false);
   const selectedArtist = artists.find((artist) => artist.id === value) ?? undefined;
 
   const { setValue: setFormValue } = useFormContext();
+  const lastOpenSignalRef = React.useRef<number | undefined>(undefined);
+
+  React.useEffect(() => {
+    if (openSignal === undefined) return;
+    if (lastOpenSignalRef.current === undefined) {
+      lastOpenSignalRef.current = openSignal;
+      return;
+    }
+    if (openSignal !== lastOpenSignalRef.current) {
+      lastOpenSignalRef.current = openSignal;
+      if (openSignal > 0) setOpen(true);
+    }
+  }, [openSignal]);
 
   const onSelectHandler = (value: string): void => {
     setValue(parseInt(value));

@@ -167,6 +167,7 @@ export const createArtist = async (
         stageName: data.stageName || fallbackStageName,
         bio: data.bio || '',
         categories: data.categories ?? [],
+        capacityCategory: data.capacityCategory ?? null,
         email: fallbackEmail,
         phone: data.phone || '',
         birthPlace: data.birthPlace || '',

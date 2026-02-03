@@ -39,6 +39,7 @@ export async function getArtist(slug: string): Promise<ArtistData | null> {
         stageName: artists.stageName,
         bio: artists.bio,
         categories: artists.categories,
+        capacityCategory: artists.capacityCategory,
         phone: artists.phone,
         email: artists.email,
         birthDate: artists.birthDate,

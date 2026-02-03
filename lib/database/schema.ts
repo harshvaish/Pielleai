@@ -156,6 +156,7 @@ export const artists = pgTable(
     stageName: text('stage_name').notNull(),
     bio: text('bio').notNull(),
     categories: text('categories').array(),
+    capacityCategory: venueTypes('capacity_category'),
     phone: text().notNull(),
     avatarUrl: text('avatar_url').notNull(),
     status: userStatus().notNull(),

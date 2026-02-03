@@ -19,6 +19,12 @@ type PersonalDataTabProps = {
   artistOtherDocuments: ArtistOtherDocument[];
 };
 
+const CAPACITY_LABELS: Record<NonNullable<ArtistData['capacityCategory']>, string> = {
+  small: 'Piccola',
+  medium: 'Media',
+  big: 'Grande',
+};
+
 export default function PersonalDataTab({
   tabValue,
   data,
@@ -91,6 +97,11 @@ export default function PersonalDataTab({
               <span className='text-sm font-medium text-zinc-500'>-</span>
             )}
           </div>
+
+          <span className='text-sm font-semibold text-zinc-600'>Categoria capienza</span>
+          <span className='text-sm font-medium text-zinc-500'>
+            {data.capacityCategory ? CAPACITY_LABELS[data.capacityCategory] : '-'}
+          </span>
 
           <span className='text-sm font-semibold text-zinc-600'>Codice Fiscale</span>
           <ArtistDocumentUpload

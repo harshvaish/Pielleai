@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import { cn, fetcher } from '@/lib/utils';
 import LanguagesSelect from '@/app/(private)/_components/form/LanguagesSelect';
-import { Select, SelectContent, SelectItem, SelectTrigger } from '@/components/ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import useSWR from 'swr';
 import {
@@ -16,6 +16,7 @@ import {
   Language,
   Subdivision,
   UserRole,
+  VenueType,
   Zone,
 } from '@/lib/types';
 import { useEffect, useMemo, useState } from 'react';
@@ -25,6 +26,14 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { profileGenders } from '@/lib/database/schema';
 import { GENDERS_LABELS } from '@/lib/constants';
 import { Textarea } from '@/components/ui/textarea';
+
+const CAPACITY_OPTIONS: VenueType[] = ['small', 'medium', 'big'];
+
+const CAPACITY_LABELS: Record<VenueType, string> = {
+  small: 'Piccola',
+  medium: 'Media',
+  big: 'Grande',
+};
 
 type StepOneProps = {
   userRole: UserRole;
@@ -224,6 +233,44 @@ export default function StepOne({
         {errors.categories && (
           <p className='text-xs text-destructive mt-2'>
             {errors.categories.message as string}
+          </p>
+        )}
+      </div>
+
+      <div className='flex flex-col'>
+        <label
+          htmlFor='capacityCategory'
+          className='block text-sm font-semibold mb-2'
+        >
+          Categoria capienza
+        </label>
+        <Controller
+          control={control}
+          name='capacityCategory'
+          render={({ field }) => (
+            <Select
+              value={field.value ?? ''}
+              onValueChange={(value) => field.onChange(value || undefined)}
+            >
+              <SelectTrigger
+                id='capacityCategory'
+                className={errors.capacityCategory ? 'border-destructive text-destructive' : ''}
+              >
+                <SelectValue placeholder='Seleziona capienza' />
+              </SelectTrigger>
+              <SelectContent>
+                {CAPACITY_OPTIONS.map((type) => (
+                  <SelectItem key={type} value={type}>
+                    {CAPACITY_LABELS[type]}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+        />
+        {errors.capacityCategory && (
+          <p className='text-xs text-destructive mt-2'>
+            {errors.capacityCategory.message as string}
           </p>
         )}
       </div>
