@@ -106,6 +106,22 @@ export const artistNotesIdSeq = pgSequence('artist_notes_id_seq', {
   cache: '1',
   cycle: false,
 });
+export const artistBlacklistedVenuesIdSeq = pgSequence('artist_blacklisted_venues_id_seq', {
+  startWith: '1',
+  increment: '1',
+  minValue: '1',
+  maxValue: '2147483647',
+  cache: '1',
+  cycle: false,
+});
+export const artistBlacklistedAreasIdSeq = pgSequence('artist_blacklisted_areas_id_seq', {
+  startWith: '1',
+  increment: '1',
+  minValue: '1',
+  maxValue: '2147483647',
+  cache: '1',
+  cycle: false,
+});
 export const artistsIdSeq = pgSequence('artists_id_seq', {
   startWith: '1',
   increment: '1',
@@ -1163,6 +1179,98 @@ export const artistNotes = pgTable(
       foreignColumns: [users.id],
       name: 'artist_notes_writer_id_fkey',
     }).onDelete('cascade'),
+  ],
+);
+
+export const artistBlacklistedVenues = pgTable(
+  'artist_blacklisted_venues',
+  {
+    id: integer()
+      .default(sql`nextval('artist_blacklisted_venues_id_seq'::regclass)`)
+      .primaryKey()
+      .notNull(),
+    artistId: integer('artist_id').notNull(),
+    venueId: integer('venue_id').notNull(),
+    createdByUserId: text('created_by_user_id'),
+    createdAt: timestamp('created_at', { precision: 6, withTimezone: true, mode: 'string' })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    uniqueIndex('ux_artist_blacklisted_venues').on(table.artistId, table.venueId),
+    index('idx_artist_blacklisted_venues_artist_id').using(
+      'btree',
+      table.artistId.asc().nullsLast().op('int4_ops'),
+    ),
+    foreignKey({
+      columns: [table.artistId],
+      foreignColumns: [artists.id],
+      name: 'artist_blacklisted_venues_artist_id_fkey',
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [table.venueId],
+      foreignColumns: [venues.id],
+      name: 'artist_blacklisted_venues_venue_id_fkey',
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [table.createdByUserId],
+      foreignColumns: [users.id],
+      name: 'artist_blacklisted_venues_created_by_user_id_fkey',
+    }).onDelete('set null'),
+  ],
+);
+
+export const artistBlacklistedAreas = pgTable(
+  'artist_blacklisted_areas',
+  {
+    id: integer()
+      .default(sql`nextval('artist_blacklisted_areas_id_seq'::regclass)`)
+      .primaryKey()
+      .notNull(),
+    artistId: integer('artist_id').notNull(),
+    countryId: integer('country_id').notNull(),
+    subdivisionId: integer('subdivision_id'),
+    city: text(),
+    createdByUserId: text('created_by_user_id'),
+    createdAt: timestamp('created_at', { precision: 6, withTimezone: true, mode: 'string' })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    uniqueIndex('ux_artist_blacklisted_areas').on(
+      table.artistId,
+      table.countryId,
+      table.subdivisionId,
+      table.city,
+    ),
+    index('idx_artist_blacklisted_areas_artist_id').using(
+      'btree',
+      table.artistId.asc().nullsLast().op('int4_ops'),
+    ),
+    index('idx_artist_blacklisted_areas_country_id').using(
+      'btree',
+      table.countryId.asc().nullsLast().op('int4_ops'),
+    ),
+    foreignKey({
+      columns: [table.artistId],
+      foreignColumns: [artists.id],
+      name: 'artist_blacklisted_areas_artist_id_fkey',
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [table.countryId],
+      foreignColumns: [countries.id],
+      name: 'artist_blacklisted_areas_country_id_fkey',
+    }).onDelete('restrict'),
+    foreignKey({
+      columns: [table.subdivisionId],
+      foreignColumns: [subdivisions.id],
+      name: 'artist_blacklisted_areas_subdivision_id_fkey',
+    }).onDelete('restrict'),
+    foreignKey({
+      columns: [table.createdByUserId],
+      foreignColumns: [users.id],
+      name: 'artist_blacklisted_areas_created_by_user_id_fkey',
+    }).onDelete('set null'),
   ],
 );
 

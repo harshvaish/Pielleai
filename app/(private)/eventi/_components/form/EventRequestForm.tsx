@@ -8,7 +8,7 @@ import ArtistSelect from './ArtistSelect';
 import { EventFormSchema } from '@/lib/validation/event-form-schema';
 import QuickCreateArtistDialog from './QuickCreateArtistDialog';
 import QuickCreateVenueDialog from './QuickCreateVenueDialog';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 type EventRequestForm = {
   artists: ArtistSelectData[];
@@ -21,6 +21,8 @@ export default function EventRequestForm({ artists, venues, userRole }: EventReq
     watch,
     control,
     setValue,
+    setError,
+    clearErrors,
     formState: { errors },
   } = useFormContext<EventFormSchema>();
 
@@ -48,8 +50,61 @@ export default function EventRequestForm({ artists, venues, userRole }: EventReq
     return Array.from(byId.values());
   }, [venues, extraVenues]);
 
+  const selectedArtistId = watch('artistId');
   const selectedVenueId = watch('venueId');
   const selectedVenue = venueOptions.find((venue) => venue.id == selectedVenueId);
+
+  useEffect(() => {
+    if (!selectedArtistId || !selectedVenueId) {
+      if (errors.venueId?.type === 'blacklist') {
+        clearErrors('venueId');
+      }
+      return;
+    }
+
+    let isActive = true;
+    const controller = new AbortController();
+
+    const checkBlacklist = async () => {
+      try {
+        const response = await fetch(
+          `/api/artists/blacklist-check?a=${selectedArtistId}&v=${selectedVenueId}`,
+          { signal: controller.signal },
+        );
+        const payload = await response.json();
+
+        if (!isActive) return;
+
+        if (!payload?.success) {
+          if (errors.venueId?.type === 'blacklist') {
+            clearErrors('venueId');
+          }
+          return;
+        }
+
+        if (payload.data?.blocked) {
+          setError('venueId', {
+            type: 'blacklist',
+            message:
+              'Questo artista non accetta prenotazioni da questo locale o area geografica.',
+          });
+        } else if (errors.venueId?.type === 'blacklist') {
+          clearErrors('venueId');
+        }
+      } catch (error) {
+        if (errors.venueId?.type === 'blacklist') {
+          clearErrors('venueId');
+        }
+      }
+    };
+
+    checkBlacklist();
+
+    return () => {
+      isActive = false;
+      controller.abort();
+    };
+  }, [selectedArtistId, selectedVenueId, setError, clearErrors]);
 
   return (
     <>

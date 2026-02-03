@@ -524,6 +524,31 @@ export type VenueListData = Pick<
 
 export type VenueBadgeData = Pick<VenueData, 'id' | 'slug' | 'status' | 'avatarUrl' | 'name'>;
 
+export type ArtistBlacklistVenue = {
+  id: number;
+  venue: VenueBadgeData & {
+    address: string;
+    city: string;
+  };
+};
+
+export type ArtistBlacklistArea = {
+  id: number;
+  country: Country;
+  subdivision: Subdivision | null;
+  city: string | null;
+};
+
+export type ArtistBlacklist = {
+  venues: ArtistBlacklistVenue[];
+  areas: ArtistBlacklistArea[];
+};
+
+export type ArtistBlacklistCheck = {
+  blocked: boolean;
+  reason: 'venue' | 'area' | null;
+};
+
 // availability
 export type ArtistAvailability = {
   id: number;

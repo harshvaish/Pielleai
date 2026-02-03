@@ -29,6 +29,7 @@ import AvailabilitiesTab from './_components/Tabs/AvailabilitiesTab';
 import SocialDataTab from '../../_components/Tabs/SocialDataTab';
 import ArtistEventsTab from './_components/Tabs/ArtistEventsTab';
 import DocumentsTab from './_components/Tabs/DocumentsTab';
+import BlacklistTab from './_components/Tabs/BlacklistTab';
 import CreateEventButton from '../../eventi/_components/create/CreateButton';
 import CreateArtistManagerButton from '../../manager-artisti/_components/create/CreateButton';
 import { getArtistsCached } from '@/lib/cache/artists';
@@ -37,6 +38,7 @@ import ManageArtistManagersButton from './_components/ManageArtistManagersButton
 import { getContracts } from '@/lib/data/contracts/get-contracts';
 import { getEvents } from '@/lib/data/events/get-events';
 import { getArtistOtherDocuments } from '@/lib/data/documents/get-artist-other-documents';
+import { getArtistBlacklist } from '@/lib/data/artists/get-artist-blacklist';
 
 type ArtistDetailPageProps = {
   params: Promise<{ slug: string }>;
@@ -81,9 +83,10 @@ export default async function ArtistDetailPage({ params, searchParams }: ArtistD
       getVenuesCached(),
       isAdmin ? getArtistsCached() : Promise.resolve([]),
       isAdmin ? getMoCoordinatorsCached() : Promise.resolve([]),
-    ]);
+  ]);
 
   if (!userData) notFound();
+  const blacklist = await getArtistBlacklist(userData.id);
 
   let initialNotesData: ProfileNote[] = [];
 
@@ -287,12 +290,13 @@ export default async function ArtistDetailPage({ params, searchParams }: ArtistD
           <TabsList className='w-full lg:max-w-max justify-start gap-4 bg-white p-1 rounded-xl overflow-x-auto'>
             <TabsTrigger value='a'>Dati personali</TabsTrigger>
             <TabsTrigger value='b'>Dati di fatturazione</TabsTrigger>
-          <TabsTrigger value='c'>Disponibilità</TabsTrigger>
+            <TabsTrigger value='c'>Disponibilità</TabsTrigger>
             <TabsTrigger value='f'>Documenti</TabsTrigger>
             <TabsTrigger value='d'>Social</TabsTrigger>
             <TabsTrigger value='e'>Eventi</TabsTrigger>
-        </TabsList>
-      </div>
+            <TabsTrigger value='g'>Blacklist</TabsTrigger>
+          </TabsList>
+        </div>
 
         <PersonalDataTab
           tabValue='a'
@@ -326,6 +330,13 @@ export default async function ArtistDetailPage({ params, searchParams }: ArtistD
           passportFileUrl={userData.passportFileUrl}
           passportFileName={userData.passportFileName}
           artistOtherDocuments={artistOtherDocuments}
+        />
+        <BlacklistTab
+          tabValue='g'
+          artistId={userData.id}
+          venues={venues}
+          countries={countries}
+          initialBlacklist={blacklist}
         />
       </Tabs>
     </div>

@@ -10,6 +10,7 @@ import { AppError } from '@/lib/classes/AppError';
 import getSession from '@/lib/data/auth/get-session';
 import { recomputeConflicts } from '@/lib/data/events/recompute-conflicts';
 import { generateEventTitle } from '@/lib/utils/generate-event-title';
+import { checkArtistBlacklist } from '@/lib/data/artists/check-artist-blacklist';
 
 export const createEventRequest = async (
   data: EventRequestFormSchema,
@@ -68,6 +69,14 @@ export const createEventRequest = async (
 
     if (venueCheck.count === 0) {
       throw new AppError('Locale selezionato non valido.');
+    }
+
+    const blacklistCheck = await checkArtistBlacklist(artistId, venueId);
+
+    if (blacklistCheck.blocked) {
+      throw new AppError(
+        'Questo artista non accetta prenotazioni da questo locale o area geografica.',
+      );
     }
 
     const rangeWindow = sql`tstzrange(${availability.startDate}::timestamptz, ${availability.endDate}::timestamptz, '[)')`;
