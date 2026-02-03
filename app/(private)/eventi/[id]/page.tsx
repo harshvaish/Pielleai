@@ -33,6 +33,7 @@ import { getEventProfessionals } from '@/lib/data/events/get-event-professionals
 import { getProfessionalsCached } from '@/lib/cache/professionals';
 import { HostedEventBadge } from '@/app/(private)/_components/Badges/HostedEventBadge';
 import { getEventSummaryDocument } from '@/lib/data/documents/get-event-summary-document';
+import RemoveApprovedVenueButton from './_components/RemoveApprovedVenueButton';
 
 const EVENT_TYPE_LABELS: Record<EventType, string> = {
   'dj-set': 'DJ set',
@@ -138,6 +139,28 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
   const eventTitle =
     event.title?.trim() ||
     generateEventTitle(artistLabel, event.venue.name, event.startDate, event.endDate);
+
+  const paymentStatus = paymentData?.paymentStatus ?? 'pending';
+  const allowedEventStatus = ['pre-confirmed', 'confirmed'].includes(event.status);
+  const isPreConfirmedAwaitingContract =
+    event.status === 'pre-confirmed' && paymentStatus === 'pending';
+  const isContractSignedAwaitingUpfront = paymentStatus === 'upfront-required';
+  const isBookedAwaitingBalance = ['upfront-paid', 'balance-required'].includes(paymentStatus);
+  const isFullyConfirmed = ['fully-paid', 'balance-paid'].includes(paymentStatus);
+
+  const canRemoveVenue =
+    isAdmin &&
+    allowedEventStatus &&
+    (isPreConfirmedAwaitingContract || isContractSignedAwaitingUpfront || isBookedAwaitingBalance) &&
+    !isFullyConfirmed;
+
+  const removeVenueDisabledReason = !isAdmin
+    ? undefined
+    : !allowedEventStatus
+      ? 'Operazione consentita solo per eventi pre-confermati o confermati.'
+      : isFullyConfirmed
+        ? 'Operazione non consentita: evento completamente pagato.'
+        : 'Operazione non consentita per lo stato corrente.';
 
   console.log('[EventPage] Payment Data:', {
     paymentStatus: paymentData?.paymentStatus,
@@ -544,6 +567,25 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
           </>
         )}
       </section>
+
+      {isAdmin && (
+        <section className='bg-white p-6 rounded-2xl space-y-3 border border-red-100'>
+          <div className='flex flex-wrap items-center justify-between gap-3'>
+            <h2 className='text-lg font-bold text-red-600'>Rimozione locale approvato</h2>
+            <RemoveApprovedVenueButton
+              eventId={event.id}
+              eventTitle={eventTitle}
+              venueName={event.venue.name}
+              canRemove={canRemoveVenue}
+              disabledReason={removeVenueDisabledReason}
+            />
+          </div>
+          <p className='text-sm text-zinc-500'>
+            Usa questa azione per rimuovere il locale prima della conferma finale. Il motivo della
+            rimozione e gli aggiornamenti del contratto verranno registrati nel log evento.
+          </p>
+        </section>
+      )}
     </div>
   );
 }
