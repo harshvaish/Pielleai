@@ -55,7 +55,7 @@ export default function RemoveApprovedVenueButton({
     if (!response.success) {
       toast.error(response.message || 'Rimozione non riuscita.');
     } else {
-      toast.success(\"Locale rimosso dall'evento.\");
+      toast.success("Locale rimosso dall'evento.");
     }
 
     setLoading(false);
