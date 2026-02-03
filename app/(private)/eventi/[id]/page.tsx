@@ -16,6 +16,7 @@ import { events, contracts } from '@/drizzle/schema';
 import { eq } from 'drizzle-orm';
 import { generateEventTitle } from '@/lib/utils/generate-event-title';
 import { getContractPreviewUrl } from '@/lib/utils/contract-preview';
+import InAppRatingBanner from '../_components/InAppRatingBanner';
 import RegisterPaymentForm from './_components/RegisterPaymentForm';
 import PayWithStripeButton from './_components/PayWithStripeButton';
 import PaymentSuccessHandler from './_components/PaymentSuccessHandler';
@@ -246,6 +247,16 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
           professionals={eventProfessionals}
           allProfessionals={allProfessionals}
           isAdmin={isAdmin}
+        />
+      )}
+
+
+      {/* In-app Rating Banner for finished events (Venue/Artist Managers) */}
+      {event.status === 'ended' && hasRole(user, ['artist-manager', 'venue-manager']) && (
+        <InAppRatingBanner
+          reviewType={user.role === 'artist-manager' ? 'artist_reviews_venue' : 'venue_reviews_artist'}
+          entityName={user.role === 'artist-manager' ? event.venue.name : (event.artist.stageName || artistName)}
+          eventId={event.id}
         />
       )}
 
