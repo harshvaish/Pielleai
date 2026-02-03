@@ -156,6 +156,8 @@ export const EVENT_STATUS_LABELS: Record<EventStatus, string> = {
   'confirmed': 'Confermato',
   'rejected': 'Rifiutato',
   'ended': 'Finito',
+  'cancelled': 'Annullato',
+  'in-dispute': 'In contestazione legale',
 };
 
 //venues

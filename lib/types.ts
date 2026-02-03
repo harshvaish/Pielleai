@@ -2,6 +2,8 @@ import { Event as RbcEvent } from 'react-big-calendar';
 import {
   availabilityStatus,
   eventStatus,
+  eventCancellationRequestedBy,
+  eventCancellationType,
   eventGuestStatus,
   eventGuestOriginGroup,
   eventGuestColorTag,
@@ -33,6 +35,8 @@ export type ApiResponse<T = unknown> =
 // enums
 export type AvailabilityStatus = (typeof availabilityStatus.enumValues)[number];
 export type EventStatus = (typeof eventStatus.enumValues)[number];
+export type EventCancellationRequestedBy = (typeof eventCancellationRequestedBy.enumValues)[number];
+export type EventCancellationType = (typeof eventCancellationType.enumValues)[number];
 export type EventGuestStatus = (typeof eventGuestStatus.enumValues)[number];
 export type EventGuestOriginGroup = (typeof eventGuestOriginGroup.enumValues)[number];
 export type EventGuestColorTag = (typeof eventGuestColorTag.enumValues)[number];
@@ -578,6 +582,16 @@ export type Event = {
   availability: ArtistAvailability;
   venue: VenueSelectData;
   status: EventStatus;
+  cancellationRequestedBy?: EventCancellationRequestedBy | null;
+  cancellationType?: EventCancellationType | null;
+  cancellationAt?: string | Date | null;
+  cancellationUserId?: string | null;
+  cancellationUserRole?: UserRole | null;
+  cancellationNotes?: string | null;
+  cancellationAccountingCompleted?: boolean | null;
+  cancellationAccountingCompletedAt?: string | Date | null;
+  cancellationLegalEmailSentAt?: string | Date | null;
+  cancellationLegalEmailTo?: string | null;
   hasConflict: boolean;
   artistManager: ArtistManagerSelectData | null;
   tourManagerEmail: string | null;
@@ -671,6 +685,16 @@ export type EventSummary = {
   protocolNumber?: string | null;
   guestLimit: number;
   status: EventStatus;
+  cancellationRequestedBy?: EventCancellationRequestedBy | null;
+  cancellationType?: EventCancellationType | null;
+  cancellationAt?: string | Date | null;
+  cancellationUserId?: string | null;
+  cancellationUserRole?: UserRole | null;
+  cancellationNotes?: string | null;
+  cancellationAccountingCompleted?: boolean | null;
+  cancellationAccountingCompletedAt?: string | Date | null;
+  cancellationLegalEmailSentAt?: string | Date | null;
+  cancellationLegalEmailTo?: string | null;
   eventType: EventType | null;
   startDate: Date;
   endDate: Date;

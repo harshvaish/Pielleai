@@ -113,6 +113,14 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
               status='ended'
               label='Finito'
             />
+            <StatusFilterButton
+              status='cancelled'
+              label='Annullato'
+            />
+            <StatusFilterButton
+              status='in-dispute'
+              label='Contestazione legale'
+            />
           </div>
         </div>
         <div className='flex flex-wrap items-center gap-2'>

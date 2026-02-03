@@ -61,6 +61,22 @@ export default async function UpdateEventPage({ params }: UpdateEventPageProps) 
       </div>
     );
   }
+
+  if (['cancelled', 'in-dispute'].includes(event.status)) {
+    return (
+      <div className='max-w-3xl space-y-2'>
+        <div className='flex items-center justify-between -mt-2'>
+          <BackButton />
+        </div>
+        <section className='bg-white p-6 rounded-2xl space-y-4'>
+          <h1 className='text-2xl font-bold'>Evento annullato</h1>
+          <p className='text-sm text-zinc-600'>
+            Questo evento e stato annullato e non puo essere modificato direttamente.
+          </p>
+        </section>
+      </div>
+    );
+  }
   const [artists, venues, moCoordinators, professionals] = await Promise.all([
     getArtistsCached(),
     getVenuesCached(),

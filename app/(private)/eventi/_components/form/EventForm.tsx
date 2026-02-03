@@ -59,6 +59,10 @@ import ViewContractButton from "../update/ViewContractButton";
 import ViewContractDetail from "../update/ViewContractDetail";
 import ResendDocuSignButton from "../update/ResendDocuSignButton";
 
+const STATUS_OPTIONS = eventStatus.enumValues.filter(
+  (status) => !["cancelled", "in-dispute"].includes(status),
+);
+
 type EventForm = {
   artists: ArtistSelectData[];
   venues: VenueSelectData[];
@@ -645,7 +649,7 @@ export default function EventForm({
                   <EventStatusBadge status={field.value} />
                 </SelectTrigger>
                 <SelectContent>
-                  {eventStatus.enumValues.map((status) => (
+                  {STATUS_OPTIONS.map((status) => (
                     <SelectItem key={status} value={status}>
                       <EventStatusBadge status={status} />
                     </SelectItem>

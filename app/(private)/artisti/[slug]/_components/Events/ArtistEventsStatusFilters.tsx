@@ -7,7 +7,13 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useTransition } from 'react';
 
 const DEFAULT_STATUSES: EventStatus[] = ['proposed', 'pre-confirmed', 'confirmed'];
-const ALL_STATUSES: EventStatus[] = [...DEFAULT_STATUSES, 'ended', 'rejected'];
+const ALL_STATUSES: EventStatus[] = [
+  ...DEFAULT_STATUSES,
+  'ended',
+  'rejected',
+  'cancelled',
+  'in-dispute',
+];
 
 export default function ArtistEventsStatusFilters() {
   const router = useRouter();

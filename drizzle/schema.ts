@@ -28,7 +28,17 @@ export const eventStatus = pgEnum('event_status', [
   'confirmed',
   'rejected',
   'ended',
-  'completed',
+  'cancelled',
+  'in-dispute',
+]);
+export const eventCancellationRequestedBy = pgEnum('event_cancellation_requested_by', [
+  'venue',
+  'booking',
+]);
+export const eventCancellationType = pgEnum('event_cancellation_type', [
+  'venue',
+  'peaceful',
+  'legal-dispute',
 ]);
 export const eventGuestStatus = pgEnum('event_guest_status', [
   'to-invite',
@@ -371,6 +381,16 @@ export const events = pgTable(
     tourManagerEmail: text('tour_manager_email'),
     hasConflict: boolean('has_conflict').default(false).notNull(),
     status: eventStatus().default('proposed').notNull(),
+    cancellationRequestedBy: eventCancellationRequestedBy('cancellation_requested_by'),
+    cancellationType: eventCancellationType('cancellation_type'),
+    cancellationAt: timestamp('cancellation_at', { precision: 6, withTimezone: true, mode: 'string' }),
+    cancellationUserId: text('cancellation_user_id'),
+    cancellationUserRole: userRoles('cancellation_user_role'),
+    cancellationNotes: text('cancellation_notes'),
+    cancellationAccountingCompleted: boolean('cancellation_accounting_completed'),
+    cancellationAccountingCompletedAt: timestamp('cancellation_accounting_completed_at', { precision: 6, withTimezone: true, mode: 'string' }),
+    cancellationLegalEmailSentAt: timestamp('cancellation_legal_email_sent_at', { precision: 6, withTimezone: true, mode: 'string' }),
+    cancellationLegalEmailTo: text('cancellation_legal_email_to'),
     masterEventId: integer('master_event_id'),
     revisionNumber: integer('revision_number').default(0).notNull(),
     protocolNumber: text('protocol_number'),

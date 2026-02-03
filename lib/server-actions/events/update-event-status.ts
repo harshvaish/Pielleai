@@ -44,6 +44,10 @@ export async function updateEventStatus(
       throw new AppError('Dati inviati non validi.');
     }
 
+    if (['cancelled', 'in-dispute'].includes(newStatus)) {
+      throw new AppError('Usa la procedura di annullamento per questo stato.');
+    }
+
     const now = new Date();
 
     // Fetch event + availability + artist + venue for email notification and reviews
@@ -88,6 +92,9 @@ export async function updateEventStatus(
 
     if (!oldEvent) throw new AppError('Evento non trovato.');
     if (isBefore(oldEvent.availability.endDate, now)) throw new AppError('Evento scaduto.');
+    if (['cancelled', 'in-dispute'].includes(oldEvent.status)) {
+      throw new AppError('Evento annullato: stato non modificabile.');
+    }
 
     const rangeWindow = sql`tstzrange(${oldEvent.availability.startDate}::timestamptz, ${oldEvent.availability.endDate}::timestamptz, '[)')`;
 
