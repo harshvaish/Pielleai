@@ -10,7 +10,6 @@ import EventContent from './EventContent';
 import ConfirmDialog from '@/app/_components/ConfirmDialog';
 import { useState } from 'react';
 import EventStatusBadge from '../Badges/EventStatusBadge';
-import { HostedEventBadge } from '../Badges/HostedEventBadge';
 import { generateEventTitle } from '@/lib/utils/generate-event-title';
 
 type ShowMoreProps = RBCShowMoreProps<CalendarEvent> & {
@@ -62,7 +61,6 @@ export default function ShowMore({ slotDate, events, count, userRole }: ShowMore
                   {eventTitle}
                 </div>
                 <div className='flex items-center gap-1.5'>
-                  {event.hostedEvent && <HostedEventBadge size='xs' />}
                   <EventStatusBadge
                     status={event.status}
                     size='xs'
