@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { database } from '@/lib/database/connection';
 import { reviews } from '@/drizzle/schema';
 import { eq, and } from 'drizzle-orm';
-import { getSession } from '@/lib/data/auth/get-session';
+import getSession from '@/lib/data/auth/get-session';
 
 /**
  * GET /api/reviews/submit/in-app/check?eventId=...&reviewType=...
@@ -24,7 +24,11 @@ export async function GET(request: NextRequest) {
     const [existing] = await database
       .select()
       .from(reviews)
-      .where(and(eq(reviews.eventId, eventId), eq(reviews.reviewType, reviewType), eq(reviews.reviewerId, user.id)))
+      .where(and(
+        eq(reviews.eventId, eventId),
+        eq(reviews.reviewType, reviewType as 'artist_reviews_venue' | 'venue_reviews_artist'),
+        eq(reviews.reviewerId, user.id)
+      ))
       .limit(1);
     return NextResponse.json({ alreadyReviewed: !!existing }, { status: 200 });
   } catch (error) {
