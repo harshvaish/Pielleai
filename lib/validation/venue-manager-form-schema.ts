@@ -10,6 +10,14 @@ import {
   phoneValidation,
   profileGendersEnumValidation,
   zipCodeValidation,
+  addressFormattedValidation,
+  streetNameValidation,
+  streetNumberValidation,
+  placeIdValidation,
+  latitudeValidation,
+  longitudeValidation,
+  countryNameValidation,
+  countryCodeValidation,
 } from './_general';
 
 const optionalString = <T extends z.ZodTypeAny>(schema: T) =>
@@ -52,6 +60,14 @@ export const venueManagerS1FormSchema = z.object({
   address: optionalString(
     z.string('Campo malformato.').min(5, 'Minimo 5 caratteri.').max(150, 'Massimo 150 caratteri.').trim(),
   ),
+  addressFormatted: optionalString(addressFormattedValidation),
+  streetName: optionalString(streetNameValidation),
+  streetNumber: optionalString(streetNumberValidation),
+  placeId: optionalString(placeIdValidation),
+  latitude: optionalString(latitudeValidation),
+  longitude: optionalString(longitudeValidation),
+  countryName: optionalString(countryNameValidation),
+  countryCode: optionalString(countryCodeValidation),
 
   countryId: optionalId,
 

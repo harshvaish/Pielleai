@@ -18,6 +18,14 @@ import {
   bicCodeValidation,
   abaRoutingNumberValidation,
   sdiRecipientCodeValidation,
+  addressFormattedValidation,
+  streetNameValidation,
+  streetNumberValidation,
+  placeIdValidation,
+  latitudeValidation,
+  longitudeValidation,
+  countryNameValidation,
+  countryCodeValidation,
 } from './_general';
 
 const optionalString = <T extends z.ZodTypeAny>(schema: T) =>
@@ -58,6 +66,14 @@ export const artistManagerS1FormSchema = z.object({
   ),
 
   address: optionalString(addressValidation),
+  addressFormatted: optionalString(addressFormattedValidation),
+  streetName: optionalString(streetNameValidation),
+  streetNumber: optionalString(streetNumberValidation),
+  placeId: optionalString(placeIdValidation),
+  latitude: optionalString(latitudeValidation),
+  longitude: optionalString(longitudeValidation),
+  countryName: optionalString(countryNameValidation),
+  countryCode: optionalString(countryCodeValidation),
 
   countryId: optionalId,
 
@@ -88,9 +104,17 @@ export const artistManagerS2FormSchema = z
 
     sdiRecipientCode: optionalString(sdiRecipientCodeValidation),
 
-    billingAddress: optionalString(addressValidation),
+  billingAddress: optionalString(addressValidation),
+  billingAddressFormatted: optionalString(addressFormattedValidation),
+  billingStreetName: optionalString(streetNameValidation),
+  billingStreetNumber: optionalString(streetNumberValidation),
+  billingPlaceId: optionalString(placeIdValidation),
+  billingLatitude: optionalString(latitudeValidation),
+  billingLongitude: optionalString(longitudeValidation),
+  billingCountryName: optionalString(countryNameValidation),
+  billingCountryCode: optionalString(countryCodeValidation),
 
-    billingCountry: countryValidation.optional(),
+  billingCountry: countryValidation.optional(),
 
     billingSubdivisionId: optionalId,
 

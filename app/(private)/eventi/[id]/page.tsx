@@ -281,8 +281,6 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
           </span>
           <span className='font-semibold text-zinc-600'>Locale</span>
           <span className='font-medium text-zinc-500'>{event.venue.name}</span>
-          <span className='font-semibold text-zinc-600'>Città</span>
-          <span className='font-medium text-zinc-500'>{event.venue.city || '-'}</span>
           <span className='font-semibold text-zinc-600'>Indirizzo</span>
           <span className='font-medium text-zinc-500'>{event.venue.address || '-'}</span>
         </div>

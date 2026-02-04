@@ -141,6 +141,14 @@ export type ArtistManagerData<T = ArtistListData | ArtistSelectData> = {
   birthDate: string | null;
   birthPlace: string | null;
   address: string;
+  addressFormatted: string | null;
+  streetName: string | null;
+  streetNumber: string | null;
+  placeId: string | null;
+  latitude: string | null;
+  longitude: string | null;
+  countryName: string | null;
+  countryCode: string | null;
   country: Country | null;
   subdivision: Subdivision | null;
   city: string;
@@ -157,6 +165,14 @@ export type ArtistManagerData<T = ArtistListData | ArtistSelectData> = {
   iban: string;
   sdiRecipientCode: string | null;
   billingAddress: string;
+  billingAddressFormatted: string | null;
+  billingStreetName: string | null;
+  billingStreetNumber: string | null;
+  billingPlaceId: string | null;
+  billingLatitude: string | null;
+  billingLongitude: string | null;
+  billingCountryName: string | null;
+  billingCountryCode: string | null;
   billingCountry: Country | null;
   billingSubdivision: Subdivision | null;
   billingCity: string;
@@ -216,6 +232,14 @@ export type ArtistData = {
   birthDate: string | null;
   birthPlace: string | null;
   address: string | null;
+  addressFormatted: string | null;
+  streetName: string | null;
+  streetNumber: string | null;
+  placeId: string | null;
+  latitude: string | null;
+  longitude: string | null;
+  countryName: string | null;
+  countryCode: string | null;
   country: Country | null;
   subdivision: Subdivision | null;
   city: string | null;
@@ -244,6 +268,14 @@ export type ArtistData = {
   iban: string | null;
   sdiRecipientCode: string | null;
   billingAddress: string | null;
+  billingAddressFormatted: string | null;
+  billingStreetName: string | null;
+  billingStreetNumber: string | null;
+  billingPlaceId: string | null;
+  billingLatitude: string | null;
+  billingLongitude: string | null;
+  billingCountryName: string | null;
+  billingCountryCode: string | null;
   billingCountry: Country | null;
   billingSubdivision: Subdivision | null;
   billingCity: string | null;
@@ -388,6 +420,14 @@ export type VenueManagerData<T = VenueTableData | VenueListData | VenueBadgeData
   birthDate: string | null;
   birthPlace: string | null;
   address: string;
+  addressFormatted: string | null;
+  streetName: string | null;
+  streetNumber: string | null;
+  placeId: string | null;
+  latitude: string | null;
+  longitude: string | null;
+  countryName: string | null;
+  countryCode: string | null;
   country: Country | null;
   subdivision: Subdivision | null;
   city: string;
@@ -439,6 +479,14 @@ export type VenueData = {
   capacity: number;
 
   address: string;
+  addressFormatted: string | null;
+  streetName: string | null;
+  streetNumber: string | null;
+  placeId: string | null;
+  latitude: string | null;
+  longitude: string | null;
+  countryName: string | null;
+  countryCode: string | null;
   country: Country | null;
   subdivision: Subdivision | null;
   city: string;
@@ -453,6 +501,14 @@ export type VenueData = {
   abaRoutingNumber: string | null;
   sdiRecipientCode: string | null;
   billingAddress: string;
+  billingAddressFormatted: string | null;
+  billingStreetName: string | null;
+  billingStreetNumber: string | null;
+  billingPlaceId: string | null;
+  billingLatitude: string | null;
+  billingLongitude: string | null;
+  billingCountryName: string | null;
+  billingCountryCode: string | null;
   billingCountry: Country | null;
   billingSubdivision: Subdivision | null;
   billingCity: string;
@@ -493,6 +549,8 @@ export type VenueTableData = Pick<
   | 'company'
   | 'taxCode'
   | 'address'
+  | 'city'
+  | 'zipCode'
   | 'manager'
   | 'type'
   | 'capacity'
@@ -505,7 +563,17 @@ export type VenueTableData = Pick<
 
 export type VenueSelectData = Pick<
   VenueData,
-  'id' | 'slug' | 'status' | 'avatarUrl' | 'name' | 'address' | 'manager' | 'company' | 'vatCode'
+  | 'id'
+  | 'slug'
+  | 'status'
+  | 'avatarUrl'
+  | 'name'
+  | 'address'
+  | 'city'
+  | 'zipCode'
+  | 'manager'
+  | 'company'
+  | 'vatCode'
 >;
 
 export type VenueListData = Pick<
@@ -518,6 +586,8 @@ export type VenueListData = Pick<
   | 'company'
   | 'taxCode'
   | 'address'
+  | 'city'
+  | 'zipCode'
   | 'type'
   | 'capacity'
 >;
@@ -698,6 +768,7 @@ export type ArtistEventListItem = {
     id: number;
     name: string;
     city: string | null;
+    zipCode?: string | null;
   };
 };
 
@@ -735,6 +806,7 @@ export type EventSummary = {
     name: string;
     city: string | null;
     address: string | null;
+    zipCode: string | null;
     slug: string;
   };
   artistManager: {

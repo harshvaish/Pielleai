@@ -47,6 +47,7 @@ export async function getEventSummary(eventId: number): Promise<EventSummary | n
           name: venues.name,
           city: venues.city,
           address: venues.address,
+          zipCode: venues.zipCode,
           slug: venues.slug,
         },
         artistManager: sql<{

@@ -3,8 +3,12 @@
 import { useFormContext, Controller } from 'react-hook-form';
 import AvatarUploadInput from '@/app/(private)/_components/form/AvatarUploadInput';
 import { Input } from '@/components/ui/input';
+import AddressAutocompleteInput, {
+  type AddressDetails,
+} from '@/components/forms/AddressAutocompleteInput';
 import { Separator } from '@/components/ui/separator';
 import { cn, fetcher } from '@/lib/utils';
+import { applyAddressDetails } from '@/lib/utils/address-details';
 import LanguagesSelect from '@/app/(private)/_components/form/LanguagesSelect';
 import { Select, SelectContent, SelectItem, SelectTrigger } from '@/components/ui/select';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
@@ -70,6 +74,19 @@ export default function StepOne({
       resetField('subdivisionId', { defaultValue: 0 });
     }
   }, [selectedCountryId, selectedSubdivisionId, subdivisions, isLoading, resetField]);
+
+  const handleAddressDetails = (details: AddressDetails) => {
+    applyAddressDetails(setValue, details);
+
+    if (details.countryCode) {
+      const match = countries.find(
+        (country) => country.code.toLowerCase() === details.countryCode?.toLowerCase(),
+      );
+      if (match) {
+        setValue('countryId', match.id, { shouldDirty: true, shouldTouch: true });
+      }
+    }
+  };
 
   return (
     <>
@@ -230,16 +247,31 @@ export default function StepOne({
         >
           Indirizzo di residenza
         </label>
-        <Input
-          id='address'
-          {...register('address')}
-          placeholder="Inserisci l'indirizzo di residenza"
-          className={errors.address ? 'border-destructive text-destructive' : ''}
-          autoComplete='street-address'
+        <Controller
+          control={control}
+          name='address'
+          render={({ field }) => (
+            <AddressAutocompleteInput
+              id='address'
+              value={field.value ?? ''}
+              onValueChange={field.onChange}
+              onDetails={handleAddressDetails}
+              placeholder="Inserisci l'indirizzo di residenza"
+              error={errors.address?.message as string | undefined}
+            />
+          )}
         />
         {errors.address && (
           <p className='text-xs text-destructive mt-2'>{errors.address.message as string}</p>
         )}
+        <input type='hidden' {...register('addressFormatted')} />
+        <input type='hidden' {...register('streetName')} />
+        <input type='hidden' {...register('streetNumber')} />
+        <input type='hidden' {...register('placeId')} />
+        <input type='hidden' {...register('latitude')} />
+        <input type='hidden' {...register('longitude')} />
+        <input type='hidden' {...register('countryName')} />
+        <input type='hidden' {...register('countryCode')} />
       </div>
 
       <div className='grid grid-cols-2 gap-4'>

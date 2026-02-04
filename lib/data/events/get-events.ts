@@ -135,6 +135,8 @@ export async function getEvents(
           avatarUrl: venues.avatarUrl,
           name: venues.name,
           address: venues.address,
+          city: venues.city,
+          zipCode: venues.zipCode,
 
           company: venues.company,
           vatCode: venues.vatCode,

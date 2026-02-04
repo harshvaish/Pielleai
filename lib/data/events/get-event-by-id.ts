@@ -71,6 +71,8 @@ export async function getEventById(user: User, eventId: number): Promise<Event |
           avatarUrl: venues.avatarUrl,
           name: venues.name,
           address: venues.address,
+          city: venues.city,
+          zipCode: venues.zipCode,
           company: venues.company,
           vatCode: venues.vatCode,
         },

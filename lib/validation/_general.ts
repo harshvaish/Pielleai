@@ -77,6 +77,25 @@ export const addressValidation = z
   .max(150, 'Massimo 150 caratteri.')
   .trim();
 
+export const addressFormattedValidation = z
+  .string('Campo malformato.')
+  .min(5, 'Minimo 5 caratteri.')
+  .max(200, 'Massimo 200 caratteri.')
+  .trim();
+
+export const streetNameValidation = z
+  .string('Campo malformato.')
+  .min(2, 'Minimo 2 caratteri.')
+  .max(100, 'Massimo 100 caratteri.')
+  .trim();
+
+export const streetNumberValidation = z
+  .string('Campo malformato.')
+  .min(1, 'Minimo 1 carattere.')
+  .max(10, 'Massimo 10 caratteri.')
+  .regex(/^[A-Z0-9\-\/ ]+$/i, 'Può contenere solo lettere, numeri, trattini o slash.')
+  .trim();
+
 export const cityValidation = z
   .string('Campo malformato.')
   .min(2, 'Minimo 2 caratteri.')
@@ -99,6 +118,51 @@ export const countryValidation = z.object(
     isEu: z.boolean("Seleziona un'opzione valida."),
   },
   "Seleziona un'opzione valida.",
+);
+
+export const countryNameValidation = z
+  .string('Campo malformato.')
+  .min(2, 'Minimo 2 caratteri.')
+  .max(100, 'Massimo 100 caratteri.')
+  .trim();
+
+export const countryCodeValidation = z
+  .string('Campo malformato.')
+  .length(2, 'Deve contenere esattamente 2 caratteri.')
+  .trim();
+
+export const placeIdValidation = z
+  .string('Campo malformato.')
+  .min(5, 'Minimo 5 caratteri.')
+  .max(200, 'Massimo 200 caratteri.')
+  .trim();
+
+const numberFromString = (val: unknown) => {
+  if (val === null || val === undefined || val === '') return undefined;
+  if (typeof val === 'number') return val;
+  if (typeof val === 'string' && val.trim() !== '' && Number.isFinite(Number(val))) {
+    return Number(val);
+  }
+  return val;
+};
+
+export const latitudeValidation = z.preprocess(
+  numberFromString,
+  z
+    .number('Campo malformato.')
+    .min(-90, 'Minimo -90.')
+    .max(90, 'Massimo 90.')
+    // Drizzle numeric columns are typed as string, so we store numerics as strings.
+    .transform((val) => String(val)),
+);
+
+export const longitudeValidation = z.preprocess(
+  numberFromString,
+  z
+    .number('Campo malformato.')
+    .min(-180, 'Minimo -180.')
+    .max(180, 'Massimo 180.')
+    .transform((val) => String(val)),
 );
 
 export const bicCodeValidation = z
