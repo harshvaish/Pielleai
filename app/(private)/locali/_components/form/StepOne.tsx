@@ -46,6 +46,8 @@ export default function StepOne({ userRole, countries, venueManagers }: StepOneP
   const selectedCountryId = watch('countryId');
   const selectedSubdivisionId = watch('subdivisionId');
   const venueManagerId = watch('venueManagerId');
+  const selectedCountryCode =
+    countries.find((country) => country.id === selectedCountryId)?.code?.toLowerCase() || 'it';
 
   const selectedVenueManager = venueManagers.find(
     (manager) => manager.profileId === venueManagerId,
@@ -239,6 +241,7 @@ export default function StepOne({ userRole, countries, venueManagers }: StepOneP
               onDetails={handleAddressDetails}
               placeholder="Inserisci l'indirizzo"
               error={errors.address?.message as string | undefined}
+              countryCode={selectedCountryCode}
             />
           )}
         />

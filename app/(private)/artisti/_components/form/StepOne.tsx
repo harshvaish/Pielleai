@@ -69,6 +69,8 @@ export default function StepOne({
 
   const selectedCountryId = watch('countryId');
   const selectedSubdivisionId = watch('subdivisionId');
+  const selectedCountryCode =
+    countries.find((country) => country.id === selectedCountryId)?.code?.toLowerCase() || 'it';
 
   const { data: response, isLoading } = useSWR(
     selectedCountryId ? `/api/country-subdivisions?c=${selectedCountryId}` : null,
@@ -423,6 +425,7 @@ export default function StepOne({
               onDetails={handleAddressDetails}
               placeholder="Inserisci l'indirizzo di residenza"
               error={errors.address?.message as string | undefined}
+              countryCode={selectedCountryCode}
             />
           )}
         />

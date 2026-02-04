@@ -32,6 +32,7 @@ export default function StepTwo({ countries }: StepTwoProps) {
 
   const selectedCountry = watch('billingCountry');
   const selectedSubdivisionId = watch('billingSubdivisionId');
+  const selectedCountryCode = selectedCountry?.code?.toLowerCase() || 'it';
 
   const isEU = selectedCountry?.isEu;
   const isUSA = selectedCountry?.code === 'US';
@@ -119,6 +120,7 @@ export default function StepTwo({ countries }: StepTwoProps) {
               onDetails={handleBillingAddressDetails}
               placeholder='Inserisci sede legale'
               error={errors.billingAddress?.message as string | undefined}
+              countryCode={selectedCountryCode}
             />
           )}
         />
