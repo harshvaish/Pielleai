@@ -46,6 +46,7 @@ import ArtistsBadge from '../Badges/ArtistsBadge';
 import VenuesBadge from '../Badges/VenuesBadge';
 import EventStatusBadge from '../Badges/EventStatusBadge';
 import EventConflictBadge from '../Badges/EventConflictBadge';
+import { HostedEventBadge } from '../Badges/HostedEventBadge';
 
 const locales = { it };
 
@@ -236,9 +237,9 @@ export default function EventsCalendar({ userRole, artists, venues }: EventsCale
       setPanelPosition(null);
       return;
     }
-    const panelWidth = 460;
     const padding = 12;
     const placement: 'right' = 'right';
+    const panelWidth = panelRef.current?.offsetWidth ?? 520;
     const rawLeft = anchorRect.right - containerRect.left + padding;
     const left = Math.min(Math.max(rawLeft, 8), containerRect.width - panelWidth - 8);
     const panelHeight = panelRef.current?.offsetHeight ?? 420;
@@ -290,7 +291,8 @@ export default function EventsCalendar({ userRole, artists, venues }: EventsCale
             {startDate} - {endDate}
           </span>
         </div>
-        <div className='flex items-center gap-2'>
+        <div className='flex items-center gap-1.5'>
+          {event.hostedEvent && <HostedEventBadge size='xs' />}
           <EventStatusBadge status={event.status} size='xs' />
           {isAdmin && event.hasConflict && <EventConflictBadge size='sm' />}
           {showClose && (
@@ -379,7 +381,7 @@ export default function EventsCalendar({ userRole, artists, venues }: EventsCale
         {isDesktop && selectedEvent && (
           <aside
             ref={panelRef}
-            className='absolute z-20 w-[460px] max-h-[calc(100%-2rem)] rounded-2xl border bg-white/95 p-5 shadow-xl backdrop-blur'
+            className='absolute z-20 w-[520px] xl:w-[560px] max-w-[calc(100%-1rem)] max-h-[calc(100%-2rem)] rounded-2xl border bg-white/95 p-5 shadow-xl backdrop-blur'
             style={
               panelPosition
                 ? { top: panelPosition.top, left: panelPosition.left }
@@ -398,6 +400,7 @@ export default function EventsCalendar({ userRole, artists, venues }: EventsCale
               <EventContent
                 userRole={userRole}
                 event={selectedEvent}
+                showHostedBadge={false}
               />
             </div>
           </aside>
@@ -424,6 +427,7 @@ export default function EventsCalendar({ userRole, artists, venues }: EventsCale
               <EventContent
                 userRole={userRole}
                 event={selectedEvent}
+                showHostedBadge={false}
               />
             </div>
           )}
