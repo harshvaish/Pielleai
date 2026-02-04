@@ -197,39 +197,40 @@ export default function StepOne({
         )}
       </div>
 
+
       <div className='flex flex-col'>
         <label
-          htmlFor='categories'
+          htmlFor='genres'
           className='block text-sm font-semibold mb-2'
         >
-          Categorie
+          Genere musicale
         </label>
         <Controller
           control={control}
           name='categories'
-          render={({ field }) => (
-            <Input
-              id='categories'
-              value={(field.value ?? []).join(', ')}
-              onChange={(event) => {
-                const raw = event.target.value || '';
-                const entries = raw
-                  .split(',')
-                  .map((value) => value.trim())
-                  .filter(Boolean);
-                const unique = new Map<string, string>();
-                entries.forEach((value) => {
-                  const key = value.toLowerCase();
-                  if (!unique.has(key)) unique.set(key, value);
-                });
-                field.onChange(Array.from(unique.values()));
-              }}
-              placeholder='Rap, Pop, Indie'
-              className={errors.categories ? 'border-destructive text-destructive' : ''}
-            />
-          )}
+          render={({ field }) => {
+            const GENRES = [
+              'Alternative', 'Blues', 'Classica', 'Country', 'Dance', 'Elettronica', 'Folk', 'Funk', 'Gospel',
+              'Hip Hop', 'Indie', 'Jazz', 'Metal', 'Pop', 'Punk', 'R&B', 'Rap', 'Reggae', 'Rock'
+            ];
+            return (
+              <div className='flex flex-wrap gap-2'>
+                {GENRES.map((genre) => (
+                  <label key={genre} className='flex items-center gap-2 text-sm font-normal'>
+                    <Checkbox
+                      checked={field.value?.includes(genre) ?? false}
+                      onCheckedChange={(checked) => {
+                        if (checked) field.onChange([...(field.value ?? []), genre]);
+                        else field.onChange((field.value ?? []).filter((g: string) => g !== genre));
+                      }}
+                    />
+                    {genre}
+                  </label>
+                ))}
+              </div>
+            );
+          }}
         />
-        <p className='text-xs text-zinc-400 mt-2'>Separa le categorie con una virgola.</p>
         {errors.categories && (
           <p className='text-xs text-destructive mt-2'>
             {errors.categories.message as string}
