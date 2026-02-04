@@ -143,6 +143,10 @@
   color: #ffffff;
 }
 
+.rbc-event.ended.rbc-selected .rbc-event-content img {
+  filter: brightness(0) invert(1);
+}
+
 .rbc-event.ended.rbc-selected {
   background-color: var(--color-gray-600);
 }
