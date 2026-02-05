@@ -1,12 +1,24 @@
 'use client';
 
+import * as React from 'react';
+
 import { Controller, useFormContext } from 'react-hook-form';
-import { Select, SelectContent, SelectItem, SelectTrigger } from '@/components/ui/select';
+import { Button } from '@/components/ui/button';
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from '@/components/ui/command';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Check, ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { VenueSelectData } from '@/lib/types';
-import Image from 'next/image';
 import { EventFormSchema } from '@/lib/validation/event-form-schema';
 import { AVATAR_FALLBACK } from '@/lib/constants';
+import ResponsivePopover from '@/app/_components/ResponsivePopover';
 
 type VenueSelectProps = { venues: VenueSelectData[] };
 
@@ -19,44 +31,118 @@ export default function VenueSelect({ venues }: VenueSelectProps) {
 
   const selectedVenueId = watch('venueId');
   const selectedVenue = venues.find((v) => v.id === selectedVenueId);
+  const [open, setOpen] = React.useState(false);
 
   return (
     <Controller
       control={control}
       name='venueId'
-      render={({ field }) => (
-        <Select
-          value={field.value ? field.value.toString() : undefined}
-          onValueChange={(v) => field.onChange(parseInt(v))}
-        >
-          <SelectTrigger
-            className={cn('w-full', errors.venueId && 'border-destructive text-destructive')}
-            size='sm'
-          >
-            {selectedVenue ? selectedVenue.name : 'Seleziona un locale'}
-          </SelectTrigger>
-          <SelectContent>
-            {venues.map((venue) => (
-              <SelectItem
-                key={venue.id}
-                value={venue.id?.toString()}
+      render={({ field }) => {
+        const selectedId = typeof field.value === 'number' ? field.value : undefined;
+
+        const onSelectHandler = (value: string): void => {
+          const nextId = parseInt(value);
+          if (!Number.isFinite(nextId)) return;
+          field.onChange(nextId);
+          setOpen(false);
+        };
+
+        return (
+          <ResponsivePopover
+            open={open}
+            onOpenChange={setOpen}
+            title='Seleziona locale'
+            description=''
+            isDescriptionHidden={true}
+            align='start'
+            trigger={
+              <Button
+                variant='outline'
+                size='sm'
+                type='button'
+                className={cn(
+                  'w-full justify-start text-sm font-normal',
+                  errors.venueId && 'border-destructive',
+                )}
               >
-                <div className='flex items-center gap-2 flex-nowrap'>
-                  <Image
-                    src={venue.avatarUrl || AVATAR_FALLBACK}
-                    alt='Immagine profilo locale'
-                    height={24}
-                    width={24}
-                    sizes='24px'
-                    className='w-6 h-6 rounded-full'
+                <span
+                  className={cn(
+                    'w-full flex justify-between items-center gap-2',
+                    !selectedVenue && 'text-zinc-400',
+                  )}
+                >
+                  <span className='truncate'>
+                    {selectedVenue ? selectedVenue.name : 'Seleziona un locale'}
+                  </span>
+                  <ChevronDown
+                    className={cn('transition-transform', open ? 'rotate-180' : '')}
                   />
-                  {venue.name}
-                </div>
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      )}
+                </span>
+              </Button>
+            }
+          >
+            <div className='mt-4 border-t'>
+              <Command>
+                <CommandInput placeholder='Ricerca locale' />
+                <CommandList
+                  className='max-h-60 overflow-y-auto overscroll-contain'
+                  onWheel={(event) => event.stopPropagation()}
+                  onTouchMove={(event) => event.stopPropagation()}
+                >
+                  <CommandEmpty>Nessun risultato.</CommandEmpty>
+                  <CommandGroup>
+                    {venues.map((venue) => {
+                      const isSelected = venue.id === selectedId;
+                      const keywords = [
+                        venue.name,
+                        venue.city,
+                        venue.address,
+                        venue.company,
+                        venue.zipCode,
+                      ].filter(Boolean) as string[];
+
+                      return (
+                        <CommandItem
+                          key={venue.id}
+                          value={venue.id.toString()}
+                          onSelect={onSelectHandler}
+                          keywords={keywords}
+                          disabled={isSelected}
+                        >
+                          <div className='w-full flex justify-between items-center gap-2 hover:cursor-pointer'>
+                            <div className='flex items-center gap-2 truncate'>
+                              <Avatar className='w-6 h-6'>
+                                <AvatarImage src={venue.avatarUrl || AVATAR_FALLBACK} />
+                                <AvatarFallback>
+                                  {venue.name.substring(0, 1).toUpperCase()}
+                                </AvatarFallback>
+                              </Avatar>
+                              <div className='flex flex-col truncate'>
+                                <span className='truncate'>{venue.name}</span>
+                                {venue.city ? (
+                                  <span className='text-xs text-zinc-500 truncate'>
+                                    {venue.city}
+                                  </span>
+                                ) : null}
+                              </div>
+                            </div>
+                            <Check
+                              className={cn(
+                                'transition-opacity',
+                                isSelected ? 'opacity-100' : 'opacity-0',
+                              )}
+                            />
+                          </div>
+                        </CommandItem>
+                      );
+                    })}
+                  </CommandGroup>
+                </CommandList>
+              </Command>
+            </div>
+          </ResponsivePopover>
+        );
+      }}
     />
   );
 }
