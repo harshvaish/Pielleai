@@ -11,13 +11,14 @@ import {
   users,
 } from '@/lib/database/schema';
 import { ArtistTableData, ArtistManagerSelectData, Zone, ArtistsTableFilters } from '@/lib/types';
-import { and, count, desc, eq, ilike, inArray, or } from 'drizzle-orm';
+import { and, count, desc, eq, ilike, inArray, or, sql } from 'drizzle-orm';
 
 export async function getPaginatedArtists({
   currentPage,
   fullName,
   email,
   phone,
+  categories = [],
   managerIds,
   zoneIds,
 }: ArtistsTableFilters): Promise<{
@@ -73,6 +74,28 @@ export async function getPaginatedArtists({
     }
 
     // Build reusable filters
+    const normalizedCategories = Array.from(
+      new Set(
+        categories
+          .map((category) => category.trim().toLowerCase())
+          .filter(Boolean),
+      ),
+    );
+
+    const categoriesFilter =
+      normalizedCategories.length > 0
+        ? sql<boolean>`exists (
+            select 1
+            from unnest(coalesce(${artists.categories}, ARRAY[]::text[])) as c(category)
+            where ${sql.join(
+              normalizedCategories.map(
+                (category) => sql`lower(c.category) = ${category}`,
+              ),
+              sql` or `,
+            )}
+          )`
+        : undefined;
+
     const filters = and(
       or(
         fullName ? ilike(artists.name, `%${fullName}%`) : undefined,
@@ -80,6 +103,7 @@ export async function getPaginatedArtists({
       ),
       email ? ilike(artists.email, `%${email}%`) : undefined,
       phone ? ilike(artists.phone, `%${phone}%`) : undefined,
+      categoriesFilter,
       managerFilteredArtistIds ? inArray(artists.id, managerFilteredArtistIds) : undefined,
       zoneFilteredArtistIds ? inArray(artists.id, zoneFilteredArtistIds) : undefined,
     );
@@ -94,6 +118,7 @@ export async function getPaginatedArtists({
         surname: artists.surname,
         stageName: artists.stageName,
         bio: artists.bio,
+        categories: artists.categories,
         email: artists.email,
         phone: artists.phone,
         company: artists.company,
@@ -185,6 +210,7 @@ export async function getPaginatedArtists({
     // Merge artist + managers + zones
     const mergedResult = artistsResult.map((artist) => ({
       ...artist,
+      categories: artist.categories ?? [],
       zones: zonesByArtist[artist.id] || [],
       managers: managersByArtist[artist.id] || [],
     }));

@@ -16,6 +16,7 @@ type FiltersButtonProps = {
   artistManagers: ArtistManagerSelectData[];
   zones: Zone[];
   label?: string;
+  showCategoriesFilter?: boolean;
 };
 
 export default function FiltersButton({
@@ -24,6 +25,7 @@ export default function FiltersButton({
   artistManagers,
   zones,
   label = 'Filtri',
+  showCategoriesFilter = false,
 }: FiltersButtonProps) {
   const router = useRouter();
   const [open, setOpen] = useState<boolean>(false);
@@ -33,6 +35,7 @@ export default function FiltersButton({
     filters.fullName ||
       filters.email ||
       filters.phone ||
+      (showCategoriesFilter ? (filters.categories?.length ?? 0) > 0 : false) ||
       (isAdmin ? filters.managerIds.length : false) ||
       filters.zoneIds.length,
   );
@@ -40,6 +43,7 @@ export default function FiltersButton({
   const [fullName, setFullName] = useState<string>(filters.fullName || '');
   const [email, setEmail] = useState<string>(filters.email || '');
   const [phone, setPhone] = useState<string>(filters.phone || '');
+  const [categories, setCategories] = useState<string[]>(filters.categories ?? []);
   const [managerIds, setManagerIds] = useState<string[]>(filters.managerIds || []);
   const [zoneIds, setZoneIds] = useState<string[]>(filters.zoneIds || '');
 
@@ -47,6 +51,7 @@ export default function FiltersButton({
     setFullName('');
     setEmail('');
     setPhone('');
+    setCategories([]);
     setManagerIds([]);
     setZoneIds([]);
   };
@@ -70,6 +75,12 @@ export default function FiltersButton({
       params.set('phone', phone.trim());
     } else {
       params.delete('phone');
+    }
+
+    if (showCategoriesFilter && categories.length > 0) {
+      params.set('category', categories.join(','));
+    } else {
+      params.delete('category');
     }
 
     if (isAdmin && managerIds.length > 0) {
@@ -148,6 +159,29 @@ export default function FiltersButton({
               initialValue={managerIds}
               artistManagers={artistManagers}
               onConfirm={setManagerIds}
+            />
+          </div>
+        )}
+
+        {showCategoriesFilter && (
+          <div className='flex flex-col'>
+            <div className='text-sm font-semibold mb-2'>Categorie</div>
+            <Input
+              placeholder='Rap, Pop, Indie'
+              value={categories.join(', ')}
+              onChange={(event) => {
+                const raw = event.target.value || '';
+                const entries = raw
+                  .split(',')
+                  .map((value) => value.trim())
+                  .filter(Boolean);
+                const unique = new Map<string, string>();
+                entries.forEach((value) => {
+                  const key = value.toLowerCase();
+                  if (!unique.has(key)) unique.set(key, value);
+                });
+                setCategories(Array.from(unique.values()));
+              }}
             />
           </div>
         )}

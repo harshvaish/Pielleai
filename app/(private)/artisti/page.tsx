@@ -27,6 +27,7 @@ import ArtistsBadge from '../_components/Badges/ArtistsBadge';
 import StatusBadge from '../_components/Badges/StatusBadge';
 import ManagersBadge from '../_components/Badges/ManagersBadge';
 import ZonesBadge from '../_components/Badges/ZonesBadge';
+import CategoriesBadge from '../_components/Badges/CategoriesBadge';
 import ArtistCard from './_components/ArtistCard';
 import ExportButton from '../_components/ExportButton';
 import { endOfDay, format, startOfDay } from 'date-fns';
@@ -40,6 +41,7 @@ type ArtistsPageProps = {
     fullName?: string;
     email?: string;
     phone?: string;
+    category?: string;
     manager?: string;
     zone?: string;
     recDate?: string;
@@ -82,6 +84,7 @@ export default async function ArtistsPage({ searchParams }: ArtistsPageProps) {
     fullName: isVenueManager ? null : sp?.fullName || null,
     email: isVenueManager ? null : sp?.email || null,
     phone: isVenueManager ? null : sp?.phone || null,
+    categories: isVenueManager ? [] : splitCsv(sp?.category),
     managerIds: isVenueManager ? [] : managersFilter,
     zoneIds: isVenueManager ? [] : splitCsv(sp?.zone),
   };
@@ -152,6 +155,7 @@ export default async function ArtistsPage({ searchParams }: ArtistsPageProps) {
               filters={filters}
               artistManagers={artistManagers}
               zones={zones}
+              showCategoriesFilter
             />
 
             <CreateButton
@@ -328,6 +332,7 @@ export default async function ArtistsPage({ searchParams }: ArtistsPageProps) {
                 <TableHead>Email</TableHead>
                 <TableHead>Numero di telefono</TableHead>
                 <TableHead>Manager</TableHead>
+                <TableHead>Categorie</TableHead>
                 <TableHead>Area di interesse</TableHead>
               </TableRow>
             </TableHeader>
@@ -362,6 +367,9 @@ export default async function ArtistsPage({ searchParams }: ArtistsPageProps) {
                         managers={artist.managers}
                         pathSegment='manager-artisti'
                       />
+                    </TableCell>
+                    <TableCell>
+                      <CategoriesBadge categories={artist.categories} />
                     </TableCell>
                     <TableCell>
                       <ZonesBadge zones={artist.zones} />

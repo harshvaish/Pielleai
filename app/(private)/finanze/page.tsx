@@ -16,9 +16,6 @@ import { getUserProfileIdCached } from '@/lib/cache/users';
 import { notFound, redirect } from 'next/navigation';
 import { format } from 'date-fns';
 import { it } from 'date-fns/locale';
-import EventStatusBadge from '../_components/Badges/EventStatusBadge';
-import ArtistsBadge from '../_components/Badges/ArtistsBadge';
-import VenuesBadge from '../_components/Badges/VenuesBadge';
 import Link from 'next/link';
 import { generateEventTitle } from '@/lib/utils/generate-event-title';
 
@@ -113,39 +110,9 @@ export default async function FinanzePage({ searchParams }: FinanzePageProps) {
 
   return (
     <div className='h-full grid grid-rows-[min-content_min-content_1fr_min-content] gap-2'>
-      <div className='flex justify-between items-center'>
+      <div className='flex flex-wrap items-center justify-between gap-3'>
         <h1 className='text-xl md:text-2xl font-bold'>Finanze</h1>
-      </div>
-
-      <div className='w-full flex flex-col lg:flex-row justify-between items-end lg:items-center gap-3 overflow-hidden'>
-        <div className='max-w-full bg-white flex items-center gap-1 p-0.5 rounded-xl overflow-auto'>
-          <StatusFilterButton
-            status='proposed'
-            label='Proposto'
-            singleSelect
-          />
-          <StatusFilterButton
-            status='pre-confirmed'
-            label='Pre confermato'
-            singleSelect
-          />
-          <StatusFilterButton
-            status='confirmed'
-            label='Confermato'
-            singleSelect
-          />
-          <StatusFilterButton
-            status='rejected'
-            label='Rifiutato'
-            singleSelect
-          />
-          <StatusFilterButton
-            status='ended'
-            label='Finito'
-            singleSelect
-          />
-        </div>
-        <div className='flex items-center gap-2'>
+        <div className='flex flex-wrap items-center gap-2'>
           <ConflictFilterButton />
           <FiltersButton
             userRole={user.role}
@@ -158,16 +125,40 @@ export default async function FinanzePage({ searchParams }: FinanzePageProps) {
         </div>
       </div>
 
+      <div className='justify-self-start w-fit max-w-full bg-white flex items-center gap-1 p-0.5 rounded-xl overflow-auto'>
+        <StatusFilterButton
+          status='proposed'
+          label='Proposto'
+          singleSelect
+        />
+        <StatusFilterButton
+          status='pre-confirmed'
+          label='Pre confermato'
+          singleSelect
+        />
+        <StatusFilterButton
+          status='confirmed'
+          label='Confermato'
+          singleSelect
+        />
+        <StatusFilterButton
+          status='rejected'
+          label='Rifiutato'
+          singleSelect
+        />
+        <StatusFilterButton
+          status='ended'
+          label='Finito'
+          singleSelect
+        />
+      </div>
+
       {events.length > 0 ? (
         <div className='max-h-full bg-white p-4 rounded-2xl overflow-auto'>
-          <Table className='min-w-[1400px]'>
+          <Table className='min-w-[1200px]'>
             <TableHeader className='bg-zinc-50'>
               <TableRow>
                 <TableHead>Titolo evento</TableHead>
-                <TableHead>Data evento</TableHead>
-                <TableHead>Artista</TableHead>
-                <TableHead>Locale</TableHead>
-                <TableHead>Stato</TableHead>
                 <TableHead className='text-right'>Cachet lordo</TableHead>
                 <TableHead className='text-right'>Acconto</TableHead>
                 <TableHead className='text-right'>Fee promoter</TableHead>
@@ -183,9 +174,6 @@ export default async function FinanzePage({ searchParams }: FinanzePageProps) {
             </TableHeader>
             <TableBody>
               {events.map((event) => {
-                const eventDate = format(event.availability.startDate, 'dd/MM/yyyy', {
-                  locale: it,
-                });
                 const bookingAmount = computeBookingAmount(
                   event.moCost,
                   event.bookingPercentage,
@@ -215,25 +203,6 @@ export default async function FinanzePage({ searchParams }: FinanzePageProps) {
                       >
                         {eventTitle}
                       </Link>
-                    </TableCell>
-                    <TableCell className='whitespace-nowrap'>{eventDate}</TableCell>
-                    <TableCell className='whitespace-nowrap'>
-                      <ArtistsBadge
-                        artists={[event.artist]}
-                        userRole={user.role}
-                      />
-                    </TableCell>
-                    <TableCell className='whitespace-nowrap'>
-                      <VenuesBadge
-                        userRole={user.role}
-                        venues={[event.venue]}
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <EventStatusBadge
-                        status={event.status}
-                        size='sm'
-                      />
                     </TableCell>
                     <TableCell className='text-right tabular-nums whitespace-nowrap'>
                       {formatCurrency(event.moCost)}

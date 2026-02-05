@@ -521,6 +521,30 @@ export const artistNotes = pgTable(
   ],
 );
 
+export const artistContacts = pgTable(
+  'artist_contacts',
+  {
+    id: serial().primaryKey().notNull(),
+    artistId: integer('artist_id').notNull(),
+    name: text(),
+    phone: text(),
+    email: text(),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    index('idx_artist_contacts_artist_id').using(
+      'btree',
+      table.artistId.asc().nullsLast().op('int4_ops'),
+    ),
+    foreignKey({
+      columns: [table.artistId],
+      foreignColumns: [artists.id],
+      name: 'artist_contacts_artist_id_fkey',
+    }).onDelete('cascade'),
+  ],
+);
+
 export const venues = pgTable(
   'venues',
   {

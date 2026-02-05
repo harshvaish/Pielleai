@@ -209,6 +209,7 @@ export type ArtistsTableFilters = {
   fullName: string | null;
   email: string | null;
   phone: string | null;
+  categories?: string[];
   managerIds: string[];
   zoneIds: string[];
 };
@@ -306,6 +307,16 @@ export type ArtistData = {
   xCreatedAt: string | null;
 };
 
+export type ArtistContact = {
+  id: number;
+  artistId: number;
+  name: string | null;
+  phone: string | null;
+  email: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
 export type ArtistTableData = Pick<
   ArtistData,
   | 'id'
@@ -318,6 +329,7 @@ export type ArtistTableData = Pick<
   | 'surname'
   | 'stageName'
   | 'bio'
+  | 'categories'
   | 'phone'
   | 'email'
   | 'company'

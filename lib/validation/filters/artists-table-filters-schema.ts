@@ -6,6 +6,7 @@ export const artistsTableFiltersSchema = z.object({
   fullName: z.string().nullable(),
   email: z.string().nullable(),
   phone: z.string().nullable(),
+  categories: z.array(z.string()).optional(),
   managerIds: z.array(stringIdValidation),
   zoneIds: z.array(stringIdValidation),
 });
