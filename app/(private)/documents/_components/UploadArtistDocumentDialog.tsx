@@ -321,10 +321,10 @@ export default function UploadArtistDocumentDialog({
                 <SelectValue placeholder="Seleziona tipo documento" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="tax-code">Fiscal Code</SelectItem>
-                <SelectItem value="id-card">ID Card</SelectItem>
-                <SelectItem value="passport">Passport</SelectItem>
-                <SelectItem value="other">Other</SelectItem>
+                <SelectItem value="tax-code">Codice fiscale</SelectItem>
+                <SelectItem value="id-card">Carta d&apos;Identità</SelectItem>
+                <SelectItem value="passport">Passaporto</SelectItem>
+                <SelectItem value="other">Altri documenti degli artisti</SelectItem>
               </SelectContent>
             </Select>
           </div>

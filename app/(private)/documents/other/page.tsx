@@ -209,7 +209,7 @@ export default async function OtherDocumentsPage({
 
       <div className="flex flex-col gap-2">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <h1 className="text-xl md:text-2xl font-bold">Other</h1>
+          <h1 className="text-xl md:text-2xl font-bold">Altri documenti degli eventi</h1>
           <div className="flex items-center gap-2">
             <FiltersButton
               userRole={user.role}
@@ -351,7 +351,7 @@ export default async function OtherDocumentsPage({
                         rel="noopener noreferrer"
                         className="text-zinc-700 hover:underline"
                       >
-                        Other
+                        Documenti
                       </a>
                       <a
                         href={doc.url}

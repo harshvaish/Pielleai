@@ -1333,7 +1333,7 @@ export default function EventForm({
 
             <div className="flex flex-col">
               <div className="text-sm font-semibold mb-2">
-                Other
+                Altri documenti degli eventi
               </div>
               <OtherTechnicalSheetUploadInput />
             </div>

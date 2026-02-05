@@ -112,25 +112,25 @@ export default function PersonalDataTab({
             fileName={data.taxCodeFileName}
           />
 
-          <span className='text-sm font-semibold text-zinc-600'>ID Card</span>
+          <span className='text-sm font-semibold text-zinc-600'>Carta d&apos;Identità</span>
           <ArtistDocumentUpload
             artistId={data.id}
-            label='ID Card'
+            label="Carta d'Identità"
             docType='id-card'
             fileUrl={data.idCardFileUrl}
             fileName={data.idCardFileName}
           />
 
-          <span className='text-sm font-semibold text-zinc-600'>Passport</span>
+          <span className='text-sm font-semibold text-zinc-600'>Passaporto</span>
           <ArtistDocumentUpload
             artistId={data.id}
-            label='Passport'
+            label='Passaporto'
             docType='passport'
             fileUrl={data.passportFileUrl}
             fileName={data.passportFileName}
           />
 
-          <span className='text-sm font-semibold text-zinc-600'>Other</span>
+          <span className='text-sm font-semibold text-zinc-600'>Altri documenti degli artisti</span>
           <div className='flex flex-wrap items-center gap-2'>
             {latestOtherDocument ? (
               <a

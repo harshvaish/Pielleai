@@ -57,7 +57,7 @@ export default async function ArtistOtherDocumentsPage({
       </div>
 
       <div className="flex items-center justify-between gap-3">
-        <h1 className="text-xl md:text-2xl font-bold">Other</h1>
+        <h1 className="text-xl md:text-2xl font-bold">Altri documenti degli artisti</h1>
       </div>
 
       {paginatedDocuments.length > 0 ? (

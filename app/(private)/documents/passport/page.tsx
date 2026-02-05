@@ -102,7 +102,7 @@ export default async function PassportPage({ searchParams }: PassportPageProps) 
       </div>
 
       <div className="flex items-center justify-between gap-3">
-        <h1 className="text-xl md:text-2xl font-bold">Passport</h1>
+        <h1 className="text-xl md:text-2xl font-bold">Passaporto</h1>
       </div>
 
       {artists.length > 0 ? (
@@ -151,7 +151,7 @@ export default async function PassportPage({ searchParams }: PassportPageProps) 
                 <div className="flex flex-wrap items-center gap-3 justify-end">
                   <div className="inline-flex items-center gap-2 text-xs text-zinc-500">
                     <FileText className="h-4 w-4 text-zinc-400" />
-                    <span>Passport</span>
+                    <span>Passaporto</span>
                   </div>
                   {artist.passportFileUrl ? (
                     <a
@@ -161,7 +161,7 @@ export default async function PassportPage({ searchParams }: PassportPageProps) 
                       className="inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-1.5 text-xs text-zinc-700 hover:underline"
                     >
                       <FileText className="h-4 w-4 text-zinc-400" />
-                      {artist.passportFileName ?? "Passport.pdf"}
+                      {artist.passportFileName ?? "Passaporto.pdf"}
                     </a>
                   ) : (
                     <span className="text-zinc-400">Mancante</span>

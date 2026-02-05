@@ -317,12 +317,12 @@ export default function DocumentsTab({
       <div className='grid gap-6 lg:grid-cols-2 mb-6'>
         <section className='bg-white rounded-2xl border border-zinc-100'>
           <div className='flex items-center justify-between border-b border-zinc-100 px-4 py-3'>
-            <h2 className='text-sm font-semibold text-zinc-800'>Passport</h2>
+            <h2 className='text-sm font-semibold text-zinc-800'>Passaporto</h2>
           </div>
           <div className='px-4 py-4'>
             <div className='flex flex-wrap items-center gap-2 text-xs text-zinc-500'>
               <FileText className='h-4 w-4 text-zinc-400' />
-              <span>Passport</span>
+              <span>Passaporto</span>
               {passportFileUrl ? (
                 <a
                   href={passportFileUrl}
@@ -331,7 +331,7 @@ export default function DocumentsTab({
                   className='inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-zinc-700 hover:underline'
                 >
                   <FileText className='h-4 w-4 text-zinc-400' />
-                  {passportFileName ?? 'Passport.pdf'}
+                  {passportFileName ?? 'Passaporto.pdf'}
                 </a>
               ) : (
                 <span className='text-zinc-400'>Mancante</span>
@@ -342,7 +342,7 @@ export default function DocumentsTab({
 
         <section className='bg-white rounded-2xl border border-zinc-100'>
           <div className='flex items-center justify-between border-b border-zinc-100 px-4 py-3'>
-            <h2 className='text-sm font-semibold text-zinc-800'>Other</h2>
+            <h2 className='text-sm font-semibold text-zinc-800'>Altri documenti degli artisti</h2>
             <a
               href='/documents/artist-other'
               className='inline-flex items-center gap-1 text-xs text-zinc-500 hover:text-zinc-700'

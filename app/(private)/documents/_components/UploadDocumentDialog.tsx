@@ -339,7 +339,7 @@ export default function UploadDocumentDialog({ events }: UploadDocumentDialogPro
               <SelectContent>
                 <SelectItem value="contract">Contracts</SelectItem>
                 <SelectItem value="technical-ride">Technical Ride</SelectItem>
-                <SelectItem value="other">Other</SelectItem>
+                <SelectItem value="other">Altri documenti degli eventi</SelectItem>
               </SelectContent>
             </Select>
           </div>
