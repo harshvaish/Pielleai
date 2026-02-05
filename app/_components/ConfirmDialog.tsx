@@ -83,14 +83,16 @@ export default function ConfirmDialog({
           e.preventDefault();
         }}
         showOverlay={showOverlay}
-        className='grid grid-rows-[min-content_min-content_1fr] overflow-hidden'
+        className='grid grid-rows-[min-content_min-content_1fr] overflow-hidden max-h-[calc(100dvh-2rem)]'
       >
         <DialogTitle className={isTitleHidden ? 'hidden' : ''}>{title}</DialogTitle>
         <DialogDescription className={isDescriptionHidden ? 'hidden' : ''}>
           {description}
         </DialogDescription>
         {children ? (
-          <div className='min-h-0 overflow-y-auto'>{children}</div>
+          <div className='min-h-0 overflow-y-auto overscroll-contain max-h-[calc(80dvh-12rem)] md:max-h-[calc(100dvh-12rem)]'>
+            {children}
+          </div>
         ) : (
           <DialogFooter className='flex justify-end gap-2 mt-2'>
             <Button
@@ -125,7 +127,9 @@ export default function ConfirmDialog({
             {description}
           </DrawerDescription>
           {children ? (
-            <div className='min-h-0 overflow-y-auto'>{children}</div>
+            <div className='min-h-0 overflow-y-auto overscroll-contain max-h-[calc(80dvh-12rem)]'>
+              {children}
+            </div>
           ) : (
             <DrawerFooter className='grid grid-cols-2 gap-2 p-0'>
               <Button

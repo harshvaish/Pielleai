@@ -876,14 +876,14 @@ export default function EventForm({
           {canManageProfessionals && (
             <div className="flex flex-col gap-3 rounded-2xl border bg-white p-4">
               <div className="text-sm font-semibold">Professionisti associati</div>
-              <div className="grid gap-3 sm:grid-cols-2 sm:items-end">
+              <div className="grid gap-3 sm:grid-cols-[220px_1fr] sm:items-end">
                 <div className="flex flex-col gap-1">
                   <span className="text-xs uppercase text-zinc-500">Categoria</span>
                   <Select
                     value={selectedProfessionalRole}
                     onValueChange={(value) => setSelectedProfessionalRole(value as ProfessionalRole)}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="w-full">
                       <SelectValue placeholder="Seleziona categoria" />
                     </SelectTrigger>
                     <SelectContent>

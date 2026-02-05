@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useTransition } from 'react';
-import { Plus } from 'lucide-react';
+import { Pencil, Plus, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { TabsContent } from '@/components/ui/tabs';
@@ -11,6 +11,9 @@ import ManagersBadge from '@/app/(private)/_components/Badges/ManagersBadge';
 import TourManagerBadge from '@/app/(private)/_components/Badges/TourManagerBadge';
 import type { ArtistContact, ArtistManagerSelectData, UserRole } from '@/lib/types';
 import { createArtistContact } from '@/lib/server-actions/artists/create-artist-contact';
+import { updateArtistContact } from '@/lib/server-actions/artists/update-artist-contact';
+import { deleteArtistContact } from '@/lib/server-actions/artists/delete-artist-contact';
+import ConfirmDialog from '@/app/_components/ConfirmDialog';
 
 type ContactsTabProps = {
   tabValue: string;
@@ -36,6 +39,9 @@ export default function ContactsTab({
 }: ContactsTabProps) {
   const [contacts, setContacts] = useState<ArtistContact[]>(initialContacts);
   const [isFormVisible, setIsFormVisible] = useState(false);
+  const [editingContactId, setEditingContactId] = useState<number | null>(null);
+  const [selectedContactId, setSelectedContactId] = useState<number | null>(null);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
@@ -49,6 +55,41 @@ export default function ContactsTab({
     setError('');
   };
 
+  const openCreateForm = () => {
+    setEditingContactId(null);
+    resetForm();
+    setIsFormVisible(true);
+  };
+
+  const openEditForm = (contact: ArtistContact) => {
+    setEditingContactId(contact.id);
+    setName(contact.name || '');
+    setPhone(contact.phone || '');
+    setEmail(contact.email || '');
+    setError('');
+    setIsFormVisible(true);
+  };
+
+  const handleDeleteContact = async (contactId: number) => {
+    const previousContacts = [...contacts];
+    setContacts((prev) => prev.filter((contact) => contact.id !== contactId));
+
+    if (editingContactId === contactId) {
+      setEditingContactId(null);
+      resetForm();
+      setIsFormVisible(false);
+    }
+
+    const response = await deleteArtistContact(artistId, contactId);
+    if (!response.success) {
+      setContacts(previousContacts);
+      toast.error(response.message || 'Eliminazione contatto non riuscita.');
+      return;
+    }
+
+    toast.success('Contatto eliminato.');
+  };
+
   const onSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     setError('');
@@ -58,22 +99,32 @@ export default function ContactsTab({
       return;
     }
 
+    const contactIdToUpdate = editingContactId;
+
     startTransition(async () => {
-      const response = await createArtistContact(artistId, {
-        name,
-        phone,
-        email,
-      });
+      const payload = { name, phone, email };
+      const response = contactIdToUpdate
+        ? await updateArtistContact(artistId, contactIdToUpdate, payload)
+        : await createArtistContact(artistId, payload);
 
       if (!response.success || !response.data) {
-        toast.error(response.message || 'Creazione contatto non riuscita.');
+        toast.error(response.message || 'Salvataggio contatto non riuscito.');
         return;
       }
 
-      setContacts((prev) => [response.data, ...prev]);
+      if (contactIdToUpdate) {
+        setContacts((prev) =>
+          prev.map((contact) => (contact.id === contactIdToUpdate ? response.data : contact)),
+        );
+        toast.success('Contatto aggiornato.');
+      } else {
+        setContacts((prev) => [response.data, ...prev]);
+        toast.success('Contatto aggiunto.');
+      }
+
       resetForm();
       setIsFormVisible(false);
-      toast.success('Contatto aggiunto.');
+      setEditingContactId(null);
     });
   };
 
@@ -110,7 +161,7 @@ export default function ContactsTab({
             type='button'
             size='sm'
             variant='outline'
-            onClick={() => setIsFormVisible(true)}
+            onClick={openCreateForm}
           >
             <Plus className='h-4 w-4' />
             Aggiungi contatto
@@ -122,6 +173,9 @@ export default function ContactsTab({
             onSubmit={onSubmit}
             className='grid gap-4 mb-6 md:grid-cols-3'
           >
+            <div className='md:col-span-3 text-sm font-semibold text-zinc-700'>
+              {editingContactId ? 'Modifica contatto' : 'Nuovo contatto'}
+            </div>
             <div className='flex flex-col gap-1'>
               <div className='text-sm font-semibold text-zinc-600'>Nome</div>
               <Input
@@ -164,6 +218,7 @@ export default function ContactsTab({
                 variant='outline'
                 disabled={isPending}
                 onClick={() => {
+                  setEditingContactId(null);
                   resetForm();
                   setIsFormVisible(false);
                 }}
@@ -188,8 +243,34 @@ export default function ContactsTab({
                 key={contact.id}
                 className='rounded-xl border border-zinc-100 bg-white p-4'
               >
-                <div className='text-sm font-semibold text-zinc-800'>
-                  {contact.name || 'Contatto'}
+                <div className='flex items-start justify-between gap-2'>
+                  <div className='text-sm font-semibold text-zinc-800'>
+                    {contact.name || 'Contatto'}
+                  </div>
+                  <div className='flex items-center gap-1'>
+                    <Button
+                      type='button'
+                      size='icon'
+                      variant='ghost'
+                      disabled={isPending}
+                      onClick={() => openEditForm(contact)}
+                    >
+                      <Pencil className='h-4 w-4' />
+                    </Button>
+                    <Button
+                      type='button'
+                      size='icon'
+                      variant='ghost'
+                      className='text-destructive hover:text-destructive hover:bg-red-50'
+                      disabled={isPending}
+                      onClick={() => {
+                        setSelectedContactId(contact.id);
+                        setIsDeleteDialogOpen(true);
+                      }}
+                    >
+                      <Trash2 className='h-4 w-4' />
+                    </Button>
+                  </div>
                 </div>
                 <div className='mt-1 grid gap-1 text-xs text-zinc-500'>
                   {contact.email && <div>{contact.email}</div>}
@@ -201,8 +282,34 @@ export default function ContactsTab({
         ) : (
           <div className='text-sm text-zinc-500'>Nessun contatto aggiuntivo.</div>
         )}
+
+        <ConfirmDialog
+          open={isDeleteDialogOpen}
+          onOpenChange={(open) => {
+            if (!open) {
+              setSelectedContactId(null);
+              setIsDeleteDialogOpen(false);
+            } else {
+              setIsDeleteDialogOpen(true);
+            }
+          }}
+          title='Sei sicuro di voler eliminare il contatto?'
+          description='Attenzione: questa operazione è irreversibile. Il contatto verrà eliminato definitivamente.'
+          confirmLabel='Elimina'
+          cancelLabel='Annulla'
+          onConfirm={() => {
+            if (selectedContactId != null) {
+              handleDeleteContact(selectedContactId);
+              setSelectedContactId(null);
+              setIsDeleteDialogOpen(false);
+            }
+          }}
+          onCancel={() => {
+            setSelectedContactId(null);
+            setIsDeleteDialogOpen(false);
+          }}
+        />
       </section>
     </TabsContent>
   );
 }
-

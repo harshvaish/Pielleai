@@ -11,17 +11,26 @@ import { cn, fetcher } from '@/lib/utils';
 import { applyAddressDetails } from '@/lib/utils/address-details';
 import { Select, SelectContent, SelectItem, SelectTrigger } from '@/components/ui/select';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from '@/components/ui/command';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import useSWR from 'swr';
 import { Country, Subdivision, UserRole, VenueManagerSelectData, VenueType } from '@/lib/types';
 import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
-import Image from 'next/image';
 import { venueTypes } from '@/lib/database/schema';
 import { AVATAR_FALLBACK, VENUE_TYPE_LABELS } from '@/lib/constants';
 import { VenueS1FormSchema } from '@/lib/validation/venue-form-schema';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { X } from 'lucide-react';
+import { Check, ChevronDown, X } from 'lucide-react';
+import ResponsivePopover from '@/app/_components/ResponsivePopover';
 
 type StepOneProps = {
   userRole: UserRole;
@@ -42,6 +51,7 @@ export default function StepOne({ userRole, countries, venueManagers }: StepOneP
   const isAdmin = userRole === 'admin';
 
   const [subdivisions, setSubdivisions] = useState<Subdivision[]>([]);
+  const [isVenueManagerSelectOpen, setIsVenueManagerSelectOpen] = useState(false);
 
   const selectedCountryId = watch('countryId');
   const selectedSubdivisionId = watch('subdivisionId');
@@ -406,54 +416,121 @@ export default function StepOne({ userRole, countries, venueManagers }: StepOneP
             control={control}
             name='venueManagerId'
             render={({ field }) => (
-              <Select
-                value={field.value?.toString() ?? ''}
-                onValueChange={(v) => field.onChange(v ? parseInt(v) : undefined)}
-              >
-                <div className='flex items-center gap-2'>
-                  <SelectTrigger
-                    id='venueManagerId'
-                    className={cn(
-                      'w-full',
-                      errors.venueManagerId && 'border-destructive text-destructive',
-                    )}
-                    size='sm'
-                  >
-                    {selectedVenueManager
-                      ? `${selectedVenueManager.name} ${selectedVenueManager.surname}`
-                      : 'Seleziona un promoter'}
-                  </SelectTrigger>
-                  {venueManagerId && (
+              <div className='flex items-center gap-2'>
+                <ResponsivePopover
+                  open={isVenueManagerSelectOpen}
+                  onOpenChange={setIsVenueManagerSelectOpen}
+                  title='Seleziona promoter'
+                  description=''
+                  isDescriptionHidden={true}
+                  align='start'
+                  trigger={
                     <Button
                       variant='outline'
-                      size='icon'
-                      onClick={() => setValue('venueManagerId', undefined, { shouldDirty: true })}
+                      size='sm'
+                      type='button'
+                      className={cn(
+                        'w-full justify-start text-sm font-normal',
+                        errors.venueManagerId && 'border-destructive',
+                      )}
                     >
-                      <X className='size-4' />
-                    </Button>
-                  )}
-                </div>
-                <SelectContent>
-                  {venueManagers.map((manager) => (
-                    <SelectItem
-                      key={manager.id}
-                      value={manager.profileId?.toString()}
-                    >
-                      <div className='flex items-center gap-2 flex-nowrap'>
-                        <Image
-                          src={manager.avatarUrl || AVATAR_FALLBACK}
-                          alt='Immagine profilo utente'
-                          height={24}
-                          width={24}
-                          sizes='24px'
-                          className='w-6 h-6 rounded-full'
+                      <span
+                        className={cn(
+                          'w-full flex justify-between items-center gap-2',
+                          !selectedVenueManager && 'text-zinc-400',
+                        )}
+                      >
+                        <span className='truncate'>
+                          {selectedVenueManager
+                            ? `${selectedVenueManager.name} ${selectedVenueManager.surname}`
+                            : 'Seleziona un promoter'}
+                        </span>
+                        <ChevronDown
+                          className={cn(
+                            'transition-transform',
+                            isVenueManagerSelectOpen ? 'rotate-180' : '',
+                          )}
                         />
-                        {manager.name} {manager.surname}
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                      </span>
+                    </Button>
+                  }
+                >
+                  <div className='mt-4 border-t'>
+                    <Command>
+                      <CommandInput placeholder='Ricerca promoter' />
+                      <CommandList
+                        className='max-h-60 overflow-y-auto overscroll-contain'
+                        onWheel={(event) => event.stopPropagation()}
+                        onTouchMove={(event) => event.stopPropagation()}
+                      >
+                        <CommandEmpty>Nessun risultato.</CommandEmpty>
+                        <CommandGroup>
+                          {venueManagers
+                            .filter((manager) => typeof manager.profileId === 'number')
+                            .map((manager) => {
+                              const profileId = manager.profileId as number;
+                              const isSelected = profileId === venueManagerId;
+                              const keywords = [
+                                manager.name,
+                                manager.surname,
+                                `${manager.name} ${manager.surname}`,
+                              ];
+
+                              return (
+                                <CommandItem
+                                  key={manager.id}
+                                  value={profileId.toString()}
+                                  onSelect={(value) => {
+                                    const nextId = parseInt(value);
+                                    if (!Number.isFinite(nextId)) return;
+                                    field.onChange(nextId);
+                                    setIsVenueManagerSelectOpen(false);
+                                  }}
+                                  keywords={keywords}
+                                  disabled={isSelected}
+                                >
+                                  <div className='w-full flex justify-between items-center gap-2 hover:cursor-pointer'>
+                                    <div className='flex items-center gap-2 truncate'>
+                                      <Avatar className='w-6 h-6'>
+                                        <AvatarImage src={manager.avatarUrl || AVATAR_FALLBACK} />
+                                        <AvatarFallback>
+                                          {manager.name.substring(0, 1).toUpperCase()}
+                                        </AvatarFallback>
+                                      </Avatar>
+                                      <span className='truncate'>
+                                        {manager.name} {manager.surname}
+                                      </span>
+                                    </div>
+                                    <Check
+                                      className={cn(
+                                        'transition-opacity',
+                                        isSelected ? 'opacity-100' : 'opacity-0',
+                                      )}
+                                    />
+                                  </div>
+                                </CommandItem>
+                              );
+                            })}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </div>
+                </ResponsivePopover>
+
+                {venueManagerId && (
+                  <Button
+                    type='button'
+                    variant='outline'
+                    size='icon'
+                    onClick={() => {
+                      setIsVenueManagerSelectOpen(false);
+                      setValue('venueManagerId', undefined, { shouldDirty: true });
+                    }}
+                  >
+                    <X className='size-4' />
+                  </Button>
+                )}
+              </div>
             )}
           />
           {errors.venueManagerId && (

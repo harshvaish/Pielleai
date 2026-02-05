@@ -157,21 +157,21 @@ export default async function FinanzePage({ searchParams }: FinanzePageProps) {
         <div className='max-h-full bg-white p-4 rounded-2xl overflow-auto'>
           <Table className='min-w-[1200px]'>
             <TableHeader className='bg-zinc-50'>
-              <TableRow>
-                <TableHead>Titolo evento</TableHead>
-                <TableHead className='text-right'>Cachet lordo</TableHead>
-                <TableHead className='text-right'>Acconto</TableHead>
-                <TableHead className='text-right'>Fee promoter</TableHead>
-                <TableHead className='text-right'>% Booking</TableHead>
-                <TableHead className='text-right'>Booking</TableHead>
-                <TableHead className='text-right'>Spese anticipate</TableHead>
-                <TableHead className='text-right'>Netto artista</TableHead>
-                <TableHead className='text-right'>Saldo</TableHead>
-                <TableHead>Data pagamento</TableHead>
-                <TableHead>Fattura acconto</TableHead>
-                <TableHead>Promoter</TableHead>
-              </TableRow>
-            </TableHeader>
+                <TableRow>
+                  <TableHead>Titolo evento</TableHead>
+                  <TableHead className='text-center'>Cachet lordo</TableHead>
+                  <TableHead className='text-center'>Acconto</TableHead>
+                  <TableHead className='text-center'>Fee promoter</TableHead>
+                  <TableHead className='text-center'>% Booking</TableHead>
+                  <TableHead className='text-center'>Booking</TableHead>
+                  <TableHead className='text-center'>Spese anticipate</TableHead>
+                  <TableHead className='text-center'>Netto artista</TableHead>
+                  <TableHead className='text-center'>Saldo</TableHead>
+                  <TableHead className='text-center'>Data pagamento</TableHead>
+                  <TableHead className='text-center'>Fattura acconto</TableHead>
+                  <TableHead className='text-center'>Promoter</TableHead>
+                </TableRow>
+              </TableHeader>
             <TableBody>
               {events.map((event) => {
                 const bookingAmount = computeBookingAmount(
@@ -204,35 +204,35 @@ export default async function FinanzePage({ searchParams }: FinanzePageProps) {
                         {eventTitle}
                       </Link>
                     </TableCell>
-                    <TableCell className='text-right tabular-nums whitespace-nowrap'>
+                    <TableCell className='text-center tabular-nums whitespace-nowrap'>
                       {formatCurrency(event.moCost)}
                     </TableCell>
-                    <TableCell className='text-right tabular-nums whitespace-nowrap'>
+                    <TableCell className='text-center tabular-nums whitespace-nowrap'>
                       {formatCurrency(event.depositCost)}
                     </TableCell>
-                    <TableCell className='text-right tabular-nums whitespace-nowrap'>
+                    <TableCell className='text-center tabular-nums whitespace-nowrap'>
                       {formatCurrency(event.venueManagerCost)}
                     </TableCell>
-                    <TableCell className='text-right tabular-nums whitespace-nowrap'>
+                    <TableCell className='text-center tabular-nums whitespace-nowrap'>
                       {formatPercentage(event.bookingPercentage)}
                     </TableCell>
-                    <TableCell className='text-right tabular-nums whitespace-nowrap'>
+                    <TableCell className='text-center tabular-nums whitespace-nowrap'>
                       {formatCurrency(bookingAmount)}
                     </TableCell>
-                    <TableCell className='text-right tabular-nums whitespace-nowrap'>
+                    <TableCell className='text-center tabular-nums whitespace-nowrap'>
                       {formatCurrency(event.moArtistAdvancedExpenses)}
                     </TableCell>
-                    <TableCell className='text-right tabular-nums whitespace-nowrap'>
+                    <TableCell className='text-center tabular-nums whitespace-nowrap'>
                       {formatCurrency(event.artistNetCost)}
                     </TableCell>
-                    <TableCell className='text-right tabular-nums whitespace-nowrap'>
+                    <TableCell className='text-center tabular-nums whitespace-nowrap'>
                       {formatCurrency(event.artistUpfrontCost)}
                     </TableCell>
-                    <TableCell className='whitespace-nowrap'>{paymentDate}</TableCell>
-                    <TableCell className='whitespace-nowrap'>
+                    <TableCell className='text-center whitespace-nowrap'>{paymentDate}</TableCell>
+                    <TableCell className='text-center whitespace-nowrap'>
                       {event.depositInvoiceNumber || '-'}
                     </TableCell>
-                    <TableCell className='whitespace-nowrap'>{promoterLabel}</TableCell>
+                    <TableCell className='text-center whitespace-nowrap'>{promoterLabel}</TableCell>
                   </TableRow>
                 );
               })}

@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
-import { Upload } from 'lucide-react';
+import { Upload, X } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { cn, getFileMagicNumber, isValidPdfMagicNumber } from '@/lib/utils';
@@ -27,15 +27,48 @@ export default function ArtistDocumentUpload({
   fileName,
 }: ArtistDocumentUploadProps) {
   const [uploading, setUploading] = useState<boolean>(false);
+  const [removing, setRemoving] = useState<boolean>(false);
   const [currentFileUrl, setCurrentFileUrl] = useState<string | null>(fileUrl);
   const [currentFileName, setCurrentFileName] = useState<string | null>(fileName);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const router = useRouter();
+  const isBusy = uploading || removing;
 
   useEffect(() => {
     setCurrentFileUrl(fileUrl);
     setCurrentFileName(fileName);
   }, [fileUrl, fileName]);
+
+  const handleRemove = async () => {
+    if (!currentFileUrl) return;
+
+    try {
+      setRemoving(true);
+
+      const response = await updateArtistDocuments(artistId, {
+        type: docType,
+        fileName: null,
+        fileUrl: null,
+      });
+
+      if (!response.success) {
+        toast.error(response.message || 'Rimozione documento non riuscita.');
+        return;
+      }
+
+      setCurrentFileUrl(null);
+      setCurrentFileName(null);
+      toast.success('Documento rimosso.');
+      router.refresh();
+    } catch {
+      toast.error('Rimozione documento non riuscita.');
+    } finally {
+      setRemoving(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
 
   const onChangeHandler = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -109,6 +142,9 @@ export default function ArtistDocumentUpload({
       toast.error('Caricamento pdf non riuscito.');
     } finally {
       setUploading(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
     }
   };
 
@@ -133,13 +169,26 @@ export default function ArtistDocumentUpload({
       ) : (
         <span className='text-sm text-zinc-400'>Mancante</span>
       )}
+      {currentFileUrl ? (
+        <Button
+          type='button'
+          size='sm'
+          variant='ghost'
+          className='text-destructive hover:text-destructive hover:bg-red-50'
+          onClick={handleRemove}
+          disabled={isBusy}
+        >
+          <X className='h-4 w-4' />
+          {removing ? 'Rimuovo...' : 'Rimuovi'}
+        </Button>
+      ) : null}
       <Button
         type='button'
         size='sm'
         variant='outline'
-        className={cn(uploading && 'opacity-70')}
+        className={cn(isBusy && 'opacity-70')}
         onClick={() => fileInputRef.current?.click()}
-        disabled={uploading}
+        disabled={isBusy}
       >
         <Upload className='h-4 w-4' />
         {uploading ? 'Caricamento...' : 'Upload'}
