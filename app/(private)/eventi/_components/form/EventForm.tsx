@@ -4,6 +4,7 @@ import {
   ArtistManagerSelectData,
   ArtistSelectData,
   MoCoordinator,
+  ProfessionalRole,
   ProfessionalSelectData,
   RecommendedArtistData,
   RecommendedArtistsDebug,
@@ -25,6 +26,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import PdfUploadInput from "@/app/(private)/eventi/_components/form/PdfUploadInput";
 import OtherTechnicalSheetUploadInput from "@/app/(private)/eventi/_components/form/OtherTechnicalSheetUploadInput";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Badge } from "@/components/ui/badge";
 import VenueSelect from "./VenueSelect";
 import ArtistManagerSelect from "./ArtistManagerSelect";
 import EventNotesInput from "./EventNotesInput";
@@ -58,10 +60,19 @@ import Link from "next/link";
 import ViewContractButton from "../update/ViewContractButton";
 import ViewContractDetail from "../update/ViewContractDetail";
 import ResendDocuSignButton from "../update/ResendDocuSignButton";
+import { X } from "lucide-react";
 
 const STATUS_OPTIONS = eventStatus.enumValues.filter(
   (status) => !["cancelled", "in-dispute"].includes(status),
 );
+
+const ROLE_LABELS: Record<ProfessionalRole, string> = {
+  journalist: "Giornalista",
+  technician: "Tecnico",
+  photographer: "Fotografo",
+  backstage: "Backstage",
+  other: "Altro",
+};
 
 type EventForm = {
   artists: ArtistSelectData[];
@@ -106,6 +117,9 @@ export default function EventForm({
   const [extraVenues, setExtraVenues] = useState<VenueSelectData[]>([]);
   const [extraArtistManagers, setExtraArtistManagers] = useState<ArtistManagerSelectData[]>([]);
   const [professionalsQuery, setProfessionalsQuery] = useState("");
+  const [selectedProfessionalRole, setSelectedProfessionalRole] = useState<
+    ProfessionalRole | undefined
+  >(undefined);
   const canCreateArtist = userRole === "admin" || userRole === "artist-manager";
   const canCreateArtistManager = userRole === "admin";
   const canCreateVenue = userRole === "admin" || userRole === "venue-manager";
@@ -208,13 +222,28 @@ export default function EventForm({
   );
   const hasBudget = normalizedBudget !== undefined;
 
+  const selectedProfessionals = useMemo(() => {
+    const byId = new Map<number, ProfessionalSelectData>();
+    for (const professional of professionals) {
+      byId.set(professional.id, professional);
+    }
+
+    return selectedProfessionalIds
+      .map((id: number) => byId.get(id))
+      .filter((professional): professional is ProfessionalSelectData => Boolean(professional));
+  }, [professionals, selectedProfessionalIds]);
+
   const filteredProfessionals = useMemo(() => {
+    if (!selectedProfessionalRole) return [];
+    const filteredByRole = professionals.filter(
+      (professional) => professional.role === selectedProfessionalRole,
+    );
     const query = professionalsQuery.trim().toLowerCase();
-    if (!query) return professionals;
-    return professionals.filter((professional) =>
+    if (!query) return filteredByRole;
+    return filteredByRole.filter((professional) =>
       professional.fullName.toLowerCase().includes(query),
     );
-  }, [professionals, professionalsQuery]);
+  }, [professionals, professionalsQuery, selectedProfessionalRole]);
 
   const toggleProfessional = (professionalId: number) => {
     const next = selectedProfessionalIds.includes(professionalId)
@@ -230,6 +259,10 @@ export default function EventForm({
   useEffect(() => {
     register("professionalIds");
   }, [register]);
+
+  useEffect(() => {
+    setProfessionalsQuery("");
+  }, [selectedProfessionalRole]);
 
   // Calculate artistNetCost
   const artistNetCost = useMemo(() => {
@@ -799,31 +832,76 @@ export default function EventForm({
           {canManageProfessionals && (
             <div className="flex flex-col gap-3 rounded-2xl border bg-white p-4">
               <div className="text-sm font-semibold">Professionisti associati</div>
-              <Input
-                placeholder="Cerca professionisti"
-                value={professionalsQuery}
-                onChange={(e) => setProfessionalsQuery(e.target.value)}
-              />
-              <div className="max-h-52 overflow-y-auto space-y-2">
-                {filteredProfessionals.length ? (
-                  filteredProfessionals.map((professional) => (
-                    <label
-                      key={professional.id}
-                      className="flex items-center gap-2 text-sm cursor-pointer"
-                    >
-                      <Checkbox
-                        checked={selectedProfessionalIds.includes(professional.id)}
-                        onCheckedChange={() => toggleProfessional(professional.id)}
-                      />
-                      <span>{professional.fullName}</span>
-                    </label>
-                  ))
-                ) : (
-                  <div className="text-xs text-zinc-400">
-                    Nessun professionista trovato.
-                  </div>
-                )}
+              <div className="flex flex-col gap-1">
+                <span className="text-xs uppercase text-zinc-500">Categoria</span>
+                <Select
+                  value={selectedProfessionalRole}
+                  onValueChange={(value) => setSelectedProfessionalRole(value as ProfessionalRole)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Seleziona categoria" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.entries(ROLE_LABELS).map(([value, label]) => (
+                      <SelectItem key={value} value={value}>
+                        {label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
+
+              {selectedProfessionals.length ? (
+                <div className="flex flex-wrap gap-2">
+                  {selectedProfessionals.map((professional) => (
+                    <Badge key={professional.id} variant="secondary">
+                      <span className="truncate max-w-[220px]">{professional.fullName}</span>
+                      <button
+                        type="button"
+                        aria-label={`Rimuovi ${professional.fullName}`}
+                        className="ml-1 rounded-md p-0.5 hover:bg-black/5"
+                        onClick={() => toggleProfessional(professional.id)}
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </Badge>
+                  ))}
+                </div>
+              ) : null}
+
+              {selectedProfessionalRole ? (
+                <>
+                  <Input
+                    placeholder="Cerca professionisti"
+                    value={professionalsQuery}
+                    onChange={(e) => setProfessionalsQuery(e.target.value)}
+                  />
+                  <div className="max-h-52 overflow-y-auto space-y-2">
+                    {filteredProfessionals.length ? (
+                      filteredProfessionals.map((professional) => (
+                        <label
+                          key={professional.id}
+                          className="flex items-center gap-2 text-sm cursor-pointer"
+                        >
+                          <Checkbox
+                            checked={selectedProfessionalIds.includes(professional.id)}
+                            onCheckedChange={() => toggleProfessional(professional.id)}
+                          />
+                          <span>{professional.fullName}</span>
+                        </label>
+                      ))
+                    ) : (
+                      <div className="text-xs text-zinc-400">
+                        Nessun professionista trovato.
+                      </div>
+                    )}
+                  </div>
+                </>
+              ) : (
+                <div className="text-xs text-zinc-500">
+                  Seleziona una categoria per vedere i professionisti.
+                </div>
+              )}
             </div>
           )}
         </TabsContent>
