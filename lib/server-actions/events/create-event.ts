@@ -238,6 +238,7 @@ export const createEvent = async (data: EventFormSchema): Promise<ServerActionRe
             ? validation.data.tecnicalRiderDocument!.name
             : null,
           paymentDate: validation.data.paymentDate || null,
+          eventType: validation.data.eventType || null,
 
           // Payment flow initialization
           paymentStatus: initialPaymentStatus,

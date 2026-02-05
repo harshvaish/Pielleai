@@ -90,7 +90,7 @@ export default function ConfirmDialog({
           {description}
         </DialogDescription>
         {children ? (
-          <div className='h-full overflow-y-auto'>{children}</div>
+          <div className='min-h-0 overflow-y-auto'>{children}</div>
         ) : (
           <DialogFooter className='flex justify-end gap-2 mt-2'>
             <Button
@@ -125,7 +125,7 @@ export default function ConfirmDialog({
             {description}
           </DrawerDescription>
           {children ? (
-            <div className='h-full overflow-y-auto'>{children}</div>
+            <div className='min-h-0 overflow-y-auto'>{children}</div>
           ) : (
             <DrawerFooter className='grid grid-cols-2 gap-2 p-0'>
               <Button

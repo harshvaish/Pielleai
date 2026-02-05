@@ -74,6 +74,12 @@ const ROLE_LABELS: Record<ProfessionalRole, string> = {
   other: "Altro",
 };
 
+const EVENT_TYPE_LABELS = {
+  "dj-set": "DJ set",
+  live: "Dal vivo",
+  festival: "Festival",
+} as const;
+
 type EventForm = {
   artists: ArtistSelectData[];
   venues: VenueSelectData[];
@@ -171,6 +177,11 @@ export default function EventForm({
     control,
     name: "contractStatus",
   });
+  const eventTypeLabel = useMemo(() => {
+    const value = formValues.eventType;
+    if (!value) return "";
+    return EVENT_TYPE_LABELS[value as keyof typeof EVENT_TYPE_LABELS] ?? "";
+  }, [formValues.eventType]);
   const isResendable =
     contractStatus === "sent" ||
     contractStatus === "queued" ||
@@ -697,6 +708,39 @@ export default function EventForm({
             </p>
           )}
         </div>
+
+        <div className="flex flex-col md:col-span-3">
+          <div className="text-sm font-semibold mb-2">Tipologia evento</div>
+          <Controller
+            control={control}
+            name="eventType"
+            render={({ field }) => (
+              <Select value={field.value} onValueChange={field.onChange}>
+                <SelectTrigger
+                  className={cn(
+                    "w-full",
+                    errors.eventType && "border-destructive text-destructive",
+                  )}
+                  size="sm"
+                >
+                  <SelectValue placeholder="Seleziona" />
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.entries(EVENT_TYPE_LABELS).map(([value, label]) => (
+                    <SelectItem key={value} value={value}>
+                      {label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+          />
+          {errors.eventType && (
+            <p className="text-xs text-destructive mt-2">
+              {errors.eventType.message as string}
+            </p>
+          )}
+        </div>
       </div>
 
       {/* Hosted Event Checkbox */}
@@ -832,23 +876,35 @@ export default function EventForm({
           {canManageProfessionals && (
             <div className="flex flex-col gap-3 rounded-2xl border bg-white p-4">
               <div className="text-sm font-semibold">Professionisti associati</div>
-              <div className="flex flex-col gap-1">
-                <span className="text-xs uppercase text-zinc-500">Categoria</span>
-                <Select
-                  value={selectedProfessionalRole}
-                  onValueChange={(value) => setSelectedProfessionalRole(value as ProfessionalRole)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Seleziona categoria" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Object.entries(ROLE_LABELS).map(([value, label]) => (
-                      <SelectItem key={value} value={value}>
-                        {label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+              <div className="grid gap-3 sm:grid-cols-2 sm:items-end">
+                <div className="flex flex-col gap-1">
+                  <span className="text-xs uppercase text-zinc-500">Categoria</span>
+                  <Select
+                    value={selectedProfessionalRole}
+                    onValueChange={(value) => setSelectedProfessionalRole(value as ProfessionalRole)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Seleziona categoria" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Object.entries(ROLE_LABELS).map(([value, label]) => (
+                        <SelectItem key={value} value={value}>
+                          {label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="flex flex-col gap-1">
+                  <span className="text-xs uppercase text-zinc-500">Cerca</span>
+                  <Input
+                    placeholder="Cerca professionisti"
+                    value={professionalsQuery}
+                    onChange={(e) => setProfessionalsQuery(e.target.value)}
+                    disabled={!selectedProfessionalRole}
+                  />
+                </div>
               </div>
 
               {selectedProfessionals.length ? (
@@ -871,11 +927,6 @@ export default function EventForm({
 
               {selectedProfessionalRole ? (
                 <>
-                  <Input
-                    placeholder="Cerca professionisti"
-                    value={professionalsQuery}
-                    onChange={(e) => setProfessionalsQuery(e.target.value)}
-                  />
                   <div className="max-h-52 overflow-y-auto space-y-2">
                     {filteredProfessionals.length ? (
                       filteredProfessionals.map((professional) => (
@@ -1698,32 +1749,11 @@ export default function EventForm({
                         <label className="text-sm text-zinc-600">
                           Tipologia evento{" "}
                         </label>
-                        <Controller
-                          control={control}
-                          name="eventType"
-                          render={({ field }) => (
-                            <Select
-                              value={field.value}
-                              onValueChange={field.onChange}
-                              disabled={isVoided}
-                            >
-                              <SelectTrigger
-                                className={cn(
-                                  "h-10 w-full",
-                                  isVoided && "bg-zinc-100 text-zinc-500"
-                                )}
-                              >
-                              <SelectValue placeholder="Seleziona" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="dj-set">DJ set</SelectItem>
-                                <SelectItem value="live">Dal vivo</SelectItem>
-                                <SelectItem value="festival">
-                                  Festival
-                                </SelectItem>
-                              </SelectContent>
-                            </Select>
-                          )}
+                        <Input
+                          value={eventTypeLabel}
+                          placeholder="Seleziona"
+                          readOnly
+                          className="h-10 bg-zinc-100 text-zinc-500"
                         />
                       </div>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
