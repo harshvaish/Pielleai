@@ -2,6 +2,8 @@ import { Event as RbcEvent } from 'react-big-calendar';
 import {
   availabilityStatus,
   eventStatus,
+  eventCancellationRequestedBy,
+  eventCancellationType,
   eventGuestStatus,
   eventGuestOriginGroup,
   eventGuestColorTag,
@@ -33,6 +35,8 @@ export type ApiResponse<T = unknown> =
 // enums
 export type AvailabilityStatus = (typeof availabilityStatus.enumValues)[number];
 export type EventStatus = (typeof eventStatus.enumValues)[number];
+export type EventCancellationRequestedBy = (typeof eventCancellationRequestedBy.enumValues)[number];
+export type EventCancellationType = (typeof eventCancellationType.enumValues)[number];
 export type EventGuestStatus = (typeof eventGuestStatus.enumValues)[number];
 export type EventGuestOriginGroup = (typeof eventGuestOriginGroup.enumValues)[number];
 export type EventGuestColorTag = (typeof eventGuestColorTag.enumValues)[number];
@@ -137,6 +141,14 @@ export type ArtistManagerData<T = ArtistListData | ArtistSelectData> = {
   birthDate: string | null;
   birthPlace: string | null;
   address: string;
+  addressFormatted: string | null;
+  streetName: string | null;
+  streetNumber: string | null;
+  placeId: string | null;
+  latitude: string | null;
+  longitude: string | null;
+  countryName: string | null;
+  countryCode: string | null;
   country: Country | null;
   subdivision: Subdivision | null;
   city: string;
@@ -153,6 +165,14 @@ export type ArtistManagerData<T = ArtistListData | ArtistSelectData> = {
   iban: string;
   sdiRecipientCode: string | null;
   billingAddress: string;
+  billingAddressFormatted: string | null;
+  billingStreetName: string | null;
+  billingStreetNumber: string | null;
+  billingPlaceId: string | null;
+  billingLatitude: string | null;
+  billingLongitude: string | null;
+  billingCountryName: string | null;
+  billingCountryCode: string | null;
   billingCountry: Country | null;
   billingSubdivision: Subdivision | null;
   billingCity: string;
@@ -189,6 +209,7 @@ export type ArtistsTableFilters = {
   fullName: string | null;
   email: string | null;
   phone: string | null;
+  categories?: string[];
   managerIds: string[];
   zoneIds: string[];
 };
@@ -212,6 +233,14 @@ export type ArtistData = {
   birthDate: string | null;
   birthPlace: string | null;
   address: string | null;
+  addressFormatted: string | null;
+  streetName: string | null;
+  streetNumber: string | null;
+  placeId: string | null;
+  latitude: string | null;
+  longitude: string | null;
+  countryName: string | null;
+  countryCode: string | null;
   country: Country | null;
   subdivision: Subdivision | null;
   city: string | null;
@@ -240,6 +269,14 @@ export type ArtistData = {
   iban: string | null;
   sdiRecipientCode: string | null;
   billingAddress: string | null;
+  billingAddressFormatted: string | null;
+  billingStreetName: string | null;
+  billingStreetNumber: string | null;
+  billingPlaceId: string | null;
+  billingLatitude: string | null;
+  billingLongitude: string | null;
+  billingCountryName: string | null;
+  billingCountryCode: string | null;
   billingCountry: Country | null;
   billingSubdivision: Subdivision | null;
   billingCity: string | null;
@@ -270,6 +307,16 @@ export type ArtistData = {
   xCreatedAt: string | null;
 };
 
+export type ArtistContact = {
+  id: number;
+  artistId: number;
+  name: string | null;
+  phone: string | null;
+  email: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
 export type ArtistTableData = Pick<
   ArtistData,
   | 'id'
@@ -282,6 +329,7 @@ export type ArtistTableData = Pick<
   | 'surname'
   | 'stageName'
   | 'bio'
+  | 'categories'
   | 'phone'
   | 'email'
   | 'company'
@@ -384,6 +432,14 @@ export type VenueManagerData<T = VenueTableData | VenueListData | VenueBadgeData
   birthDate: string | null;
   birthPlace: string | null;
   address: string;
+  addressFormatted: string | null;
+  streetName: string | null;
+  streetNumber: string | null;
+  placeId: string | null;
+  latitude: string | null;
+  longitude: string | null;
+  countryName: string | null;
+  countryCode: string | null;
   country: Country | null;
   subdivision: Subdivision | null;
   city: string;
@@ -435,6 +491,14 @@ export type VenueData = {
   capacity: number;
 
   address: string;
+  addressFormatted: string | null;
+  streetName: string | null;
+  streetNumber: string | null;
+  placeId: string | null;
+  latitude: string | null;
+  longitude: string | null;
+  countryName: string | null;
+  countryCode: string | null;
   country: Country | null;
   subdivision: Subdivision | null;
   city: string;
@@ -449,6 +513,14 @@ export type VenueData = {
   abaRoutingNumber: string | null;
   sdiRecipientCode: string | null;
   billingAddress: string;
+  billingAddressFormatted: string | null;
+  billingStreetName: string | null;
+  billingStreetNumber: string | null;
+  billingPlaceId: string | null;
+  billingLatitude: string | null;
+  billingLongitude: string | null;
+  billingCountryName: string | null;
+  billingCountryCode: string | null;
   billingCountry: Country | null;
   billingSubdivision: Subdivision | null;
   billingCity: string;
@@ -489,6 +561,8 @@ export type VenueTableData = Pick<
   | 'company'
   | 'taxCode'
   | 'address'
+  | 'city'
+  | 'zipCode'
   | 'manager'
   | 'type'
   | 'capacity'
@@ -501,7 +575,17 @@ export type VenueTableData = Pick<
 
 export type VenueSelectData = Pick<
   VenueData,
-  'id' | 'slug' | 'status' | 'avatarUrl' | 'name' | 'address' | 'manager' | 'company' | 'vatCode'
+  | 'id'
+  | 'slug'
+  | 'status'
+  | 'avatarUrl'
+  | 'name'
+  | 'address'
+  | 'city'
+  | 'zipCode'
+  | 'manager'
+  | 'company'
+  | 'vatCode'
 >;
 
 export type VenueListData = Pick<
@@ -514,11 +598,38 @@ export type VenueListData = Pick<
   | 'company'
   | 'taxCode'
   | 'address'
+  | 'city'
+  | 'zipCode'
   | 'type'
   | 'capacity'
 >;
 
 export type VenueBadgeData = Pick<VenueData, 'id' | 'slug' | 'status' | 'avatarUrl' | 'name'>;
+
+export type ArtistBlacklistVenue = {
+  id: number;
+  venue: VenueBadgeData & {
+    address: string;
+    city: string;
+  };
+};
+
+export type ArtistBlacklistArea = {
+  id: number;
+  country: Country;
+  subdivision: Subdivision | null;
+  city: string | null;
+};
+
+export type ArtistBlacklist = {
+  venues: ArtistBlacklistVenue[];
+  areas: ArtistBlacklistArea[];
+};
+
+export type ArtistBlacklistCheck = {
+  blocked: boolean;
+  reason: 'venue' | 'area' | null;
+};
 
 // availability
 export type ArtistAvailability = {
@@ -578,6 +689,16 @@ export type Event = {
   availability: ArtistAvailability;
   venue: VenueSelectData;
   status: EventStatus;
+  cancellationRequestedBy?: EventCancellationRequestedBy | null;
+  cancellationType?: EventCancellationType | null;
+  cancellationAt?: string | Date | null;
+  cancellationUserId?: string | null;
+  cancellationUserRole?: UserRole | null;
+  cancellationNotes?: string | null;
+  cancellationAccountingCompleted?: boolean | null;
+  cancellationAccountingCompletedAt?: string | Date | null;
+  cancellationLegalEmailSentAt?: string | Date | null;
+  cancellationLegalEmailTo?: string | null;
   hasConflict: boolean;
   artistManager: ArtistManagerSelectData | null;
   tourManagerEmail: string | null;
@@ -659,6 +780,7 @@ export type ArtistEventListItem = {
     id: number;
     name: string;
     city: string | null;
+    zipCode?: string | null;
   };
 };
 
@@ -671,6 +793,16 @@ export type EventSummary = {
   protocolNumber?: string | null;
   guestLimit: number;
   status: EventStatus;
+  cancellationRequestedBy?: EventCancellationRequestedBy | null;
+  cancellationType?: EventCancellationType | null;
+  cancellationAt?: string | Date | null;
+  cancellationUserId?: string | null;
+  cancellationUserRole?: UserRole | null;
+  cancellationNotes?: string | null;
+  cancellationAccountingCompleted?: boolean | null;
+  cancellationAccountingCompletedAt?: string | Date | null;
+  cancellationLegalEmailSentAt?: string | Date | null;
+  cancellationLegalEmailTo?: string | null;
   eventType: EventType | null;
   startDate: Date;
   endDate: Date;
@@ -686,6 +818,7 @@ export type EventSummary = {
     name: string;
     city: string | null;
     address: string | null;
+    zipCode: string | null;
     slug: string;
   };
   artistManager: {

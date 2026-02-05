@@ -24,11 +24,13 @@ import { getUserProfileIdCached } from '@/lib/cache/users';
 import StatusBadge from '../../_components/Badges/StatusBadge';
 import NotesSection from '../../_components/Notes/NotesSection';
 import PersonalDataTab from './_components/Tabs/PersonalDataTab';
+import ContactsTab from './_components/Tabs/ContactsTab';
 import BillingDataTab from '../../_components/Tabs/BillingDataTab';
 import AvailabilitiesTab from './_components/Tabs/AvailabilitiesTab';
 import SocialDataTab from '../../_components/Tabs/SocialDataTab';
 import ArtistEventsTab from './_components/Tabs/ArtistEventsTab';
 import DocumentsTab from './_components/Tabs/DocumentsTab';
+import BlacklistTab from './_components/Tabs/BlacklistTab';
 import CreateEventButton from '../../eventi/_components/create/CreateButton';
 import CreateArtistManagerButton from '../../manager-artisti/_components/create/CreateButton';
 import { getArtistsCached } from '@/lib/cache/artists';
@@ -37,6 +39,8 @@ import ManageArtistManagersButton from './_components/ManageArtistManagersButton
 import { getContracts } from '@/lib/data/contracts/get-contracts';
 import { getEvents } from '@/lib/data/events/get-events';
 import { getArtistOtherDocuments } from '@/lib/data/documents/get-artist-other-documents';
+import { getArtistBlacklist } from '@/lib/data/artists/get-artist-blacklist';
+import { getArtistContacts } from '@/lib/data/artists/get-artist-contacts';
 
 type ArtistDetailPageProps = {
   params: Promise<{ slug: string }>;
@@ -81,9 +85,10 @@ export default async function ArtistDetailPage({ params, searchParams }: ArtistD
       getVenuesCached(),
       isAdmin ? getArtistsCached() : Promise.resolve([]),
       isAdmin ? getMoCoordinatorsCached() : Promise.resolve([]),
-    ]);
+  ]);
 
   if (!userData) notFound();
+  const blacklist = await getArtistBlacklist(userData.id);
 
   let initialNotesData: ProfileNote[] = [];
 
@@ -106,7 +111,7 @@ export default async function ArtistDetailPage({ params, searchParams }: ArtistD
 
   const sp = searchParams ? await searchParams : {};
 
-  const [contractsResponse, eventsResponse, otherDocuments] = await Promise.all([
+  const [contractsResponse, eventsResponse, otherDocuments, artistContacts] = await Promise.all([
     getContracts(user, {
       currentPage: null,
       status: ['all'],
@@ -126,6 +131,7 @@ export default async function ArtistDetailPage({ params, searchParams }: ArtistD
       endDate: null,
     }),
     getArtistOtherDocuments(200),
+    getArtistContacts(userData.id),
   ]);
   const artistOtherDocuments = otherDocuments.filter(
     (doc) => doc.artist.id === userData.id,
@@ -245,17 +251,6 @@ export default async function ArtistDetailPage({ params, searchParams }: ArtistD
         )}
       </div>
 
-      {isAdmin && (
-        <div className='mb-6'>
-          <NotesSection
-            isArtist={true}
-            initialNotes={initialNotesData}
-            writerId={user.id}
-            receiverProfileId={userData.id}
-          />
-        </div>
-      )}
-
       {!isAdmin && hasRole(user, ['admin', 'artist-manager']) && (
         <section className='bg-white py-6 px-6 rounded-2xl mb-6'>
           <div className='text-lg font-semibold mb-4'>Azioni rapide</div>
@@ -286,19 +281,32 @@ export default async function ArtistDetailPage({ params, searchParams }: ArtistD
           <span className='hidden lg:block text-xl font-semibold'>Dettagli</span>
           <TabsList className='w-full lg:max-w-max justify-start gap-4 bg-white p-1 rounded-xl overflow-x-auto'>
             <TabsTrigger value='a'>Dati personali</TabsTrigger>
+            <TabsTrigger value='h'>Contatti</TabsTrigger>
             <TabsTrigger value='b'>Dati di fatturazione</TabsTrigger>
-          <TabsTrigger value='c'>Disponibilità</TabsTrigger>
+            <TabsTrigger value='c'>Disponibilità</TabsTrigger>
             <TabsTrigger value='f'>Documenti</TabsTrigger>
             <TabsTrigger value='d'>Social</TabsTrigger>
             <TabsTrigger value='e'>Eventi</TabsTrigger>
-        </TabsList>
-      </div>
+            <TabsTrigger value='g'>Blacklist</TabsTrigger>
+          </TabsList>
+        </div>
 
         <PersonalDataTab
           tabValue='a'
           data={userData}
+        />
+        <ContactsTab
+          tabValue='h'
+          artistId={userData.id}
           userRole={user.role}
-          artistOtherDocuments={artistOtherDocuments}
+          managers={userData.managers}
+          tourManager={{
+            email: userData.tourManagerEmail,
+            name: userData.tourManagerName,
+            surname: userData.tourManagerSurname,
+            phone: userData.tourManagerPhone,
+          }}
+          initialContacts={artistContacts}
         />
         <BillingDataTab
           tabValue='b'
@@ -321,13 +329,36 @@ export default async function ArtistDetailPage({ params, searchParams }: ArtistD
         <DocumentsTab
           tabValue='f'
           userRole={user.role}
+          artistId={userData.id}
           contracts={contractsResponse.data ?? []}
           events={eventsResponse.data ?? []}
+          taxCodeFileUrl={userData.taxCodeFileUrl}
+          taxCodeFileName={userData.taxCodeFileName}
+          idCardFileUrl={userData.idCardFileUrl}
+          idCardFileName={userData.idCardFileName}
           passportFileUrl={userData.passportFileUrl}
           passportFileName={userData.passportFileName}
           artistOtherDocuments={artistOtherDocuments}
         />
+        <BlacklistTab
+          tabValue='g'
+          artistId={userData.id}
+          venues={venues}
+          countries={countries}
+          initialBlacklist={blacklist}
+        />
       </Tabs>
+
+      {isAdmin && (
+        <div className='mt-6'>
+          <NotesSection
+            isArtist={true}
+            initialNotes={initialNotesData}
+            writerId={user.id}
+            receiverProfileId={userData.id}
+          />
+        </div>
+      )}
     </div>
   );
 }

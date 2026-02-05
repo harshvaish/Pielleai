@@ -548,14 +548,14 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
     { value: "all", label: "Tutti" },
     { value: "contracts", label: "Contratti" },
     { value: "technical-ride", label: "Technical Ride" },
-    { value: "other", label: "Other" },
+    { value: "other", label: "Altri documenti degli eventi" },
   ];
   const artistDocumentOptions = [
     { value: "all", label: "Tutti" },
-    { value: "fiscal-code", label: "Fiscal Code" },
-    { value: "tax-id", label: "Tax ID" },
-    { value: "passport", label: "Passport" },
-    { value: "other", label: "Other" },
+    { value: "fiscal-code", label: "Codice fiscale" },
+    { value: "tax-id", label: "Carta d'Identità" },
+    { value: "passport", label: "Passaporto" },
+    { value: "other", label: "Altri documenti degli artisti" },
   ];
   const rawDocumentFilter = sp?.doc ?? "all";
   const eventFilterValues = new Set(eventDocumentOptions.map((option) => option.value));
@@ -1005,7 +1005,7 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
           {(eventsDocumentFilter === "all" || eventsDocumentFilter === "other") && (
           <section className="rounded-2xl border border-zinc-100 bg-white">
             <div className="flex items-center justify-between border-b border-zinc-100 px-4 py-3">
-              <h2 className="text-sm font-semibold text-zinc-800">Other</h2>
+              <h2 className="text-sm font-semibold text-zinc-800">Altri documenti degli eventi</h2>
               <Link
                 href="/documents/other"
                 className="inline-flex items-center gap-1 text-xs text-zinc-500 hover:text-zinc-700"
@@ -1117,7 +1117,7 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
                             rel="noopener noreferrer"
                             className="text-zinc-700 hover:underline"
                           >
-                            Other
+                            Documenti
                           </a>
                           <a
                             href={doc.url}
@@ -1159,7 +1159,7 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
           <section className="rounded-2xl border border-zinc-100 bg-white">
             <div className="flex items-center justify-between border-b border-zinc-100 px-4 py-3">
               <h2 className="text-sm font-semibold text-zinc-800">
-                Fiscal Codes
+                Codice fiscale
               </h2>
               <Link
                 href="/documents/fiscal-codes"
@@ -1272,7 +1272,7 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
           {(artistsDocumentFilter === "all" || artistsDocumentFilter === "tax-id") && (
           <section className="rounded-2xl border border-zinc-100 bg-white">
             <div className="flex items-center justify-between border-b border-zinc-100 px-4 py-3">
-              <h2 className="text-sm font-semibold text-zinc-800">Tax ID</h2>
+              <h2 className="text-sm font-semibold text-zinc-800">Carta d&apos;Identità</h2>
               <Link
                 href="/documents/id-card"
                 className="inline-flex items-center gap-1 text-xs text-zinc-500 hover:text-zinc-700"
@@ -1354,7 +1354,7 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
 
                     <div className="flex flex-wrap items-center gap-2 text-xs text-zinc-500">
                       <FileText className="h-4 w-4 text-zinc-400" />
-                      <span>Tax ID</span>
+                      <span>Carta d&apos;Identità</span>
                     {artist.idCardFileUrl ? (
                       <a
                         href={artist.idCardFileUrl}
@@ -1363,7 +1363,7 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
                         className="inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-1.5 text-zinc-600 hover:underline"
                       >
                         <FileText className="h-4 w-4 text-zinc-400" />
-                        {artist.idCardFileName ?? "Tax ID.pdf"}
+                        {artist.idCardFileName ?? "Carta d'Identità.pdf"}
                       </a>
                     ) : (
                       <span className="text-zinc-400">Mancante</span>
@@ -1384,7 +1384,7 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
           {(artistsDocumentFilter === "all" || artistsDocumentFilter === "passport") && (
           <section className="rounded-2xl border border-zinc-100 bg-white">
             <div className="flex items-center justify-between border-b border-zinc-100 px-4 py-3">
-              <h2 className="text-sm font-semibold text-zinc-800">Passport</h2>
+              <h2 className="text-sm font-semibold text-zinc-800">Passaporto</h2>
               <Link
                 href="/documents/passport"
                 className="inline-flex items-center gap-1 text-xs text-zinc-500 hover:text-zinc-700"
@@ -1466,7 +1466,7 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
 
                       <div className="flex flex-wrap items-center gap-2 text-xs text-zinc-500">
                         <FileText className="h-4 w-4 text-zinc-400" />
-                        <span>Passport</span>
+                        <span>Passaporto</span>
                       {artist.passportFileUrl ? (
                         <a
                           href={artist.passportFileUrl}
@@ -1475,7 +1475,7 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
                           className="inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-1.5 text-zinc-600 hover:underline"
                         >
                           <FileText className="h-4 w-4 text-zinc-400" />
-                          {artist.passportFileName ?? "Passport.pdf"}
+                          {artist.passportFileName ?? "Passaporto.pdf"}
                         </a>
                       ) : (
                         <span className="text-zinc-400">Mancante</span>
@@ -1496,7 +1496,7 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
           {(artistsDocumentFilter === "all" || artistsDocumentFilter === "other") && (
           <section className="rounded-2xl border border-zinc-100 bg-white">
             <div className="flex items-center justify-between border-b border-zinc-100 px-4 py-3">
-              <h2 className="text-sm font-semibold text-zinc-800">Other</h2>
+              <h2 className="text-sm font-semibold text-zinc-800">Altri documenti degli artisti</h2>
               <Link
                 href="/documents/artist-other"
                 className="inline-flex items-center gap-1 text-xs text-zinc-500 hover:text-zinc-700"

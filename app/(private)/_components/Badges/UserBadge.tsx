@@ -9,6 +9,7 @@ export default function UserBadge({
   isDisabled,
   href,
   isSmall = false,
+  className,
 }: {
   name: string;
   surname: string;
@@ -16,12 +17,16 @@ export default function UserBadge({
   isDisabled: boolean;
   href: string;
   isSmall?: boolean;
+  className?: string;
 }) {
   return (
     <Link
       href={href}
       prefetch={false}
-      className='w-max max-w-60 flex flex-nowrap items-center gap-2 bg-zinc-50 hover:bg-zinc-100 p-2 rounded-md transition-colors'
+      className={cn(
+        'w-max max-w-60 flex flex-nowrap items-center gap-2 bg-zinc-50 hover:bg-zinc-100 p-2 rounded-md transition-colors',
+        className,
+      )}
     >
       <Avatar className={isSmall ? 'w-4 h-4' : 'w-6 h-6'}>
         <AvatarImage
@@ -33,7 +38,7 @@ export default function UserBadge({
 
       <span
         className={cn(
-          'font-semibold line-clamp-1 text-ellipsis',
+          'font-semibold truncate',
           isSmall ? 'text-xs' : 'text-sm',
           isDisabled ? 'text-zinc-500' : 'text-zinc-700',
         )}

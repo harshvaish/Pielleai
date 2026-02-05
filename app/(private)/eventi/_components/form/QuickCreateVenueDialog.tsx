@@ -11,6 +11,9 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { UserRole, VenueSelectData } from '@/lib/types';
 import { createVenueManager } from '@/lib/server-actions/venue-managers/create-venue-manager';
 import { createVenue } from '@/lib/server-actions/venues/create-venue';
+import AddressAutocompleteInput, {
+  type AddressDetails,
+} from '@/components/forms/AddressAutocompleteInput';
 
 type QuickCreateVenueDialogProps = {
   onCreated: (venue: VenueSelectData) => void;
@@ -24,6 +27,7 @@ export default function QuickCreateVenueDialog({
   const [open, setOpen] = useState(false);
   const [name, setName] = useState('');
   const [address, setAddress] = useState('');
+  const [addressDetails, setAddressDetails] = useState<AddressDetails | null>(null);
   const [shouldCreateManager, setShouldCreateManager] = useState(false);
   const [managerName, setManagerName] = useState('');
   const [managerSurname, setManagerSurname] = useState('');
@@ -34,6 +38,7 @@ export default function QuickCreateVenueDialog({
   const resetForm = () => {
     setName('');
     setAddress('');
+    setAddressDetails(null);
     setShouldCreateManager(false);
     setManagerName('');
     setManagerSurname('');
@@ -60,6 +65,16 @@ export default function QuickCreateVenueDialog({
       const response = await createVenue({
         name,
         address,
+        addressFormatted: addressDetails?.formattedAddress ?? '',
+        streetName: addressDetails?.streetName ?? '',
+        streetNumber: addressDetails?.streetNumber ?? '',
+        placeId: addressDetails?.placeId ?? '',
+        latitude: addressDetails?.lat !== null && addressDetails?.lat !== undefined ? String(addressDetails.lat) : undefined,
+        longitude: addressDetails?.lng !== null && addressDetails?.lng !== undefined ? String(addressDetails.lng) : undefined,
+        countryName: addressDetails?.country ?? '',
+        countryCode: addressDetails?.countryCode ?? '',
+        city: addressDetails?.city ?? '',
+        zipCode: addressDetails?.zipCode ?? '',
         ...(venueManagerId ? { venueManagerId } : {}),
       });
 
@@ -98,10 +113,15 @@ export default function QuickCreateVenueDialog({
             value={name}
             onChange={(event) => setName(event.target.value)}
           />
-          <Input
+          <AddressAutocompleteInput
+            id='quick-venue-address'
             placeholder='Indirizzo *'
             value={address}
-            onChange={(event) => setAddress(event.target.value)}
+            onValueChange={setAddress}
+            onDetails={(details) => {
+              setAddress(details.formattedAddress);
+              setAddressDetails(details);
+            }}
           />
           {isAdmin && (
             <div className='grid gap-2'>

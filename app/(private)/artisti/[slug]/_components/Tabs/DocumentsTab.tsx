@@ -6,6 +6,8 @@ import ResendDocuSignButton from '@/app/(private)/documents/_components/ResendDo
 import { AVATAR_FALLBACK } from '@/lib/constants';
 import { Event, UserRole } from '@/lib/types';
 import type { ArtistOtherDocument } from '@/lib/data/documents/get-artist-other-documents';
+import ArtistDocumentUpload from '../ArtistDocumentUpload';
+import ArtistOtherDocumentUpload from '../ArtistOtherDocumentUpload';
 import { JSX } from 'react';
 import { CalendarDays, Check, ChevronRight, Clock, FileText, PartyPopper, X } from 'lucide-react';
 import { getContractPreviewUrl } from '@/lib/utils/contract-preview';
@@ -69,8 +71,13 @@ type ContractCard = {
 type DocumentsTabProps = {
   tabValue: string;
   userRole: UserRole;
+  artistId: number;
   contracts: any[];
   events: Event[];
+  taxCodeFileUrl: string | null;
+  taxCodeFileName: string | null;
+  idCardFileUrl: string | null;
+  idCardFileName: string | null;
   passportFileUrl: string | null;
   passportFileName: string | null;
   artistOtherDocuments: ArtistOtherDocument[];
@@ -300,8 +307,13 @@ function getBackendStatusLabel(status: string) {
 export default function DocumentsTab({
   tabValue,
   userRole,
+  artistId,
   contracts,
   events,
+  taxCodeFileUrl,
+  taxCodeFileName,
+  idCardFileUrl,
+  idCardFileName,
   passportFileUrl,
   passportFileName,
   artistOtherDocuments,
@@ -317,38 +329,62 @@ export default function DocumentsTab({
       <div className='grid gap-6 lg:grid-cols-2 mb-6'>
         <section className='bg-white rounded-2xl border border-zinc-100'>
           <div className='flex items-center justify-between border-b border-zinc-100 px-4 py-3'>
-            <h2 className='text-sm font-semibold text-zinc-800'>Passport</h2>
+            <h2 className='text-sm font-semibold text-zinc-800'>Codice Fiscale</h2>
           </div>
           <div className='px-4 py-4'>
-            <div className='flex flex-wrap items-center gap-2 text-xs text-zinc-500'>
-              <FileText className='h-4 w-4 text-zinc-400' />
-              <span>Passport</span>
-              {passportFileUrl ? (
-                <a
-                  href={passportFileUrl}
-                  target='_blank'
-                  rel='noopener noreferrer'
-                  className='inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-zinc-700 hover:underline'
-                >
-                  <FileText className='h-4 w-4 text-zinc-400' />
-                  {passportFileName ?? 'Passport.pdf'}
-                </a>
-              ) : (
-                <span className='text-zinc-400'>Mancante</span>
-              )}
-            </div>
+            <ArtistDocumentUpload
+              artistId={artistId}
+              label='Codice Fiscale'
+              docType='tax-code'
+              fileUrl={taxCodeFileUrl}
+              fileName={taxCodeFileName}
+            />
           </div>
         </section>
 
         <section className='bg-white rounded-2xl border border-zinc-100'>
           <div className='flex items-center justify-between border-b border-zinc-100 px-4 py-3'>
-            <h2 className='text-sm font-semibold text-zinc-800'>Other</h2>
+            <h2 className='text-sm font-semibold text-zinc-800'>Carta d&apos;Identità</h2>
+          </div>
+          <div className='px-4 py-4'>
+            <ArtistDocumentUpload
+              artistId={artistId}
+              label="Carta d'Identità"
+              docType='id-card'
+              fileUrl={idCardFileUrl}
+              fileName={idCardFileName}
+            />
+          </div>
+        </section>
+
+        <section className='bg-white rounded-2xl border border-zinc-100'>
+          <div className='flex items-center justify-between border-b border-zinc-100 px-4 py-3'>
+            <h2 className='text-sm font-semibold text-zinc-800'>Passaporto</h2>
+          </div>
+          <div className='px-4 py-4'>
+            <ArtistDocumentUpload
+              artistId={artistId}
+              label='Passaporto'
+              docType='passport'
+              fileUrl={passportFileUrl}
+              fileName={passportFileName}
+            />
+          </div>
+        </section>
+
+        <section className='bg-white rounded-2xl border border-zinc-100'>
+          <div className='flex items-center justify-between border-b border-zinc-100 px-4 py-3'>
+            <h2 className='text-sm font-semibold text-zinc-800'>Altri documenti degli artisti</h2>
             <a
               href='/documents/artist-other'
               className='inline-flex items-center gap-1 text-xs text-zinc-500 hover:text-zinc-700'
             >
               Vedi tutto <ChevronRight className='size-4' />
             </a>
+          </div>
+          <div className='flex flex-wrap items-center justify-between gap-2 border-b border-zinc-100 px-4 py-4'>
+            <div className='text-xs text-zinc-500'>Carica un documento</div>
+            <ArtistOtherDocumentUpload artistId={artistId} />
           </div>
           {previewArtistOtherDocuments.length ? (
             <div className='divide-y divide-zinc-100'>

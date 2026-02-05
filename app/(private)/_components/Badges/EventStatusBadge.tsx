@@ -1,7 +1,7 @@
 import { EVENT_STATUS_LABELS } from '@/lib/constants';
 import { EventStatus } from '@/lib/types';
 import { cn } from '@/lib/utils';
-import { Clock, Check, ChevronRight, X } from 'lucide-react';
+import { Ban, Check, ChevronRight, Clock, Scale, X } from 'lucide-react';
 import { JSX } from 'react';
 
 type EventStatusBadgeProps = {
@@ -53,6 +53,24 @@ const styles: Record<EventStatus, { text: string; bg: string; icon: JSX.Element 
     icon: (
       <div className='w-3 h-3 flex justify-center items-center bg-gray-600 rounded-full'>
         <Clock className='size-2 text-white' />
+      </div>
+    ),
+  },
+  'cancelled': {
+    text: 'text-red-700',
+    bg: 'bg-red-50',
+    icon: (
+      <div className='w-3 h-3 flex justify-center items-center bg-red-700 rounded-full'>
+        <Ban className='size-2 text-white' />
+      </div>
+    ),
+  },
+  'in-dispute': {
+    text: 'text-orange-700',
+    bg: 'bg-orange-50',
+    icon: (
+      <div className='w-3 h-3 flex justify-center items-center bg-orange-600 rounded-full'>
+        <Scale className='size-2 text-white' />
       </div>
     ),
   },

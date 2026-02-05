@@ -202,7 +202,14 @@ export function createPaymentStatusTimestamps(
  * Creates timestamp updates for event status transitions
  */
 export function createEventStatusTimestamps(
-  newStatus: 'proposed' | 'pre-confirmed' | 'confirmed' | 'rejected' | 'ended',
+  newStatus:
+    | 'proposed'
+    | 'pre-confirmed'
+    | 'confirmed'
+    | 'rejected'
+    | 'ended'
+    | 'cancelled'
+    | 'in-dispute',
 ): Record<string, Date | null> {
   const now = new Date();
   const updates: Record<string, Date | null> = {};
@@ -222,6 +229,9 @@ export function createEventStatusTimestamps(
       break;
     case 'ended':
       updates.endedAt = now;
+      break;
+    case 'cancelled':
+    case 'in-dispute':
       break;
   }
 

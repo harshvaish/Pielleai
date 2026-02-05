@@ -2,8 +2,12 @@
 
 import { useFormContext, Controller } from 'react-hook-form';
 import { Input } from '@/components/ui/input';
+import AddressAutocompleteInput, {
+  type AddressDetails,
+} from '@/components/forms/AddressAutocompleteInput';
 import { Separator } from '@/components/ui/separator';
 import { cn, fetcher } from '@/lib/utils';
+import { applyBillingAddressDetails } from '@/lib/utils/address-details';
 import { Select, SelectContent, SelectItem, SelectTrigger } from '@/components/ui/select';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Country, Subdivision } from '@/lib/types';
@@ -24,6 +28,7 @@ export default function StepTwo({ countries }: { countries: Country[] }) {
 
   const selectedCountry = watch('billingCountry');
   const selectedSubdivisionId = watch('billingSubdivisionId');
+  const selectedCountryCode = selectedCountry?.code?.toLowerCase() || 'it';
 
   const isEU = selectedCountry?.isEu;
   const isUSA = selectedCountry?.code === 'US';
@@ -77,6 +82,19 @@ export default function StepTwo({ countries }: { countries: Country[] }) {
       setValue('billingSubdivisionId', 0);
     }
   }, [selectedCountry, selectedSubdivisionId, subdivisions, isLoading, setValue]);
+
+  const handleBillingAddressDetails = (details: AddressDetails) => {
+    applyBillingAddressDetails(setValue, details);
+
+    if (details.countryCode) {
+      const match = countries.find(
+        (country) => country.code.toLowerCase() === details.countryCode?.toLowerCase(),
+      );
+      if (match) {
+        setValue('billingCountry', match, { shouldDirty: true, shouldTouch: true });
+      }
+    }
+  };
 
   return (
     <>
@@ -171,15 +189,32 @@ export default function StepTwo({ countries }: { countries: Country[] }) {
         >
           Sede legale
         </label>
-        <Input
-          id='billingAddress'
-          {...register('billingAddress')}
-          placeholder='Inserisci sede legale'
-          className={errors.billingAddress ? 'border-destructive text-destructive' : ''}
+        <Controller
+          control={control}
+          name='billingAddress'
+          render={({ field }) => (
+            <AddressAutocompleteInput
+              id='billingAddress'
+              value={field.value ?? ''}
+              onValueChange={field.onChange}
+              onDetails={handleBillingAddressDetails}
+              placeholder='Inserisci sede legale'
+              error={errors.billingAddress?.message as string | undefined}
+              countryCode={selectedCountryCode}
+            />
+          )}
         />
         {errors.billingAddress && (
           <p className='text-xs text-destructive mt-2'>{errors.billingAddress.message as string}</p>
         )}
+        <input type='hidden' {...register('billingAddressFormatted')} />
+        <input type='hidden' {...register('billingStreetName')} />
+        <input type='hidden' {...register('billingStreetNumber')} />
+        <input type='hidden' {...register('billingPlaceId')} />
+        <input type='hidden' {...register('billingLatitude')} />
+        <input type='hidden' {...register('billingLongitude')} />
+        <input type='hidden' {...register('billingCountryName')} />
+        <input type='hidden' {...register('billingCountryCode')} />
       </div>
       <div className='grid grid-cols-2 gap-4'>
         <div className='flex flex-col'>

@@ -22,7 +22,9 @@ export async function getArtistEvents(
   const safePage = isPaginated ? (currentPage as number) : 1;
   const offset = (safePage - 1) * limit;
 
-  const wantsHistory = status.some((value) => value === 'ended' || value === 'rejected');
+  const wantsHistory = status.some((value) =>
+    ['ended', 'rejected', 'cancelled', 'in-dispute'].includes(value),
+  );
   const rangeStart = startDate ?? new Date(0);
   const rangeEnd = endDate ?? MAX_RANGE_END;
   const useUpcomingWindow = !startDate && !endDate && !wantsHistory;

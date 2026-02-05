@@ -37,7 +37,12 @@ export default function CreateEventRequestForm({
     },
   });
 
-  const { handleSubmit } = methods;
+  const {
+    handleSubmit,
+    formState: { errors },
+  } = methods;
+
+  const isBlacklistBlocked = errors.venueId?.type === 'blacklist';
 
   const onSubmit = async (data: EventRequestFormSchema) => {
     setIsSubmitting(true);
@@ -88,7 +93,7 @@ export default function CreateEventRequestForm({
               </Button>
               <Button
                 type='submit'
-                disabled={isSubmitting}
+                disabled={isSubmitting || isBlacklistBlocked}
               >
                 {isSubmitting ? 'Creazione evento...' : 'Crea evento'}
               </Button>

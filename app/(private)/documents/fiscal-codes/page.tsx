@@ -104,7 +104,7 @@ export default async function FiscalCodesPage({
       </div>
 
       <div className="flex items-center justify-between gap-3">
-        <h1 className="text-xl md:text-2xl font-bold">Fiscal Codes</h1>
+        <h1 className="text-xl md:text-2xl font-bold">Codice fiscale</h1>
       </div>
 
       {artists.length > 0 ? (

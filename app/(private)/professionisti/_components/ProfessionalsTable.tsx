@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -209,14 +208,17 @@ export default function ProfessionalsTable({ initialProfessionals, isAdmin }: Pr
 
   return (
     <div className='border rounded-2xl overflow-hidden bg-white'>
-      <Table className='w-full'>
+      <Table className='w-full min-w-max table-fixed'>
         <TableHeader className='bg-zinc-50'>
           <TableRow>
-            <TableHead>Nome</TableHead>
-            <TableHead>Ruolo</TableHead>
-            <TableHead>Email</TableHead>
-            <TableHead>Telefono</TableHead>
-            <TableHead className='w-28 text-right'>Eventi</TableHead>
+            <TableHead className='w-60'>Nome</TableHead>
+            <TableHead className='w-36'>Ruolo</TableHead>
+            <TableHead className='w-44'>Email</TableHead>
+            <TableHead className='w-36'>Telefono</TableHead>
+            <TableHead className='w-48 truncate' title='Competenze / Certificazioni'>
+              Competenze / Certificazioni
+            </TableHead>
+            <TableHead className='w-20 text-center'>Eventi</TableHead>
             <TableHead className='w-32'>Azioni</TableHead>
           </TableRow>
         </TableHeader>
@@ -227,27 +229,44 @@ export default function ProfessionalsTable({ initialProfessionals, isAdmin }: Pr
                 new Date().getTime() - new Date(professional.createdAt).getTime() < NEW_USER_TIME;
               return (
                 <TableRow key={professional.id}>
-                  <TableCell className='font-medium'>
-                    <div className='flex items-center flex-nowrap gap-3'>
+                  <TableCell className='font-medium overflow-hidden'>
+                    <div className='flex items-center flex-nowrap gap-3 min-w-0'>
                       <UserBadge
                         name={professional.fullName || '—'}
                         surname={''}
                         avatarUrl={AVATAR_FALLBACK}
                         isDisabled={false}
                         href={`/professionisti/${professional.id}`}
+                        className='min-w-0 max-w-full'
                       />
                       {isNew && <StatusBadge status='new' />}
                     </div>
                   </TableCell>
-                  <TableCell>
+                  <TableCell
+                    className='truncate'
+                    title={
+                      professional.role === 'other' && professional.roleDescription
+                        ? `${ROLE_LABELS[professional.role]} (${professional.roleDescription})`
+                        : ROLE_LABELS[professional.role]
+                    }
+                  >
                     {ROLE_LABELS[professional.role]}
                     {professional.role === 'other' && professional.roleDescription
                       ? ` (${professional.roleDescription})`
                       : ''}
                   </TableCell>
-                  <TableCell>{professional.email || '-'}</TableCell>
-                  <TableCell>{professional.phone || '-'}</TableCell>
-                  <TableCell className='text-right tabular-nums'>{professional.eventCount}</TableCell>
+                  <TableCell className='truncate' title={professional.email ?? undefined}>
+                    {professional.email || '-'}
+                  </TableCell>
+                  <TableCell className='truncate' title={professional.phone ?? undefined}>
+                    {professional.phone || '-'}
+                  </TableCell>
+                  <TableCell className='truncate' title={professional.competencies ?? undefined}>
+                    {professional.competencies || '-'}
+                  </TableCell>
+                  <TableCell className='text-center tabular-nums'>
+                    {professional.eventCount}
+                  </TableCell>
                   <TableCell>
                     <EditProfessionalDialog
                       professional={professional}
@@ -261,7 +280,7 @@ export default function ProfessionalsTable({ initialProfessionals, isAdmin }: Pr
             })
           ) : (
             <TableRow>
-              <TableCell colSpan={6} className='text-center text-sm text-zinc-500 py-6'>
+              <TableCell colSpan={7} className='text-center text-sm text-zinc-500 py-6'>
                 Nessun professionista disponibile.
               </TableCell>
             </TableRow>

@@ -102,7 +102,7 @@ export default async function IdCardPage({ searchParams }: IdCardPageProps) {
       </div>
 
       <div className="flex items-center justify-between gap-3">
-        <h1 className="text-xl md:text-2xl font-bold">ID Card</h1>
+        <h1 className="text-xl md:text-2xl font-bold">Carta d&apos;Identità</h1>
       </div>
 
       {artists.length > 0 ? (
@@ -151,7 +151,7 @@ export default async function IdCardPage({ searchParams }: IdCardPageProps) {
                 <div className="flex flex-wrap items-center gap-3 justify-end">
                   <div className="inline-flex items-center gap-2 text-xs text-zinc-500">
                     <FileText className="h-4 w-4 text-zinc-400" />
-                    <span>ID Card</span>
+                    <span>Carta d&apos;Identità</span>
                   </div>
                   {artist.idCardFileUrl ? (
                     <a
@@ -161,7 +161,7 @@ export default async function IdCardPage({ searchParams }: IdCardPageProps) {
                       className="inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-1.5 text-xs text-zinc-700 hover:underline"
                     >
                       <FileText className="h-4 w-4 text-zinc-400" />
-                      {artist.idCardFileName ?? "ID Card.pdf"}
+                      {artist.idCardFileName ?? "Carta d'Identità.pdf"}
                     </a>
                   ) : (
                     <span className="text-zinc-400">Mancante</span>
@@ -182,7 +182,7 @@ export default async function IdCardPage({ searchParams }: IdCardPageProps) {
         <section className="flex flex-col justify-center items-center bg-white rounded-2xl p-8">
           <h2 className="text-base font-bold">Nessun documento</h2>
           <div className="text-sm font-medium text-zinc-400">
-            Aggiungi un artista per vedere gli ID card.
+            Aggiungi un artista per vedere le carte d&apos;identità.
           </div>
         </section>
       )}

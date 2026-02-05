@@ -1,6 +1,7 @@
 import * as z from 'zod/v4';
 import {
   addressValidation,
+  addressFormattedValidation,
   birthDateValidation,
   companyValidation,
   emailValidation,
@@ -24,6 +25,13 @@ import {
   abaRoutingNumberValidation,
   sdiRecipientCodeValidation,
   venueTypesEnumValidation,
+  streetNameValidation,
+  streetNumberValidation,
+  placeIdValidation,
+  latitudeValidation,
+  longitudeValidation,
+  countryNameValidation,
+  countryCodeValidation,
 } from './_general';
 
 const optionalString = <T extends z.ZodTypeAny>(schema: T) =>
@@ -88,6 +96,38 @@ export const artistS1FormSchema = z.object({
   address: z.preprocess(
     (val) => (typeof val === 'string' && val.trim() !== '' ? val : undefined),
     addressValidation.optional(),
+  ),
+  addressFormatted: z.preprocess(
+    (val) => (typeof val === 'string' && val.trim() !== '' ? val : undefined),
+    addressFormattedValidation.optional(),
+  ),
+  streetName: z.preprocess(
+    (val) => (typeof val === 'string' && val.trim() !== '' ? val : undefined),
+    streetNameValidation.optional(),
+  ),
+  streetNumber: z.preprocess(
+    (val) => (typeof val === 'string' && val.trim() !== '' ? val : undefined),
+    streetNumberValidation.optional(),
+  ),
+  placeId: z.preprocess(
+    (val) => (typeof val === 'string' && val.trim() !== '' ? val : undefined),
+    placeIdValidation.optional(),
+  ),
+  latitude: z.preprocess(
+    (val) => (typeof val === 'string' && val.trim() !== '' ? val : undefined),
+    latitudeValidation.optional(),
+  ),
+  longitude: z.preprocess(
+    (val) => (typeof val === 'string' && val.trim() !== '' ? val : undefined),
+    longitudeValidation.optional(),
+  ),
+  countryName: z.preprocess(
+    (val) => (typeof val === 'string' && val.trim() !== '' ? val : undefined),
+    countryNameValidation.optional(),
+  ),
+  countryCode: z.preprocess(
+    (val) => (typeof val === 'string' && val.trim() !== '' ? val : undefined),
+    countryCodeValidation.optional(),
   ),
 
   countryId: optionalId,
@@ -161,6 +201,38 @@ export const artistS2FormSchema = z
     billingAddress: z.preprocess(
       (val) => (typeof val === 'string' && val.trim() !== '' ? val : undefined),
       addressValidation.optional(),
+    ),
+    billingAddressFormatted: z.preprocess(
+      (val) => (typeof val === 'string' && val.trim() !== '' ? val : undefined),
+      addressFormattedValidation.optional(),
+    ),
+    billingStreetName: z.preprocess(
+      (val) => (typeof val === 'string' && val.trim() !== '' ? val : undefined),
+      streetNameValidation.optional(),
+    ),
+    billingStreetNumber: z.preprocess(
+      (val) => (typeof val === 'string' && val.trim() !== '' ? val : undefined),
+      streetNumberValidation.optional(),
+    ),
+    billingPlaceId: z.preprocess(
+      (val) => (typeof val === 'string' && val.trim() !== '' ? val : undefined),
+      placeIdValidation.optional(),
+    ),
+    billingLatitude: z.preprocess(
+      (val) => (typeof val === 'string' && val.trim() !== '' ? val : undefined),
+      latitudeValidation.optional(),
+    ),
+    billingLongitude: z.preprocess(
+      (val) => (typeof val === 'string' && val.trim() !== '' ? val : undefined),
+      longitudeValidation.optional(),
+    ),
+    billingCountryName: z.preprocess(
+      (val) => (typeof val === 'string' && val.trim() !== '' ? val : undefined),
+      countryNameValidation.optional(),
+    ),
+    billingCountryCode: z.preprocess(
+      (val) => (typeof val === 'string' && val.trim() !== '' ? val : undefined),
+      countryCodeValidation.optional(),
     ),
 
     billingCountry: z.preprocess(

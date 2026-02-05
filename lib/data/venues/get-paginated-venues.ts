@@ -68,6 +68,8 @@ export async function getPaginatedVenues({
           company: venues.company,
           taxCode: venues.taxCode,
           address: venues.address,
+          city: venues.city,
+          zipCode: venues.zipCode,
           type: venues.type,
           capacity: venues.capacity,
           manager: {

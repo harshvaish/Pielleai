@@ -34,6 +34,10 @@ import { getEventProfessionals } from '@/lib/data/events/get-event-professionals
 import { getProfessionalsCached } from '@/lib/cache/professionals';
 import { HostedEventBadge } from '@/app/(private)/_components/Badges/HostedEventBadge';
 import { getEventSummaryDocument } from '@/lib/data/documents/get-event-summary-document';
+import RemoveApprovedVenueButton from './_components/RemoveApprovedVenueButton';
+import CancelEventButton from './_components/CancelEventButton';
+import CancellationAccountingToggle from './_components/CancellationAccountingToggle';
+import RetryLegalDisputeEmailButton from './_components/RetryLegalDisputeEmailButton';
 
 const EVENT_TYPE_LABELS: Record<EventType, string> = {
   'dj-set': 'DJ set',
@@ -139,6 +143,63 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
   const eventTitle =
     event.title?.trim() ||
     generateEventTitle(artistLabel, event.venue.name, event.startDate, event.endDate);
+  const isCancelled = ['cancelled', 'in-dispute'].includes(event.status);
+
+  const CANCELLATION_REQUESTED_BY_LABELS: Record<string, string> = {
+    venue: 'Locale',
+    booking: 'Booking',
+  };
+
+  const CANCELLATION_TYPE_LABELS: Record<string, string> = {
+    venue: 'Annullamento locale',
+    peaceful: 'Annullamento pacifico',
+    'legal-dispute': 'Contestazione legale',
+  };
+
+  const ROLE_LABELS: Record<string, string> = {
+    admin: 'Admin',
+    'artist-manager': 'Manager Artista',
+    'venue-manager': 'Promoter Locale',
+    user: 'Utente',
+  };
+
+  const formatDateTime = (value?: string | Date | null) =>
+    value
+      ? format(toZonedTime(new Date(value), TIME_ZONE), 'dd/MM/yyyy HH:mm')
+      : '-';
+
+  const paymentStatus = paymentData?.paymentStatus ?? 'pending';
+  const allowedEventStatus = ['pre-confirmed', 'confirmed'].includes(event.status);
+  const isPreConfirmedAwaitingContract =
+    event.status === 'pre-confirmed' && paymentStatus === 'pending';
+  const isContractSignedAwaitingUpfront = paymentStatus === 'upfront-required';
+  const isBookedAwaitingBalance = ['upfront-paid', 'balance-required'].includes(paymentStatus);
+  const isFullyConfirmed = ['fully-paid', 'balance-paid'].includes(paymentStatus);
+
+  const canRemoveVenue =
+    isAdmin &&
+    allowedEventStatus &&
+    (isPreConfirmedAwaitingContract || isContractSignedAwaitingUpfront || isBookedAwaitingBalance) &&
+    !isFullyConfirmed &&
+    !isCancelled;
+
+  const removeVenueDisabledReason = !isAdmin
+    ? undefined
+    : !allowedEventStatus
+      ? 'Operazione consentita solo per eventi pre-confermati o confermati.'
+      : isCancelled
+        ? 'Operazione non consentita: evento annullato.'
+      : isFullyConfirmed
+        ? 'Operazione non consentita: evento completamente pagato.'
+        : 'Operazione non consentita per lo stato corrente.';
+
+  const canCancelEvent = ['proposed', 'pre-confirmed', 'confirmed'].includes(event.status);
+  const cancelEventDisabledReason =
+    event.status === 'ended'
+      ? 'Operazione non consentita: evento già concluso.'
+      : event.status === 'rejected'
+        ? 'Operazione non consentita: evento già rifiutato.'
+        : 'Operazione non consentita per lo stato corrente.';
 
   console.log('[EventPage] Payment Data:', {
     paymentStatus: paymentData?.paymentStatus,
@@ -221,8 +282,6 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
           </span>
           <span className='font-semibold text-zinc-600'>Locale</span>
           <span className='font-medium text-zinc-500'>{event.venue.name}</span>
-          <span className='font-semibold text-zinc-600'>Città</span>
-          <span className='font-medium text-zinc-500'>{event.venue.city || '-'}</span>
           <span className='font-semibold text-zinc-600'>Indirizzo</span>
           <span className='font-medium text-zinc-500'>{event.venue.address || '-'}</span>
         </div>
@@ -555,6 +614,138 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
           </>
         )}
       </section>
+
+      {isCancelled && (
+        <section className='bg-white p-6 rounded-2xl space-y-4 border border-amber-100'>
+          <div className='flex items-center justify-between gap-3'>
+            <h2 className='text-lg font-bold text-amber-700'>Annullamento evento</h2>
+            <EventStatusBadge status={event.status} size='sm' />
+          </div>
+          <Separator />
+          <div className='grid grid-cols-[minmax(180px,max-content)_1fr] gap-3 text-sm'>
+            <span className='font-semibold text-zinc-600'>Richiedente</span>
+            <span className='font-medium text-zinc-500'>
+              {event.cancellationRequestedBy
+                ? CANCELLATION_REQUESTED_BY_LABELS[event.cancellationRequestedBy] ??
+                  event.cancellationRequestedBy
+                : '-'}
+            </span>
+            <span className='font-semibold text-zinc-600'>Tipo annullamento</span>
+            <span className='font-medium text-zinc-500'>
+              {event.cancellationType
+                ? CANCELLATION_TYPE_LABELS[event.cancellationType] ?? event.cancellationType
+                : '-'}
+            </span>
+            <span className='font-semibold text-zinc-600'>Data annullamento</span>
+            <span className='font-medium text-zinc-500'>
+              {formatDateTime(event.cancellationAt)}
+            </span>
+            <span className='font-semibold text-zinc-600'>Utente</span>
+            <span className='font-medium text-zinc-500'>
+              {event.cancellationUserId ?? '-'}
+              {event.cancellationUserRole
+                ? ` (${ROLE_LABELS[event.cancellationUserRole] ?? event.cancellationUserRole})`
+                : ''}
+            </span>
+          </div>
+
+          {event.cancellationNotes && (
+            <div className='space-y-1'>
+              <div className='text-sm font-semibold text-zinc-600'>Motivazione</div>
+              <div className='text-sm text-zinc-500 whitespace-pre-line'>
+                {event.cancellationNotes}
+              </div>
+            </div>
+          )}
+
+          {event.cancellationType === 'peaceful' && (
+            <div className='rounded-lg border border-zinc-200 p-3 space-y-2'>
+              <div className='flex items-center justify-between gap-3'>
+                <div className='space-y-1'>
+                  <div className='text-sm font-semibold'>
+                    Storno fattura e aggiornamento contabile completati
+                  </div>
+                  {event.cancellationAccountingCompletedAt && (
+                    <div className='text-xs text-zinc-500'>
+                      Completato il {formatDateTime(event.cancellationAccountingCompletedAt)}
+                    </div>
+                  )}
+                </div>
+                <CancellationAccountingToggle
+                  eventId={event.id}
+                  initialCompleted={Boolean(event.cancellationAccountingCompleted)}
+                  disabled={!isAdmin}
+                />
+              </div>
+              {!isAdmin && (
+                <p className='text-xs text-zinc-500'>
+                  Solo admin può aggiornare lo stato contabile.
+                </p>
+              )}
+            </div>
+          )}
+
+          {event.cancellationType === 'legal-dispute' && (
+            <div className='rounded-lg border border-orange-200 bg-orange-50/50 p-3 space-y-2 text-sm'>
+              <div className='flex flex-wrap items-center justify-between gap-2'>
+                <div className='flex flex-wrap items-center gap-2'>
+                  <Badge variant='secondary'>In contestazione legale</Badge>
+                  <span className='text-zinc-600'>
+                    {event.cancellationLegalEmailSentAt
+                      ? `Email legale inviata il ${formatDateTime(event.cancellationLegalEmailSentAt)}`
+                      : 'Email legale non ancora inviata.'}
+                  </span>
+                </div>
+                {isAdmin && !event.cancellationLegalEmailSentAt && (
+                  <RetryLegalDisputeEmailButton eventId={event.id} />
+                )}
+              </div>
+              {event.cancellationLegalEmailTo && (
+                <div className='text-xs text-zinc-500'>
+                  Destinatari: {event.cancellationLegalEmailTo}
+                </div>
+              )}
+            </div>
+          )}
+        </section>
+      )}
+
+      {isAdmin && !isCancelled && (
+        <section className='bg-white p-6 rounded-2xl space-y-3 border border-amber-100'>
+          <div className='flex flex-wrap items-center justify-between gap-3'>
+            <h2 className='text-lg font-bold text-amber-700'>Annullamento evento</h2>
+            <CancelEventButton
+              eventId={event.id}
+              eventTitle={eventTitle}
+              disabled={!canCancelEvent}
+              disabledReason={cancelEventDisabledReason}
+            />
+          </div>
+          <p className='text-sm text-zinc-500'>
+            Registra un annullamento specificando il richiedente, il tipo e la motivazione.
+            L&apos;operazione è riservata agli admin.
+          </p>
+        </section>
+      )}
+
+      {isAdmin && (
+        <section className='bg-white p-6 rounded-2xl space-y-3 border border-red-100'>
+          <div className='flex flex-wrap items-center justify-between gap-3'>
+            <h2 className='text-lg font-bold text-red-600'>Rimozione locale approvato</h2>
+            <RemoveApprovedVenueButton
+              eventId={event.id}
+              eventTitle={eventTitle}
+              venueName={event.venue.name}
+              canRemove={canRemoveVenue}
+              disabledReason={removeVenueDisabledReason}
+            />
+          </div>
+          <p className='text-sm text-zinc-500'>
+            Usa questa azione per rimuovere il locale prima della conferma finale. Il motivo della
+            rimozione e gli aggiornamenti del contratto verranno registrati nel log evento.
+          </p>
+        </section>
+      )}
     </div>
   );
 }

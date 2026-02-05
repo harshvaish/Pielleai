@@ -45,6 +45,8 @@ export async function getEventsToApprove(): Promise<{ data: Event[] }> {
           avatarUrl: venues.avatarUrl,
           name: venues.name,
           address: venues.address,
+          city: venues.city,
+          zipCode: venues.zipCode,
         },
 
         status: events.status,

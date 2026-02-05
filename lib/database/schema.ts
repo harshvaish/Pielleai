@@ -28,6 +28,17 @@ export const eventStatus = pgEnum('event_status', [
   'confirmed',
   'rejected',
   'ended',
+  'cancelled',
+  'in-dispute',
+]);
+export const eventCancellationRequestedBy = pgEnum('event_cancellation_requested_by', [
+  'venue',
+  'booking',
+]);
+export const eventCancellationType = pgEnum('event_cancellation_type', [
+  'venue',
+  'peaceful',
+  'legal-dispute',
 ]);
 export const eventGuestStatus = pgEnum('event_guest_status', [
   'to-invite',
@@ -163,6 +174,14 @@ export const artists = pgTable(
     birthDate: date('birth_date').notNull(),
     birthPlace: text('birth_place').notNull(),
     address: text(),
+    addressFormatted: text('address_formatted'),
+    streetName: text('street_name'),
+    streetNumber: text('street_number'),
+    placeId: text('place_id'),
+    latitude: numeric('latitude', { precision: 9, scale: 6 }),
+    longitude: numeric('longitude', { precision: 9, scale: 6 }),
+    countryName: text('country_name'),
+    countryCode: varchar('country_code', { length: 2 }),
     countryId: integer('country_id'),
     subdivisionId: integer('subdivision_id'),
     city: text(),
@@ -186,6 +205,14 @@ export const artists = pgTable(
     iban: text(),
     sdiRecipientCode: text('sdi_recipient_code'),
     billingAddress: text('billing_address'),
+    billingAddressFormatted: text('billing_address_formatted'),
+    billingStreetName: text('billing_street_name'),
+    billingStreetNumber: text('billing_street_number'),
+    billingPlaceId: text('billing_place_id'),
+    billingLatitude: numeric('billing_latitude', { precision: 9, scale: 6 }),
+    billingLongitude: numeric('billing_longitude', { precision: 9, scale: 6 }),
+    billingCountryName: text('billing_country_name'),
+    billingCountryCode: varchar('billing_country_code', { length: 2 }),
     billingCountryId: integer('billing_country_id'),
     billingSubdivisionId: integer('billing_subdivision_id'),
     billingCity: text('billing_city'),
@@ -366,6 +393,14 @@ export const profiles = pgTable(
     birthDate: date('birth_date'),
     birthPlace: text('birth_place').notNull(),
     address: text().notNull(),
+    addressFormatted: text('address_formatted'),
+    streetName: text('street_name'),
+    streetNumber: text('street_number'),
+    placeId: text('place_id'),
+    latitude: numeric('latitude', { precision: 9, scale: 6 }),
+    longitude: numeric('longitude', { precision: 9, scale: 6 }),
+    countryName: text('country_name'),
+    countryCode: varchar('country_code', { length: 2 }),
     countryId: integer('country_id'),
     subdivisionId: integer('subdivision_id'),
     city: text().notNull(),
@@ -379,6 +414,14 @@ export const profiles = pgTable(
     iban: text(),
     sdiRecipientCode: text('sdi_recipient_code'),
     billingAddress: text('billing_address'),
+    billingAddressFormatted: text('billing_address_formatted'),
+    billingStreetName: text('billing_street_name'),
+    billingStreetNumber: text('billing_street_number'),
+    billingPlaceId: text('billing_place_id'),
+    billingLatitude: numeric('billing_latitude', { precision: 9, scale: 6 }),
+    billingLongitude: numeric('billing_longitude', { precision: 9, scale: 6 }),
+    billingCountryName: text('billing_country_name'),
+    billingCountryCode: varchar('billing_country_code', { length: 2 }),
     billingCountryId: integer('billing_country_id'),
     billingSubdivisionId: integer('billing_subdivision_id'),
     billingCity: text('billing_city'),
@@ -478,6 +521,30 @@ export const artistNotes = pgTable(
   ],
 );
 
+export const artistContacts = pgTable(
+  'artist_contacts',
+  {
+    id: serial().primaryKey().notNull(),
+    artistId: integer('artist_id').notNull(),
+    name: text(),
+    phone: text(),
+    email: text(),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    index('idx_artist_contacts_artist_id').using(
+      'btree',
+      table.artistId.asc().nullsLast().op('int4_ops'),
+    ),
+    foreignKey({
+      columns: [table.artistId],
+      foreignColumns: [artists.id],
+      name: 'artist_contacts_artist_id_fkey',
+    }).onDelete('cascade'),
+  ],
+);
+
 export const venues = pgTable(
   'venues',
   {
@@ -490,6 +557,14 @@ export const venues = pgTable(
     type: venueTypes().notNull(),
     capacity: integer().notNull(),
     address: text().notNull(),
+    addressFormatted: text('address_formatted'),
+    streetName: text('street_name'),
+    streetNumber: text('street_number'),
+    placeId: text('place_id'),
+    latitude: numeric('latitude', { precision: 9, scale: 6 }),
+    longitude: numeric('longitude', { precision: 9, scale: 6 }),
+    countryName: text('country_name'),
+    countryCode: varchar('country_code', { length: 2 }),
     countryId: integer('country_id').notNull(),
     subdivisionId: integer('subdivision_id').notNull(),
     city: text().notNull(),
@@ -502,6 +577,14 @@ export const venues = pgTable(
     abaRoutingNumber: varchar('aba_routing_number', { length: 20 }),
     sdiRecipientCode: text('sdi_recipient_code'),
     billingAddress: text('billing_address').notNull(),
+    billingAddressFormatted: text('billing_address_formatted'),
+    billingStreetName: text('billing_street_name'),
+    billingStreetNumber: text('billing_street_number'),
+    billingPlaceId: text('billing_place_id'),
+    billingLatitude: numeric('billing_latitude', { precision: 9, scale: 6 }),
+    billingLongitude: numeric('billing_longitude', { precision: 9, scale: 6 }),
+    billingCountryName: text('billing_country_name'),
+    billingCountryCode: varchar('billing_country_code', { length: 2 }),
     billingCountryId: integer('billing_country_id'),
     billingSubdivisionId: integer('billing_subdivision_id'),
     billingCity: text('billing_city').notNull(),
@@ -581,6 +664,88 @@ export const venues = pgTable(
   ],
 );
 
+export const artistBlacklistedVenues = pgTable(
+  'artist_blacklisted_venues',
+  {
+    id: serial().primaryKey().notNull(),
+    artistId: integer('artist_id').notNull(),
+    venueId: integer('venue_id').notNull(),
+    createdByUserId: text('created_by_user_id'),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    uniqueIndex('ux_artist_blacklisted_venues').on(table.artistId, table.venueId),
+    index('idx_artist_blacklisted_venues_artist_id').using(
+      'btree',
+      table.artistId.asc().nullsLast().op('int4_ops'),
+    ),
+    foreignKey({
+      columns: [table.artistId],
+      foreignColumns: [artists.id],
+      name: 'artist_blacklisted_venues_artist_id_fkey',
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [table.venueId],
+      foreignColumns: [venues.id],
+      name: 'artist_blacklisted_venues_venue_id_fkey',
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [table.createdByUserId],
+      foreignColumns: [users.id],
+      name: 'artist_blacklisted_venues_created_by_user_id_fkey',
+    }).onDelete('set null'),
+  ],
+);
+
+export const artistBlacklistedAreas = pgTable(
+  'artist_blacklisted_areas',
+  {
+    id: serial().primaryKey().notNull(),
+    artistId: integer('artist_id').notNull(),
+    countryId: integer('country_id').notNull(),
+    subdivisionId: integer('subdivision_id'),
+    city: text(),
+    createdByUserId: text('created_by_user_id'),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    uniqueIndex('ux_artist_blacklisted_areas').on(
+      table.artistId,
+      table.countryId,
+      table.subdivisionId,
+      table.city,
+    ),
+    index('idx_artist_blacklisted_areas_artist_id').using(
+      'btree',
+      table.artistId.asc().nullsLast().op('int4_ops'),
+    ),
+    index('idx_artist_blacklisted_areas_country_id').using(
+      'btree',
+      table.countryId.asc().nullsLast().op('int4_ops'),
+    ),
+    foreignKey({
+      columns: [table.artistId],
+      foreignColumns: [artists.id],
+      name: 'artist_blacklisted_areas_artist_id_fkey',
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [table.countryId],
+      foreignColumns: [countries.id],
+      name: 'artist_blacklisted_areas_country_id_fkey',
+    }).onDelete('restrict'),
+    foreignKey({
+      columns: [table.subdivisionId],
+      foreignColumns: [subdivisions.id],
+      name: 'artist_blacklisted_areas_subdivision_id_fkey',
+    }).onDelete('restrict'),
+    foreignKey({
+      columns: [table.createdByUserId],
+      foreignColumns: [users.id],
+      name: 'artist_blacklisted_areas_created_by_user_id_fkey',
+    }).onDelete('set null'),
+  ],
+);
+
 export const events = pgTable(
   'events',
   {
@@ -631,6 +796,16 @@ export const events = pgTable(
     tourManagerEmail: text('tour_manager_email'),
     hasConflict: boolean('has_conflict').default(false).notNull(),
     status: eventStatus().default('proposed').notNull(),
+    cancellationRequestedBy: eventCancellationRequestedBy('cancellation_requested_by'),
+    cancellationType: eventCancellationType('cancellation_type'),
+    cancellationAt: timestamp('cancellation_at', { withTimezone: true }),
+    cancellationUserId: text('cancellation_user_id'),
+    cancellationUserRole: userRoles('cancellation_user_role'),
+    cancellationNotes: text('cancellation_notes'),
+    cancellationAccountingCompleted: boolean('cancellation_accounting_completed'),
+    cancellationAccountingCompletedAt: timestamp('cancellation_accounting_completed_at', { withTimezone: true }),
+    cancellationLegalEmailSentAt: timestamp('cancellation_legal_email_sent_at', { withTimezone: true }),
+    cancellationLegalEmailTo: text('cancellation_legal_email_to'),
     masterEventId: integer('master_event_id'),
     revisionNumber: integer('revision_number').default(0).notNull(),
     protocolNumber: text('protocol_number'),
