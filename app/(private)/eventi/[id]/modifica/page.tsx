@@ -1,4 +1,3 @@
-import BackButton from '@/app/_components/BackButton';
 import getSession from '@/lib/data/auth/get-session';
 import { notFound, redirect } from 'next/navigation';
 import { getUserProfileIdCached } from '@/lib/cache/users';
@@ -47,9 +46,6 @@ export default async function UpdateEventPage({ params }: UpdateEventPageProps) 
   if (event.status === 'ended' && !event.masterEventId) {
     return (
       <div className='max-w-3xl space-y-2'>
-        <div className='flex items-center justify-between -mt-2'>
-          <BackButton />
-        </div>
         <section className='bg-white p-6 rounded-2xl space-y-4'>
           <h1 className='text-2xl font-bold'>Evento concluso</h1>
           <p className='text-sm text-zinc-600'>
@@ -65,9 +61,6 @@ export default async function UpdateEventPage({ params }: UpdateEventPageProps) 
   if (['cancelled', 'in-dispute'].includes(event.status)) {
     return (
       <div className='max-w-3xl space-y-2'>
-        <div className='flex items-center justify-between -mt-2'>
-          <BackButton />
-        </div>
         <section className='bg-white p-6 rounded-2xl space-y-4'>
           <h1 className='text-2xl font-bold'>Evento annullato</h1>
           <p className='text-sm text-zinc-600'>
@@ -86,9 +79,6 @@ export default async function UpdateEventPage({ params }: UpdateEventPageProps) 
 
   return (
     <div className='max-w-5xl space-y-1'>
-      <div className='flex items-center justify-between -mt-2'>
-        <BackButton />
-      </div>
       <UpdateEventForm
         event={event}
         artists={artists}

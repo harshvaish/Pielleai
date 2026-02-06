@@ -1,4 +1,3 @@
-import BackButton from '@/app/_components/BackButton';
 import getSession from '@/lib/data/auth/get-session';
 import { notFound, redirect } from 'next/navigation';
 import { getUserProfileIdCached } from '@/lib/cache/users';
@@ -39,9 +38,6 @@ export default async function CreateEventPage() {
 
   return (
     <div className='max-w-5xl space-y-1'>
-      <div className='flex items-center justify-between -mt-2'>
-        <BackButton />
-      </div>
       {isAdmin ? (
         <CreateEventForm
           artists={artists}
