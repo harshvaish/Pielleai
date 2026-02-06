@@ -62,10 +62,6 @@ export const updateEvent = async (
     } = validation.data;
     const now = new Date();
 
-    if (['cancelled', 'in-dispute'].includes(newStatus)) {
-      throw new AppError('Usa la procedura di annullamento per cancellare un evento.');
-    }
-
     if (!artistId) {
       throw new AppError('Artista selezionato non valido.');
     }

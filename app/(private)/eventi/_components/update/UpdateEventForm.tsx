@@ -16,6 +16,8 @@ import EventForm from '../form/EventForm';
 import { useState } from 'react';
 import { generateEventTitle } from '@/lib/utils/generate-event-title';
 import { generateAndUploadEventSummaryPdf } from '../utils/event-summary';
+import ArtistsBadge from '@/app/(private)/_components/Badges/ArtistsBadge';
+import VenuesBadge from '@/app/(private)/_components/Badges/VenuesBadge';
 
 type UpdateEventFormProps = {
   event: DomainEvent;
@@ -82,6 +84,12 @@ export default function UpdateEventForm({
   const availabilityStart = toDate(event.availability.startDate);
   const availabilityEnd = toDate(event.availability.endDate);
   const paymentDate = toDate(event.paymentDate ?? null);
+  const eventDatesLabel =
+    availabilityStart && availabilityEnd
+      ? format(availabilityStart, 'yyyy-MM-dd') === format(availabilityEnd, 'yyyy-MM-dd')
+        ? format(availabilityStart, 'dd/MM/yyyy')
+        : `${format(availabilityStart, 'dd/MM/yyyy')} – ${format(availabilityEnd, 'dd/MM/yyyy')}`
+      : null;
   const eventTitle =
     event.title?.trim() ||
     (availabilityStart && availabilityEnd
@@ -256,8 +264,31 @@ export default function UpdateEventForm({
           onSubmit={handleSubmit(onSubmit)}
           noValidate={true}
         >
-          <div className='flex items-center justify-between gap-3'>
-            <h1 className='text-2xl font-bold'>Modifica evento</h1>
+          <div className='flex flex-wrap items-center justify-between gap-3'>
+            <div className='flex flex-wrap items-center gap-3'>
+              <h1 className='text-2xl font-bold'>Modifica evento</h1>
+              <div className='flex flex-wrap items-center gap-2'>
+                <ArtistsBadge
+                  artists={[event.artist]}
+                  userRole={userRole}
+                />
+                <span className='text-xs text-zinc-400'>x</span>
+                <VenuesBadge
+                  userRole={userRole}
+                  venues={[event.venue]}
+                />
+                {eventDatesLabel ? (
+                  <>
+                    <span className='text-xs text-zinc-400'>—</span>
+                    <span className='text-sm font-semibold text-zinc-800 whitespace-nowrap'>
+                      {eventDatesLabel}
+                    </span>
+                  </>
+                ) : (
+                  <span className='text-sm text-zinc-500 whitespace-nowrap'>{eventTitle}</span>
+                )}
+              </div>
+            </div>
             <div className='flex items-center gap-1.5'>
               <Button
                 type='button'
@@ -279,7 +310,6 @@ export default function UpdateEventForm({
               </Button>
             </div>
           </div>
-          <div className='text-sm text-zinc-500 -mt-1'>{eventTitle}</div>
 
           <section className='bg-white p-6 rounded-2xl'>
             <EventForm

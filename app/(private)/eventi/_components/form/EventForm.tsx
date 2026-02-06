@@ -62,9 +62,7 @@ import ViewContractDetail from "../update/ViewContractDetail";
 import ResendDocuSignButton from "../update/ResendDocuSignButton";
 import { X } from "lucide-react";
 
-const STATUS_OPTIONS = eventStatus.enumValues.filter(
-  (status) => !["cancelled", "in-dispute"].includes(status),
-);
+const STATUS_OPTIONS = eventStatus.enumValues;
 
 const ROLE_LABELS: Record<ProfessionalRole, string> = {
   journalist: "Giornalista",
@@ -195,6 +193,7 @@ export default function EventForm({
     typeof moCost === "number" && Number.isFinite(moCost) ? moCost : undefined;
 
   const recommendedFetchUrl = useMemo(() => {
+    if (mode !== "create") return null;
     if (!selectedVenueId) return null;
     if (!selectedAvailability?.startDate || !selectedAvailability?.endDate) return null;
     if (normalizedBudget === undefined) return null;
@@ -210,6 +209,7 @@ export default function EventForm({
     }
     return `/api/artists/recommended?${params.toString()}`;
   }, [
+    mode,
     selectedVenueId,
     selectedAvailability?.startDate,
     selectedAvailability?.endDate,
@@ -524,108 +524,111 @@ export default function EventForm({
   };
   return (
     <>
-      <section className="bg-white rounded-2xl p-4 border border-zinc-100 mb-6">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <div className="text-sm font-semibold">Artisti consigliati</div>
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            asChild
-          >
-            <Link href="/artisti">Vedi tutti gli artisti</Link>
-          </Button>
-        </div>
-
-        {!isRecommendationReady && (
-          <div className="text-sm text-zinc-500 mt-3">
-            Seleziona locale e data per vedere i consigliati.
+      {mode === "create" && (
+        <section className="bg-white rounded-2xl p-4 border border-zinc-100 mb-6">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="text-sm font-semibold">Artisti consigliati</div>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              asChild
+            >
+              <Link href="/artisti">Vedi tutti gli artisti</Link>
+            </Button>
           </div>
-        )}
 
-        {isRecommendationReady && !hasBudget && (
-          <div className="text-sm text-zinc-500 mt-3">
-            Inserisci un budget per applicare il filtro cachet.
-          </div>
-        )}
+          {!isRecommendationReady && (
+            <div className="text-sm text-zinc-500 mt-3">
+              Seleziona locale e data per vedere i consigliati.
+            </div>
+          )}
 
-        {isRecommendationReady && hasBudget && (
-          <div className="mt-4 grid gap-3 md:grid-cols-2">
-            {isRecommendedLoading && (
-              <div className="text-sm text-zinc-500">Caricamento consigliati...</div>
-            )}
+          {isRecommendationReady && !hasBudget && (
+            <div className="text-sm text-zinc-500 mt-3">
+              Inserisci un budget per applicare il filtro cachet.
+            </div>
+          )}
 
-            {!isRecommendedLoading && recommendedArtists.length === 0 && (
-              <div className="text-sm text-zinc-500">
-                Nessun artista corrisponde ai filtri per questa data.
-              </div>
-            )}
+          {isRecommendationReady && hasBudget && (
+            <div className="mt-4 grid gap-3 md:grid-cols-2">
+              {isRecommendedLoading && (
+                <div className="text-sm text-zinc-500">Caricamento consigliati...</div>
+              )}
 
-            {!isRecommendedLoading &&
-              recommendedArtists.map((artist) => {
-                const isSelected = artist.id === selectedArtistId;
-                return (
-                  <div
-                    key={artist.id}
-                    className="flex items-center justify-between gap-4 rounded-xl border border-zinc-100 p-3"
-                  >
-                    <div className="flex items-center gap-3 min-w-0">
-                      <Avatar className="h-10 w-10">
-                        <AvatarImage src={artist.avatarUrl} />
-                        <AvatarFallback>
-                          {artist.stageName.substring(0, 1).toUpperCase()}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="min-w-0">
-                        <div className="text-sm font-semibold truncate">{artist.stageName}</div>
-                        <div className="text-xs text-zinc-500 truncate">{artist.bio}</div>
-                      </div>
-                    </div>
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant={isSelected ? "secondary" : "outline"}
-                      onClick={() => {
-                        setValue("artistId", artist.id, {
-                          shouldDirty: true,
-                          shouldTouch: true,
-                        });
-                        setValue("artistManagerProfileId", undefined);
-                      }}
-                      disabled={isSelected}
+              {!isRecommendedLoading && recommendedArtists.length === 0 && (
+                <div className="text-sm text-zinc-500">
+                  Nessun artista corrisponde ai filtri per questa data.
+                </div>
+              )}
+
+              {!isRecommendedLoading &&
+                recommendedArtists.map((artist) => {
+                  const isSelected = artist.id === selectedArtistId;
+                  return (
+                    <div
+                      key={artist.id}
+                      className="flex items-center justify-between gap-4 rounded-xl border border-zinc-100 p-3"
                     >
-                      {isSelected ? "Selezionato" : "Seleziona"}
-                    </Button>
-                  </div>
-                );
-              })}
-          </div>
-        )}
+                      <div className="flex items-center gap-3 min-w-0">
+                        <Avatar className="h-10 w-10">
+                          <AvatarImage src={artist.avatarUrl} />
+                          <AvatarFallback>
+                            {artist.stageName.substring(0, 1).toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0">
+                          <div className="text-sm font-semibold truncate">{artist.stageName}</div>
+                          <div className="text-xs text-zinc-500 truncate">{artist.bio}</div>
+                        </div>
+                      </div>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant={isSelected ? "secondary" : "outline"}
+                        onClick={() => {
+                          setValue("artistId", artist.id, {
+                            shouldDirty: true,
+                            shouldTouch: true,
+                          });
+                          setValue("artistManagerProfileId", undefined);
+                        }}
+                        disabled={isSelected}
+                      >
+                        {isSelected ? "Selezionato" : "Seleziona"}
+                      </Button>
+                    </div>
+                  );
+                })}
+            </div>
+          )}
 
-        {debugEnabled && recommendedDebug && (
-          <div className="mt-4 rounded-xl border border-zinc-200 bg-zinc-50 p-3 text-xs text-zinc-600">
-            <div className="text-xs font-semibold text-zinc-700 mb-2">
-              Debug filtri consigliati
-            </div>
-            <div className="grid gap-1">
-              <div>Artisti attivi: {recommendedDebug.totalActive}</div>
-              <div>
-                Capienza match ({recommendedDebug.venueType}): {recommendedDebug.capacityMatch}
+          {debugEnabled && recommendedDebug && (
+            <div className="mt-4 rounded-xl border border-zinc-200 bg-zinc-50 p-3 text-xs text-zinc-600">
+              <div className="text-xs font-semibold text-zinc-700 mb-2">
+                Debug filtri consigliati
               </div>
-              <div>Disponibili (dopo conflitti): {recommendedDebug.availabilityOk}</div>
-              <div>Blocchi indisponibilità: {recommendedDebug.blockedAvailabilityCount}</div>
-              <div>Conflitti eventi: {recommendedDebug.eventConflictCount}</div>
-              <div>Candidati pre-budget: {recommendedDebug.candidatesBeforeBudget}</div>
-              <div>Cachet disponibili: {recommendedDebug.cachetKnownCount}</div>
-              <div>Cachet mancanti: {recommendedDebug.missingCachetCount}</div>
-              <div>
-                Budget ok {recommendedDebug.budget !== null ? `(${recommendedDebug.budget}€)` : ""}
-                : {recommendedDebug.budgetOk}
+              <div className="grid gap-1">
+                <div>Artisti attivi: {recommendedDebug.totalActive}</div>
+                <div>
+                  Capienza match ({recommendedDebug.venueType}): {recommendedDebug.capacityMatch}
+                </div>
+                <div>Disponibili (dopo conflitti): {recommendedDebug.availabilityOk}</div>
+                <div>Blocchi indisponibilità: {recommendedDebug.blockedAvailabilityCount}</div>
+                <div>Conflitti eventi: {recommendedDebug.eventConflictCount}</div>
+                <div>Candidati pre-budget: {recommendedDebug.candidatesBeforeBudget}</div>
+                <div>Cachet disponibili: {recommendedDebug.cachetKnownCount}</div>
+                <div>Cachet mancanti: {recommendedDebug.missingCachetCount}</div>
+                <div>
+                  Budget ok{" "}
+                  {recommendedDebug.budget !== null ? `(${recommendedDebug.budget}€)` : ""}:{" "}
+                  {recommendedDebug.budgetOk}
+                </div>
               </div>
             </div>
-          </div>
-        )}
-      </section>
+          )}
+        </section>
+      )}
 
       <div className="grid gap-6 md:grid-cols-3">
         <div className="flex flex-col">

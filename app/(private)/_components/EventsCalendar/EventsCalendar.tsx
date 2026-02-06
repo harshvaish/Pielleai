@@ -239,7 +239,7 @@ export default function EventsCalendar({ userRole, artists, venues }: EventsCale
     }
     const padding = 12;
     const placement: 'right' = 'right';
-    const panelWidth = panelRef.current?.offsetWidth ?? 520;
+    const panelWidth = panelRef.current?.offsetWidth ?? 640;
     const rawLeft = anchorRect.right - containerRect.left + padding;
     const left = Math.min(Math.max(rawLeft, 8), containerRect.width - panelWidth - 8);
     const panelHeight = panelRef.current?.offsetHeight ?? 420;
@@ -276,7 +276,7 @@ export default function EventsCalendar({ userRole, artists, venues }: EventsCale
     const endDate = format(event.end, 'dd/MM/yyyy');
     return (
       <div className='flex items-start justify-between gap-3'>
-        <div className='flex flex-wrap items-center gap-2 text-sm font-semibold text-zinc-900'>
+        <div className='flex flex-wrap lg:flex-nowrap min-w-0 items-center gap-2 text-sm font-semibold text-zinc-900'>
           <ArtistsBadge
             artists={[event.artist]}
             userRole={userRole}
@@ -287,12 +287,17 @@ export default function EventsCalendar({ userRole, artists, venues }: EventsCale
             venues={[event.venue]}
           />
           <span className='text-xs text-zinc-400'>—</span>
-          <span className='text-xs font-semibold text-zinc-600'>
+          <span className='text-xs font-semibold text-zinc-600 whitespace-nowrap'>
             {startDate} - {endDate}
           </span>
         </div>
-        <div className='flex items-center gap-1.5'>
-          {event.hostedEvent && <HostedEventBadge size='xs' />}
+        <div className='flex items-center gap-1'>
+          {event.hostedEvent && (
+            <HostedEventBadge
+              size='xs'
+              className='text-[10px] px-1.5 py-0.5'
+            />
+          )}
           <EventStatusBadge status={event.status} size='xs' />
           {isAdmin && event.hasConflict && <EventConflictBadge size='sm' />}
           {showClose && (
@@ -381,7 +386,7 @@ export default function EventsCalendar({ userRole, artists, venues }: EventsCale
         {isDesktop && selectedEvent && (
           <aside
             ref={panelRef}
-            className='absolute z-20 w-[520px] xl:w-[560px] max-w-[calc(100%-1rem)] max-h-[calc(100%-2rem)] rounded-2xl border bg-white/95 p-5 shadow-xl backdrop-blur'
+            className='absolute z-20 w-[640px] xl:w-[720px] max-w-[calc(100%-1rem)] max-h-[calc(100%-2rem)] rounded-2xl border bg-white/95 p-5 shadow-xl backdrop-blur'
             style={
               panelPosition
                 ? { top: panelPosition.top, left: panelPosition.left }

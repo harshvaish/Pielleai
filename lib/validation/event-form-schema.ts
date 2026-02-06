@@ -12,10 +12,7 @@ export const eventFormSchema = z.object({
   artistId: idValidation,
   eventId: idValidation.optional(),
   contractId:idValidation.optional(),
-  status: eventStatusEnumValidation.refine(
-    (value) => !['cancelled', 'in-dispute'].includes(value),
-    "Seleziona un'opzione valida.",
-  ),
+  status: eventStatusEnumValidation,
 
   artistManagerProfileId: idValidation.optional(),
 
