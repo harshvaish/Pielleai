@@ -17,6 +17,7 @@ import { Check, ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useFormContext } from 'react-hook-form';
 import ResponsivePopover from '@/app/_components/ResponsivePopover';
+import { AVATAR_FALLBACK } from '@/lib/constants';
 
 type ArtistSelectProps = {
   artists: ArtistSelectData[];
@@ -51,6 +52,14 @@ export default function ArtistSelect({
     }
   }, [openSignal]);
 
+  const formatArtistLabel = (artist: Pick<ArtistSelectData, 'stageName' | 'name' | 'surname'>) => {
+    const stageName = (artist.stageName || '').trim();
+    const fullName = `${artist.name || ''} ${artist.surname || ''}`.trim();
+
+    if (stageName && fullName) return `${stageName} - ${fullName}`;
+    return stageName || fullName || 'Artista';
+  };
+
   const onSelectHandler = (value: string): void => {
     setValue(parseInt(value));
     setFormValue('artistManagerProfileId', undefined);
@@ -76,14 +85,17 @@ export default function ArtistSelect({
             hasError && 'border-destructive',
           )}
         >
-          {selectedArtist ? (
-            selectedArtist.stageName
-          ) : (
-            <span className='w-full flex justify-between items-center gap-2 text-zinc-400'>
-              Seleziona artista{' '}
-              <ChevronDown className={cn('transition-transform', open ? 'rotate-180' : '')} />
+          <span
+            className={cn(
+              'w-full flex justify-between items-center gap-2',
+              !selectedArtist && 'text-zinc-400',
+            )}
+          >
+            <span className='truncate'>
+              {selectedArtist ? formatArtistLabel(selectedArtist) : 'Seleziona artista'}
             </span>
-          )}
+            <ChevronDown className={cn('transition-transform', open ? 'rotate-180' : '')} />
+          </span>
         </Button>
       }
     >
@@ -99,23 +111,27 @@ export default function ArtistSelect({
             <CommandGroup>
               {artists.map((artist) => {
                 const isSelected = artist.id === value;
+                const fullName = `${artist.name || ''} ${artist.surname || ''}`.trim();
+                const keywords = [artist.stageName, artist.name, artist.surname, fullName].filter(
+                  Boolean,
+                ) as string[];
                 return (
                   <CommandItem
                     key={artist.id}
                     value={artist.id?.toString()}
                     onSelect={onSelectHandler}
-                    keywords={[artist.stageName]} // to enable filtering with stageName
+                    keywords={keywords}
                     disabled={isSelected}
                   >
                     <div className='w-full flex justify-between items-center gap-2 hover:cursor-pointer'>
                       <div className='flex items-center gap-2 truncate'>
                         <Avatar className='w-6 h-6'>
-                          <AvatarImage src={artist.avatarUrl} />
+                          <AvatarImage src={(artist.avatarUrl || '').trim() || AVATAR_FALLBACK} />
                           <AvatarFallback>
                             {artist.stageName.substring(0, 1).toUpperCase()}
                           </AvatarFallback>
                         </Avatar>
-                        <span className='truncate'>{artist.stageName}</span>
+                        <span className='truncate'>{formatArtistLabel(artist)}</span>
                       </div>
                       <Check
                         className={cn(
