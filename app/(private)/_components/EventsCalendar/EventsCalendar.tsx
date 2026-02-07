@@ -340,6 +340,7 @@ export default function EventsCalendar({ userRole, artists, venues }: EventsCale
           localizer={localizer}
           culture='it'
           messages={{ allDay: 'All day' }}
+          showMultiDayTimes
           date={calendarDate}
           onNavigate={onNavigateHandler}
           onView={onViewHandler}
