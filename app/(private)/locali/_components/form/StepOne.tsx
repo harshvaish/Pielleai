@@ -171,64 +171,64 @@ export default function StepOne({ userRole, countries, venueManagers }: StepOneP
 
       <Separator className='my-4' />
 
-      <div className='flex flex-col'>
-        <div className='block text-sm font-semibold mb-2'>Tipologia</div>
-        <Controller
-          control={control}
-          name='type'
-          render={({ field }) => (
-            <RadioGroup
-              value={field.value}
-              onValueChange={(v) => field.onChange(v as VenueType)}
-              className='flex flex-wrap gap-2'
-            >
-              {venueTypes.enumValues.map((type) => (
-                <label
-                  key={type}
-                  htmlFor={`venue-type-${type}`}
-                  className={cn(
-                    'h-10 flex items-center gap-2 text-sm p-2 rounded-xl capitalize border hover:cursor-pointer',
-                    errors.type && 'border-destructive text-destructive',
-                  )}
-                >
-                  <RadioGroupItem
-                    id={`venue-type-${type}`}
-                    value={type}
-                  />
-                  {VENUE_TYPE_LABELS[type]}
-                </label>
-              ))}
-            </RadioGroup>
+      <div className='grid gap-4 md:grid-cols-[1fr_220px]'>
+        <div className='flex flex-col'>
+          <div className='block text-sm font-semibold mb-2'>Tipologia</div>
+          <Controller
+            control={control}
+            name='type'
+            render={({ field }) => (
+              <RadioGroup
+                value={field.value}
+                onValueChange={(v) => field.onChange(v as VenueType)}
+                className='flex flex-wrap gap-2'
+              >
+                {venueTypes.enumValues.map((type) => (
+                  <label
+                    key={type}
+                    htmlFor={`venue-type-${type}`}
+                    className={cn(
+                      'h-10 flex items-center gap-2 text-sm p-2 rounded-xl capitalize border hover:cursor-pointer',
+                      errors.type && 'border-destructive text-destructive',
+                    )}
+                  >
+                    <RadioGroupItem
+                      id={`venue-type-${type}`}
+                      value={type}
+                    />
+                    {VENUE_TYPE_LABELS[type]}
+                  </label>
+                ))}
+              </RadioGroup>
+            )}
+          />
+          {errors.type && (
+            <p className='text-xs text-destructive mt-2'>{errors.type.message as string}</p>
           )}
-        />
-        {errors.type && (
-          <p className='text-xs text-destructive mt-2'>{errors.type.message as string}</p>
-        )}
-      </div>
+        </div>
 
-      <Separator className='my-4' />
-
-      <div className='flex flex-col'>
-        <label
-          htmlFor='capacity'
-          className='block text-sm font-semibold mb-2'
-        >
-          Capienza
-        </label>
-        <Input
-          id='capacity'
-          {...register('capacity', {
-            valueAsNumber: true,
-          })}
-          placeholder='Inserisci la capienza'
-          type='number'
-          min={1}
-          step={1}
-          className={errors.capacity ? 'border-destructive text-destructive' : ''}
-        />
-        {errors.capacity && (
-          <p className='text-xs text-destructive mt-2'>{errors.capacity.message as string}</p>
-        )}
+        <div className='flex flex-col'>
+          <label
+            htmlFor='capacity'
+            className='block text-sm font-semibold mb-2'
+          >
+            Capienza
+          </label>
+          <Input
+            id='capacity'
+            {...register('capacity', {
+              valueAsNumber: true,
+            })}
+            placeholder='Inserisci la capienza'
+            type='number'
+            min={1}
+            step={1}
+            className={errors.capacity ? 'border-destructive text-destructive' : ''}
+          />
+          {errors.capacity && (
+            <p className='text-xs text-destructive mt-2'>{errors.capacity.message as string}</p>
+          )}
+        </div>
       </div>
 
       <Separator className='my-4' />
