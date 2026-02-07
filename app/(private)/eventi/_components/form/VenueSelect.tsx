@@ -33,6 +33,11 @@ export default function VenueSelect({ venues }: VenueSelectProps) {
   const selectedVenue = venues.find((v) => v.id === selectedVenueId);
   const [open, setOpen] = React.useState(false);
 
+  const formatVenueLabel = (venue: Pick<VenueSelectData, 'name' | 'city'>) => {
+    const city = (venue.city || '').trim();
+    return city ? `${venue.name} - ${city}` : venue.name;
+  };
+
   return (
     <Controller
       control={control}
@@ -72,7 +77,7 @@ export default function VenueSelect({ venues }: VenueSelectProps) {
                   )}
                 >
                   <span className='truncate'>
-                    {selectedVenue ? selectedVenue.name : 'Seleziona un locale'}
+                    {selectedVenue ? formatVenueLabel(selectedVenue) : 'Seleziona un locale'}
                   </span>
                   <ChevronDown
                     className={cn('transition-transform', open ? 'rotate-180' : '')}
@@ -117,14 +122,7 @@ export default function VenueSelect({ venues }: VenueSelectProps) {
                                   {venue.name.substring(0, 1).toUpperCase()}
                                 </AvatarFallback>
                               </Avatar>
-                              <div className='flex flex-col truncate'>
-                                <span className='truncate'>{venue.name}</span>
-                                {venue.city ? (
-                                  <span className='text-xs text-zinc-500 truncate'>
-                                    {venue.city}
-                                  </span>
-                                ) : null}
-                              </div>
+                              <span className='truncate'>{formatVenueLabel(venue)}</span>
                             </div>
                             <Check
                               className={cn(
