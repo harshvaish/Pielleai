@@ -8,6 +8,8 @@ import { toast } from "sonner";
 import { useFormContext } from "react-hook-form";
 import { EventFormSchema } from "@/lib/validation/event-form-schema";
 import { useRouter } from "next/navigation";
+import { generateEventTitle } from "@/lib/utils/generate-event-title";
+import { addFooterTextToAllPages } from "@/lib/utils/pdf-footer";
 
 type ContractData = {
   artistName: string;
@@ -154,6 +156,7 @@ export default function DocuSignButton({
 
   const contractId = watch("contractId");
   const formTourManagerEmail = watch("tourManagerEmail");
+  const contractRevisionIndex = watch("contractRevisionIndex");
 
   const getTimeRange = (start?: Date | string, end?: Date | string): string => {
     if (!start || !end) return "";
@@ -228,8 +231,45 @@ export default function DocuSignButton({
   
         const container = document.createElement("div");
         container.innerHTML = filledHtml;
-  
-        const pdfBlob = await html2pdf()
+
+        const revisionSuffix =
+          typeof contractRevisionIndex === "number" && contractRevisionIndex > 0
+            ? " R"
+            : "";
+        const footerTitle = (() => {
+          const artistLabel =
+            (event.artist.stageName || "").trim() ||
+            `${event.artist.name} ${event.artist.surname}`.trim();
+          const venueLabel = (event.venue?.name || "").trim();
+          const start = event.availability?.startDate
+            ? new Date(event.availability.startDate)
+            : null;
+          const end = event.availability?.endDate
+            ? new Date(event.availability.endDate)
+            : null;
+
+          if (
+            !artistLabel ||
+            !venueLabel ||
+            !start ||
+            !end ||
+            Number.isNaN(start.getTime()) ||
+            Number.isNaN(end.getTime())
+          ) {
+            return `Contratto${revisionSuffix}`;
+          }
+
+          return `${generateEventTitle(
+            artistLabel,
+            venueLabel,
+            start,
+            end
+          )}${revisionSuffix}`;
+        })();
+
+        const safeUploadFileName = `${footerTitle.replace(/[\\/]/g, "-")}.pdf`;
+
+        const pdfWorker: any = html2pdf()
           .set({
             margin: 10,
             html2canvas: {
@@ -250,10 +290,15 @@ export default function DocuSignButton({
             jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
           })
           .from(container)
-          .outputPdf("blob");
+          .toPdf();
+
+        const pdf: any = await pdfWorker.get("pdf");
+        addFooterTextToAllPages(pdf, footerTitle, { align: "center" });
+
+        const pdfBlob = await pdfWorker.outputPdf("blob");
   
         const formData = new FormData();
-        formData.append("file", pdfBlob, "contract.pdf");
+        formData.append("file", pdfBlob, safeUploadFileName);
         formData.append("contractId", String(contractId));
         formData.append("name", CONTRACT_DATA.artistManagerFullName);
         formData.append("email", tourManagerEmail);
@@ -266,8 +311,22 @@ export default function DocuSignButton({
         });
   
         if (!res.ok) {
-          const text = await res.text();
-          throw new Error(text);
+          const raw = await res.text();
+          let message = raw;
+
+          try {
+            const parsed = JSON.parse(raw);
+            if (
+              parsed &&
+              typeof parsed === "object" &&
+              "message" in parsed &&
+              typeof (parsed as any).message === "string"
+            ) {
+              message = (parsed as any).message;
+            }
+          } catch {}
+
+          throw new Error(message || "Errore durante la generazione DocuSign.");
         }
   
         const json = await res.json();
@@ -294,7 +353,11 @@ export default function DocuSignButton({
         startTransition(async () => router.refresh());
       } catch (err) {
         console.error("❌ FINAL ERROR:", err);
-        toast.error("Errore durante la generazione DocuSign.");
+        toast.error(
+          err instanceof Error && err.message
+            ? err.message
+            : "Errore durante la generazione DocuSign."
+        );
       } finally {
         setLoading(false);
         console.log("🏁 DocuSign flow finished");

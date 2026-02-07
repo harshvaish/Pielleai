@@ -42,6 +42,7 @@ type ContractCard = {
   statusDate: string;
   fileUrl: string | null;
   fileName: string | null;
+  revisionIndex: number;
   artist: {
     id: number;
     name: string;
@@ -251,6 +252,7 @@ function mapContract(c: any): ContractCard {
     statusDate: new Date(c.createdAt).toLocaleDateString('it-IT'),
     fileUrl: c.fileUrl ?? null,
     fileName: c.fileName ?? null,
+    revisionIndex: Number(c.revisionIndex ?? 0),
     artist: {
       id: c.artist.id,
       name: c.artist.name,
@@ -279,8 +281,14 @@ function mapContract(c: any): ContractCard {
 }
 
 function getContractDisplayName(contract: ContractCard): string {
+  const revisionSuffix = contract.revisionIndex > 0 ? ' R' : '';
   const title = contract.event.title?.trim();
-  return title || contract.fileName || 'Contratto.pdf';
+  if (title) return `${title}${revisionSuffix}`;
+  if (contract.fileName) {
+    const base = contract.fileName.replace(/\\.pdf$/i, '');
+    return `${base}${revisionSuffix}.pdf`;
+  }
+  return `Contratto${revisionSuffix}.pdf`;
 }
 
 function getBackendStatusLabel(status: string) {

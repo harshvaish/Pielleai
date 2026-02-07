@@ -8,7 +8,7 @@ import { eq } from 'drizzle-orm';
 
 import { auth } from '@/lib/auth';
 import { ApiResponse } from '@/lib/types';
-import { sanitizeFileName } from '@/lib/utils';
+import { sanitizeFileBaseName } from '@/lib/utils';
 import { database } from '@/lib/database/connection';
 
 import { contracts, contractHistory } from '../../../../drizzle/schema';
@@ -95,8 +95,9 @@ export async function POST(req: NextRequest): Promise<NextResponse<ApiResponse<R
     }
 
     const original = file.name || `contract-${contractId}.pdf`;
-    const safeBase = sanitizeFileName(original.replace(/\.pdf$/i, ''));
-    const baseFileName = safeBase.toLowerCase().endsWith('.pdf') ? safeBase : `${safeBase}.pdf`;
+    const originalBase = original.replace(/\.pdf$/i, '');
+    const safeBase = sanitizeFileBaseName(originalBase, `contract-${contractId}`, { maxLength: 160 });
+    const baseFileName = `${safeBase}.pdf`;
     const finalFileName = `${Date.now()}-${baseFileName}`;
 
     const storagePath = `contracts/${contractId}/${finalFileName}`;
@@ -111,7 +112,11 @@ export async function POST(req: NextRequest): Promise<NextResponse<ApiResponse<R
     if (uploadError) {
       console.error('[Supabase] uploadError:', uploadError);
       return NextResponse.json(
-        { success: false, message: 'Upload PDF non riuscito.', data: null },
+        {
+          success: false,
+          message: `Upload PDF non riuscito.${uploadError.message ? ` ${uploadError.message}` : ''}`,
+          data: null,
+        },
         { status: 500 },
       );
     }

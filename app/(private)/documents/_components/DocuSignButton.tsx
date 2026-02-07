@@ -7,6 +7,8 @@ import { it } from "date-fns/locale";
 import { toast } from "sonner";
 import { useFormContext } from "react-hook-form";
 import { EventFormSchema } from "@/lib/validation/event-form-schema";
+import { generateEventTitle } from "@/lib/utils/generate-event-title";
+import { addFooterTextToAllPages } from "@/lib/utils/pdf-footer";
 
 type ContractData = {
   artistName: string;
@@ -81,6 +83,7 @@ export default function DocuSignButton() {
   const { watch, setValue, getValues } = useFormContext<EventFormSchema>();
 
   const contractId = watch("contractId");
+  const contractRevisionIndex = watch("contractRevisionIndex");
 
   const buildEventTime = (start?: string, end?: string): string => {
     if (!start || !end) return "";
@@ -132,7 +135,43 @@ export default function DocuSignButton() {
       const container = document.createElement("div");
       container.innerHTML = filledHtml;
 
-      const pdfBlob = await html2pdf()
+      const revisionSuffix =
+        typeof contractRevisionIndex === "number" && contractRevisionIndex > 0
+          ? " R"
+          : "";
+      const footerTitle = (() => {
+        const artistLabel =
+          (values.artistStageName || "").trim() ||
+          (values.artistFullName || "").trim();
+        const venueLabel = (values.venueName || "").trim();
+        if (!artistLabel || !venueLabel || !values.eventDate) {
+          return `Contratto${revisionSuffix}`;
+        }
+
+        const start = new Date(
+          `${values.eventDate}T${values.eventStartTime || "00:00"}`
+        );
+        const end = new Date(
+          `${values.eventDate}T${
+            values.eventEndTime || values.eventStartTime || "00:00"
+          }`
+        );
+
+        if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {
+          return `Contratto${revisionSuffix}`;
+        }
+
+        return `${generateEventTitle(
+          artistLabel,
+          venueLabel,
+          start,
+          end
+        )}${revisionSuffix}`;
+      })();
+
+      const safeUploadFileName = `${footerTitle.replace(/[\\/]/g, "-")}.pdf`;
+
+      const pdfWorker: any = html2pdf()
         .set({
           margin: 10,
           html2canvas: {
@@ -153,10 +192,15 @@ export default function DocuSignButton() {
           jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
         })
         .from(container)
-        .outputPdf("blob");
+        .toPdf();
+
+      const pdf: any = await pdfWorker.get("pdf");
+      addFooterTextToAllPages(pdf, footerTitle, { align: "center" });
+
+      const pdfBlob = await pdfWorker.outputPdf("blob");
 
       const formData = new FormData();
-      formData.append("file", pdfBlob, "contract.pdf");
+      formData.append("file", pdfBlob, safeUploadFileName);
       formData.append("contractId", String(contractId));
       formData.append("name", CONTRACT_DATA.tourManagerName);
       formData.append("email", CONTRACT_DATA.tourManagerEmail);
@@ -168,7 +212,24 @@ export default function DocuSignButton() {
         credentials: "include",
       });
 
-      if (!res.ok) throw new Error(await res.text());
+      if (!res.ok) {
+        const raw = await res.text();
+        let message = raw;
+
+        try {
+          const parsed = JSON.parse(raw);
+          if (
+            parsed &&
+            typeof parsed === "object" &&
+            "message" in parsed &&
+            typeof (parsed as any).message === "string"
+          ) {
+            message = (parsed as any).message;
+          }
+        } catch {}
+
+        throw new Error(message || "Errore durante l'invio a DocuSign.");
+      }
 
       const json = await res.json();
 
@@ -188,7 +249,11 @@ export default function DocuSignButton() {
       });
     } catch (err) {
       console.error("DocuSign error:", err);
-      toast.error("Errore durante l'invio a DocuSign.");
+      toast.error(
+        err instanceof Error && err.message
+          ? err.message
+          : "Errore durante l'invio a DocuSign."
+      );
     } finally {
       setLoading(false);
     }

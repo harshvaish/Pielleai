@@ -1,6 +1,6 @@
 'use server';
 
-import { desc, eq } from 'drizzle-orm';
+import { desc, eq, sql } from 'drizzle-orm';
 
 import { ServerActionResponse } from '@/lib/types';
 import { database } from '@/lib/database/connection';
@@ -36,6 +36,7 @@ export type GetContractDetailResult = {
   envelopeId: string | null;
   createdAt: string | null;
   updatedAt: string | null;
+  revisionIndex: number;
 
   artist: {
     id: number;
@@ -134,6 +135,12 @@ export const getContractDetailById = async (
         envelopeId: contracts.envelopeId,
         createdAt: contracts.createdAt,
         updatedAt: contracts.updatedAt,
+        revisionIndex: sql<number>`(
+          select count(*)
+          from contracts c2
+          where c2.event_id = ${contracts.eventId}
+            and c2.created_at < ${contracts.createdAt}
+        )`,
 
         artist: {
           id: artists.id,

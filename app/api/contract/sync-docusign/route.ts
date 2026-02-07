@@ -5,7 +5,7 @@ import { eq } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 import { getEnvelopeStatus, getSignedDocument } from '@/docusign/getSignedDocument';
 import { supabaseServerClient } from '@/lib/supabase-server-client';
-import { sanitizeFileName } from '@/lib/utils';
+import { sanitizeFileBaseName } from '@/lib/utils';
 import getSession from '@/lib/data/auth/get-session';
 
 export async function POST(req: NextRequest) {
@@ -81,8 +81,10 @@ export async function POST(req: NextRequest) {
 
     // Upload to Supabase
     const bucket = process.env.NEXT_PUBLIC_SUPABASE_BUCKET_NAME!;
-    const safeBase = sanitizeFileName(
-      (contractRow.fileName || `contract-${contractId}.pdf`).replace(/\.pdf$/i, '')
+    const safeBase = sanitizeFileBaseName(
+      (contractRow.fileName || `contract-${contractId}`).replace(/\.pdf$/i, ''),
+      `contract-${contractId}`,
+      { maxLength: 160 },
     );
     const finalFileName = `${Date.now()}-signed-${safeBase}.pdf`;
     const storagePath = `contracts/${contractId}/${finalFileName}`;

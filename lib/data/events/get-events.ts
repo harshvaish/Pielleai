@@ -291,6 +291,11 @@ export async function getEvents(
 
     const contractIds = contractsResult.map((c) => c.id);
 
+    const contractCountByEvent: Record<number, number> = {};
+    for (const c of contractsResult as any[]) {
+      contractCountByEvent[c.eventId] = (contractCountByEvent[c.eventId] ?? 0) + 1;
+    }
+
     // --- fetch contract latest history + contract CCs ---
     const [contractHistoryResult, contractCcsResult] = await Promise.all([
       contractIds.length
@@ -370,6 +375,7 @@ export async function getEvents(
           fileName: c.fileName,
           recipientEmail: c.recipientEmail,
           createdAt: c.createdAt,
+          revisionIndex: Math.max(0, (contractCountByEvent[c.eventId] ?? 1) - 1),
 
           // ✅ attach CC + all history entries (newest-first)
           ccs: ccsByContract[c.id] ?? [],

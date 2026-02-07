@@ -9,7 +9,7 @@ import { revalidatePath } from 'next/cache';
 import { auth } from '@/lib/auth';
 import { database } from '@/lib/database/connection';
 import { supabaseServerClient } from '@/lib/supabase-server-client';
-import { sanitizeFileName } from '@/lib/utils';
+import { sanitizeFileBaseName } from '@/lib/utils';
 
 import { contracts, contractHistory, contractEmailCcs, events, artistAvailabilities } from '../../../../drizzle/schema';
 import sgMail from '@sendgrid/mail';
@@ -69,11 +69,6 @@ export async function POST(req: NextRequest) {
 
     console.log('[docusign-webhook] ✅ Envelope completed:', envelopeId);
 
-    // Download signed PDF
-    console.log('[docusign-webhook] Downloading signed PDF...');
-    const pdfBuffer = await getSignedDocument(envelopeId);
-    console.log('[docusign-webhook] PDF downloaded, size:', pdfBuffer.length, 'bytes');
-
     // Find contract by envelopeId
     console.log('[docusign-webhook] Looking up contract in database...');
     const [contractRow] = await database
@@ -93,10 +88,30 @@ export async function POST(req: NextRequest) {
     });
 
     const contractId = contractRow.id;
+    const prevStatus = contractRow.status;
+
+    if (prevStatus === 'voided') {
+      console.log('[docusign-webhook] ⚠️ Contract already marked as voided; skipping update:', contractId);
+      return NextResponse.json({ success: true, message: 'Already voided; nothing to do.' }, { status: 200 });
+    }
+
+    if (prevStatus === 'signed') {
+      console.log('[docusign-webhook] ✅ Contract already marked as signed; nothing to do:', contractId);
+      return NextResponse.json({ success: true, message: 'Already signed; nothing to do.' }, { status: 200 });
+    }
+
+    // Download signed PDF (only when we actually need to persist it)
+    console.log('[docusign-webhook] Downloading signed PDF...');
+    const pdfBuffer = await getSignedDocument(envelopeId);
+    console.log('[docusign-webhook] PDF downloaded, size:', pdfBuffer.length, 'bytes');
 
     // Prepare file name and storage path
     console.log('[docusign-webhook] Preparing file storage...');
-    const safeBase = sanitizeFileName((contractRow.fileName || `contract-${contractId}.pdf`).replace(/\.pdf$/i, ''));
+    const safeBase = sanitizeFileBaseName(
+      (contractRow.fileName || `contract-${contractId}`).replace(/\.pdf$/i, ''),
+      `contract-${contractId}`,
+      { maxLength: 160 },
+    );
     const finalFileName = `${Date.now()}-signed-${safeBase}.pdf`;
     const storagePath = `contracts/${contractId}/${finalFileName}`;
     console.log('[docusign-webhook] Storage path:', storagePath);
@@ -136,14 +151,7 @@ export async function POST(req: NextRequest) {
     console.log('[docusign-webhook] File URL:', fileUrl);
 
     // Update contract row and insert history
-    const prevStatus = contractRow.status;
-    
     console.log('[docusign-webhook] Previous contract status:', prevStatus);
-
-    if (prevStatus === 'voided') {
-      console.log('[docusign-webhook] ⚠️ Contract already marked as voided; skipping update:', contractId);
-      return NextResponse.json({ success: true, message: 'Already voided; nothing to do.' }, { status: 200 });
-    }
 
     // Get contract eventId for payment activation
     console.log('[docusign-webhook] Getting eventId for contract...');
@@ -157,20 +165,20 @@ export async function POST(req: NextRequest) {
 
     console.log('[docusign-webhook] Starting database transaction...');
     await database.transaction(async (tx) => {
-      console.log('[docusign-webhook] Updating contract status to VOIDED...');
-      // Update contract to voided (archived/signed)
+      console.log('[docusign-webhook] Updating contract status to SIGNED...');
+      // Update contract to signed
       await tx
         .update(contracts)
-        .set({ fileUrl, fileName: finalFileName, status: 'voided' })
+        .set({ fileUrl, fileName: finalFileName, status: 'signed' })
         .where(eq(contracts.id, contractId));
       
-      console.log('[docusign-webhook] ✅ Contract status updated to VOIDED');
+      console.log('[docusign-webhook] ✅ Contract status updated to SIGNED');
 
       console.log('[docusign-webhook] Inserting contract history...');
       await tx.insert(contractHistory).values({
         contractId,
         fromStatus: prevStatus,
-        toStatus: 'voided',
+        toStatus: 'signed',
         fileUrl,
         fileName: finalFileName,
         changedByUserId: null,
@@ -233,7 +241,7 @@ export async function POST(req: NextRequest) {
     });
 
     console.log('[docusign-webhook] ✅✅✅ Transaction completed successfully');
-    console.log('[docusign-webhook] Contract ID:', contractId, 'updated to VOIDED (signed/archived)');
+    console.log('[docusign-webhook] Contract ID:', contractId, 'updated to SIGNED');
 
     // Revalidate event page if eventId exists
     if (eventId) {

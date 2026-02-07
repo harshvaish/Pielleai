@@ -16,7 +16,6 @@ import {
 } from '../../../drizzle/schema';
 
 import { supabaseServerClient } from '@/lib/supabase-server-client';
-import { sanitizeFileName } from '@/lib/utils';
 
 import { artistAvailabilities, profiles, users } from '@/lib/database/schema';
 
@@ -116,6 +115,12 @@ export async function getContracts(
         recipientEmail: contracts.recipientEmail,
         envelopeId: contracts.envelopeId,
         createdAt: contracts.createdAt,
+        revisionIndex: sql<number>`(
+          select count(*)
+          from contracts c2
+          where c2.event_id = ${contracts.eventId}
+            and c2.created_at < ${contracts.createdAt}
+        )`,
 
         artist: {
           id: artists.id,
@@ -274,7 +279,7 @@ export async function getContracts(
       // @ts-ignore
       const { supabaseServerClient } = require('@/lib/supabase-server-client');
       // @ts-ignore
-      const { sanitizeFileName } = require('@/lib/utils');
+      const { sanitizeFileBaseName } = require('@/lib/utils');
 
       const bucket = process.env.NEXT_PUBLIC_SUPABASE_BUCKET_NAME;
 
@@ -282,7 +287,7 @@ export async function getContracts(
       for (const item of data) {
         try {
           if (!item.envelopeId) continue;
-          if (item.status === 'voided') continue; // already processed (archived)
+          if (item.status === 'signed' || item.status === 'voided') continue; // already processed
 
           const envStatus = await getEnvelopeStatus(item.envelopeId);
           const envelopeStatus = envStatus && envStatus.status ? String(envStatus.status).toLowerCase() : null;
@@ -297,7 +302,11 @@ export async function getContracts(
             continue;
           }
 
-          const safeBase = sanitizeFileName((item.fileName || `contract-${item.id}.pdf`).replace(/\.pdf$/i, ''));
+          const safeBase = sanitizeFileBaseName(
+            (item.fileName || `contract-${item.id}`).replace(/\.pdf$/i, ''),
+            `contract-${item.id}`,
+            { maxLength: 160 },
+          );
           const finalFileName = `${Date.now()}-signed-${safeBase}.pdf`;
           const storagePath = `contracts/${item.id}/${finalFileName}`;
 
@@ -323,11 +332,11 @@ export async function getContracts(
 
           // Persist DB update and history
           await database.transaction(async (tx) => {
-            await tx.update(contracts).set({ fileUrl, fileName: finalFileName, status: 'voided' }).where(eq(contracts.id, item.id));
+            await tx.update(contracts).set({ fileUrl, fileName: finalFileName, status: 'signed' }).where(eq(contracts.id, item.id));
             await tx.insert(contractHistory).values({
               contractId: item.id,
               fromStatus: prevStatus,
-              toStatus: 'voided',
+              toStatus: 'signed',
               fileUrl,
               fileName: finalFileName,
               changedByUserId: null,
@@ -374,14 +383,14 @@ export async function getContracts(
           // Mutate in-memory data to reflect the change for this response
           item.fileUrl = fileUrl;
           item.fileName = finalFileName;
-          item.status = 'voided';
+          item.status = 'signed';
 
           // Also push a history entry to the response object
           const arr = historyByContract.get(item.id) ?? [];
           arr.unshift({
             id: -1,
             fromStatus: prevStatus,
-            toStatus: 'voided',
+            toStatus: 'signed',
             fileUrl,
             fileName: finalFileName,
             note: 'File firmato caricato da DocuSign (sync).',

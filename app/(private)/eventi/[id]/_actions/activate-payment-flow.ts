@@ -2,11 +2,11 @@
 
 import { database } from '@/lib/database/connection';
 import { events, contracts, artistAvailabilities, contractHistory } from '@/drizzle/schema';
-import { eq } from 'drizzle-orm';
+import { desc, eq } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 import { getEnvelopeStatus, getSignedDocument } from '@/docusign/getSignedDocument';
 import { supabaseServerClient } from '@/lib/supabase-server-client';
-import { sanitizeFileName } from '@/lib/utils';
+import { sanitizeFileBaseName } from '@/lib/utils';
 
 export async function activatePaymentFlowIfContractSigned(eventId: number) {
   try {
@@ -21,7 +21,9 @@ export async function activatePaymentFlowIfContractSigned(eventId: number) {
         fileName: contracts.fileName,
       })
       .from(contracts)
-      .where(eq(contracts.eventId, eventId));
+      .where(eq(contracts.eventId, eventId))
+      .orderBy(desc(contracts.createdAt))
+      .limit(1);
 
     const contractData = contractResults[0];
     
@@ -34,10 +36,17 @@ export async function activatePaymentFlowIfContractSigned(eventId: number) {
     console.log('[activatePaymentFlow] Envelope ID:', contractData.envelopeId);
 
     // If contract has envelopeId and is not signed, check DocuSign status
-    if (contractData.envelopeId && contractData.status !== 'signed') {
+    const envelopeId = contractData.envelopeId;
+    const shouldCheckDocusign =
+      Boolean(envelopeId) &&
+      (contractData.status === 'sent' ||
+        contractData.status === 'queued' ||
+        contractData.status === 'viewed');
+
+    if (shouldCheckDocusign && envelopeId) {
       console.log('[activatePaymentFlow] Checking DocuSign status...');
       try {
-        const envelopeStatus: any = await getEnvelopeStatus(contractData.envelopeId);
+        const envelopeStatus: any = await getEnvelopeStatus(envelopeId);
         const status = envelopeStatus?.status ? String(envelopeStatus.status).toLowerCase() : null;
         
         console.log('[activatePaymentFlow] DocuSign status:', status);
@@ -47,12 +56,14 @@ export async function activatePaymentFlowIfContractSigned(eventId: number) {
           console.log('[activatePaymentFlow] Contract is signed in DocuSign, updating...');
           
           // Download signed PDF
-          const pdfBuffer = await getSignedDocument(contractData.envelopeId);
+          const pdfBuffer = await getSignedDocument(envelopeId);
           
           // Upload to Supabase
           const bucket = process.env.NEXT_PUBLIC_SUPABASE_BUCKET_NAME!;
-          const safeBase = sanitizeFileName(
-            (contractData.fileName || `contract-${contractData.id}.pdf`).replace(/\.pdf$/i, '')
+          const safeBase = sanitizeFileBaseName(
+            (contractData.fileName || `contract-${contractData.id}`).replace(/\.pdf$/i, ''),
+            `contract-${contractData.id}`,
+            { maxLength: 160 },
           );
           const finalFileName = `${Date.now()}-signed-${safeBase}.pdf`;
           const storagePath = `contracts/${contractData.id}/${finalFileName}`;
@@ -77,23 +88,23 @@ export async function activatePaymentFlowIfContractSigned(eventId: number) {
               fileUrl = `storage://${bucket}/${storagePath}`;
             }
 
-            // Update contract to voided (archived/signed)
+            // Update contract to signed
             await database
               .update(contracts)
-              .set({ fileUrl, fileName: finalFileName, status: 'voided' })
+              .set({ fileUrl, fileName: finalFileName, status: 'signed' })
               .where(eq(contracts.id, contractData.id));
 
             await database.insert(contractHistory).values({
               contractId: contractData.id,
               fromStatus: contractData.status,
-              toStatus: 'voided',
+              toStatus: 'signed',
               fileUrl,
               fileName: finalFileName,
               changedByUserId: null,
               note: 'Auto-synced from DocuSign on page load.',
             });
 
-            console.log('[activatePaymentFlow] ✅ Contract updated to voided');
+            console.log('[activatePaymentFlow] ✅ Contract updated to signed');
           }
         }
       } catch (docusignError) {
@@ -121,18 +132,22 @@ export async function activatePaymentFlowIfContractSigned(eventId: number) {
     }
 
     // Re-fetch contract status after potential update
-    const [updatedContract] = await database
+    const updatedContractResults = await database
       .select({ status: contracts.status })
       .from(contracts)
-      .where(eq(contracts.eventId, eventId));
+      .where(eq(contracts.eventId, eventId))
+      .orderBy(desc(contracts.createdAt))
+      .limit(1);
+
+    const updatedContract = updatedContractResults[0];
 
     console.log('[activatePaymentFlow] Updated contract status:', updatedContract?.status);
     console.log('[activatePaymentFlow] Payment status:', eventData.paymentStatus);
     console.log('[activatePaymentFlow] Total cost:', eventData.totalCost);
 
-    // If contract is signed or voided (archived/signed) and payment is still pending, activate payment flow
+    // If contract is signed and payment is still pending, activate payment flow
     if (
-      (updatedContract?.status === 'voided' || updatedContract?.status === 'signed') &&
+      updatedContract?.status === 'signed' &&
       eventData?.paymentStatus === 'pending'
     ) {
       console.log('[activatePaymentFlow] Activating payment flow...');

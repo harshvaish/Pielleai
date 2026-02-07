@@ -88,6 +88,7 @@ export type ContractCard = {
   fileUrl: string | null;
   fileName: string | null;
   recipientEmail: string | null;
+  revisionIndex: number;
   actionVariant: ActionVariant;
   time: string;
   availability: {
@@ -370,6 +371,7 @@ function mapContract(c: any): ContractCard {
     fileUrl: c.fileUrl ?? null,
     fileName: c.fileName ?? null,
     recipientEmail: c.recipientEmail ?? null,
+    revisionIndex: Number(c.revisionIndex ?? 0),
 
     actionVariant: "outline",
 
@@ -441,8 +443,30 @@ function mapContract(c: any): ContractCard {
 }
 
 function getContractDisplayName(contract: ContractCard): string {
-  const title = contract.event.title?.trim();
-  return title || contract.fileName || "Contratto.pdf";
+  const revisionSuffix = contract.revisionIndex > 0 ? " R" : "";
+  const existingTitle = contract.event.title?.trim();
+  if (existingTitle) return `${existingTitle}${revisionSuffix}`;
+
+  if (contract.availability) {
+    const artistLabel =
+      contract.artist.stageName?.trim() ||
+      `${contract.artist.name} ${contract.artist.surname}`.trim();
+    return (
+      generateEventTitle(
+        artistLabel,
+        contract.venue.name,
+        new Date(contract.availability.startDate),
+        new Date(contract.availability.endDate),
+      ) + revisionSuffix
+    );
+  }
+
+  if (contract.fileName) {
+    const base = contract.fileName.replace(/\.pdf$/i, '');
+    return `${base}${revisionSuffix}.pdf`;
+  }
+
+  return `Contratto${revisionSuffix}.pdf`;
 }
 
 export const dynamic = "force-dynamic";
@@ -575,9 +599,10 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
   const previewArtists = artists.slice(0, 3);
   const previewArtistOtherDocuments = artistOtherDocuments.slice(0, 3);
   const buildEventTitle = (contract: ContractCard) => {
+    const revisionSuffix = contract.revisionIndex > 0 ? " R" : "";
     const existingTitle = contract.event.title?.trim();
-    if (existingTitle) return existingTitle;
-    if (!contract.availability) return `Evento #${contract.event.id}`;
+    if (existingTitle) return `${existingTitle}${revisionSuffix}`;
+    if (!contract.availability) return `Evento #${contract.event.id}${revisionSuffix}`;
     const artistLabel =
       contract.artist.stageName?.trim() ||
       `${contract.artist.name} ${contract.artist.surname}`.trim();
@@ -586,7 +611,7 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
       contract.venue.name,
       new Date(contract.availability.startDate),
       new Date(contract.availability.endDate),
-    );
+    ) + revisionSuffix;
   };
 
   function getBackendStatusLabel(status: string) {

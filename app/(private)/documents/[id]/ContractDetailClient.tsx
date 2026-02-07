@@ -32,7 +32,7 @@ export default function ContractDetailClient({ payload }: Props) {
 
   /* ---------------- HELPERS ---------------- */
   const contractStatus = watch("contractStatus");
-  const isVoided = contractStatus === "voided";
+  const isLocked = contractStatus === "voided" || contractStatus === "signed";
 
   function isSectionComplete(values: Record<string, any>, fields: string[]) {
     return fields.every((f) => {
@@ -84,9 +84,9 @@ export default function ContractDetailClient({ payload }: Props) {
                       placeholder="Enter full name"
                       className={cn(
                         "h-10",
-                        isVoided && "bg-zinc-100 text-zinc-500"
+                        isLocked && "bg-zinc-100 text-zinc-500"
                       )}
-                      readOnly={isVoided}
+                      readOnly={isLocked}
                     />
                     {errors.artistFullName && (
                       <p className="text-xs text-destructive">
@@ -103,7 +103,7 @@ export default function ContractDetailClient({ payload }: Props) {
                       placeholder="Enter stage name"
                       className={cn(
                         "h-10",
-                        isVoided && "bg-zinc-100 text-zinc-500"
+                        isLocked && "bg-zinc-100 text-zinc-500"
                       )}
                     />
                     {errors.artistStageName && (
@@ -121,10 +121,10 @@ export default function ContractDetailClient({ payload }: Props) {
                     <Input
                       {...register("tourManager")}
                       placeholder="Inserisci il nome del tour manager"
-                      readOnly={isVoided}
+                      readOnly={isLocked}
                       className={cn(
                         "h-10",
-                        isVoided && "bg-zinc-100 text-zinc-500"
+                        isLocked && "bg-zinc-100 text-zinc-500"
                       )}
                     />
                     {errors.tourManager && (
@@ -148,10 +148,11 @@ export default function ContractDetailClient({ payload }: Props) {
                         },
                       })}
                       placeholder="Inserisci l'email del tour manager"
+                      readOnly={isLocked}
                       className={cn(
                         errors.tourManagerEmail &&
                           "border-destructive text-destructive",
-                        isVoided && "bg-zinc-100 text-zinc-500"
+                        isLocked && "bg-zinc-100 text-zinc-500"
                       )}
                     />
                     {errors.tourManagerEmail && (
@@ -168,9 +169,10 @@ export default function ContractDetailClient({ payload }: Props) {
                   <Input
                     {...register("consultantEmail")}
                     placeholder="Email"
+                    readOnly={isLocked}
                     className={cn(
                       "h-10",
-                      isVoided && "bg-zinc-100 text-zinc-500"
+                      isLocked && "bg-zinc-100 text-zinc-500"
                     )}
                   />
                 </div>
@@ -181,9 +183,10 @@ export default function ContractDetailClient({ payload }: Props) {
                   <Input
                     {...register("adminEmail")}
                     placeholder="Email"
+                    readOnly={isLocked}
                     className={cn(
                       "h-10",
-                      isVoided && "bg-zinc-100 text-zinc-500"
+                      isLocked && "bg-zinc-100 text-zinc-500"
                     )}
                   />
                 </div>
@@ -223,9 +226,10 @@ export default function ContractDetailClient({ payload }: Props) {
                   <Input
                     {...register("venueName")}
                     placeholder="Venue name"
+                    readOnly={isLocked}
                     className={cn(
                       "h-10",
-                      isVoided && "bg-zinc-100 text-zinc-500"
+                      isLocked && "bg-zinc-100 text-zinc-500"
                     )}
                   />
                 </div>
@@ -238,9 +242,10 @@ export default function ContractDetailClient({ payload }: Props) {
                   <Input
                     {...register("venueCompanyName")}
                     placeholder="Venue Company name"
+                    readOnly={isLocked}
                     className={cn(
                       "h-10",
-                      isVoided && "bg-zinc-100 text-zinc-500"
+                      isLocked && "bg-zinc-100 text-zinc-500"
                     )}
                   />
                 </div>
@@ -254,9 +259,10 @@ export default function ContractDetailClient({ payload }: Props) {
                   <Input
                     {...register("venueVatNumber")}
                     placeholder="Venue VAT number"
+                    readOnly={isLocked}
                     className={cn(
                       "h-10",
-                      isVoided && "bg-zinc-100 text-zinc-500"
+                      isLocked && "bg-zinc-100 text-zinc-500"
                     )}
                   />
                 </div>
@@ -269,9 +275,10 @@ export default function ContractDetailClient({ payload }: Props) {
                   <Input
                     {...register("venueAddress")}
                     placeholder="Venue address"
+                    readOnly={isLocked}
                     className={cn(
                       "h-10",
-                      isVoided && "bg-zinc-100 text-zinc-500"
+                      isLocked && "bg-zinc-100 text-zinc-500"
                     )}
                   />
                 </div>
@@ -316,13 +323,12 @@ export default function ContractDetailClient({ payload }: Props) {
                     <Select
                       value={field.value}
                       onValueChange={field.onChange}
-                      disabled={isVoided}
+                      disabled={isLocked}
                     >
                       <SelectTrigger
                         className={cn(
                           "h-10 w-full",
-                          isVoided &&
-                            "bg-zinc-100 text-zinc-500"
+                          isLocked && "bg-zinc-100 text-zinc-500"
                         )}
                       >
                         {field.value ?? "Select"}
@@ -343,9 +349,10 @@ export default function ContractDetailClient({ payload }: Props) {
                   <Input
                     type="date"
                     {...register("eventDate")}
+                    readOnly={isLocked}
                     className={cn(
                       "h-10",
-                      isVoided && "bg-zinc-100 text-zinc-500"
+                      isLocked && "bg-zinc-100 text-zinc-500"
                     )}
                   />
                 </div>
@@ -358,17 +365,19 @@ export default function ContractDetailClient({ payload }: Props) {
                     <Input
                       type="time"
                       {...register("eventStartTime")}
+                      readOnly={isLocked}
                       className={cn(
                         "h-10",
-                        isVoided && "bg-zinc-100 text-zinc-500"
+                        isLocked && "bg-zinc-100 text-zinc-500"
                       )}
                     />
                     <Input
                       type="time"
                       {...register("eventEndTime")}
+                      readOnly={isLocked}
                       className={cn(
                         "h-10",
-                        isVoided && "bg-zinc-100 text-zinc-500"
+                        isLocked && "bg-zinc-100 text-zinc-500"
                       )}
                     />
                   </div>
@@ -387,9 +396,10 @@ export default function ContractDetailClient({ payload }: Props) {
                     {...register("transportationsCost", {
                       setValueAs: (v) => (v === "" ? undefined : parseFloat(v)),
                     })}
+                    readOnly={isLocked}
                     className={cn(
                       "h-10",
-                      isVoided && "bg-zinc-100 text-zinc-500"
+                      isLocked && "bg-zinc-100 text-zinc-500"
                     )}
                   />
                 </div>
@@ -404,9 +414,10 @@ export default function ContractDetailClient({ payload }: Props) {
                     {...register("totalCost", {
                       setValueAs: (v) => (v === "" ? undefined : parseFloat(v)),
                     })}
+                    readOnly={isLocked}
                     className={cn(
                       "h-10",
-                      isVoided && "bg-zinc-100 text-zinc-500"
+                      isLocked && "bg-zinc-100 text-zinc-500"
                     )}
                   />
                 </div>
@@ -424,9 +435,10 @@ export default function ContractDetailClient({ payload }: Props) {
                     {...register("upfrontPayment", {
                       setValueAs: (v) => (v === "" ? undefined : parseFloat(v)),
                     })}
+                    readOnly={isLocked}
                     className={cn(
                       "h-10",
-                      isVoided && "bg-zinc-100 text-zinc-500"
+                      isLocked && "bg-zinc-100 text-zinc-500"
                     )}
                   />
                 </div>

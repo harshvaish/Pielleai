@@ -15,6 +15,7 @@ import GenerateButton from "../_components/GenerateButton";
 import DocuSignButton from "../_components/DocuSignButton";
 import ViewContractButton from "../_components/ViewContractButton";
 import ContractStatusButton from "../_components/ContractStatusButton";
+import InvalidateContractButton from "../_components/InvalidateContractButton";
 import { AVATAR_FALLBACK, GREEN_TICK_ICON } from "@/lib/constants";
 import UplodPdf from "../_components/UploadPdf";
 import ResendDocuSignButton from "./ResendDocuSignButton";
@@ -38,6 +39,7 @@ export default function ContractDetailTile({ payload }: Props) {
     defaultValues: {
       contractId: payload.id,
       contractStatus: payload.status,
+      contractRevisionIndex: payload.revisionIndex ?? 0,
 
       artistFullName: `${payload.artist.name} ${payload.artist.surname}`,
       artistStageName: payload.artist.stageName,
@@ -117,6 +119,8 @@ export default function ContractDetailTile({ payload }: Props) {
     return !(artistOk && venueOk && eventOk);
   }, [payload]);
   const showMissingInfo = isMissingInfo && contractStatus === "draft";
+  const canInvalidate = contractStatus !== "draft";
+  const isRevision = (payload?.revisionIndex ?? 0) > 0;
   const statusUpdatedAt = payload?.contractDate || payload?.updatedAt || payload?.createdAt;
   const statusUpdatedLabel = statusUpdatedAt
     ? new Date(statusUpdatedAt).toLocaleDateString("it-IT")
@@ -167,6 +171,8 @@ export default function ContractDetailTile({ payload }: Props) {
             )}
 
             {contractStatus === "voided" && <ViewContractButton />}
+
+            {canInvalidate && <InvalidateContractButton />}
 
             {contractStatus !== "declined" &&
               contractStatus !== "voided" &&
@@ -237,6 +243,12 @@ export default function ContractDetailTile({ payload }: Props) {
                         : undefined
                     }
                   />
+
+                  {isRevision && (
+                    <Badge variant="secondary" className="text-xs">
+                      Revisione (R)
+                    </Badge>
+                  )}
 
                   <div className="text-xs text-zinc-500">
                     Stato aggiornato il {statusUpdatedLabel}

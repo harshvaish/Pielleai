@@ -20,7 +20,8 @@ export default function UploadPdf() {
   const displayPdf = watch("contractDocument");
   const contractId = watch("contractId");
   const contractStatus = watch("contractStatus");
-  const isVoided = contractStatus === "voided";
+  const contractRevisionIndex = watch("contractRevisionIndex");
+  const isLocked = contractStatus === "voided" || contractStatus === "signed";
   const artistFullName = watch("artistFullName");
   const artistStageName = watch("artistStageName");
   const venueName = watch("venueName");
@@ -30,6 +31,10 @@ export default function UploadPdf() {
 
   const displayName = useMemo(() => {
     if (!displayPdf) return "";
+    const revisionSuffix =
+      typeof contractRevisionIndex === "number" && contractRevisionIndex > 0
+        ? " R"
+        : "";
     const artistLabel =
       (artistStageName || "").trim() ||
       (artistFullName || "").trim();
@@ -43,11 +48,21 @@ export default function UploadPdf() {
         `${eventDate}T${eventEndTime || eventStartTime || "00:00"}`
       );
       if (!Number.isNaN(start.getTime()) && !Number.isNaN(end.getTime())) {
-        return `${generateEventTitle(artistLabel, venueLabel, start, end)}.pdf`;
+        return `${generateEventTitle(
+          artistLabel,
+          venueLabel,
+          start,
+          end
+        )}${revisionSuffix}.pdf`;
       }
     }
 
-    return displayPdf.name || "Contratto.pdf";
+    if (displayPdf.name) {
+      const base = displayPdf.name.replace(/\.pdf$/i, "");
+      return `${base}${revisionSuffix}.pdf`;
+    }
+
+    return `Contratto${revisionSuffix}.pdf`;
   }, [
     displayPdf,
     artistFullName,
@@ -56,6 +71,7 @@ export default function UploadPdf() {
     eventDate,
     eventStartTime,
     eventEndTime,
+    contractRevisionIndex,
   ]);
 
   /* ---------------- UPLOAD ---------------- */
@@ -177,7 +193,7 @@ export default function UploadPdf() {
         accept="application/pdf"
         className="hidden"
         onChange={onChangeHandler}
-        disabled={isVoided}
+        disabled={isLocked}
       />
 
       {displayPdf ? (
@@ -197,7 +213,7 @@ export default function UploadPdf() {
             <Download className="w-4 h-4" />
           </button>
 
-          {!isVoided && (
+          {!isLocked && (
             <button
               type="button"
               onClick={onDeleteHandler}
@@ -211,7 +227,7 @@ export default function UploadPdf() {
         <button
           type="button"
           onClick={() => fileInputRef.current?.click()}
-          disabled={uploading || isVoided}
+          disabled={uploading || isLocked}
           className="
             flex items-center gap-2
             bg-white

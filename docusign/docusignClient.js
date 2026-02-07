@@ -188,6 +188,7 @@ async function sendPdfForSignature({
   fileName = 'document.pdf',
   signer = { name: '', email: '' },
   placement = { pageNumber: 1, x: 450, y: 650 },
+  webhookUrl,
 }) {
   const { accessToken, baseUri, accountId } = await getAuthContext();
 
@@ -258,6 +259,42 @@ async function sendPdfForSignature({
   return { envelopeId: json.envelopeId };
 }
 
+/**
+ * Void an existing envelope (only works if not completed).
+ * @param {Object} opts
+ * @param {string} opts.envelopeId
+ * @param {string} [opts.reason]
+ */
+async function voidEnvelope({ envelopeId, reason = 'Voided by admin' }) {
+  const { accessToken, baseUri, accountId } = await getAuthContext();
+
+  if (!envelopeId) {
+    throw new Error('Missing envelopeId');
+  }
+
+  const res = await fetch(
+    `${baseUri}/restapi/v2.1/accounts/${accountId}/envelopes/${envelopeId}`,
+    {
+      method: 'PUT',
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ status: 'voided', voidedReason: reason }),
+    },
+  );
+
+  const json = await res.json().catch(() => null);
+
+  if (!res.ok) {
+    const msg = json?.message || JSON.stringify(json) || res.statusText;
+    throw new Error(`DocuSign voidEnvelope error (${res.status}): ${msg}`);
+  }
+
+  return json;
+}
+
 module.exports = {
   sendPdfForSignature,
+  voidEnvelope,
 };

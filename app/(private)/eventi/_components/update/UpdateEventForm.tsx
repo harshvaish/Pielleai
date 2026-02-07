@@ -39,10 +39,10 @@ const normalizeContractStatus = (
     case 'sent':
     case 'declined':
     case 'voided':
+    case 'signed':
       return status;
     case 'queued':
     case 'viewed':
-    case 'signed':
       return 'sent';
     default:
       return 'draft';
@@ -144,6 +144,7 @@ export default function UpdateEventForm({
       totalCost: parseFloat(event.totalCost || '') || undefined,
       contractId: event.contract?.id || undefined,
       contractStatus: normalizeContractStatus(event.contract?.status),
+      contractRevisionIndex: (event.contract as any)?.revisionIndex ?? 0,
       transportationsCost: parseFloat(event.transportationsCost || '') || undefined,
       cashBalanceCost: parseFloat(event.cashBalanceCost || '') || undefined,
       hotelCost : parseFloat(event.hotelCost || '') || undefined,

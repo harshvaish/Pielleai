@@ -11,7 +11,7 @@ import { auth } from '@/lib/auth';
 import { ApiResponse } from '@/lib/types';
 import { database } from '@/lib/database/connection';
 import { supabaseServerClient } from '@/lib/supabase-server-client';
-import { sanitizeFileName } from '@/lib/utils';
+import { sanitizeFileBaseName } from '@/lib/utils';
 
 import { contracts, contractHistory } from '../../../../drizzle/schema';
 import { sendPdfForSignature } from '../../../../docusign/docusignClient';
@@ -105,7 +105,11 @@ export async function POST(req: NextRequest): Promise<NextResponse<ApiResponse<{
     const signerName = name ?? 'Signer';
 
     // Prepare fileName
-    const safeBase = sanitizeFileName((contract.fileName || `contract-${contractId}.pdf`).replace(/\.pdf$/i, ''));
+    const safeBase = sanitizeFileBaseName(
+      (contract.fileName || `contract-${contractId}`).replace(/\.pdf$/i, ''),
+      `contract-${contractId}`,
+      { maxLength: 160 },
+    );
     const finalFileName = `${Date.now()}-${safeBase}.pdf`;
 
     const webhookUrl = process.env.DOCUSIGN_WEBHOOK_URL || undefined;

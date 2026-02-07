@@ -233,6 +233,11 @@ export async function getEventById(user: User, eventId: number): Promise<Event |
 
     const contractIds = contractsResult.map((c) => c.id);
 
+    const contractCountByEvent: Record<number, number> = {};
+    for (const c of contractsResult as any[]) {
+      contractCountByEvent[c.eventId] = (contractCountByEvent[c.eventId] ?? 0) + 1;
+    }
+
     const [contractHistoryResult, contractCcsResult] = await Promise.all([
       contractIds.length
         ? database
@@ -319,6 +324,7 @@ export async function getEventById(user: User, eventId: number): Promise<Event |
           fileName: c.fileName,
           recipientEmail: c.recipientEmail,
           createdAt: c.createdAt,
+          revisionIndex: Math.max(0, (contractCountByEvent[c.eventId] ?? 1) - 1),
           ccs: ccsByContract[c.id] ?? [],
           latestHistory: historiesByContract[c.id] ?? [],
         };

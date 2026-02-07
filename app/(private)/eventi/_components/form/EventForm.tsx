@@ -435,7 +435,7 @@ export default function EventForm({
       };
     })
     : [];
-  const isVoided = contractStatus === "voided";
+  const isLockedContract = contractStatus === "voided" || contractStatus === "signed";
 
   const buildPerformanceTime = (
     startTime?: string,
@@ -1496,7 +1496,7 @@ export default function EventForm({
                 </span>
               )}
             </div>
-            {contractStatus === "voided" ? (
+            {contractStatus === "voided" || contractStatus === "signed" ? (
               hasContract && contractDocument?.url ? <ViewContractButton /> : null
             ) : (
               <div className="flex items-center gap-2">
@@ -1589,10 +1589,11 @@ export default function EventForm({
                             <Input
                               {...register("artistFullName")}
                               placeholder="Inserisci il nome completo"
-                              readOnly={isVoided}
+                              readOnly={isLockedContract}
                               className={cn(
                                 "h-10",
-                                isVoided && "bg-zinc-100 text-zinc-500"
+                                isLockedContract &&
+                                  "bg-zinc-100 text-zinc-500"
                               )}
                             />
                             {errors.artistFullName && (
@@ -1609,10 +1610,11 @@ export default function EventForm({
                             <Input
                               {...register("artistStageName")}
                               placeholder="Inserisci il nome d'arte"
-                              readOnly={isVoided}
+                              readOnly={isLockedContract}
                               className={cn(
                                 "h-10",
-                                isVoided && "bg-zinc-100 text-zinc-500"
+                                isLockedContract &&
+                                  "bg-zinc-100 text-zinc-500"
                               )}
                             />
                             {errors.artistStageName && (
@@ -1637,10 +1639,12 @@ export default function EventForm({
                                 },
                               })}
                               placeholder="Inserisci l'email del tour manager"
+                              readOnly={isLockedContract}
                               className={cn(
                                 errors.tourManagerEmail &&
                                 "border-destructive text-destructive",
-                                isVoided && "bg-zinc-100 text-zinc-500"
+                                isLockedContract &&
+                                  "bg-zinc-100 text-zinc-500"
                               )}
                             />
                             {errors.tourManagerEmail && (
@@ -1677,10 +1681,10 @@ export default function EventForm({
                           <Input
                             {...register("venueName")}
                             placeholder="Nome locale"
-                            readOnly={isVoided}
+                            readOnly={isLockedContract}
                             className={cn(
                               "h-10",
-                              isVoided && "bg-zinc-100 text-zinc-500"
+                              isLockedContract && "bg-zinc-100 text-zinc-500"
                             )}
                           />
                         </div>
@@ -1691,10 +1695,10 @@ export default function EventForm({
                           <Input
                             {...register("venueCompanyName")}
                             placeholder="Ragione sociale locale"
-                            readOnly={isVoided}
+                            readOnly={isLockedContract}
                             className={cn(
                               "h-10",
-                              isVoided && "bg-zinc-100 text-zinc-500"
+                              isLockedContract && "bg-zinc-100 text-zinc-500"
                             )}
                           />
                         </div>
@@ -1707,10 +1711,10 @@ export default function EventForm({
                           <Input
                             {...register("venueVatNumber")}
                             placeholder="P.IVA locale"
-                            readOnly={isVoided}
+                            readOnly={isLockedContract}
                             className={cn(
                               "h-10",
-                              isVoided && "bg-zinc-100 text-zinc-500"
+                              isLockedContract && "bg-zinc-100 text-zinc-500"
                             )}
                           />
                         </div>
@@ -1722,10 +1726,10 @@ export default function EventForm({
                           <Input
                             {...register("venueAddress")}
                             placeholder="Indirizzo locale"
-                            readOnly={isVoided}
+                            readOnly={isLockedContract}
                             className={cn(
                               "h-10",
-                              isVoided && "bg-zinc-100 text-zinc-500"
+                              isLockedContract && "bg-zinc-100 text-zinc-500"
                             )}
                           />
                         </div>
@@ -1767,10 +1771,10 @@ export default function EventForm({
                           <Input
                             type="date"
                             {...register("eventDate")}
-                            readOnly={isVoided}
+                            readOnly={isLockedContract}
                             className={cn(
                               "h-10",
-                              isVoided && "bg-zinc-100 text-zinc-500"
+                              isLockedContract && "bg-zinc-100 text-zinc-500"
                             )}
                           />
                         </div>
@@ -1783,19 +1787,21 @@ export default function EventForm({
                             <Input
                               type="time"
                               {...register("eventStartTime")}
-                              readOnly={isVoided}
+                              readOnly={isLockedContract}
                               className={cn(
                                 "h-10",
-                                isVoided && "bg-zinc-100 text-zinc-500"
+                                isLockedContract &&
+                                  "bg-zinc-100 text-zinc-500"
                               )}
                             />
                             <Input
                               type="time"
                               {...register("eventEndTime")}
-                              readOnly={isVoided}
+                              readOnly={isLockedContract}
                               className={cn(
                                 "h-10",
-                                isVoided && "bg-zinc-100 text-zinc-500"
+                                isLockedContract &&
+                                  "bg-zinc-100 text-zinc-500"
                               )}
                             />
                           </div>
@@ -1814,10 +1820,10 @@ export default function EventForm({
                               setValueAs: (v) =>
                                 v === "" ? undefined : parseFloat(v),
                             })}
-                            readOnly={isVoided}
+                            readOnly={isLockedContract}
                             className={cn(
                               "h-10",
-                              isVoided && "bg-zinc-100 text-zinc-500"
+                              isLockedContract && "bg-zinc-100 text-zinc-500"
                             )}
                           />
                         </div>
@@ -1833,10 +1839,10 @@ export default function EventForm({
                               setValueAs: (v) =>
                                 v === "" ? undefined : parseFloat(v),
                             })}
-                            readOnly={isVoided}
+                            readOnly={isLockedContract}
                             className={cn(
                               "h-10",
-                              isVoided && "bg-zinc-100 text-zinc-500"
+                              isLockedContract && "bg-zinc-100 text-zinc-500"
                             )}
                           />
                         </div>
@@ -1854,10 +1860,10 @@ export default function EventForm({
                               setValueAs: (v) =>
                                 v === "" ? undefined : parseFloat(v),
                             })}
-                            readOnly={isVoided}
+                            readOnly={isLockedContract}
                             className={cn(
                               "h-10",
-                              isVoided && "bg-zinc-100 text-zinc-500"
+                              isLockedContract && "bg-zinc-100 text-zinc-500"
                             )}
                           />
                         </div>
@@ -1868,7 +1874,11 @@ export default function EventForm({
                           <Input
                             type="date"
                             {...register("paymentDate")}
-                            className="h-10"
+                            readOnly={isLockedContract}
+                            className={cn(
+                              "h-10",
+                              isLockedContract && "bg-zinc-100 text-zinc-500"
+                            )}
                           />
                         </div>
                       </div>

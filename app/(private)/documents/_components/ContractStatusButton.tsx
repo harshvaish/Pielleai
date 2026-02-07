@@ -100,7 +100,7 @@ export default function ContractStatusButton({
   const [isPending, startTransition] = useTransition();
   const form = useFormContext<EventFormSchema>();
   const setValue = form?.setValue;
-  const isReadOnly = status == "signed";
+  const isReadOnly = status === "signed" || status === "voided";
 
   const current = STATUS_STYLES[status];
   const label = labelOverride ?? current.label;

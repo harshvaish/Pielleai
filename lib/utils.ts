@@ -149,6 +149,27 @@ export function sanitizeFileName(fileName: string): string {
     .replace(/-+/g, '-')}.${ext}`;
 }
 
+export function sanitizeFileBaseName(
+  value: string,
+  fallback = 'file',
+  options?: { maxLength?: number },
+): string {
+  const base = typeof value === 'string' ? value.trim() : '';
+  const normalized = base.length ? base : fallback;
+  const sanitized = normalized
+    .toLowerCase()
+    .replace(/[^a-z0-9]/gi, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-+/, '')
+    .replace(/-+$/, '');
+
+  const maxLength = options?.maxLength;
+  if (!maxLength || sanitized.length <= maxLength) return sanitized || fallback;
+
+  const truncated = sanitized.slice(0, maxLength).replace(/-+$/, '');
+  return truncated || fallback;
+}
+
 export async function fileToBase64(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();

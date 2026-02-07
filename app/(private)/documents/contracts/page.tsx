@@ -17,6 +17,7 @@ import { getArtistManagersCached } from "@/lib/cache/artist-managers";
 import { getVenuesCached } from "@/lib/cache/venues";
 import { hasRole, resolveNextPath, splitCsv } from "@/lib/utils";
 import { getContractPreviewUrl } from "@/lib/utils/contract-preview";
+import { generateEventTitle } from "@/lib/utils/generate-event-title";
 import { AVATAR_FALLBACK } from "@/lib/constants";
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
@@ -94,6 +95,7 @@ export type ContractCard = {
   fileUrl: string | null;
   fileName: string | null;
   recipientEmail: string | null;
+  revisionIndex: number;
   actionVariant: ActionVariant;
   time: string;
   availability: {
@@ -341,6 +343,7 @@ function mapContract(c: any): ContractCard {
     fileUrl: c.fileUrl ?? null,
     fileName: c.fileName ?? null,
     recipientEmail: c.recipientEmail ?? null,
+    revisionIndex: Number(c.revisionIndex ?? 0),
     actionVariant: "outline",
     artist: {
       id: c.artist.id,
@@ -404,8 +407,30 @@ function mapContract(c: any): ContractCard {
 }
 
 function getContractDisplayName(contract: ContractCard): string {
-  const title = contract.event.title?.trim();
-  return title || contract.fileName || "Contratto.pdf";
+  const revisionSuffix = contract.revisionIndex > 0 ? " R" : "";
+  const existingTitle = contract.event.title?.trim();
+  if (existingTitle) return `${existingTitle}${revisionSuffix}`;
+
+  if (contract.availability) {
+    const artistLabel =
+      contract.artist.stageName?.trim() ||
+      `${contract.artist.name} ${contract.artist.surname}`.trim();
+    return (
+      generateEventTitle(
+        artistLabel,
+        contract.venue.name,
+        new Date(contract.availability.startDate),
+        new Date(contract.availability.endDate),
+      ) + revisionSuffix
+    );
+  }
+
+  if (contract.fileName) {
+    const base = contract.fileName.replace(/\.pdf$/i, "");
+    return `${base}${revisionSuffix}.pdf`;
+  }
+
+  return `Contratto${revisionSuffix}.pdf`;
 }
 
 export const dynamic = "force-dynamic";
