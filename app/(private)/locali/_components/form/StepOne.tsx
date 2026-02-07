@@ -222,7 +222,7 @@ export default function StepOne({ userRole, countries, venueManagers }: StepOneP
           })}
           placeholder='Inserisci la capienza'
           type='number'
-          min={0}
+          min={1}
           step={1}
           className={errors.capacity ? 'border-destructive text-destructive' : ''}
         />

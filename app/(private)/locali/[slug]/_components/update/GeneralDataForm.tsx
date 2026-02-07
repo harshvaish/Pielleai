@@ -36,7 +36,7 @@ export default function GeneralDataForm({
       name: venueData.name || '',
       bio: venueData.bio || '',
       type: venueData.type || 'small',
-      capacity: venueData.capacity || 0,
+      capacity: venueData.capacity > 0 ? venueData.capacity : undefined,
       address: venueData.address || '',
       addressFormatted: venueData.addressFormatted || '',
       streetName: venueData.streetName || '',
