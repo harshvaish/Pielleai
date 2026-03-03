@@ -230,6 +230,7 @@ export const createEvent = async (data: EventFormSchema): Promise<ServerActionRe
           totalCost: validation.data.totalCost?.toString() ?? null,
           transportationsCost: validation.data.transportationsCost?.toString() ?? null,
           cashBalanceCost: validation.data.cashBalanceCost?.toString() ?? null,
+          enpas: validation.data.enpas || null,
 
           soundCheckStart: validation.data.soundCheckStart || null,
           soundCheckEnd: validation.data.soundCheckEnd || null,

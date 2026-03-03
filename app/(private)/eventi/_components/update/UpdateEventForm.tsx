@@ -147,6 +147,7 @@ export default function UpdateEventForm({
       contractRevisionIndex: (event.contract as any)?.revisionIndex ?? 0,
       transportationsCost: parseFloat(event.transportationsCost || '') || undefined,
       cashBalanceCost: parseFloat(event.cashBalanceCost || '') || undefined,
+      enpas: event.enpas || 'none',
       hotelCost : parseFloat(event.hotelCost || '') || undefined,
       restaurantCost: parseFloat(event.restaurantCost || '') || undefined,
       soundCheckEnd: event.soundCheckEnd || '',

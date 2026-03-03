@@ -142,6 +142,7 @@ export async function getEventById(user: User, eventId: number): Promise<Event |
         totalCost: events.totalCost,
         transportationsCost: events.transportationsCost,
         cashBalanceCost: events.cashBalanceCost,
+        enpas: events.enpas,
 
         soundCheckStart: events.soundCheckStart,
         soundCheckEnd: events.soundCheckEnd,

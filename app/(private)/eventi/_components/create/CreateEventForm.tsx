@@ -62,6 +62,7 @@ export default function CreateEventForm({
       totalCost: undefined,
       transportationsCost: undefined,
       cashBalanceCost: undefined,
+      enpas: 'none',
       soundCheckStart: '',
       soundCheckEnd: '',
 

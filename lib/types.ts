@@ -737,6 +737,7 @@ export type Event = {
 
   transportationsCost: string | null;
   cashBalanceCost: string | null;
+  enpas: string | null;
 
   soundCheckStart: string | null;
   soundCheckEnd: string | null;

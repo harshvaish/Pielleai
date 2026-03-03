@@ -22,6 +22,7 @@ import { cn, fetcher } from "@/lib/utils";
 import { toast } from "sonner";
 import { Separator } from "@/components/ui/separator";
 import { Input } from "@/components/ui/input";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import PdfUploadInput from "@/app/(private)/eventi/_components/form/PdfUploadInput";
 import OtherTechnicalSheetUploadInput from "@/app/(private)/eventi/_components/form/OtherTechnicalSheetUploadInput";
@@ -77,6 +78,25 @@ const EVENT_TYPE_LABELS = {
   live: "Dal vivo",
   festival: "Festival",
 } as const;
+
+const ENPAS_OPTIONS = [
+  {
+    value: "producer",
+    label: "A carico del produttore dello spettacolo",
+  },
+  {
+    value: "organizer",
+    label: "A carico dell'organizzatore",
+  },
+  {
+    value: "artist",
+    label: "A carico dell'artista",
+  },
+  {
+    value: "none",
+    label: "No ENPAS",
+  },
+] as const;
 
 type EventForm = {
   artists: ArtistSelectData[];
@@ -961,7 +981,7 @@ export default function EventForm({
         </TabsContent>
 
         <TabsContent value="b" className="flex flex-col gap-4 p-2">
-          <div className="grid sm:grid-cols-3 gap-4">
+          <div className="grid gap-4 sm:grid-cols-3">
             <div className="flex flex-col">
               <div className="text-sm font-semibold mb-2">Cachet lordo</div>
               <Input
@@ -983,23 +1003,6 @@ export default function EventForm({
               )}
             </div>
 
-            <div className="flex flex-col">
-              <div className="text-sm font-semibold mb-2">Nome promoter</div>
-
-              <div className="h-10 flex items-center text-sm">
-                {selectedVenue?.manager?.name ? (
-                  <span className="truncate">
-                    {selectedVenue?.manager?.name}{" "}
-                    {selectedVenue?.manager?.surname}
-                  </span>
-                ) : (
-                  <span className="text-zinc-400">Seleziona un locale</span>
-                )}
-              </div>
-            </div>
-          </div>
-
-          <div className="grid sm:grid-cols-2 gap-4">
             <div className="flex flex-col">
               <div className="text-sm font-semibold mb-2">Acconto</div>
               <Input
@@ -1024,6 +1027,43 @@ export default function EventForm({
             </div>
 
             <div className="flex flex-col">
+              <div className="text-sm font-semibold mb-2">
+                Numero fattura acconto
+              </div>
+              <Input
+                {...register("depositInvoiceNumber")}
+                placeholder="Inserisci il numero fattura acconto"
+                className={
+                  errors.depositInvoiceNumber
+                    ? "border-destructive text-destructive"
+                    : ""
+                }
+              />
+              {errors.depositInvoiceNumber && (
+                <p className="text-xs text-destructive mt-2">
+                  {errors.depositInvoiceNumber.message as string}
+                </p>
+              )}
+            </div>
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="flex flex-col">
+              <div className="text-sm font-semibold mb-2">Nome promoter</div>
+
+              <div className="h-10 flex items-center text-sm">
+                {selectedVenue?.manager?.name ? (
+                  <span className="truncate">
+                    {selectedVenue?.manager?.name}{" "}
+                    {selectedVenue?.manager?.surname}
+                  </span>
+                ) : (
+                  <span className="text-zinc-400">Seleziona un locale</span>
+                )}
+              </div>
+            </div>
+
+            <div className="flex flex-col">
               <div className="text-sm font-semibold mb-2">Fee promoter</div>
               <Input
                 {...register("venueManagerCost", {
@@ -1045,26 +1085,6 @@ export default function EventForm({
                 </p>
               )}
             </div>
-          </div>
-
-          <div className="flex flex-col">
-            <div className="text-sm font-semibold mb-2">
-              Numero fattura acconto
-            </div>
-            <Input
-              {...register("depositInvoiceNumber")}
-              placeholder="Inserisci il numero fattura acconto"
-              className={
-                errors.depositInvoiceNumber
-                  ? "border-destructive text-destructive"
-                  : ""
-              }
-            />
-            {errors.depositInvoiceNumber && (
-              <p className="text-xs text-destructive mt-2">
-                {errors.depositInvoiceNumber.message as string}
-              </p>
-            )}
           </div>
 
           <div className="grid sm:grid-cols-2 gap-4">
@@ -1111,32 +1131,7 @@ export default function EventForm({
             </div>
           </div>
 
-          <div className="flex flex-col">
-            <div className="text-sm font-semibold mb-2">
-              Spese anticipate per l&apos;artista
-            </div>
-            <Input
-              {...register("moArtistAdvancedExpenses", {
-                setValueAs: (v) => (v === "" ? undefined : parseFloat(v)),
-              })}
-              placeholder="Inserisci le spese anticipate per l'artista"
-              type="number"
-              min={0}
-              step={0.01}
-              className={
-                errors.moArtistAdvancedExpenses
-                  ? "border-destructive text-destructive"
-                  : ""
-              }
-            />
-            {errors.moArtistAdvancedExpenses && (
-              <p className="text-xs text-destructive mt-2">
-                {errors.moArtistAdvancedExpenses.message as string}
-              </p>
-            )}
-          </div>
-
-          <div className="grid sm:grid-cols-2 gap-4">
+          <div className="grid gap-4 sm:grid-cols-2">
             <div className="flex flex-col">
               <div className="text-sm font-semibold mb-2">Hotel</div>
               <Input
@@ -1170,7 +1165,32 @@ export default function EventForm({
             </div>
           </div>
 
-          <div className="grid sm:grid-cols-2 gap-4">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="flex flex-col">
+              <div className="text-sm font-semibold mb-2">
+                Spese anticipate per l&apos;artista
+              </div>
+              <Input
+                {...register("moArtistAdvancedExpenses", {
+                  setValueAs: (v) => (v === "" ? undefined : parseFloat(v)),
+                })}
+                placeholder="Inserisci le spese anticipate per l'artista"
+                type="number"
+                min={0}
+                step={0.01}
+                className={
+                  errors.moArtistAdvancedExpenses
+                    ? "border-destructive text-destructive"
+                    : ""
+                }
+              />
+              {errors.moArtistAdvancedExpenses && (
+                <p className="text-xs text-destructive mt-2">
+                  {errors.moArtistAdvancedExpenses.message as string}
+                </p>
+              )}
+            </div>
+
             <div className="flex flex-col">
               <div className="text-sm font-semibold mb-2">Saldo hotel</div>
               <Input
@@ -1214,29 +1234,6 @@ export default function EventForm({
                 </p>
               )}
             </div>
-          </div>
-
-          <div className="grid sm:grid-cols-2 gap-4">
-            <div className="flex flex-col">
-              <div className="text-sm font-semibold mb-2">Saldo cachet</div>
-              <Input
-                {...register("totalCost", {
-                  setValueAs: (v) => (v === "" ? undefined : parseFloat(v)),
-                })}
-                placeholder="Inserisci il saldo cachet"
-                type="number"
-                min={0}
-                step={0.01}
-                className={
-                  errors.totalCost ? "border-destructive text-destructive" : ""
-                }
-              />
-              {errors.totalCost && (
-                <p className="text-xs text-destructive mt-2">
-                  {errors.totalCost.message as string}
-                </p>
-              )}
-            </div>
 
             <div className="flex flex-col">
               <div className="text-sm font-semibold mb-2">
@@ -1264,25 +1261,34 @@ export default function EventForm({
             </div>
           </div>
 
-          <div className="flex flex-col">
-            <div className="text-sm font-semibold mb-2">Saldo totale</div>
-            <div className="h-10 flex items-center text-sm">
-              {cashBalanceCost !== undefined ? (
-                <span className="truncate">{cashBalanceCost.toFixed(2)}</span>
-              ) : (
-                <span className="text-zinc-400">
-                  Inserisci i valori necessari
-                </span>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="flex flex-col">
+              <div className="text-sm font-semibold mb-2">Saldo</div>
+              <div className="h-10 flex items-center text-sm">
+                {artistUpfrontCost !== undefined ? (
+                  <span className="truncate">{artistUpfrontCost.toFixed(2)}</span>
+                ) : (
+                  <span className="text-zinc-400">
+                    Inserisci cachet lordo, spese anticipate e fee promoter
+                  </span>
+                )}
+              </div>
+              {errors.artistUpfrontCost && (
+                <p className="text-xs text-destructive mt-2">
+                  {errors.artistUpfrontCost.message as string}
+                </p>
               )}
             </div>
-            {errors.cashBalanceCost && (
-              <p className="text-xs text-destructive mt-2">
-                {errors.cashBalanceCost.message as string}
-              </p>
-            )}
+
+            <div className="flex flex-col">
+              <div className="text-sm font-semibold mb-2">
+                Data pagamento saldo
+              </div>
+              <Input type="date" {...register("paymentDate")} className="h-10" />
+            </div>
           </div>
 
-          <div className="grid sm:grid-cols-2 gap-4">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <div className="flex flex-col">
               <div className="text-sm font-semibold mb-2">Netto artista</div>
               <div className="h-10 flex items-center text-sm">
@@ -1304,36 +1310,75 @@ export default function EventForm({
             </div>
 
             <div className="flex flex-col">
-              <div className="text-sm font-semibold mb-2">Saldo</div>
-              <div className="h-10 flex items-center text-sm">
-                {artistUpfrontCost !== undefined ? (
-                  <span className="truncate">
-                    {artistUpfrontCost.toFixed(2)}
-                  </span>
-                ) : (
-                  <span className="text-zinc-400">
-                    Inserisci cachet lordo, spese anticipate e fee promoter
-                  </span>
-                )}
-              </div>
-              {errors.artistUpfrontCost && (
+              <div className="text-sm font-semibold mb-2">Saldo cachet</div>
+              <Input
+                {...register("totalCost", {
+                  setValueAs: (v) => (v === "" ? undefined : parseFloat(v)),
+                })}
+                placeholder="Inserisci il saldo cachet"
+                type="number"
+                min={0}
+                step={0.01}
+                className={
+                  errors.totalCost ? "border-destructive text-destructive" : ""
+                }
+              />
+              {errors.totalCost && (
                 <p className="text-xs text-destructive mt-2">
-                  {errors.artistUpfrontCost.message as string}
+                  {errors.totalCost.message as string}
                 </p>
               )}
             </div>
 
             <div className="flex flex-col">
-              <div className="text-sm font-semibold mb-2">
-                {" "}
-                Data pagamento saldo{" "}
+              <div className="text-sm font-semibold mb-2">Totale spese</div>
+              <div className="h-10 flex items-center text-sm">
+                {cashBalanceCost !== undefined ? (
+                  <span className="truncate">{cashBalanceCost.toFixed(2)}</span>
+                ) : (
+                  <span className="text-zinc-400">
+                    Inserisci i valori necessari
+                  </span>
+                )}
               </div>
-              <Input
-                type="date"
-                {...register("paymentDate")}
-                className="h-10"
-              />
+              {errors.cashBalanceCost && (
+                <p className="text-xs text-destructive mt-2">
+                  {errors.cashBalanceCost.message as string}
+                </p>
+              )}
             </div>
+          </div>
+
+          <div className="flex flex-col">
+            <div className="text-sm font-semibold mb-2">ENPAS</div>
+            <Controller
+              control={control}
+              name="enpas"
+              render={({ field }) => (
+                <RadioGroup
+                  value={field.value ?? ""}
+                  onValueChange={field.onChange}
+                  className="gap-2"
+                >
+                  {ENPAS_OPTIONS.map((option) => {
+                    const id = `enpas-${option.value}`;
+                    return (
+                      <div key={option.value} className="flex items-center gap-2">
+                        <RadioGroupItem id={id} value={option.value} />
+                        <label htmlFor={id} className="text-sm cursor-pointer">
+                          {option.label}
+                        </label>
+                      </div>
+                    );
+                  })}
+                </RadioGroup>
+              )}
+            />
+            {errors.enpas && (
+              <p className="text-xs text-destructive mt-2">
+                {errors.enpas.message as string}
+              </p>
+            )}
           </div>
 
           <Separator className="bg-zinc-200" />

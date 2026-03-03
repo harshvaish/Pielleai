@@ -769,6 +769,7 @@ export const events = pgTable(
     totalCost: numeric('total_cost'),
     transportationsCost: numeric('transportations_cost'),
     cashBalanceCost: numeric('cash_balance_cost'),
+    enpas: varchar('enpas', { length: 32 }),
     hotel: text(),
     hotelCost: numeric('hotel_cost'),
     restaurant: text(),

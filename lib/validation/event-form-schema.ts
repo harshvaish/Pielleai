@@ -171,6 +171,11 @@ tourManagerName: z.string().optional(),
     .positive('Può contenere solo numeri positivi.')
     .optional(),
 
+  enpas: z.preprocess(
+    (val) => (typeof val === 'string' && val.trim() !== '' ? val : undefined),
+    z.enum(['producer', 'organizer', 'artist', 'none']).optional(),
+  ),
+
   soundCheckStart: z.preprocess(
     (val) => (typeof val === 'string' && val.trim() !== '' ? val : undefined),
     z.string('Campo malformato.').optional(),
