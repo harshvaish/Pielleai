@@ -1138,66 +1138,6 @@ export default function EventForm({
 
           <div className="grid sm:grid-cols-2 gap-4">
             <div className="flex flex-col">
-              <div className="text-sm font-semibold mb-2">Netto artista</div>
-              <div className="h-10 flex items-center text-sm">
-                {artistNetCost ? (
-                  <span className="truncate">
-                    {artistNetCost?.toFixed(2) ?? ""}
-                  </span>
-                ) : (
-                  <span className="text-zinc-400">
-                    Inserisci cachet lordo e percentuale booking
-                  </span>
-                )}
-              </div>
-              {errors.artistNetCost && (
-                <p className="text-xs text-destructive mt-2">
-                  {errors.artistNetCost.message as string}
-                </p>
-              )}
-            </div>
-
-            <div className="flex flex-col">
-              <div className="text-sm font-semibold mb-2">Saldo</div>
-              <div className="h-10 flex items-center text-sm">
-                {artistUpfrontCost !== undefined ? (
-                  <span className="truncate">
-                    {artistUpfrontCost.toFixed(2)}
-                  </span>
-                ) : (
-                  <span className="text-zinc-400">
-                    Inserisci cachet lordo, spese anticipate e fee promoter
-                  </span>
-                )}
-              </div>
-              {errors.artistUpfrontCost && (
-                <p className="text-xs text-destructive mt-2">
-                  {errors.artistUpfrontCost.message as string}
-                </p>
-              )}
-            </div>
-
-            <div className="flex flex-col">
-              <div className="text-sm font-semibold mb-2">
-                {" "}
-                Data pagamento saldo{" "}
-              </div>
-              <Input
-                type="date"
-                {...register("paymentDate")}
-                className="h-10"
-              />
-            </div>
-          </div>
-
-          <Separator className="bg-zinc-200" />
-
-          <EventNotesInput />
-        </TabsContent>
-
-        <TabsContent value="c" className="flex flex-col gap-4 p-2">
-          <div className="grid sm:grid-cols-2 gap-4">
-            <div className="flex flex-col">
               <div className="text-sm font-semibold mb-2">Hotel</div>
               <Input
                 {...register("hotel")}
@@ -1229,71 +1169,6 @@ export default function EventForm({
               )}
             </div>
           </div>
-
-          <div className="grid sm:grid-cols-2 gap-4">
-            <div className="flex flex-col">
-              <div className="text-sm font-semibold mb-2">Referente serata</div>
-              <Input
-                {...register("eveningContact")}
-                placeholder="Inserisci il nome del referente serata"
-                className={
-                  errors.eveningContact
-                    ? "border-destructive text-destructive"
-                    : ""
-                }
-              />
-              {errors.eveningContact && (
-                <p className="text-xs text-destructive mt-2">
-                  {errors.eveningContact.message as string}
-                </p>
-              )}
-            </div>
-
-            <div className="flex flex-col">
-              <div className="text-sm font-semibold mb-2">
-                Coordinatore Milano Ovest
-              </div>
-
-              <Controller
-                control={control}
-                name="moCoordinatorId"
-                render={({ field }) => (
-                  <Select
-                    value={field.value?.toString()}
-                    onValueChange={(v) => field.onChange(parseInt(v))}
-                  >
-                    <SelectTrigger
-                      id="moCoordinatorId"
-                      className={cn(
-                        "w-full",
-                        errors.moCoordinatorId &&
-                        "border-destructive text-destructive"
-                      )}
-                      size="sm"
-                    >
-                      {moCoordinators.find((mc) => mc.id == field.value)
-                        ?.name || "Seleziona coordinatore"}
-                    </SelectTrigger>
-                    <SelectContent>
-                      {moCoordinators.map((mc) => (
-                        <SelectItem key={mc.id} value={mc.id?.toString()}>
-                          {mc.name} {mc.surname}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                )}
-              />
-
-              {errors.moCoordinatorId && (
-                <p className="text-xs text-destructive mt-2">
-                  {errors.moCoordinatorId.message as string}
-                </p>
-              )}
-            </div>
-          </div>
-
-          <Separator className="bg-zinc-200" />
 
           <div className="grid sm:grid-cols-2 gap-4">
             <div className="flex flex-col">
@@ -1405,6 +1280,129 @@ export default function EventForm({
                 {errors.cashBalanceCost.message as string}
               </p>
             )}
+          </div>
+
+          <div className="grid sm:grid-cols-2 gap-4">
+            <div className="flex flex-col">
+              <div className="text-sm font-semibold mb-2">Netto artista</div>
+              <div className="h-10 flex items-center text-sm">
+                {artistNetCost ? (
+                  <span className="truncate">
+                    {artistNetCost?.toFixed(2) ?? ""}
+                  </span>
+                ) : (
+                  <span className="text-zinc-400">
+                    Inserisci cachet lordo e percentuale booking
+                  </span>
+                )}
+              </div>
+              {errors.artistNetCost && (
+                <p className="text-xs text-destructive mt-2">
+                  {errors.artistNetCost.message as string}
+                </p>
+              )}
+            </div>
+
+            <div className="flex flex-col">
+              <div className="text-sm font-semibold mb-2">Saldo</div>
+              <div className="h-10 flex items-center text-sm">
+                {artistUpfrontCost !== undefined ? (
+                  <span className="truncate">
+                    {artistUpfrontCost.toFixed(2)}
+                  </span>
+                ) : (
+                  <span className="text-zinc-400">
+                    Inserisci cachet lordo, spese anticipate e fee promoter
+                  </span>
+                )}
+              </div>
+              {errors.artistUpfrontCost && (
+                <p className="text-xs text-destructive mt-2">
+                  {errors.artistUpfrontCost.message as string}
+                </p>
+              )}
+            </div>
+
+            <div className="flex flex-col">
+              <div className="text-sm font-semibold mb-2">
+                {" "}
+                Data pagamento saldo{" "}
+              </div>
+              <Input
+                type="date"
+                {...register("paymentDate")}
+                className="h-10"
+              />
+            </div>
+          </div>
+
+          <Separator className="bg-zinc-200" />
+
+          <EventNotesInput />
+        </TabsContent>
+
+        <TabsContent value="c" className="flex flex-col gap-4 p-2">
+          <div className="grid sm:grid-cols-2 gap-4">
+            <div className="flex flex-col">
+              <div className="text-sm font-semibold mb-2">Referente serata</div>
+              <Input
+                {...register("eveningContact")}
+                placeholder="Inserisci il nome del referente serata"
+                className={
+                  errors.eveningContact
+                    ? "border-destructive text-destructive"
+                    : ""
+                }
+              />
+              {errors.eveningContact && (
+                <p className="text-xs text-destructive mt-2">
+                  {errors.eveningContact.message as string}
+                </p>
+              )}
+            </div>
+
+            <div className="flex flex-col">
+              <div className="text-sm font-semibold mb-2">
+                Coordinatore Milano Ovest
+              </div>
+
+              <Controller
+                control={control}
+                name="moCoordinatorId"
+                render={({ field }) => (
+                  <Select
+                    value={field.value?.toString()}
+                    onValueChange={(v) => field.onChange(parseInt(v))}
+                  >
+                    <SelectTrigger
+                      id="moCoordinatorId"
+                      className={cn(
+                        "w-full",
+                        errors.moCoordinatorId &&
+                        "border-destructive text-destructive"
+                      )}
+                      size="sm"
+                    >
+                      {moCoordinators.find((mc) => mc.id == field.value)
+                        ?.name || "Seleziona coordinatore"}
+                    </SelectTrigger>
+                    <SelectContent>
+                      {moCoordinators.map((mc) => (
+                        <SelectItem key={mc.id} value={mc.id?.toString()}>
+                          {mc.name} {mc.surname}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+
+              {errors.moCoordinatorId && (
+                <p className="text-xs text-destructive mt-2">
+                  {errors.moCoordinatorId.message as string}
+                </p>
+              )}
+            </div>
           </div>
 
           <Separator className="bg-zinc-200" />
