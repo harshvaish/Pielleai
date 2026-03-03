@@ -186,7 +186,7 @@ export default function UpdateEventForm({
         : undefined,
 
       paymentDate: paymentDate ? format(paymentDate, "yyyy-MM-dd") : "",
-          upfrontPayment: parseFloat(event.artistUpfrontCost || '') || undefined,
+      upfrontPayment: parseFloat(event.depositCost || "") || undefined,
     },
   });
   const { handleSubmit } = methods;

@@ -42,7 +42,7 @@ import ArtistAvailabilitySelectWithCreate from "./ArtistAvailabilitySelectWithCr
 import EventStatusBadge from "@/app/(private)/_components/Badges/EventStatusBadge";
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
-import { QUESTION_ICON, GREEN_TICK_ICON } from "@/lib/constants";
+import { QUESTION_ICON, GREEN_TICK_ICON, TIME_ZONE } from "@/lib/constants";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import useSWR from "swr";
 import {
@@ -62,6 +62,7 @@ import ViewContractButton from "../update/ViewContractButton";
 import ViewContractDetail from "../update/ViewContractDetail";
 import ResendDocuSignButton from "../update/ResendDocuSignButton";
 import { X } from "lucide-react";
+import { formatInTimeZone } from "date-fns-tz";
 
 const STATUS_OPTIONS = eventStatus.enumValues;
 
@@ -183,6 +184,7 @@ export default function EventForm({
   const hasContract = Boolean(contractId);
   const contractDocument = watch("contractDocument");
   const moCost = watch("moCost");
+  const depositCost = watch("depositCost");
   const bookingPercentage = watch("bookingPercentage");
   const moArtistAdvancedExpenses = watch("moArtistAdvancedExpenses");
   const venueManagerCost = watch("venueManagerCost");
@@ -391,6 +393,126 @@ export default function EventForm({
     lastArtistIdRef.current = selectedArtistId;
   }, [mode, selectedArtist, selectedArtistId, setValue]);
 
+  useEffect(() => {
+    if (!selectedVenueId) {
+      setValue("venueName", "", {
+        shouldDirty: false,
+        shouldTouch: false,
+        shouldValidate: false,
+      });
+      setValue("venueCompanyName", "", {
+        shouldDirty: false,
+        shouldTouch: false,
+        shouldValidate: false,
+      });
+      setValue("venueVatNumber", "", {
+        shouldDirty: false,
+        shouldTouch: false,
+        shouldValidate: false,
+      });
+      setValue("venueAddress", "", {
+        shouldDirty: false,
+        shouldTouch: false,
+        shouldValidate: false,
+      });
+      return;
+    }
+
+    if (!selectedVenue) return;
+
+    setValue("venueName", selectedVenue.name ?? "", {
+      shouldDirty: false,
+      shouldTouch: false,
+      shouldValidate: false,
+    });
+    setValue("venueCompanyName", selectedVenue.company ?? "", {
+      shouldDirty: false,
+      shouldTouch: false,
+      shouldValidate: false,
+    });
+    setValue("venueVatNumber", selectedVenue.vatCode ?? "", {
+      shouldDirty: false,
+      shouldTouch: false,
+      shouldValidate: false,
+    });
+    setValue("venueAddress", selectedVenue.address ?? "", {
+      shouldDirty: false,
+      shouldTouch: false,
+      shouldValidate: false,
+    });
+  }, [selectedVenue, selectedVenueId, setValue]);
+
+  useEffect(() => {
+    const startDate = selectedAvailability?.startDate;
+    const endDate = selectedAvailability?.endDate;
+
+    if (!startDate || !endDate) {
+      setValue("eventDate", "", {
+        shouldDirty: false,
+        shouldTouch: false,
+        shouldValidate: false,
+      });
+      setValue("eventStartTime", "", {
+        shouldDirty: false,
+        shouldTouch: false,
+        shouldValidate: false,
+      });
+      setValue("eventEndTime", "", {
+        shouldDirty: false,
+        shouldTouch: false,
+        shouldValidate: false,
+      });
+      return;
+    }
+
+    try {
+      setValue("eventDate", formatInTimeZone(startDate, TIME_ZONE, "yyyy-MM-dd"), {
+        shouldDirty: false,
+        shouldTouch: false,
+        shouldValidate: false,
+      });
+      setValue("eventStartTime", formatInTimeZone(startDate, TIME_ZONE, "HH:mm"), {
+        shouldDirty: false,
+        shouldTouch: false,
+        shouldValidate: false,
+      });
+      setValue("eventEndTime", formatInTimeZone(endDate, TIME_ZONE, "HH:mm"), {
+        shouldDirty: false,
+        shouldTouch: false,
+        shouldValidate: false,
+      });
+    } catch {
+      setValue("eventDate", "", {
+        shouldDirty: false,
+        shouldTouch: false,
+        shouldValidate: false,
+      });
+      setValue("eventStartTime", "", {
+        shouldDirty: false,
+        shouldTouch: false,
+        shouldValidate: false,
+      });
+      setValue("eventEndTime", "", {
+        shouldDirty: false,
+        shouldTouch: false,
+        shouldValidate: false,
+      });
+    }
+  }, [selectedAvailability?.endDate, selectedAvailability?.startDate, setValue]);
+
+  useEffect(() => {
+    const normalized =
+      typeof depositCost === "number" && Number.isFinite(depositCost)
+        ? depositCost
+        : undefined;
+
+    setValue("upfrontPayment", normalized, {
+      shouldDirty: false,
+      shouldTouch: false,
+      shouldValidate: false,
+    });
+  }, [depositCost, setValue]);
+
   const ccEmails = [
     "Tour manager",
     "Amministrazione",
@@ -455,7 +577,6 @@ export default function EventForm({
       };
     })
     : [];
-  const isLockedContract = contractStatus === "voided" || contractStatus === "signed";
 
   const buildPerformanceTime = (
     startTime?: string,
@@ -1630,13 +1751,13 @@ export default function EventForm({
                               Nome artista{" "}
                             </label>
                             <Input
-                              {...register("artistFullName")}
-                              placeholder="Inserisci il nome completo"
-                              readOnly={isLockedContract}
+                              value={formValues.artistFullName ?? ""}
+                              placeholder="Nome artista"
+                              readOnly
                               className={cn(
-                                "h-10",
-                                isLockedContract &&
-                                  "bg-zinc-100 text-zinc-500"
+                                "h-10 bg-zinc-100 text-zinc-500",
+                                errors.artistFullName &&
+                                  "border-destructive text-destructive"
                               )}
                             />
                             {errors.artistFullName && (
@@ -1651,13 +1772,13 @@ export default function EventForm({
                               Nome d'arte{" "}
                             </label>
                             <Input
-                              {...register("artistStageName")}
-                              placeholder="Inserisci il nome d'arte"
-                              readOnly={isLockedContract}
+                              value={formValues.artistStageName ?? ""}
+                              placeholder="Nome d'arte"
+                              readOnly
                               className={cn(
-                                "h-10",
-                                isLockedContract &&
-                                  "bg-zinc-100 text-zinc-500"
+                                "h-10 bg-zinc-100 text-zinc-500",
+                                errors.artistStageName &&
+                                  "border-destructive text-destructive"
                               )}
                             />
                             {errors.artistStageName && (
@@ -1674,20 +1795,13 @@ export default function EventForm({
                             </label>
                             <Input
                               type="email"
-                              {...register("tourManagerEmail", {
-                                pattern: {
-                                  value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-                                  message:
-                                    "Formato non valido. (Es. info@eaglebooking.it)",
-                                },
-                              })}
-                              placeholder="Inserisci l'email del tour manager"
-                              readOnly={isLockedContract}
+                              value={formValues.tourManagerEmail ?? ""}
+                              placeholder="Email tour manager"
+                              readOnly
                               className={cn(
+                                "h-10 bg-zinc-100 text-zinc-500",
                                 errors.tourManagerEmail &&
-                                "border-destructive text-destructive",
-                                isLockedContract &&
-                                  "bg-zinc-100 text-zinc-500"
+                                  "border-destructive text-destructive"
                               )}
                             />
                             {errors.tourManagerEmail && (
@@ -1722,12 +1836,13 @@ export default function EventForm({
                             Nome locale{" "}
                           </label>
                           <Input
-                            {...register("venueName")}
+                            value={formValues.venueName ?? ""}
                             placeholder="Nome locale"
-                            readOnly={isLockedContract}
+                            readOnly
                             className={cn(
-                              "h-10",
-                              isLockedContract && "bg-zinc-100 text-zinc-500"
+                              "h-10 bg-zinc-100 text-zinc-500",
+                              errors.venueName &&
+                                "border-destructive text-destructive"
                             )}
                           />
                         </div>
@@ -1736,12 +1851,13 @@ export default function EventForm({
                             Ragione sociale locale{" "}
                           </label>
                           <Input
-                            {...register("venueCompanyName")}
+                            value={formValues.venueCompanyName ?? ""}
                             placeholder="Ragione sociale locale"
-                            readOnly={isLockedContract}
+                            readOnly
                             className={cn(
-                              "h-10",
-                              isLockedContract && "bg-zinc-100 text-zinc-500"
+                              "h-10 bg-zinc-100 text-zinc-500",
+                              errors.venueCompanyName &&
+                                "border-destructive text-destructive"
                             )}
                           />
                         </div>
@@ -1752,12 +1868,13 @@ export default function EventForm({
                             PIVA locale{" "}
                           </label>
                           <Input
-                            {...register("venueVatNumber")}
+                            value={formValues.venueVatNumber ?? ""}
                             placeholder="P.IVA locale"
-                            readOnly={isLockedContract}
+                            readOnly
                             className={cn(
-                              "h-10",
-                              isLockedContract && "bg-zinc-100 text-zinc-500"
+                              "h-10 bg-zinc-100 text-zinc-500",
+                              errors.venueVatNumber &&
+                                "border-destructive text-destructive"
                             )}
                           />
                         </div>
@@ -1767,12 +1884,13 @@ export default function EventForm({
                             Indirizzo locale{" "}
                           </label>
                           <Input
-                            {...register("venueAddress")}
+                            value={formValues.venueAddress ?? ""}
                             placeholder="Indirizzo locale"
-                            readOnly={isLockedContract}
+                            readOnly
                             className={cn(
-                              "h-10",
-                              isLockedContract && "bg-zinc-100 text-zinc-500"
+                              "h-10 bg-zinc-100 text-zinc-500",
+                              errors.venueAddress &&
+                                "border-destructive text-destructive"
                             )}
                           />
                         </div>
@@ -1813,11 +1931,12 @@ export default function EventForm({
                           </label>
                           <Input
                             type="date"
-                            {...register("eventDate")}
-                            readOnly={isLockedContract}
+                            value={formValues.eventDate ?? ""}
+                            readOnly
                             className={cn(
-                              "h-10",
-                              isLockedContract && "bg-zinc-100 text-zinc-500"
+                              "h-10 bg-zinc-100 text-zinc-500",
+                              errors.eventDate &&
+                                "border-destructive text-destructive"
                             )}
                           />
                         </div>
@@ -1829,22 +1948,22 @@ export default function EventForm({
                           <div className="flex gap-2">
                             <Input
                               type="time"
-                              {...register("eventStartTime")}
-                              readOnly={isLockedContract}
+                              value={formValues.eventStartTime ?? ""}
+                              readOnly
                               className={cn(
-                                "h-10",
-                                isLockedContract &&
-                                  "bg-zinc-100 text-zinc-500"
+                                "h-10 bg-zinc-100 text-zinc-500",
+                                errors.eventStartTime &&
+                                  "border-destructive text-destructive"
                               )}
                             />
                             <Input
                               type="time"
-                              {...register("eventEndTime")}
-                              readOnly={isLockedContract}
+                              value={formValues.eventEndTime ?? ""}
+                              readOnly
                               className={cn(
-                                "h-10",
-                                isLockedContract &&
-                                  "bg-zinc-100 text-zinc-500"
+                                "h-10 bg-zinc-100 text-zinc-500",
+                                errors.eventEndTime &&
+                                  "border-destructive text-destructive"
                               )}
                             />
                           </div>
@@ -1859,14 +1978,12 @@ export default function EventForm({
                           <Input
                             type="number"
                             min={0}
-                            {...register("transportationsCost", {
-                              setValueAs: (v) =>
-                                v === "" ? undefined : parseFloat(v),
-                            })}
-                            readOnly={isLockedContract}
+                            value={formValues.transportationsCost ?? ""}
+                            readOnly
                             className={cn(
-                              "h-10",
-                              isLockedContract && "bg-zinc-100 text-zinc-500"
+                              "h-10 bg-zinc-100 text-zinc-500",
+                              errors.transportationsCost &&
+                                "border-destructive text-destructive"
                             )}
                           />
                         </div>
@@ -1878,14 +1995,12 @@ export default function EventForm({
                           <Input
                             type="number"
                             min={0}
-                            {...register("totalCost", {
-                              setValueAs: (v) =>
-                                v === "" ? undefined : parseFloat(v),
-                            })}
-                            readOnly={isLockedContract}
+                            value={formValues.totalCost ?? ""}
+                            readOnly
                             className={cn(
-                              "h-10",
-                              isLockedContract && "bg-zinc-100 text-zinc-500"
+                              "h-10 bg-zinc-100 text-zinc-500",
+                              errors.totalCost &&
+                                "border-destructive text-destructive"
                             )}
                           />
                         </div>
@@ -1899,14 +2014,12 @@ export default function EventForm({
                           <Input
                             type="number"
                             min={0}
-                            {...register("upfrontPayment", {
-                              setValueAs: (v) =>
-                                v === "" ? undefined : parseFloat(v),
-                            })}
-                            readOnly={isLockedContract}
+                            value={formValues.upfrontPayment ?? ""}
+                            readOnly
                             className={cn(
-                              "h-10",
-                              isLockedContract && "bg-zinc-100 text-zinc-500"
+                              "h-10 bg-zinc-100 text-zinc-500",
+                              errors.upfrontPayment &&
+                                "border-destructive text-destructive"
                             )}
                           />
                         </div>
@@ -1916,11 +2029,12 @@ export default function EventForm({
                           </label>
                           <Input
                             type="date"
-                            {...register("paymentDate")}
-                            readOnly={isLockedContract}
+                            value={formValues.paymentDate ?? ""}
+                            readOnly
                             className={cn(
-                              "h-10",
-                              isLockedContract && "bg-zinc-100 text-zinc-500"
+                              "h-10 bg-zinc-100 text-zinc-500",
+                              errors.paymentDate &&
+                                "border-destructive text-destructive"
                             )}
                           />
                         </div>
