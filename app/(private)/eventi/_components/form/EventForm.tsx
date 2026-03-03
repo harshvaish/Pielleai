@@ -1102,375 +1102,398 @@ export default function EventForm({
         </TabsContent>
 
         <TabsContent value="b" className="flex flex-col gap-4 p-2">
-          <div className="grid gap-4 sm:grid-cols-3">
-            <div className="flex flex-col">
-              <div className="text-sm font-semibold mb-2">Cachet lordo</div>
-              <Input
-                {...register("moCost", {
-                  setValueAs: (v) => (v === "" ? undefined : parseFloat(v)),
-                })}
-                placeholder="Inserisci il costo cachet lordo"
-                type="number"
-                min={0}
-                step={0.01}
-                className={
-                  errors.moCost ? "border-destructive text-destructive" : ""
-                }
-              />
-              {errors.moCost && (
-                <p className="text-xs text-destructive mt-2">
-                  {errors.moCost.message as string}
-                </p>
-              )}
-            </div>
-
-            <div className="flex flex-col">
-              <div className="text-sm font-semibold mb-2">Acconto</div>
-              <Input
-                {...register("depositCost", {
-                  setValueAs: (v) => (v === "" ? undefined : parseFloat(v)),
-                })}
-                placeholder="Inserisci il costo acconto"
-                type="number"
-                min={0}
-                step={0.01}
-                className={
-                  errors.depositCost
-                    ? "border-destructive text-destructive"
-                    : ""
-                }
-              />
-              {errors.depositCost && (
-                <p className="text-xs text-destructive mt-2">
-                  {errors.depositCost.message as string}
-                </p>
-              )}
-            </div>
-
-            <div className="flex flex-col">
-              <div className="text-sm font-semibold mb-2">
-                Numero fattura acconto
-              </div>
-              <Input
-                {...register("depositInvoiceNumber")}
-                placeholder="Inserisci il numero fattura acconto"
-                className={
-                  errors.depositInvoiceNumber
-                    ? "border-destructive text-destructive"
-                    : ""
-                }
-              />
-              {errors.depositInvoiceNumber && (
-                <p className="text-xs text-destructive mt-2">
-                  {errors.depositInvoiceNumber.message as string}
-                </p>
-              )}
-            </div>
-          </div>
-
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="flex flex-col">
-              <div className="text-sm font-semibold mb-2">Nome promoter</div>
-
-              <div className="h-10 flex items-center text-sm">
-                {selectedVenue?.manager?.name ? (
-                  <span className="truncate">
-                    {selectedVenue?.manager?.name}{" "}
-                    {selectedVenue?.manager?.surname}
-                  </span>
-                ) : (
-                  <span className="text-zinc-400">Seleziona un locale</span>
+          <div className="rounded-2xl border bg-white p-4">
+            <div className="grid gap-4 sm:grid-cols-3">
+              <div className="flex flex-col">
+                <div className="text-sm font-semibold mb-2">Cachet lordo</div>
+                <Input
+                  {...register("moCost", {
+                    setValueAs: (v) => (v === "" ? undefined : parseFloat(v)),
+                  })}
+                  placeholder="Inserisci il costo cachet lordo"
+                  type="number"
+                  min={0}
+                  step={0.01}
+                  className={
+                    errors.moCost ? "border-destructive text-destructive" : ""
+                  }
+                />
+                {errors.moCost && (
+                  <p className="text-xs text-destructive mt-2">
+                    {errors.moCost.message as string}
+                  </p>
                 )}
               </div>
-            </div>
 
-            <div className="flex flex-col">
-              <div className="text-sm font-semibold mb-2">Fee promoter</div>
-              <Input
-                {...register("venueManagerCost", {
-                  setValueAs: (v) => (v === "" ? undefined : parseFloat(v)),
-                })}
-                placeholder="Inserisci il costo fee promoter"
-                type="number"
-                min={0}
-                step={0.01}
-                className={
-                  errors.venueManagerCost
-                    ? "border-destructive text-destructive"
-                    : ""
-                }
-              />
-              {errors.venueManagerCost && (
-                <p className="text-xs text-destructive mt-2">
-                  {errors.venueManagerCost.message as string}
-                </p>
-              )}
-            </div>
-          </div>
+              <div className="flex flex-col">
+                <div className="text-sm font-semibold mb-2">Acconto</div>
+                <Input
+                  {...register("depositCost", {
+                    setValueAs: (v) => (v === "" ? undefined : parseFloat(v)),
+                  })}
+                  placeholder="Inserisci il costo acconto"
+                  type="number"
+                  min={0}
+                  step={0.01}
+                  className={
+                    errors.depositCost
+                      ? "border-destructive text-destructive"
+                      : ""
+                  }
+                />
+                {errors.depositCost && (
+                  <p className="text-xs text-destructive mt-2">
+                    {errors.depositCost.message as string}
+                  </p>
+                )}
+              </div>
 
-          <div className="grid sm:grid-cols-2 gap-4">
-            <div className="flex flex-col">
-              <div className="text-sm font-semibold mb-2">
-                Percentuale booking
-              </div>
-              <Input
-                {...register("bookingPercentage", {
-                  setValueAs: (v) => (v === "" ? undefined : parseFloat(v)),
-                })}
-                placeholder="Inserisci la percentuale booking"
-                type="number"
-                min={0}
-                max={100}
-                step={0.01}
-                className={
-                  errors.bookingPercentage
-                    ? "border-destructive text-destructive"
-                    : ""
-                }
-              />
-              {errors.bookingPercentage && (
-                <p className="text-xs text-destructive mt-2">
-                  {errors.bookingPercentage.message as string}
-                </p>
-              )}
-            </div>
-            <div className="flex flex-col">
-              <div className="text-sm font-semibold mb-2">
-                Percentuale booking in €
-              </div>
-              <div className="h-10 flex items-center text-sm">
-                {bookingPercentageAmount ? (
-                  <span className="truncate">
-                    {bookingPercentageAmount.toFixed(2)}{" "}
-                  </span>
-                ) : (
-                  <span className="text-zinc-400">
-                    Inserisci cachet lordo e percentuale booking
-                  </span>
+              <div className="flex flex-col">
+                <div className="text-sm font-semibold mb-2">
+                  Numero fattura acconto
+                </div>
+                <Input
+                  {...register("depositInvoiceNumber")}
+                  placeholder="Inserisci il numero fattura acconto"
+                  className={
+                    errors.depositInvoiceNumber
+                      ? "border-destructive text-destructive"
+                      : ""
+                  }
+                />
+                {errors.depositInvoiceNumber && (
+                  <p className="text-xs text-destructive mt-2">
+                    {errors.depositInvoiceNumber.message as string}
+                  </p>
                 )}
               </div>
             </div>
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="flex flex-col">
-              <div className="text-sm font-semibold mb-2">Hotel</div>
-              <Input
-                {...register("hotel")}
-                placeholder="Inserisci il nome dell'hotel"
-                className={
-                  errors.hotel ? "border-destructive text-destructive" : ""
-                }
-              />
-              {errors.hotel && (
-                <p className="text-xs text-destructive mt-2">
-                  {errors.hotel.message as string}
-                </p>
-              )}
-            </div>
+          <div className="rounded-2xl border bg-white p-4">
+            <div className="grid gap-4 sm:grid-cols-[2fr_1fr]">
+              <div className="flex flex-col">
+                <div className="text-sm font-semibold mb-2">Nome promoter</div>
 
-            <div className="flex flex-col">
-              <div className="text-sm font-semibold mb-2">Ristorante</div>
-              <Input
-                {...register("restaurant")}
-                placeholder="Inserisci il nome del ristorante"
-                className={
-                  errors.restaurant ? "border-destructive text-destructive" : ""
-                }
-              />
-              {errors.restaurant && (
-                <p className="text-xs text-destructive mt-2">
-                  {errors.restaurant.message as string}
-                </p>
-              )}
-            </div>
-          </div>
-
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <div className="flex flex-col">
-              <div className="text-sm font-semibold mb-2">
-                Spese anticipate per l&apos;artista
+                <Input
+                  value={
+                    selectedVenue?.manager?.name
+                      ? `${selectedVenue.manager.name} ${selectedVenue.manager.surname}`.trim()
+                      : ""
+                  }
+                  placeholder="Seleziona un locale"
+                  disabled
+                  className="bg-zinc-50 text-zinc-500 disabled:opacity-100"
+                />
               </div>
-              <Input
-                {...register("moArtistAdvancedExpenses", {
-                  setValueAs: (v) => (v === "" ? undefined : parseFloat(v)),
-                })}
-                placeholder="Inserisci le spese anticipate per l'artista"
-                type="number"
-                min={0}
-                step={0.01}
-                className={
-                  errors.moArtistAdvancedExpenses
-                    ? "border-destructive text-destructive"
-                    : ""
-                }
-              />
-              {errors.moArtistAdvancedExpenses && (
-                <p className="text-xs text-destructive mt-2">
-                  {errors.moArtistAdvancedExpenses.message as string}
-                </p>
-              )}
-            </div>
 
-            <div className="flex flex-col">
-              <div className="text-sm font-semibold mb-2">Saldo hotel</div>
-              <Input
-                {...register("hotelCost", {
-                  setValueAs: (v) => (v === "" ? undefined : parseFloat(v)),
-                })}
-                placeholder="Inserisci il saldo hotel"
-                type="number"
-                min={0}
-                step={0.01}
-                className={
-                  errors.hotelCost ? "border-destructive text-destructive" : ""
-                }
-              />
-              {errors.hotelCost && (
-                <p className="text-xs text-destructive mt-2">
-                  {errors.hotelCost.message as string}
-                </p>
-              )}
-            </div>
-
-            <div className="flex flex-col">
-              <div className="text-sm font-semibold mb-2">Saldo ristorante</div>
-              <Input
-                {...register("restaurantCost", {
-                  setValueAs: (v) => (v === "" ? undefined : parseFloat(v)),
-                })}
-                placeholder="Inserisci il saldo ristorante"
-                type="number"
-                min={0}
-                step={0.01}
-                className={
-                  errors.restaurantCost
-                    ? "border-destructive text-destructive"
-                    : ""
-                }
-              />
-              {errors.restaurantCost && (
-                <p className="text-xs text-destructive mt-2">
-                  {errors.restaurantCost.message as string}
-                </p>
-              )}
-            </div>
-
-            <div className="flex flex-col">
-              <div className="text-sm font-semibold mb-2">
-                Spese di trasporto
-              </div>
-              <Input
-                {...register("transportationsCost", {
-                  setValueAs: (v) => (v === "" ? undefined : parseFloat(v)),
-                })}
-                placeholder="Inserisci le spese di trasporto"
-                type="number"
-                min={0}
-                step={0.01}
-                className={
-                  errors.transportationsCost
-                    ? "border-destructive text-destructive"
-                    : ""
-                }
-              />
-              {errors.transportationsCost && (
-                <p className="text-xs text-destructive mt-2">
-                  {errors.transportationsCost.message as string}
-                </p>
-              )}
-            </div>
-          </div>
-
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="flex flex-col">
-              <div className="text-sm font-semibold mb-2">Saldo</div>
-              <div className="h-10 flex items-center text-sm">
-                {artistUpfrontCost !== undefined ? (
-                  <span className="truncate">{artistUpfrontCost.toFixed(2)}</span>
-                ) : (
-                  <span className="text-zinc-400">
-                    Inserisci cachet lordo, spese anticipate e fee promoter
-                  </span>
+              <div className="flex flex-col">
+                <div className="text-sm font-semibold mb-2">Fee promoter</div>
+                <Input
+                  {...register("venueManagerCost", {
+                    setValueAs: (v) => (v === "" ? undefined : parseFloat(v)),
+                  })}
+                  placeholder="Inserisci il costo fee promoter"
+                  type="number"
+                  min={0}
+                  step={0.01}
+                  className={
+                    errors.venueManagerCost
+                      ? "border-destructive text-destructive"
+                      : ""
+                  }
+                />
+                {errors.venueManagerCost && (
+                  <p className="text-xs text-destructive mt-2">
+                    {errors.venueManagerCost.message as string}
+                  </p>
                 )}
               </div>
-              {errors.artistUpfrontCost && (
-                <p className="text-xs text-destructive mt-2">
-                  {errors.artistUpfrontCost.message as string}
-                </p>
-              )}
-            </div>
-
-            <div className="flex flex-col">
-              <div className="text-sm font-semibold mb-2">
-                Data pagamento saldo
-              </div>
-              <Input type="date" {...register("paymentDate")} className="h-10" />
             </div>
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            <div className="flex flex-col">
-              <div className="text-sm font-semibold mb-2">Netto artista</div>
-              <div className="h-10 flex items-center text-sm">
-                {artistNetCost ? (
-                  <span className="truncate">
-                    {artistNetCost?.toFixed(2) ?? ""}
-                  </span>
-                ) : (
-                  <span className="text-zinc-400">
-                    Inserisci cachet lordo e percentuale booking
-                  </span>
+          <div className="rounded-2xl border bg-white p-4">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="flex flex-col">
+                <div className="text-sm font-semibold mb-2">
+                  Percentuale booking
+                </div>
+                <Input
+                  {...register("bookingPercentage", {
+                    setValueAs: (v) => (v === "" ? undefined : parseFloat(v)),
+                  })}
+                  placeholder="Inserisci la percentuale booking"
+                  type="number"
+                  min={0}
+                  max={100}
+                  step={0.01}
+                  className={
+                    errors.bookingPercentage
+                      ? "border-destructive text-destructive"
+                      : ""
+                  }
+                />
+                {errors.bookingPercentage && (
+                  <p className="text-xs text-destructive mt-2">
+                    {errors.bookingPercentage.message as string}
+                  </p>
                 )}
               </div>
-              {errors.artistNetCost && (
-                <p className="text-xs text-destructive mt-2">
-                  {errors.artistNetCost.message as string}
-                </p>
-              )}
-            </div>
-
-            <div className="flex flex-col">
-              <div className="text-sm font-semibold mb-2">Saldo cachet</div>
-              <Input
-                {...register("totalCost", {
-                  setValueAs: (v) => (v === "" ? undefined : parseFloat(v)),
-                })}
-                placeholder="Inserisci il saldo cachet"
-                type="number"
-                min={0}
-                step={0.01}
-                className={
-                  errors.totalCost ? "border-destructive text-destructive" : ""
-                }
-              />
-              {errors.totalCost && (
-                <p className="text-xs text-destructive mt-2">
-                  {errors.totalCost.message as string}
-                </p>
-              )}
-            </div>
-
-            <div className="flex flex-col">
-              <div className="text-sm font-semibold mb-2">Totale spese</div>
-              <div className="h-10 flex items-center text-sm">
-                {cashBalanceCost !== undefined ? (
-                  <span className="truncate">{cashBalanceCost.toFixed(2)}</span>
-                ) : (
-                  <span className="text-zinc-400">
-                    Inserisci i valori necessari
-                  </span>
-                )}
+              <div className="flex flex-col">
+                <div className="text-sm font-semibold mb-2">
+                  Percentuale booking in €
+                </div>
+                <Input
+                  value={
+                    bookingPercentageAmount !== undefined
+                      ? bookingPercentageAmount.toFixed(2)
+                      : ""
+                  }
+                  placeholder="Inserisci cachet lordo e percentuale booking"
+                  disabled
+                  className="bg-zinc-50 text-zinc-500 disabled:opacity-100"
+                />
               </div>
-              {errors.cashBalanceCost && (
-                <p className="text-xs text-destructive mt-2">
-                  {errors.cashBalanceCost.message as string}
-                </p>
-              )}
             </div>
           </div>
 
-          <div className="flex flex-col">
+          <div className="rounded-2xl border bg-white p-4">
+            <div className="text-sm font-semibold mb-3">Spese</div>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="flex flex-col">
+                <div className="text-sm font-semibold mb-2">Hotel</div>
+                <Input
+                  {...register("hotel")}
+                  placeholder="Inserisci il nome dell'hotel"
+                  className={
+                    errors.hotel ? "border-destructive text-destructive" : ""
+                  }
+                />
+                {errors.hotel && (
+                  <p className="text-xs text-destructive mt-2">
+                    {errors.hotel.message as string}
+                  </p>
+                )}
+              </div>
+
+              <div className="flex flex-col">
+                <div className="text-sm font-semibold mb-2">Ristorante</div>
+                <Input
+                  {...register("restaurant")}
+                  placeholder="Inserisci il nome del ristorante"
+                  className={
+                    errors.restaurant
+                      ? "border-destructive text-destructive"
+                      : ""
+                  }
+                />
+                {errors.restaurant && (
+                  <p className="text-xs text-destructive mt-2">
+                    {errors.restaurant.message as string}
+                  </p>
+                )}
+              </div>
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mt-4">
+              <div className="flex flex-col">
+                <div className="text-sm font-semibold mb-2">
+                  Spese anticipate artista
+                </div>
+                <Input
+                  {...register("moArtistAdvancedExpenses", {
+                    setValueAs: (v) => (v === "" ? undefined : parseFloat(v)),
+                  })}
+                  placeholder="Inserisci le spese anticipate"
+                  type="number"
+                  min={0}
+                  step={0.01}
+                  className={
+                    errors.moArtistAdvancedExpenses
+                      ? "border-destructive text-destructive"
+                      : ""
+                  }
+                />
+                {errors.moArtistAdvancedExpenses && (
+                  <p className="text-xs text-destructive mt-2">
+                    {errors.moArtistAdvancedExpenses.message as string}
+                  </p>
+                )}
+              </div>
+
+              <div className="flex flex-col">
+                <div className="text-sm font-semibold mb-2">Saldo hotel</div>
+                <Input
+                  {...register("hotelCost", {
+                    setValueAs: (v) => (v === "" ? undefined : parseFloat(v)),
+                  })}
+                  placeholder="Inserisci il saldo hotel"
+                  type="number"
+                  min={0}
+                  step={0.01}
+                  className={
+                    errors.hotelCost
+                      ? "border-destructive text-destructive"
+                      : ""
+                  }
+                />
+                {errors.hotelCost && (
+                  <p className="text-xs text-destructive mt-2">
+                    {errors.hotelCost.message as string}
+                  </p>
+                )}
+              </div>
+
+              <div className="flex flex-col">
+                <div className="text-sm font-semibold mb-2">Saldo ristorante</div>
+                <Input
+                  {...register("restaurantCost", {
+                    setValueAs: (v) => (v === "" ? undefined : parseFloat(v)),
+                  })}
+                  placeholder="Inserisci il saldo ristorante"
+                  type="number"
+                  min={0}
+                  step={0.01}
+                  className={
+                    errors.restaurantCost
+                      ? "border-destructive text-destructive"
+                      : ""
+                  }
+                />
+                {errors.restaurantCost && (
+                  <p className="text-xs text-destructive mt-2">
+                    {errors.restaurantCost.message as string}
+                  </p>
+                )}
+              </div>
+
+              <div className="flex flex-col">
+                <div className="text-sm font-semibold mb-2">
+                  Spese di trasporto
+                </div>
+                <Input
+                  {...register("transportationsCost", {
+                    setValueAs: (v) => (v === "" ? undefined : parseFloat(v)),
+                  })}
+                  placeholder="Inserisci le spese di trasporto"
+                  type="number"
+                  min={0}
+                  step={0.01}
+                  className={
+                    errors.transportationsCost
+                      ? "border-destructive text-destructive"
+                      : ""
+                  }
+                />
+                {errors.transportationsCost && (
+                  <p className="text-xs text-destructive mt-2">
+                    {errors.transportationsCost.message as string}
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div className="rounded-2xl border bg-white p-4">
+            <div className="grid gap-4 sm:grid-cols-[2fr_1fr]">
+              <div className="flex flex-col">
+                <div className="text-sm font-semibold mb-2">Saldo</div>
+                <Input
+                  value={
+                    artistUpfrontCost !== undefined
+                      ? artistUpfrontCost.toFixed(2)
+                      : ""
+                  }
+                  placeholder="Inserisci cachet lordo, spese anticipate e fee promoter"
+                  disabled
+                  className="bg-zinc-50 text-zinc-500 disabled:opacity-100"
+                />
+                {errors.artistUpfrontCost && (
+                  <p className="text-xs text-destructive mt-2">
+                    {errors.artistUpfrontCost.message as string}
+                  </p>
+                )}
+              </div>
+
+              <div className="flex flex-col">
+                <div className="text-sm font-semibold mb-2">
+                  Data pagamento saldo
+                </div>
+                <Input
+                  type="date"
+                  {...register("paymentDate")}
+                  className={cn(
+                    "h-10",
+                    errors.paymentDate && "border-destructive text-destructive"
+                  )}
+                />
+                {errors.paymentDate && (
+                  <p className="text-xs text-destructive mt-2">
+                    {errors.paymentDate.message as string}
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div className="rounded-2xl border bg-white p-4">
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="flex flex-col">
+                <div className="text-sm font-semibold mb-2">Netto artista</div>
+                <Input
+                  value={artistNetCost !== undefined ? artistNetCost.toFixed(2) : ""}
+                  placeholder="Inserisci cachet lordo e percentuale booking"
+                  disabled
+                  className="bg-zinc-50 text-zinc-500 disabled:opacity-100"
+                />
+                {errors.artistNetCost && (
+                  <p className="text-xs text-destructive mt-2">
+                    {errors.artistNetCost.message as string}
+                  </p>
+                )}
+              </div>
+
+              <div className="flex flex-col">
+                <div className="text-sm font-semibold mb-2">Saldo cachet</div>
+                <Input
+                  {...register("totalCost", {
+                    setValueAs: (v) => (v === "" ? undefined : parseFloat(v)),
+                  })}
+                  placeholder="Inserisci il saldo cachet"
+                  type="number"
+                  min={0}
+                  step={0.01}
+                  className={
+                    errors.totalCost ? "border-destructive text-destructive" : ""
+                  }
+                />
+                {errors.totalCost && (
+                  <p className="text-xs text-destructive mt-2">
+                    {errors.totalCost.message as string}
+                  </p>
+                )}
+              </div>
+
+              <div className="flex flex-col">
+                <div className="text-sm font-semibold mb-2">Totale spese</div>
+                <Input
+                  value={
+                    cashBalanceCost !== undefined ? cashBalanceCost.toFixed(2) : ""
+                  }
+                  placeholder="Inserisci i valori necessari"
+                  disabled
+                  className="bg-zinc-50 text-zinc-500 disabled:opacity-100"
+                />
+                {errors.cashBalanceCost && (
+                  <p className="text-xs text-destructive mt-2">
+                    {errors.cashBalanceCost.message as string}
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div className="rounded-2xl border bg-white p-4">
             <div className="text-sm font-semibold mb-2">ENPAS</div>
             <Controller
               control={control}
@@ -1484,7 +1507,10 @@ export default function EventForm({
                   {ENPAS_OPTIONS.map((option) => {
                     const id = `enpas-${option.value}`;
                     return (
-                      <div key={option.value} className="flex items-center gap-2">
+                      <div
+                        key={option.value}
+                        className="flex items-center gap-2"
+                      >
                         <RadioGroupItem id={id} value={option.value} />
                         <label htmlFor={id} className="text-sm cursor-pointer">
                           {option.label}

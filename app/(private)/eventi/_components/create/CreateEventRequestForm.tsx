@@ -72,7 +72,7 @@ export default function CreateEventRequestForm({
   };
 
   return (
-    <section className='max-h-full overflow-y-auto'>
+    <section className={closeDialog ? 'min-h-0 max-h-full overflow-y-auto' : undefined}>
       <FormProvider {...methods}>
         <form
           className='flex flex-col gap-2 p-2'

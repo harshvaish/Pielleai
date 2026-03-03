@@ -114,7 +114,7 @@ export default function CreateEventForm({
   };
 
   return (
-    <section className='max-h-full overflow-y-auto'>
+    <section className={closeDialog ? 'min-h-0 max-h-full overflow-y-auto' : undefined}>
       <FormProvider {...methods}>
         <form
           className='flex flex-col gap-1 pt-1 pb-2 px-2'

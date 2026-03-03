@@ -23,6 +23,19 @@ export default function PrivateLayoutShell({ user, children }: PrivateLayoutShel
     if (stored === 'true') setIsNavCollapsed(true);
   }, []);
 
+  useEffect(() => {
+    const previousBodyOverflow = document.body.style.overflow;
+    const previousHtmlOverflow = document.documentElement.style.overflow;
+
+    document.body.style.overflow = 'hidden';
+    document.documentElement.style.overflow = 'hidden';
+
+    return () => {
+      document.body.style.overflow = previousBodyOverflow;
+      document.documentElement.style.overflow = previousHtmlOverflow;
+    };
+  }, []);
+
   const toggleNav = () => {
     setIsNavCollapsed((prev) => {
       const next = !prev;
@@ -38,7 +51,7 @@ export default function PrivateLayoutShell({ user, children }: PrivateLayoutShel
         onToggleNav={toggleNav}
         isNavCollapsed={isNavCollapsed}
       />
-      <div className='flex-grow grid md:grid-cols-[max-content_1fr] md:gap-6 px-4 pb-4 pt-3 md:px-8 md:pb-6 md:pt-5 overflow-hidden'>
+      <div className='flex-1 min-h-0 grid grid-rows-1 md:grid-cols-[max-content_1fr] md:gap-6 px-4 pb-4 pt-3 md:px-8 md:pb-6 md:pt-5 overflow-hidden'>
         <nav
           className={cn(
             'hidden max-h-max md:flex flex-col gap-1 bg-white rounded-2xl transition-all',
@@ -61,7 +74,9 @@ export default function PrivateLayoutShell({ user, children }: PrivateLayoutShel
             );
           })}
         </nav>
-        <main className='flex flex-col gap-2 md:gap-4 overflow-y-auto'>{children}</main>
+        <main className='min-h-0 min-w-0 flex flex-col gap-2 md:gap-4 overflow-y-auto overscroll-contain'>
+          {children}
+        </main>
       </div>
     </>
   );
