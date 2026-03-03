@@ -4,15 +4,15 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { format } from "date-fns";
 import { editContract } from "@/lib/server-actions/contracts/update-contract";
 import { useFormContext } from "react-hook-form";
 
 type Props = {
   payload: any;
+  disabled?: boolean;
 };
 
-export default function GenerateButton({ payload }: Props) {
+export default function GenerateButton({ payload, disabled }: Props) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const { getValues } = useFormContext();
@@ -27,7 +27,6 @@ export default function GenerateButton({ payload }: Props) {
 
   const handleGenerate = () => {
     const values = getValues();
-    console.log(values, "values");
 
     if (!values?.contractId) {
       toast.error("Event ID is missing.");
@@ -92,7 +91,7 @@ export default function GenerateButton({ payload }: Props) {
       type="button"
       size="sm"
       variant="outline"
-      disabled={isPending}
+      disabled={isPending || Boolean(disabled)}
       onClick={handleGenerate}
     >
       {isPending ? "Rigenero..." : "Rigenera"}

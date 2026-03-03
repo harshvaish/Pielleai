@@ -32,6 +32,10 @@ type ContractData = {
   tourManagerName: string;
 };
 
+type Props = {
+  disabled?: boolean;
+};
+
 const formatEventType = (value?: string) => {
   switch (value) {
     case "dj-set":
@@ -78,7 +82,7 @@ export async function generateFilledContractHtml(
   return html;
 }
 
-export default function DocuSignButton() {
+export default function DocuSignButton({ disabled }: Props) {
   const [loading, setLoading] = useState(false);
   const { watch, setValue, getValues } = useFormContext<EventFormSchema>();
 
@@ -264,7 +268,7 @@ export default function DocuSignButton() {
       type="button"
       size="sm"
       className="max-w-max"
-      disabled={loading}
+      disabled={loading || Boolean(disabled)}
       onClick={handleClick}
     >
       {loading ? "Invio..." : "Invia a DocuSign"}

@@ -53,6 +53,12 @@ export default function ContractDetailTile({ payload }: Props) {
       eventStartTime: format(payload.availability.startDate, "HH:mm"),
       eventEndTime: format(payload.availability.endDate, "HH:mm"),
       eventType: payload?.event.eventType,
+      paymentDate: payload?.event?.paymentDate
+        ? format(
+            new Date(String(payload.event.paymentDate).replace("Z", "")),
+            "yyyy-MM-dd"
+          )
+        : "",
 
       transportationsCost: payload.event.transportCost ?? "",
       totalCost: payload.event.totalFee ?? "",
@@ -103,22 +109,27 @@ export default function ContractDetailTile({ payload }: Props) {
       })}`,
     };
   }, [payload]);
-  const isMissingInfo = useMemo(() => {
-    const artistOk =
-      payload?.artist?.name && payload?.artist?.surname && payload?.artist?.stageName;
-    const venueOk =
-      payload?.venue?.name &&
-      payload?.venue?.company &&
-      payload?.venue?.vatCode &&
-      payload?.venue?.address;
-    const eventOk =
-      payload?.availability?.startDate &&
-      payload?.availability?.endDate &&
-      payload?.event?.depositCost &&
-      payload?.event?.totalFee;
-    return !(artistOk && venueOk && eventOk);
-  }, [payload]);
-  const showMissingInfo = isMissingInfo && contractStatus === "draft";
+  const requiredValues = watch([
+    "artistFullName",
+    "artistStageName",
+    "tourManagerEmail",
+    "venueName",
+    "venueCompanyName",
+    "venueVatNumber",
+    "venueAddress",
+    "eventType",
+    "eventDate",
+    "eventStartTime",
+    "eventEndTime",
+    "transportationsCost",
+    "totalCost",
+    "upfrontPayment",
+    "paymentDate",
+  ]);
+  const isDetailsComplete = requiredValues.every(
+    (val) => val !== undefined && val !== null && val !== "" && val !== false
+  );
+  const showMissingInfo = contractStatus === "draft" && !isDetailsComplete;
   const canInvalidate = contractStatus !== "draft";
   const isRevision = (payload?.revisionIndex ?? 0) > 0;
   const statusUpdatedAt = payload?.contractDate || payload?.updatedAt || payload?.createdAt;
@@ -181,8 +192,8 @@ export default function ContractDetailTile({ payload }: Props) {
               contractStatus !== "queued" &&
               contractStatus !== "viewed" && (
                 <>
-                  <GenerateButton payload={payload} />
-                  <DocuSignButton />
+                  <GenerateButton payload={payload} disabled={showMissingInfo} />
+                  <DocuSignButton disabled={showMissingInfo} />
                 </>
               )}
           </div>
@@ -288,7 +299,11 @@ export default function ContractDetailTile({ payload }: Props) {
                   className="p-0 h-auto text-sm text-sky-600"
                   asChild
                 >
-                  <Link href="/eventi" target="_blank" rel="noreferrer">
+                  <Link
+                    href={`/eventi/${payload.event.id}/modifica`}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
                     Visualizza dettagli evento{" "}
                   </Link>
                 </Button>

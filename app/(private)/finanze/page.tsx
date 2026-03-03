@@ -155,7 +155,7 @@ export default async function FinanzePage({ searchParams }: FinanzePageProps) {
 
       {events.length > 0 ? (
         <div className='max-h-full bg-white p-4 rounded-2xl overflow-auto'>
-          <Table className='min-w-[1200px]'>
+          <Table className='w-max [&_[data-slot=table-head]]:px-2 [&_[data-slot=table-head]]:py-3 [&_[data-slot=table-cell]]:px-2 [&_[data-slot=table-cell]]:py-3'>
             <TableHeader className='bg-zinc-50'>
                 <TableRow>
                   <TableHead>Titolo evento</TableHead>

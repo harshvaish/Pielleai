@@ -1753,9 +1753,9 @@ export default function EventForm({
                             <Input
                               value={formValues.artistFullName ?? ""}
                               placeholder="Nome artista"
-                              readOnly
+                              disabled
                               className={cn(
-                                "h-10 bg-zinc-100 text-zinc-500",
+                                "h-10 bg-zinc-100 text-zinc-500 disabled:opacity-100",
                                 errors.artistFullName &&
                                   "border-destructive text-destructive"
                               )}
@@ -1774,9 +1774,9 @@ export default function EventForm({
                             <Input
                               value={formValues.artistStageName ?? ""}
                               placeholder="Nome d'arte"
-                              readOnly
+                              disabled
                               className={cn(
-                                "h-10 bg-zinc-100 text-zinc-500",
+                                "h-10 bg-zinc-100 text-zinc-500 disabled:opacity-100",
                                 errors.artistStageName &&
                                   "border-destructive text-destructive"
                               )}
@@ -1797,9 +1797,9 @@ export default function EventForm({
                               type="email"
                               value={formValues.tourManagerEmail ?? ""}
                               placeholder="Email tour manager"
-                              readOnly
+                              disabled
                               className={cn(
-                                "h-10 bg-zinc-100 text-zinc-500",
+                                "h-10 bg-zinc-100 text-zinc-500 disabled:opacity-100",
                                 errors.tourManagerEmail &&
                                   "border-destructive text-destructive"
                               )}
@@ -1838,9 +1838,9 @@ export default function EventForm({
                           <Input
                             value={formValues.venueName ?? ""}
                             placeholder="Nome locale"
-                            readOnly
+                            disabled
                             className={cn(
-                              "h-10 bg-zinc-100 text-zinc-500",
+                              "h-10 bg-zinc-100 text-zinc-500 disabled:opacity-100",
                               errors.venueName &&
                                 "border-destructive text-destructive"
                             )}
@@ -1853,9 +1853,9 @@ export default function EventForm({
                           <Input
                             value={formValues.venueCompanyName ?? ""}
                             placeholder="Ragione sociale locale"
-                            readOnly
+                            disabled
                             className={cn(
-                              "h-10 bg-zinc-100 text-zinc-500",
+                              "h-10 bg-zinc-100 text-zinc-500 disabled:opacity-100",
                               errors.venueCompanyName &&
                                 "border-destructive text-destructive"
                             )}
@@ -1870,9 +1870,9 @@ export default function EventForm({
                           <Input
                             value={formValues.venueVatNumber ?? ""}
                             placeholder="P.IVA locale"
-                            readOnly
+                            disabled
                             className={cn(
-                              "h-10 bg-zinc-100 text-zinc-500",
+                              "h-10 bg-zinc-100 text-zinc-500 disabled:opacity-100",
                               errors.venueVatNumber &&
                                 "border-destructive text-destructive"
                             )}
@@ -1886,9 +1886,9 @@ export default function EventForm({
                           <Input
                             value={formValues.venueAddress ?? ""}
                             placeholder="Indirizzo locale"
-                            readOnly
+                            disabled
                             className={cn(
-                              "h-10 bg-zinc-100 text-zinc-500",
+                              "h-10 bg-zinc-100 text-zinc-500 disabled:opacity-100",
                               errors.venueAddress &&
                                 "border-destructive text-destructive"
                             )}
@@ -1920,8 +1920,8 @@ export default function EventForm({
                         <Input
                           value={eventTypeLabel}
                           placeholder="Seleziona"
-                          readOnly
-                          className="h-10 bg-zinc-100 text-zinc-500"
+                          disabled
+                          className="h-10 bg-zinc-100 text-zinc-500 disabled:opacity-100"
                         />
                       </div>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1932,9 +1932,9 @@ export default function EventForm({
                           <Input
                             type="date"
                             value={formValues.eventDate ?? ""}
-                            readOnly
+                            disabled
                             className={cn(
-                              "h-10 bg-zinc-100 text-zinc-500",
+                              "h-10 bg-zinc-100 text-zinc-500 disabled:opacity-100",
                               errors.eventDate &&
                                 "border-destructive text-destructive"
                             )}
@@ -1949,9 +1949,9 @@ export default function EventForm({
                             <Input
                               type="time"
                               value={formValues.eventStartTime ?? ""}
-                              readOnly
+                              disabled
                               className={cn(
-                                "h-10 bg-zinc-100 text-zinc-500",
+                                "h-10 bg-zinc-100 text-zinc-500 disabled:opacity-100",
                                 errors.eventStartTime &&
                                   "border-destructive text-destructive"
                               )}
@@ -1959,9 +1959,9 @@ export default function EventForm({
                             <Input
                               type="time"
                               value={formValues.eventEndTime ?? ""}
-                              readOnly
+                              disabled
                               className={cn(
-                                "h-10 bg-zinc-100 text-zinc-500",
+                                "h-10 bg-zinc-100 text-zinc-500 disabled:opacity-100",
                                 errors.eventEndTime &&
                                   "border-destructive text-destructive"
                               )}
@@ -1979,9 +1979,9 @@ export default function EventForm({
                             type="number"
                             min={0}
                             value={formValues.transportationsCost ?? ""}
-                            readOnly
+                            disabled
                             className={cn(
-                              "h-10 bg-zinc-100 text-zinc-500",
+                              "h-10 bg-zinc-100 text-zinc-500 disabled:opacity-100",
                               errors.transportationsCost &&
                                 "border-destructive text-destructive"
                             )}
@@ -1996,9 +1996,9 @@ export default function EventForm({
                             type="number"
                             min={0}
                             value={formValues.totalCost ?? ""}
-                            readOnly
+                            disabled
                             className={cn(
-                              "h-10 bg-zinc-100 text-zinc-500",
+                              "h-10 bg-zinc-100 text-zinc-500 disabled:opacity-100",
                               errors.totalCost &&
                                 "border-destructive text-destructive"
                             )}
@@ -2015,9 +2015,9 @@ export default function EventForm({
                             type="number"
                             min={0}
                             value={formValues.upfrontPayment ?? ""}
-                            readOnly
+                            disabled
                             className={cn(
-                              "h-10 bg-zinc-100 text-zinc-500",
+                              "h-10 bg-zinc-100 text-zinc-500 disabled:opacity-100",
                               errors.upfrontPayment &&
                                 "border-destructive text-destructive"
                             )}
@@ -2030,9 +2030,9 @@ export default function EventForm({
                           <Input
                             type="date"
                             value={formValues.paymentDate ?? ""}
-                            readOnly
+                            disabled
                             className={cn(
-                              "h-10 bg-zinc-100 text-zinc-500",
+                              "h-10 bg-zinc-100 text-zinc-500 disabled:opacity-100",
                               errors.paymentDate &&
                                 "border-destructive text-destructive"
                             )}

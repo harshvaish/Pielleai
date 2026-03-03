@@ -22,7 +22,7 @@ type Props = {
   payload: any;
 };
 
-export default function ContractDetailClient({ payload }: Props) {
+export default function ContractDetailClient({ payload: _payload }: Props) {
   const {
     register,
     control,
@@ -31,8 +31,7 @@ export default function ContractDetailClient({ payload }: Props) {
   } = useFormContext();
 
   /* ---------------- HELPERS ---------------- */
-  const contractStatus = watch("contractStatus");
-  const isLocked = contractStatus === "voided" || contractStatus === "signed";
+  const isReadOnly = true;
 
   function isSectionComplete(values: Record<string, any>, fields: string[]) {
     return fields.every((f) => {
@@ -83,10 +82,10 @@ export default function ContractDetailClient({ payload }: Props) {
                       {...register("artistFullName")}
                       placeholder="Enter full name"
                       className={cn(
-                        "h-10",
-                        isLocked && "bg-zinc-100 text-zinc-500"
+                        "h-10 bg-zinc-100 text-zinc-500 disabled:opacity-100",
+                        errors.artistFullName && "border-destructive text-destructive"
                       )}
-                      readOnly={isLocked}
+                      disabled={isReadOnly}
                     />
                     {errors.artistFullName && (
                       <p className="text-xs text-destructive">
@@ -102,9 +101,11 @@ export default function ContractDetailClient({ payload }: Props) {
                       {...register("artistStageName")}
                       placeholder="Enter stage name"
                       className={cn(
-                        "h-10",
-                        isLocked && "bg-zinc-100 text-zinc-500"
+                        "h-10 bg-zinc-100 text-zinc-500 disabled:opacity-100",
+                        errors.artistStageName &&
+                          "border-destructive text-destructive"
                       )}
+                      disabled={isReadOnly}
                     />
                     {errors.artistStageName && (
                       <p className="text-xs text-destructive">
@@ -121,10 +122,11 @@ export default function ContractDetailClient({ payload }: Props) {
                     <Input
                       {...register("tourManager")}
                       placeholder="Inserisci il nome del tour manager"
-                      readOnly={isLocked}
+                      disabled={isReadOnly}
                       className={cn(
-                        "h-10",
-                        isLocked && "bg-zinc-100 text-zinc-500"
+                        "h-10 bg-zinc-100 text-zinc-500 disabled:opacity-100",
+                        errors.tourManager &&
+                          "border-destructive text-destructive"
                       )}
                     />
                     {errors.tourManager && (
@@ -148,11 +150,11 @@ export default function ContractDetailClient({ payload }: Props) {
                         },
                       })}
                       placeholder="Inserisci l'email del tour manager"
-                      readOnly={isLocked}
+                      disabled={isReadOnly}
                       className={cn(
                         errors.tourManagerEmail &&
                           "border-destructive text-destructive",
-                        isLocked && "bg-zinc-100 text-zinc-500"
+                        "bg-zinc-100 text-zinc-500 disabled:opacity-100"
                       )}
                     />
                     {errors.tourManagerEmail && (
@@ -169,10 +171,9 @@ export default function ContractDetailClient({ payload }: Props) {
                   <Input
                     {...register("consultantEmail")}
                     placeholder="Email"
-                    readOnly={isLocked}
+                    disabled={isReadOnly}
                     className={cn(
-                      "h-10",
-                      isLocked && "bg-zinc-100 text-zinc-500"
+                      "h-10 bg-zinc-100 text-zinc-500 disabled:opacity-100"
                     )}
                   />
                 </div>
@@ -183,10 +184,9 @@ export default function ContractDetailClient({ payload }: Props) {
                   <Input
                     {...register("adminEmail")}
                     placeholder="Email"
-                    readOnly={isLocked}
+                    disabled={isReadOnly}
                     className={cn(
-                      "h-10",
-                      isLocked && "bg-zinc-100 text-zinc-500"
+                      "h-10 bg-zinc-100 text-zinc-500 disabled:opacity-100"
                     )}
                   />
                 </div>
@@ -226,10 +226,9 @@ export default function ContractDetailClient({ payload }: Props) {
                   <Input
                     {...register("venueName")}
                     placeholder="Venue name"
-                    readOnly={isLocked}
+                    disabled={isReadOnly}
                     className={cn(
-                      "h-10",
-                      isLocked && "bg-zinc-100 text-zinc-500"
+                      "h-10 bg-zinc-100 text-zinc-500 disabled:opacity-100"
                     )}
                   />
                 </div>
@@ -242,10 +241,9 @@ export default function ContractDetailClient({ payload }: Props) {
                   <Input
                     {...register("venueCompanyName")}
                     placeholder="Venue Company name"
-                    readOnly={isLocked}
+                    disabled={isReadOnly}
                     className={cn(
-                      "h-10",
-                      isLocked && "bg-zinc-100 text-zinc-500"
+                      "h-10 bg-zinc-100 text-zinc-500 disabled:opacity-100"
                     )}
                   />
                 </div>
@@ -259,10 +257,9 @@ export default function ContractDetailClient({ payload }: Props) {
                   <Input
                     {...register("venueVatNumber")}
                     placeholder="Venue VAT number"
-                    readOnly={isLocked}
+                    disabled={isReadOnly}
                     className={cn(
-                      "h-10",
-                      isLocked && "bg-zinc-100 text-zinc-500"
+                      "h-10 bg-zinc-100 text-zinc-500 disabled:opacity-100"
                     )}
                   />
                 </div>
@@ -275,10 +272,9 @@ export default function ContractDetailClient({ payload }: Props) {
                   <Input
                     {...register("venueAddress")}
                     placeholder="Venue address"
-                    readOnly={isLocked}
+                    disabled={isReadOnly}
                     className={cn(
-                      "h-10",
-                      isLocked && "bg-zinc-100 text-zinc-500"
+                      "h-10 bg-zinc-100 text-zinc-500 disabled:opacity-100"
                     )}
                   />
                 </div>
@@ -294,11 +290,13 @@ export default function ContractDetailClient({ payload }: Props) {
                   src={
                     isSectionComplete(watch(), [
                       "eventDate",
+                      "eventType",
                       "eventStartTime",
                       "eventEndTime",
                       "transportationsCost",
                       "totalCost",
                       "upfrontPayment",
+                      "paymentDate",
                     ])
                       ? GREEN_TICK_ICON
                       : QUESTION_ICON
@@ -323,12 +321,11 @@ export default function ContractDetailClient({ payload }: Props) {
                     <Select
                       value={field.value}
                       onValueChange={field.onChange}
-                      disabled={isLocked}
+                      disabled
                     >
                       <SelectTrigger
                         className={cn(
-                          "h-10 w-full",
-                          isLocked && "bg-zinc-100 text-zinc-500"
+                          "h-10 w-full bg-zinc-100 text-zinc-500"
                         )}
                       >
                         {field.value ?? "Select"}
@@ -349,10 +346,9 @@ export default function ContractDetailClient({ payload }: Props) {
                   <Input
                     type="date"
                     {...register("eventDate")}
-                    readOnly={isLocked}
+                    disabled={isReadOnly}
                     className={cn(
-                      "h-10",
-                      isLocked && "bg-zinc-100 text-zinc-500"
+                      "h-10 bg-zinc-100 text-zinc-500 disabled:opacity-100"
                     )}
                   />
                 </div>
@@ -365,19 +361,17 @@ export default function ContractDetailClient({ payload }: Props) {
                     <Input
                       type="time"
                       {...register("eventStartTime")}
-                      readOnly={isLocked}
+                      disabled={isReadOnly}
                       className={cn(
-                        "h-10",
-                        isLocked && "bg-zinc-100 text-zinc-500"
+                        "h-10 bg-zinc-100 text-zinc-500 disabled:opacity-100"
                       )}
                     />
                     <Input
                       type="time"
                       {...register("eventEndTime")}
-                      readOnly={isLocked}
+                      disabled={isReadOnly}
                       className={cn(
-                        "h-10",
-                        isLocked && "bg-zinc-100 text-zinc-500"
+                        "h-10 bg-zinc-100 text-zinc-500 disabled:opacity-100"
                       )}
                     />
                   </div>
@@ -396,10 +390,9 @@ export default function ContractDetailClient({ payload }: Props) {
                     {...register("transportationsCost", {
                       setValueAs: (v) => (v === "" ? undefined : parseFloat(v)),
                     })}
-                    readOnly={isLocked}
+                    disabled={isReadOnly}
                     className={cn(
-                      "h-10",
-                      isLocked && "bg-zinc-100 text-zinc-500"
+                      "h-10 bg-zinc-100 text-zinc-500 disabled:opacity-100"
                     )}
                   />
                 </div>
@@ -414,10 +407,9 @@ export default function ContractDetailClient({ payload }: Props) {
                     {...register("totalCost", {
                       setValueAs: (v) => (v === "" ? undefined : parseFloat(v)),
                     })}
-                    readOnly={isLocked}
+                    disabled={isReadOnly}
                     className={cn(
-                      "h-10",
-                      isLocked && "bg-zinc-100 text-zinc-500"
+                      "h-10 bg-zinc-100 text-zinc-500 disabled:opacity-100"
                     )}
                   />
                 </div>
@@ -435,12 +427,31 @@ export default function ContractDetailClient({ payload }: Props) {
                     {...register("upfrontPayment", {
                       setValueAs: (v) => (v === "" ? undefined : parseFloat(v)),
                     })}
-                    readOnly={isLocked}
+                    disabled={isReadOnly}
                     className={cn(
-                      "h-10",
-                      isLocked && "bg-zinc-100 text-zinc-500"
+                      "h-10 bg-zinc-100 text-zinc-500 disabled:opacity-100"
                     )}
                   />
+                </div>
+                <div className="flex flex-col gap-1">
+                  <label className="text-sm text-zinc-600">
+                    Data pagamento saldo{" "}
+                  </label>
+                  <Input
+                    type="date"
+                    {...register("paymentDate")}
+                    disabled={isReadOnly}
+                    className={cn(
+                      "h-10 bg-zinc-100 text-zinc-500 disabled:opacity-100",
+                      errors.paymentDate &&
+                        "border-destructive text-destructive"
+                    )}
+                  />
+                  {errors.paymentDate && (
+                    <p className="text-xs text-destructive">
+                      {errors.paymentDate.message as string}
+                    </p>
+                  )}
                 </div>
               </div>
             </AccordionContent>

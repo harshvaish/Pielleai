@@ -85,6 +85,7 @@ CREATE TABLE "events" (
 	"total_cost" numeric,
 	"transportations_cost" numeric,
 	"cash_balance_cost" numeric,
+	"enpas" varchar(32),
 	"hotel" text,
 	"restaurant" text,
 	"evening_contact" text,
