@@ -4,9 +4,9 @@ import FiltersButton from '../eventi/_components/filters/FiltersButton';
 import DatesFilterButton from '../eventi/_components/filters/DatesFilterButton';
 import ConflictFilterButton from '../eventi/_components/filters/ConflictFilterButton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { EventsTableFilters, EventStatus } from '@/lib/types';
+import { Event, EventsTableFilters, EventStatus } from '@/lib/types';
 import { eventsFiltersSchema } from '@/lib/validation/filters/events-filters-schema';
-import { hasRole, resolveNextPath, splitCsv } from '@/lib/utils';
+import { cn, hasRole, resolveNextPath, splitCsv } from '@/lib/utils';
 import { getArtistsCached } from '@/lib/cache/artists';
 import { getArtistManagersCached } from '@/lib/cache/artist-managers';
 import { getVenuesCached } from '@/lib/cache/venues';
@@ -65,6 +65,49 @@ const computeBookingAmount = (
   const percentage = toNumber(bookingPercentage);
   if (cost === null || percentage === null) return null;
   return cost * (percentage / 100);
+};
+
+const isBlankValue = (value: unknown) =>
+  value === undefined ||
+  value === null ||
+  (typeof value === 'string' && value.trim() === '');
+
+const buildMissingContractFields = (event: Event) => {
+  const startDate = event.availability?.startDate ?? null;
+  const endDate = event.availability?.endDate ?? null;
+
+  return {
+    venueName: isBlankValue(event.venue?.name),
+    venueCompanyName: isBlankValue(event.venue?.company),
+    venueVatNumber: isBlankValue(event.venue?.vatCode),
+    venueAddress: isBlankValue(event.venue?.address),
+
+    eventType: isBlankValue(event.eventType),
+    eventDate: !startDate,
+    performanceTime: !startDate || !endDate,
+    transportationsCost: toNumber(event.transportationsCost) === null,
+    totalCost: toNumber(event.totalCost) === null,
+    upfrontPayment: toNumber(event.depositCost) === null,
+    paymentDate: !event.paymentDate,
+  };
+};
+
+const buildMissingContractLabels = (
+  missing: ReturnType<typeof buildMissingContractFields>,
+) => {
+  const labels: string[] = [];
+  if (missing.venueName) labels.push('Nome locale');
+  if (missing.venueCompanyName) labels.push('Ragione sociale locale');
+  if (missing.venueVatNumber) labels.push('PIVA locale');
+  if (missing.venueAddress) labels.push('Indirizzo locale');
+  if (missing.eventType) labels.push('Tipologia evento');
+  if (missing.eventDate) labels.push('Data evento');
+  if (missing.performanceTime) labels.push('Orario performance');
+  if (missing.transportationsCost) labels.push('Costi di trasporto (€)');
+  if (missing.totalCost) labels.push('Totale cachet (€)');
+  if (missing.upfrontPayment) labels.push('Pagamento anticipo (€)');
+  if (missing.paymentDate) labels.push('Data pagamento saldo');
+  return labels;
 };
 
 export default async function FinanzePage({ searchParams }: FinanzePageProps) {
@@ -173,16 +216,22 @@ export default async function FinanzePage({ searchParams }: FinanzePageProps) {
                 </TableRow>
               </TableHeader>
             <TableBody>
-              {events.map((event) => {
-                const bookingAmount = computeBookingAmount(
-                  event.moCost,
-                  event.bookingPercentage,
-                );
-                const promoterLabel = event.venue.manager
-                  ? `${event.venue.manager.name} ${event.venue.manager.surname}`
-                  : '-';
-                const paymentDate = event.paymentDate
-                  ? format(event.paymentDate, 'dd/MM/yyyy', { locale: it })
+	              {events.map((event) => {
+	                const bookingAmount = computeBookingAmount(
+	                  event.moCost,
+	                  event.bookingPercentage,
+	                );
+	                const missingContractFields = buildMissingContractFields(event);
+	                const missingContractLabels = buildMissingContractLabels(missingContractFields);
+	                const hasMissingContractFields = missingContractLabels.length > 0;
+	                const missingContractTitle = hasMissingContractFields
+	                  ? `Dati contratto mancanti: ${missingContractLabels.join(', ')}`
+	                  : undefined;
+	                const promoterLabel = event.venue.manager
+	                  ? `${event.venue.manager.name} ${event.venue.manager.surname}`
+	                  : '-';
+	                const paymentDate = event.paymentDate
+	                  ? format(event.paymentDate, 'dd/MM/yyyy', { locale: it })
                   : '-';
                 const eventTitle =
                   event.title?.trim() ||
@@ -194,22 +243,31 @@ export default async function FinanzePage({ searchParams }: FinanzePageProps) {
                     event.availability.endDate,
                   );
 
-                return (
-                  <TableRow key={event.id}>
-                    <TableCell className='whitespace-nowrap'>
-                      <Link
-                        href={`/eventi/${event.id}`}
-                        className='font-medium text-zinc-900 hover:underline'
-                      >
-                        {eventTitle}
-                      </Link>
-                    </TableCell>
+	                return (
+	                  <TableRow key={event.id}>
+	                    <TableCell className='whitespace-nowrap'>
+	                      <Link
+	                        href={`/eventi/${event.id}`}
+	                        className={cn(
+	                          'font-medium hover:underline',
+	                          hasMissingContractFields ? 'text-destructive' : 'text-zinc-900',
+	                        )}
+	                        title={missingContractTitle}
+	                      >
+	                        {eventTitle}
+	                      </Link>
+	                    </TableCell>
                     <TableCell className='text-center tabular-nums whitespace-nowrap'>
                       {formatCurrency(event.moCost)}
                     </TableCell>
-                    <TableCell className='text-center tabular-nums whitespace-nowrap'>
-                      {formatCurrency(event.depositCost)}
-                    </TableCell>
+	                    <TableCell
+	                      className={cn(
+	                        'text-center tabular-nums whitespace-nowrap',
+	                        missingContractFields.upfrontPayment && 'text-destructive font-medium',
+	                      )}
+	                    >
+	                      {formatCurrency(event.depositCost)}
+	                    </TableCell>
                     <TableCell className='text-center tabular-nums whitespace-nowrap'>
                       {formatCurrency(event.venueManagerCost)}
                     </TableCell>
@@ -228,7 +286,14 @@ export default async function FinanzePage({ searchParams }: FinanzePageProps) {
                     <TableCell className='text-center tabular-nums whitespace-nowrap'>
                       {formatCurrency(event.artistUpfrontCost)}
                     </TableCell>
-                    <TableCell className='text-center whitespace-nowrap'>{paymentDate}</TableCell>
+	                    <TableCell
+	                      className={cn(
+	                        'text-center whitespace-nowrap',
+	                        missingContractFields.paymentDate && 'text-destructive font-medium',
+	                      )}
+	                    >
+	                      {paymentDate}
+	                    </TableCell>
                     <TableCell className='text-center whitespace-nowrap'>
                       {event.depositInvoiceNumber || '-'}
                     </TableCell>

@@ -2,6 +2,12 @@
 
 import EventDateTimeSelect from "./EventDateTimeSelect";
 
-export default function ArtistAvailabilitySelectWithCreate() {
-  return <EventDateTimeSelect />;
+type ArtistAvailabilitySelectWithCreateProps = {
+  highlightMissing?: boolean;
+};
+
+export default function ArtistAvailabilitySelectWithCreate({
+  highlightMissing,
+}: ArtistAvailabilitySelectWithCreateProps) {
+  return <EventDateTimeSelect highlightMissing={highlightMissing} />;
 }

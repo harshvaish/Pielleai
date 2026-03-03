@@ -29,7 +29,13 @@ import { type DateRange } from "react-day-picker";
 
 type FormValues = EventFormSchema | EventRequestFormSchema;
 
-export default function EventDateTimeSelect() {
+type EventDateTimeSelectProps = {
+  highlightMissing?: boolean;
+};
+
+export default function EventDateTimeSelect({
+  highlightMissing = false,
+}: EventDateTimeSelectProps) {
   const {
     watch,
     setValue,
@@ -209,8 +215,10 @@ export default function EventDateTimeSelect() {
         variant="outline"
         className={cn(
           "h-10 w-full justify-start text-sm font-normal overflow-hidden",
-          selectedAvailability ?? "text-zinc-400",
-          errors.availability && "border-destructive"
+          (!selectedAvailability?.startDate || !selectedAvailability?.endDate) &&
+            (highlightMissing ? "text-destructive" : "text-zinc-400"),
+          (errors.availability || highlightMissing) &&
+            "border-destructive text-destructive"
         )}
         onClick={() => setOpen(true)}
         disabled={!selectedArtistId}

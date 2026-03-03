@@ -554,6 +554,46 @@ export default function EventForm({
 
   const isDetailsComplete =
     isArtistComplete && isVenueComplete && isEventComplete;
+
+  const shouldHighlightContractMissing = mode === "update";
+
+  const isBlankValue = (value: unknown) =>
+    value === undefined ||
+    value === null ||
+    (typeof value === "string" && value.trim() === "");
+
+  const isMissingAmount = (value: unknown) => {
+    if (value === undefined || value === null || value === "") return true;
+    if (typeof value === "number") return !Number.isFinite(value);
+    if (typeof value === "string") {
+      const trimmed = value.trim();
+      if (!trimmed) return true;
+      return !Number.isFinite(Number(trimmed));
+    }
+    return true;
+  };
+
+  const contractMissing = {
+    venueName: shouldHighlightContractMissing && isBlankValue(formValues.venueName),
+    venueCompanyName:
+      shouldHighlightContractMissing && isBlankValue(formValues.venueCompanyName),
+    venueVatNumber:
+      shouldHighlightContractMissing && isBlankValue(formValues.venueVatNumber),
+    venueAddress:
+      shouldHighlightContractMissing && isBlankValue(formValues.venueAddress),
+    eventType: shouldHighlightContractMissing && isBlankValue(formValues.eventType),
+    eventDate: shouldHighlightContractMissing && isBlankValue(formValues.eventDate),
+    performanceTime:
+      shouldHighlightContractMissing &&
+      (isBlankValue(formValues.eventStartTime) || isBlankValue(formValues.eventEndTime)),
+    transportationsCost:
+      shouldHighlightContractMissing && isMissingAmount(formValues.transportationsCost),
+    totalCost: shouldHighlightContractMissing && isMissingAmount(formValues.totalCost),
+    upfrontPayment:
+      shouldHighlightContractMissing && isMissingAmount(formValues.upfrontPayment),
+    paymentDate:
+      shouldHighlightContractMissing && isBlankValue(formValues.paymentDate),
+  };
   const [isPending, startTransition] = useTransition();
 
   const historyData: HistoryItem[] = Array.isArray(
@@ -810,15 +850,17 @@ export default function EventForm({
           )}
         </div>
 
-        <div className="flex flex-col">
-          <div className="text-sm font-semibold mb-2">Data</div>
-          {<ArtistAvailabilitySelectWithCreate />}
-          {errors.availability && (
-            <p className="text-xs text-destructive mt-2">
-              Seleziona una disponibilità valida.
-            </p>
-          )}
-        </div>
+	        <div className="flex flex-col">
+	          <div className="text-sm font-semibold mb-2">Data</div>
+	          <ArtistAvailabilitySelectWithCreate
+	            highlightMissing={contractMissing.eventDate || contractMissing.performanceTime}
+	          />
+	          {errors.availability && (
+	            <p className="text-xs text-destructive mt-2">
+	              Seleziona una disponibilità valida.
+	            </p>
+	          )}
+	        </div>
 
         <div className="flex flex-col">
           <div className="text-sm font-semibold mb-2">Stato</div>
@@ -863,7 +905,8 @@ export default function EventForm({
                 <SelectTrigger
                   className={cn(
                     "w-full",
-                    errors.eventType && "border-destructive text-destructive",
+                    (errors.eventType || contractMissing.eventType) &&
+                      "border-destructive text-destructive",
                   )}
                   size="sm"
                 >
@@ -937,7 +980,14 @@ export default function EventForm({
             {selectedVenue?.address ? (
               <span className="truncate">{selectedVenue?.address}</span>
             ) : (
-              <span className="text-zinc-400">Seleziona un locale</span>
+              <span
+                className={cn(
+                  "text-zinc-400",
+                  contractMissing.venueAddress && "text-destructive"
+                )}
+              >
+                Seleziona un locale
+              </span>
             )}
           </div>
         </div>
@@ -1135,11 +1185,10 @@ export default function EventForm({
                   type="number"
                   min={0}
                   step={0.01}
-                  className={
-                    errors.depositCost
-                      ? "border-destructive text-destructive"
-                      : ""
-                  }
+                  className={cn(
+                    (errors.depositCost || contractMissing.upfrontPayment) &&
+                      "border-destructive text-destructive"
+                  )}
                 />
                 {errors.depositCost && (
                   <p className="text-xs text-destructive mt-2">
@@ -1379,11 +1428,11 @@ export default function EventForm({
                   type="number"
                   min={0}
                   step={0.01}
-                  className={
-                    errors.transportationsCost
-                      ? "border-destructive text-destructive"
-                      : ""
-                  }
+                  className={cn(
+                    (errors.transportationsCost ||
+                      contractMissing.transportationsCost) &&
+                      "border-destructive text-destructive"
+                  )}
                 />
                 {errors.transportationsCost && (
                   <p className="text-xs text-destructive mt-2">
@@ -1424,7 +1473,8 @@ export default function EventForm({
                   {...register("paymentDate")}
                   className={cn(
                     "h-10",
-                    errors.paymentDate && "border-destructive text-destructive"
+                    (errors.paymentDate || contractMissing.paymentDate) &&
+                      "border-destructive text-destructive"
                   )}
                 />
                 {errors.paymentDate && (
@@ -1463,9 +1513,10 @@ export default function EventForm({
                   type="number"
                   min={0}
                   step={0.01}
-                  className={
-                    errors.totalCost ? "border-destructive text-destructive" : ""
-                  }
+                  className={cn(
+                    (errors.totalCost || contractMissing.totalCost) &&
+                      "border-destructive text-destructive"
+                  )}
                 />
                 {errors.totalCost && (
                   <p className="text-xs text-destructive mt-2">
@@ -1855,74 +1906,106 @@ export default function EventForm({
                       </div>
                     </AccordionTrigger>
 
-                    <AccordionContent className="px-3 py-2 space-y-3">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="flex flex-col gap-1">
-                          <label className="text-sm text-zinc-600">
-                            Nome locale{" "}
-                          </label>
-                          <Input
-                            value={formValues.venueName ?? ""}
-                            placeholder="Nome locale"
-                            disabled
-                            className={cn(
-                              "h-10 bg-zinc-100 text-zinc-500 disabled:opacity-100",
-                              errors.venueName &&
-                                "border-destructive text-destructive"
-                            )}
-                          />
-                        </div>
-                        <div className="flex flex-col gap-1">
-                          <label className="text-sm text-zinc-600">
-                            Ragione sociale locale{" "}
-                          </label>
-                          <Input
-                            value={formValues.venueCompanyName ?? ""}
-                            placeholder="Ragione sociale locale"
-                            disabled
-                            className={cn(
-                              "h-10 bg-zinc-100 text-zinc-500 disabled:opacity-100",
-                              errors.venueCompanyName &&
-                                "border-destructive text-destructive"
-                            )}
-                          />
-                        </div>
-                      </div>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="flex flex-col gap-1">
-                          <label className="text-sm text-zinc-600">
-                            PIVA locale{" "}
-                          </label>
-                          <Input
-                            value={formValues.venueVatNumber ?? ""}
-                            placeholder="P.IVA locale"
-                            disabled
-                            className={cn(
-                              "h-10 bg-zinc-100 text-zinc-500 disabled:opacity-100",
-                              errors.venueVatNumber &&
-                                "border-destructive text-destructive"
-                            )}
-                          />
-                        </div>
-
-                        <div className="flex flex-col gap-1">
-                          <label className="text-sm text-zinc-600">
-                            Indirizzo locale{" "}
-                          </label>
-                          <Input
-                            value={formValues.venueAddress ?? ""}
-                            placeholder="Indirizzo locale"
-                            disabled
-                            className={cn(
-                              "h-10 bg-zinc-100 text-zinc-500 disabled:opacity-100",
-                              errors.venueAddress &&
-                                "border-destructive text-destructive"
-                            )}
-                          />
-                        </div>
-                      </div>
-                    </AccordionContent>
-                  </AccordionItem>
+	                    <AccordionContent className="px-3 py-2 space-y-3">
+	                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+	                        <div className="flex flex-col gap-1">
+	                          <label
+	                            className={cn(
+	                              "text-sm",
+	                              contractMissing.venueName
+	                                ? "text-destructive"
+	                                : "text-zinc-600"
+	                            )}
+	                          >
+	                            Nome locale{" "}
+	                          </label>
+	                          <Input
+	                            value={formValues.venueName ?? ""}
+	                            placeholder="Nome locale"
+	                            disabled
+	                            className={cn(
+	                              "h-10 bg-zinc-100 text-zinc-500 disabled:opacity-100",
+	                              (errors.venueName ||
+	                                contractMissing.venueName) &&
+	                                "border-destructive text-destructive bg-destructive/5"
+	                            )}
+	                          />
+	                        </div>
+	                        <div className="flex flex-col gap-1">
+	                          <label
+	                            className={cn(
+	                              "text-sm",
+	                              contractMissing.venueCompanyName
+	                                ? "text-destructive"
+	                                : "text-zinc-600"
+	                            )}
+	                          >
+	                            Ragione sociale locale{" "}
+	                          </label>
+	                          <Input
+	                            value={formValues.venueCompanyName ?? ""}
+	                            placeholder="Ragione sociale locale"
+	                            disabled
+	                            className={cn(
+	                              "h-10 bg-zinc-100 text-zinc-500 disabled:opacity-100",
+	                              (errors.venueCompanyName ||
+	                                contractMissing.venueCompanyName) &&
+	                                "border-destructive text-destructive bg-destructive/5"
+	                            )}
+	                          />
+	                        </div>
+	                      </div>
+	                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+	                        <div className="flex flex-col gap-1">
+	                          <label
+	                            className={cn(
+	                              "text-sm",
+	                              contractMissing.venueVatNumber
+	                                ? "text-destructive"
+	                                : "text-zinc-600"
+	                            )}
+	                          >
+	                            PIVA locale{" "}
+	                          </label>
+	                          <Input
+	                            value={formValues.venueVatNumber ?? ""}
+	                            placeholder="P.IVA locale"
+	                            disabled
+	                            className={cn(
+	                              "h-10 bg-zinc-100 text-zinc-500 disabled:opacity-100",
+	                              (errors.venueVatNumber ||
+	                                contractMissing.venueVatNumber) &&
+	                                "border-destructive text-destructive bg-destructive/5"
+	                            )}
+	                          />
+	                        </div>
+	
+	                        <div className="flex flex-col gap-1">
+	                          <label
+	                            className={cn(
+	                              "text-sm",
+	                              contractMissing.venueAddress
+	                                ? "text-destructive"
+	                                : "text-zinc-600"
+	                            )}
+	                          >
+	                            Indirizzo locale{" "}
+	                          </label>
+	                          <Input
+	                            value={formValues.venueAddress ?? ""}
+	                            placeholder="Indirizzo locale"
+	                            disabled
+	                            className={cn(
+	                              "h-10 bg-zinc-100 text-zinc-500 disabled:opacity-100",
+	                              (errors.venueAddress ||
+	                                contractMissing.venueAddress) &&
+	                                "border-destructive text-destructive bg-destructive/5"
+	                            )}
+	                          />
+	                        </div>
+	                      </div>
+	                    </AccordionContent>
+	                  </AccordionItem>
 
                   <AccordionItem value="event">
                     <AccordionTrigger className="px-3 hover:no-underline">
@@ -1938,135 +2021,195 @@ export default function EventForm({
                       </div>
                     </AccordionTrigger>
 
-                    <AccordionContent className="px-3 py-4 space-y-4">
-                      <div className="flex flex-col gap-1">
-                        <label className="text-sm text-zinc-600">
-                          Tipologia evento{" "}
-                        </label>
-                        <Input
-                          value={eventTypeLabel}
-                          placeholder="Seleziona"
-                          disabled
-                          className="h-10 bg-zinc-100 text-zinc-500 disabled:opacity-100"
-                        />
-                      </div>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="flex flex-col gap-1">
-                          <label className="text-sm text-zinc-600">
-                            Data evento{" "}
-                          </label>
-                          <Input
-                            type="date"
-                            value={formValues.eventDate ?? ""}
-                            disabled
-                            className={cn(
-                              "h-10 bg-zinc-100 text-zinc-500 disabled:opacity-100",
-                              errors.eventDate &&
-                                "border-destructive text-destructive"
-                            )}
-                          />
-                        </div>
-
-                        <div className="flex flex-col gap-1">
-                          <label className="text-sm text-zinc-600">
-                            Orario performance{" "}
-                          </label>
-                          <div className="flex gap-2">
-                            <Input
-                              type="time"
-                              value={formValues.eventStartTime ?? ""}
-                              disabled
-                              className={cn(
-                                "h-10 bg-zinc-100 text-zinc-500 disabled:opacity-100",
-                                errors.eventStartTime &&
-                                  "border-destructive text-destructive"
-                              )}
-                            />
-                            <Input
-                              type="time"
-                              value={formValues.eventEndTime ?? ""}
-                              disabled
-                              className={cn(
-                                "h-10 bg-zinc-100 text-zinc-500 disabled:opacity-100",
-                                errors.eventEndTime &&
-                                  "border-destructive text-destructive"
-                              )}
-                            />
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="flex flex-col gap-1">
-                          <label className="text-sm text-zinc-600">
-                            Costi di trasporto (€){" "}
-                          </label>
-                          <Input
-                            type="number"
-                            min={0}
-                            value={formValues.transportationsCost ?? ""}
-                            disabled
-                            className={cn(
-                              "h-10 bg-zinc-100 text-zinc-500 disabled:opacity-100",
-                              errors.transportationsCost &&
-                                "border-destructive text-destructive"
-                            )}
-                          />
-                        </div>
-
-                        <div className="flex flex-col gap-1">
-                          <label className="text-sm text-zinc-600">
-                            Totale cachet (€){" "}
-                          </label>
-                          <Input
-                            type="number"
-                            min={0}
-                            value={formValues.totalCost ?? ""}
-                            disabled
-                            className={cn(
-                              "h-10 bg-zinc-100 text-zinc-500 disabled:opacity-100",
-                              errors.totalCost &&
-                                "border-destructive text-destructive"
-                            )}
-                          />
-                        </div>
-                      </div>
-
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="flex flex-col gap-1">
-                          <label className="text-sm text-zinc-600">
-                            Pagamento anticipo (€){" "}
-                          </label>
-                          <Input
-                            type="number"
-                            min={0}
-                            value={formValues.upfrontPayment ?? ""}
-                            disabled
-                            className={cn(
-                              "h-10 bg-zinc-100 text-zinc-500 disabled:opacity-100",
-                              errors.upfrontPayment &&
-                                "border-destructive text-destructive"
-                            )}
-                          />
-                        </div>
-                        <div className="flex flex-col">
-                          <label className="text-sm text-zinc-600">
-                            Data pagamento saldo{" "}
-                          </label>
-                          <Input
-                            type="date"
-                            value={formValues.paymentDate ?? ""}
-                            disabled
-                            className={cn(
-                              "h-10 bg-zinc-100 text-zinc-500 disabled:opacity-100",
-                              errors.paymentDate &&
-                                "border-destructive text-destructive"
-                            )}
-                          />
-                        </div>
-                      </div>
-                    </AccordionContent>
-                  </AccordionItem>
+	                    <AccordionContent className="px-3 py-4 space-y-4">
+	                      <div className="flex flex-col gap-1">
+	                        <label
+	                          className={cn(
+	                            "text-sm",
+	                            contractMissing.eventType
+	                              ? "text-destructive"
+	                              : "text-zinc-600"
+	                          )}
+	                        >
+	                          Tipologia evento{" "}
+	                        </label>
+	                        <Input
+	                          value={eventTypeLabel}
+	                          placeholder="Seleziona"
+	                          disabled
+	                          className={cn(
+	                            "h-10 bg-zinc-100 text-zinc-500 disabled:opacity-100",
+	                            (errors.eventType || contractMissing.eventType) &&
+	                              "border-destructive text-destructive bg-destructive/5"
+	                          )}
+	                        />
+	                      </div>
+	                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+	                        <div className="flex flex-col gap-1">
+	                          <label
+	                            className={cn(
+	                              "text-sm",
+	                              contractMissing.eventDate
+	                                ? "text-destructive"
+	                                : "text-zinc-600"
+	                            )}
+	                          >
+	                            Data evento{" "}
+	                          </label>
+	                          <Input
+	                            type="date"
+	                            value={formValues.eventDate ?? ""}
+	                            disabled
+	                            className={cn(
+	                              "h-10 bg-zinc-100 text-zinc-500 disabled:opacity-100",
+	                              (errors.eventDate ||
+	                                contractMissing.eventDate) &&
+	                                "border-destructive text-destructive bg-destructive/5"
+	                            )}
+	                          />
+	                        </div>
+	
+	                        <div className="flex flex-col gap-1">
+	                          <label
+	                            className={cn(
+	                              "text-sm",
+	                              contractMissing.performanceTime
+	                                ? "text-destructive"
+	                                : "text-zinc-600"
+	                            )}
+	                          >
+	                            Orario performance{" "}
+	                          </label>
+	                          <div className="flex gap-2">
+	                            <Input
+	                              type="time"
+	                              value={formValues.eventStartTime ?? ""}
+	                              disabled
+	                              className={cn(
+	                                "h-10 bg-zinc-100 text-zinc-500 disabled:opacity-100",
+	                                (errors.eventStartTime ||
+	                                  contractMissing.performanceTime) &&
+	                                  "border-destructive text-destructive bg-destructive/5"
+	                              )}
+	                            />
+	                            <Input
+	                              type="time"
+	                              value={formValues.eventEndTime ?? ""}
+	                              disabled
+	                              className={cn(
+	                                "h-10 bg-zinc-100 text-zinc-500 disabled:opacity-100",
+	                                (errors.eventEndTime ||
+	                                  contractMissing.performanceTime) &&
+	                                  "border-destructive text-destructive bg-destructive/5"
+	                              )}
+	                            />
+	                          </div>
+	                        </div>
+	                      </div>
+	
+	                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+	                        <div className="flex flex-col gap-1">
+	                          <label
+	                            className={cn(
+	                              "text-sm",
+	                              contractMissing.transportationsCost
+	                                ? "text-destructive"
+	                                : "text-zinc-600"
+	                            )}
+	                          >
+	                            Costi di trasporto (€){" "}
+	                          </label>
+	                          <Input
+	                            type="number"
+	                            min={0}
+	                            value={formValues.transportationsCost ?? ""}
+	                            disabled
+	                            className={cn(
+	                              "h-10 bg-zinc-100 text-zinc-500 disabled:opacity-100",
+	                              (errors.transportationsCost ||
+	                                contractMissing.transportationsCost) &&
+	                                "border-destructive text-destructive bg-destructive/5"
+	                            )}
+	                          />
+	                        </div>
+	
+	                        <div className="flex flex-col gap-1">
+	                          <label
+	                            className={cn(
+	                              "text-sm",
+	                              contractMissing.totalCost
+	                                ? "text-destructive"
+	                                : "text-zinc-600"
+	                            )}
+	                          >
+	                            Totale cachet (€){" "}
+	                          </label>
+	                          <Input
+	                            type="number"
+	                            min={0}
+	                            value={formValues.totalCost ?? ""}
+	                            disabled
+	                            className={cn(
+	                              "h-10 bg-zinc-100 text-zinc-500 disabled:opacity-100",
+	                              (errors.totalCost ||
+	                                contractMissing.totalCost) &&
+	                                "border-destructive text-destructive bg-destructive/5"
+	                            )}
+	                          />
+	                        </div>
+	                      </div>
+	
+	                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+	                        <div className="flex flex-col gap-1">
+	                          <label
+	                            className={cn(
+	                              "text-sm",
+	                              contractMissing.upfrontPayment
+	                                ? "text-destructive"
+	                                : "text-zinc-600"
+	                            )}
+	                          >
+	                            Pagamento anticipo (€){" "}
+	                          </label>
+	                          <Input
+	                            type="number"
+	                            min={0}
+	                            value={formValues.upfrontPayment ?? ""}
+	                            disabled
+	                            className={cn(
+	                              "h-10 bg-zinc-100 text-zinc-500 disabled:opacity-100",
+	                              (errors.upfrontPayment ||
+	                                contractMissing.upfrontPayment) &&
+	                                "border-destructive text-destructive bg-destructive/5"
+	                            )}
+	                          />
+	                        </div>
+	                        <div className="flex flex-col">
+	                          <label
+	                            className={cn(
+	                              "text-sm",
+	                              contractMissing.paymentDate
+	                                ? "text-destructive"
+	                                : "text-zinc-600"
+	                            )}
+	                          >
+	                            Data pagamento saldo{" "}
+	                          </label>
+	                          <Input
+	                            type="date"
+	                            value={formValues.paymentDate ?? ""}
+	                            disabled
+	                            className={cn(
+	                              "h-10 bg-zinc-100 text-zinc-500 disabled:opacity-100",
+	                              (errors.paymentDate ||
+	                                contractMissing.paymentDate) &&
+	                                "border-destructive text-destructive bg-destructive/5"
+	                            )}
+	                          />
+	                        </div>
+	                      </div>
+	                    </AccordionContent>
+	                  </AccordionItem>
                 </Accordion>
               </AccordionContent>
             </AccordionItem>
