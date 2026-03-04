@@ -24,7 +24,9 @@ type ContractData = {
   eventDate: string;
   eventTime: string;
 
-  totalFee: string;
+  transportationsCost: string;
+  totalCost: string;
+  upfrontPayment: string;
   paymentDate: string;
 
   signerName: string;
@@ -71,7 +73,9 @@ export async function generateFilledContractHtml(
     EVENT_DATE: data.eventDate,
     EVENT_TIME: data.eventTime,
 
-    TOTAL_FEE: data.totalFee,
+    TRANSPORTATION_COST: data.transportationsCost,
+    TOTAL_COST: data.totalCost,
+    UPFRONT_PAYMENT: data.upfrontPayment,
     PAYMENT_DATE: data.paymentDate,
   };
 
@@ -88,11 +92,6 @@ export default function DocuSignButton({ disabled }: Props) {
 
   const contractId = watch("contractId");
   const contractRevisionIndex = watch("contractRevisionIndex");
-
-  const buildEventTime = (start?: string, end?: string): string => {
-    if (!start || !end) return "";
-    return `${start} – ${end}`;
-  };
 
   const handleClick = async () => {
     const values = getValues();
@@ -113,9 +112,11 @@ export default function DocuSignButton({ disabled }: Props) {
         eventDate: values.eventDate
           ? format(new Date(String(values.eventDate).replace('Z', '')), "dd/MM/yyyy", { locale: it })
           : "",
-        eventTime: buildEventTime(values.eventStartTime, values.eventEndTime),
+        eventTime: values.eventStartTime ?? "",
 
-        totalFee: String(values.totalCost ?? ""),
+        transportationsCost: String(values.transportationsCost ?? ""),
+        totalCost: String(values.totalCost ?? ""),
+        upfrontPayment: String(values.depositCost ?? values.upfrontPayment ?? ""),
         paymentDate: values.paymentDate
           ? format(new Date(String(values.paymentDate).replace('Z', '')), "dd/MM/yyyy", {
               locale: it,

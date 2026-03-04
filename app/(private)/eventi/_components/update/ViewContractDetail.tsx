@@ -19,10 +19,7 @@ type ContractData = {
 
   eventType?: string;
   eventDate: string;
-  eventStartDate: string;
-  eventEndDate: string;
-  eventStartTime: string;
-  eventEndTime: string;
+  eventTime: string;
 
   transportationsCost: string;
   totalCost: string;
@@ -125,10 +122,7 @@ export async function generateFilledContractHtml(
 
     EVENT_TYPE: data.eventType ?? "",
     EVENT_DATE: data.eventDate,
-    EVENT_START_DATE: data.eventStartDate,
-    EVENT_END_DATE: data.eventEndDate,
-    EVENT_START_TIME: data.eventStartTime,
-    EVENT_END_TIME: data.eventEndTime,
+    EVENT_TIME: data.eventTime,
 
     TRANSPORTATION_COST: data.transportationsCost,
     TOTAL_COST: data.totalCost,
@@ -193,10 +187,7 @@ export default function ViewContractDetail({
 
     eventType: formatEventType(event.eventType),
     eventDate: isMultiDay ? `${startDate} - ${endDate}` : startDate,
-    eventStartDate: startDate,
-    eventEndDate: endDate || startDate,
-    eventStartTime: formatTime(startDateValue),
-    eventEndTime: formatTime(endDateValue) || formatTime(startDateValue),
+    eventTime: formatTime(startDateValue),
     totalCost: event?.totalCost ?? "0",
     upfrontPayment: event?.depositCost ?? "0",
     transportationsCost: event?.transportationsCost ?? "0",

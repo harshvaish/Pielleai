@@ -158,16 +158,11 @@ export default function DocuSignButton({
   const formTourManagerEmail = watch("tourManagerEmail");
   const contractRevisionIndex = watch("contractRevisionIndex");
 
-  const getTimeRange = (start?: Date | string, end?: Date | string): string => {
-    if (!start || !end) return "";
-    // Convert to Date objects if needed
-    const startDate = start instanceof Date ? start : new Date(start);
-    const endDate = end instanceof Date ? end : new Date(end);
-    return `${format(startDate, "HH:mm", { locale: it })} – ${format(
-      endDate,
-      "HH:mm",
-      { locale: it }
-    )}`;
+  const formatTime = (value?: Date | string): string => {
+    if (!value) return "";
+    const date = value instanceof Date ? value : new Date(value);
+    if (Number.isNaN(date.getTime())) return "";
+    return format(date, "HH:mm", { locale: it });
   };
 
   const CONTRACT_DATA: ContractData = {
@@ -184,10 +179,7 @@ export default function DocuSignButton({
     eventDate: event.availability?.startDate
       ? format(new Date(event.availability.startDate), "dd/MM/yyyy")
       : "",
-    eventTime: getTimeRange(
-      event.availability?.startDate,
-      event.availability?.endDate
-    ),
+    eventTime: formatTime(event.availability?.startDate),
     totalCost: event?.totalCost ?? "0",
     upfrontPayment: event?.depositCost ?? "0",
     transportationsCost: event?.transportationsCost ?? "0",
