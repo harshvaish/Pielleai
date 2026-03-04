@@ -60,7 +60,6 @@ h2 {
       page-break-after: always;
     }
 
-    /* 🚨 DO NOT add a page after the last page */
 .page:last-child {
   page-break-after: auto;
 }
@@ -135,28 +134,29 @@ h2 {
     }
 
     .hr-wrapper {
-  height: 28px;              /* vertical space */
+  height: 28px;              
   display: flex;
-  align-items: center;       /* 🔑 centers vertically */
+  align-items: center;       
 }
-
+/* 
 .hr {
   width: 100%;
   border-top: 1.5px solid #000;
   height: 0;
-  margin-top: 10px;   /* 🔽 shifts line down */
+  margin-top: 10px;   
 
-}
+} */
 
 
 /* ===============================
    SIGNATURE — EXACT LEGAL LAYOUT
    =============================== */
 
-   .signing-section {
+.signing-section {
   margin-top: 60px;
   page-break-inside: avoid;
   break-inside: avoid;
+  text-align: left;
 }
 
 /* SIGNATURE ROW */
@@ -168,11 +168,13 @@ h2 {
 /* LEFT */
 .signature-left {
   width: 45%;
+  text-align: left;
 }
 
 .signature-name {
-  margin: 0 0 12px 0;
+  margin: 0;
   font-size: 12pt;
+  text-align: left;
 }
 
 .legal-list {
@@ -185,11 +187,32 @@ h2 {
   width: 240px;
 }
 
+.right-line {
+  width: 240px;
+}
+
+/* Line under the organizer/company name (right column) */
+.company-line {
+  border-bottom: 1px solid #000;
+  height: 0;
+  margin-top: 4px;
+  margin-bottom: 22px;
+}
+
+.company-line.invisible {
+  visibility: hidden;
+}
+
+.signature-field {
+  position: relative;
+  min-height: 55px;
+}
+
 /* RIGHT */
 .signature-right {
   width: 40%;
-  min-height: 90px;
-  position: relative;
+  min-height: 120px;
+  text-align: left;
 }
 
 /* COMMON */
@@ -198,12 +221,23 @@ h2 {
   height: 0;
 }
 
-.signature-anchor {
+/* Keep the visible signature line aligned with the DocuSign anchor */
+.signature-field .signature-line {
   position: absolute;
   left: 0;
   bottom: 0;
+}
+
+.signature-anchor {
+  position: absolute;
+  left: 0;
+  bottom: 10px;
   font-size: 1px;
   color: #fff;
+}
+
+.acceptance-date {
+  text-align: left;
 }
 
 
@@ -247,7 +281,7 @@ h2 {
   <p><strong>E</strong></p>
 
   <p>
-    <strong>{{VENUE_NAME}}</strong>, con sede legale in <strong>{{VENUE_ADDRESS}}</strong>,
+    <strong>{{VENUE_COMPANY_NAME}}</strong>, con sede legale in <strong>{{VENUE_ADDRESS}}</strong>,
     <br />
     P.IVA <strong>{{VENUE_VAT}}</strong>
   </p>
@@ -259,7 +293,7 @@ h2 {
   <h3>PREMESSO</h3>
 
   <p>
-    che la SOCIETÀ, ai fini della stipula del presente contratto, è titolare, e di essi può pienamente
+    A) che la SOCIETÀ, ai fini della stipula del presente contratto, è titolare, e di essi può pienamente
     disporre, di tutti i diritti di interprete e/o esecutore del sig. <strong>{{ARTIST_NAME}}</strong> in arte
     <strong>{{ARTIST_STAGE_NAME}}</strong> (qui di seguito, per brevità, anche solo: “ARTISTA”) per lo
     svolgimento di rappresentazioni di musica leggera nonché dei diritti dell’utilizzazione economica
@@ -269,12 +303,12 @@ h2 {
   </p>
 
   <p>
-    che l’ORGANIZZATORE ha richiesto di poter rappresentare n. 1 spettacolo (“SPETTACOLO”) dell’ARTISTA
+    B) che l’ORGANIZZATORE ha richiesto di poter rappresentare n. 1 spettacolo (“SPETTACOLO”) dell’ARTISTA
     secondo le condizioni meglio specificate nel prosieguo del presente atto;
   </p>
 
   <p>
-    che col presente accordo le Parti intendono disciplinare i loro rapporti con riferimento alla
+    C) che col presente accordo le Parti intendono disciplinare i loro rapporti con riferimento alla
     realizzazione e rappresentazione dello SPETTACOLO.
   </p>
 
@@ -289,85 +323,57 @@ h2 {
    1.1. La SOCIETÀ concede all’ORGANIZZATORE il diritto di rappresentare lo SPETTACOLO dell’ARTISTA
     consistente in un <strong>{{EVENT_TYPE}}</strong> che si svolgerà:
 
-  </p>
+	  </p>
 
-  <ul class="legal-list">
-    <p>
+	  <ul class="legal-list">
+	    <li>a) in data <strong>{{EVENT_DATE}}</strong></li>
+	    <li>b) presso il locale <strong>{{VENUE_NAME}}</strong>, <strong>{{VENUE_CITY}}</strong> (di seguito denominata la “VENUE”)</li>
+	    <li>c) con inizio alle ore <strong>{{EVENT_TIME}}</strong> circa</li>
+	  </ul>
 
-    in data <strong>{{EVENT_DATE}}</strong>
-    </p>
-    <p>
-    presso il locale <strong>{{VENUE_NAME}}</strong>, <strong>{{VENUE_CITY}}</strong> (di seguito denominata
-    la “VENUE”)
-  </p>
-  <p>
-    con inizio alle ore <strong>{{EVENT_TIME}}</strong> circa
-  </p>
-  </ul>
-
-  <p style="margin-top: 4mm;">
-    Secondo i termini e le condizioni di cui al presente atto.
-  </p>
+	  <p style="margin-top: 4mm;">
+	    Secondo i termini e le condizioni di cui al presente atto.
+	  </p>
 
   <div class="hr-wrapper">
     <div class="hr"></div>
   </div>
   
   <h2>Art. 2. Obblighi della SOCIETÀ.</h2>
-  <p>
-    2.1. Ai fini della realizzazione e rappresentazione dello SPETTACOLO, la SOCIETÀ si obbliga:
-  </p>
+	  <p>
+	    2.1. Ai fini della realizzazione e rappresentazione dello SPETTACOLO, la SOCIETÀ si obbliga:
+	  </p>
 
-  <ul class="legal-list">
-    <p>
+	  <ul class="legal-list">
+	    <li>a) a che l’ARTISTA renda le proprie prestazioni artistiche, in versione <strong>{{EVENT_TYPE}}</strong>;</li>
+	    <li>b) a garantire che in esso saranno eseguite composizioni musicali facenti parte del repertorio dell’ARTISTA da quest’ultimo scelte;</li>
+	    <li>c) a tenere a proprio carico il compenso spettante all’ARTISTA.</li>
+	  </ul>
 
-    a che l’ARTISTA renda le proprie prestazioni artistiche, in versione <strong>{{EVENT_TYPE}}</strong>;
-    </p>
-    <p>
+	  <p>
+	    2.2. La SOCIETÀ si impegna inoltre a fornire all’ORGANIZZATORE, ai fini del rispetto delle relative
+	    obbligazioni:
+	  </p>
 
-      a garantire che in esso saranno eseguite composizioni musicali facenti parte del repertorio
-      dell’ARTISTA da quest’ultimo scelte;
-    </p>
-    <p>
-
-    a tenere a proprio carico il compenso spettante all’ARTISTA.
-  </p>
-  </ul>
-
-  <p>
-    2.2. La SOCIETÀ si impegna inoltre a fornire all’ORGANIZZATORE, ai fini del rispetto delle relative
-    obbligazioni:
-  </p>
-
-  <ul class="legal-list">
-    il Rider Tecnico relativo:
-    <ul class="legal-list">
-      <p >
-
-        alla struttura del palco;
-        </p>
-        <p >
-
-        alla scheda tecnica relativa all’impianto audio e luci ed alla necessaria energia elettrica;
-       </p>
-       <p >
-
-        al numero ed alle caratteristiche dei camerini.
-        </p>
-      </ul>
-    
-    
-      <p>
-        Tale Rider Tecnico viene allegato al presente atto sub I, così da formarne parte integrante ed
-        essenziale, e l’ORGANIZZATORE si impegna a rispettarne il contenuto per la realizzazione dello
-        SPETTACOLO, secondo quanto previsto al successivo art. 3;
-      </p>
-      <p>l’artwork ufficiale da utilizzare per la promozione dello SPETTACOLO (il “Materiale”).</p>
-        
-  </ul>
-  <div class="hr-wrapper">
-    <div class="hr"></div>
-  </div>
+	  <ul class="legal-list">
+	    <li>
+	      a) il Rider Tecnico relativo:
+	      <ul class="legal-list">
+	        <li>i) alla struttura del palco;</li>
+	        <li>ii) alla scheda tecnica relativa all’impianto audio e luci ed alla necessaria energia elettrica;</li>
+	        <li>iii) al numero ed alle caratteristiche dei camerini.</li>
+	      </ul>
+	      <p>
+	        Tale Rider Tecnico viene allegato al presente atto sub I, così da formarne parte integrante ed
+	        essenziale, e l’ORGANIZZATORE si impegna a rispettarne il contenuto per la realizzazione dello
+	        SPETTACOLO, secondo quanto previsto al successivo art. 3;
+	      </p>
+	    </li>
+	    <li>b) l’artwork ufficiale da utilizzare per la promozione dello SPETTACOLO (il “Materiale”).</li>
+	  </ul>
+	  <div class="hr-wrapper">
+	    <div class="hr"></div>
+	  </div>
 
     <h2>Art. 3 Obblighi dell’ORGANIZZATORE.</h2>
   
@@ -378,80 +384,80 @@ h2 {
       quanto previsto al precedente art. 2.
     </p>
   
-    <p>
-      A tal fine, l’ORGANIZZATORE si obbliga, a mero titolo esemplificativo:
-    </p>
-  
-	    <ul class="legal-list">
-	      <p>
-	        a fornire una struttura di palco perfettamente collaudata ed idonea, anche sotto il profilo
-	        tecnico, alla rappresentazione dello SPETTACOLO secondo le caratteristiche indicate nel Rider
-	        Tecnico, allegato sub I, ivi inclusa la strumentazione necessaria all’esecuzione dello SPETTACOLO e
-	        le misure tecniche ed i servizi di sicurezza assicurando l’incolumità dell’ARTISTA e del suo
-	        entourage e del pubblico;
-	      </p>
-	  
-	      <p >
-	        a fornire un impianto audio e luci idoneo anche sotto il profilo tecnico, alla rappresentazione
-	        dello SPETTACOLO secondo le caratteristiche indicate nel Rider Tecnico, allegato sub I. Rimane inteso
-	        che la SOCIETÀ si riserva il diritto di nominare un proprio incaricato che verifichi, nel pomeriggio
-	        del giorno di rappresentazione dello SPETTACOLO, in orario antecedente, per verificare il rispetto
-	        delle caratteristiche tecniche e degli strumenti messi a disposizione dall’ORGANIZZATORE. Qualora non
-	        fosse consentita tale verifica ovvero le verifiche avessero esito negativo, la SOCIETÀ si riserva il
-	        diritto di risolvere il presente accordo ai sensi e per gli effetti di cui al successivo art. 9;
-	      </p>
-	  
-	      <p>
-	        a mettere a disposizione, a proprie spese, il personale tecnico necessario alla esatta realizzazione
-	        e rappresentazione dello SPETTACOLO;
-	      </p>
-	  
-	      <p>
-	        a chiedere ed ottenere tutti i necessari permessi e/o autorizzazioni e/o licenze di qualunque tipo
-	        (civili, amministrative, di pubblica sicurezza ecc.) finalizzati alla realizzazione e
-	        rappresentazione dello SPETTACOLO sollevando e manlevando la SOCIETÀ e l’ARTISTA da ogni qualsiasi
-	        responsabilità in merito;
-	      </p>
-
-	      <p>
-	        ad adottare tutte le misure tecniche e di sicurezza idonee a garantire il regolare svolgimento dello
-	        SPETTACOLO sollevando e manlevando la SOCIETÀ e l’ARTISTA da qualsiasi responsabilità in merito. In
-	        particolare, l’ORGANIZZATORE si obbliga ad adottare le più opportune misure atte ad assicurare
-	        l’incolumità dell’ARTISTA e di tutto il personale artistico e tecnico coinvolto nello SPETTACOLO,
-	        nonché del pubblico. A tal fine l’ORGANIZZATORE si obbliga a predisporre un adeguato servizio
-	        d’ordine;
-	      </p>
-	  
-	      <p >
-	        a mettere a disposizione dell’ARTISTA, ove previsto dal Rider Tecnico, il numero di camerini ivi
-	        indicati, dotati delle caratteristiche ivi specificate;
-	      </p>
-
-	      <p >
-	        a stipulare idonea polizza assicurativa per la responsabilità civile relativa ad eventuali sinistri
-	        (verificatisi durante lo SPETTACOLO, sul luogo dello SPETTACOLO e/o durante gli spostamenti per il
-	        raggiungimento del luogo dello SPETTACOLO) anche di carattere mortale, afferenti la persona
-	        dell’ARTISTA, del personale applicato e del pubblico, nonché eventuali sinistri relativi al
-	        danneggiamento o pertinenti della strumentazione di proprietà e/o disponibilità dell’ARTISTA ed a
-	        darne evidenza alla SOCIETÀ almeno 48 ore prima della rappresentazione dello SPETTACOLO;
-	      </p>
-	  
-	      <p >
-	        a pagare al competente Ente percettore quanto dovuto per la pubblica esecuzione delle opere musicali
-	        eseguite dall’ARTISTA durante lo SPETTACOLO;
-	      </p>
-	  
-	      <p >
-	        a tenere a proprio carico i costi di viaggio (mezzo di trasporto, benzina, caselli) l’ARTISTA ed
-	        ulteriori accompagnatori, spese stimate di Euro <strong>{{TRANSPORTATION_COST}}</strong> da ritirare in
-	        serata. Il locale dovrà sostenere i costi di vitto e alloggio separatamente e previo consenso del
-	        tour manager.
-	      </p>
-	    </ul>
 	    <p>
-	      In caso di violazione, in tutto o in parte, anche di uno soltanto degli obblighi di cui al presente
-	      art. 3.1., l’ORGANIZZATORE si impegna fin da subito a tenere indenne e manlevata la SOCIETÀ da ogni e
-	      qualsivoglia responsabilità, di natura civile, amministrativa e/o penale e/o da qualsivoglia
+	      A tal fine, l’ORGANIZZATORE si obbliga, a mero titolo esemplificativo:
+	    </p>
+
+		    <ul class="legal-list">
+		      <li>
+		        a) a fornire una struttura di palco perfettamente collaudata ed idonea, anche sotto il profilo
+		        tecnico, alla rappresentazione dello SPETTACOLO secondo le caratteristiche indicate nel Rider
+		        Tecnico, allegato sub I, ivi inclusa la strumentazione necessaria all’esecuzione dello SPETTACOLO e
+		        le misure tecniche ed i servizi di sicurezza assicurando l’incolumità dell’ARTISTA e del suo
+		        entourage e del pubblico;
+		      </li>
+	  
+		      <li>
+		        b) a fornire un impianto audio e luci idoneo anche sotto il profilo tecnico, alla rappresentazione
+		        dello SPETTACOLO secondo le caratteristiche indicate nel Rider Tecnico, allegato sub I. Rimane inteso
+		        che la SOCIETÀ si riserva il diritto di nominare un proprio incaricato che verifichi, nel pomeriggio
+		        del giorno di rappresentazione dello SPETTACOLO, in orario antecedente, per verificare il rispetto
+		        delle caratteristiche tecniche e degli strumenti messi a disposizione dall’ORGANIZZATORE. Qualora non
+		        fosse consentita tale verifica ovvero le verifiche avessero esito negativo, la SOCIETÀ si riserva il
+		        diritto di risolvere il presente accordo ai sensi e per gli effetti di cui al successivo art. 9;
+		      </li>
+	  
+		      <li>
+		        c) a mettere a disposizione, a proprie spese, il personale tecnico necessario alla esatta realizzazione
+		        e rappresentazione dello SPETTACOLO;
+		      </li>
+	  
+		      <li>
+		        d) a chiedere ed ottenere tutti i necessari permessi e/o autorizzazioni e/o licenze di qualunque tipo
+		        (civili, amministrative, di pubblica sicurezza ecc.) finalizzati alla realizzazione e
+		        rappresentazione dello SPETTACOLO sollevando e manlevando la SOCIETÀ e l’ARTISTA da ogni qualsiasi
+		        responsabilità in merito;
+		      </li>
+
+		      <li>
+		        e) ad adottare tutte le misure tecniche e di sicurezza idonee a garantire il regolare svolgimento dello
+		        SPETTACOLO sollevando e manlevando la SOCIETÀ e l’ARTISTA da qualsiasi responsabilità in merito. In
+		        particolare, l’ORGANIZZATORE si obbliga ad adottare le più opportune misure atte ad assicurare
+		        l’incolumità dell’ARTISTA e di tutto il personale artistico e tecnico coinvolto nello SPETTACOLO,
+		        nonché del pubblico. A tal fine l’ORGANIZZATORE si obbliga a predisporre un adeguato servizio
+		        d’ordine;
+		      </li>
+	  
+		      <li>
+		        f) a mettere a disposizione dell’ARTISTA, ove previsto dal Rider Tecnico, il numero di camerini ivi
+		        indicati, dotati delle caratteristiche ivi specificate;
+		      </li>
+
+		      <li>
+		        g) a stipulare idonea polizza assicurativa per la responsabilità civile relativa ad eventuali sinistri
+		        (verificatisi durante lo SPETTACOLO, sul luogo dello SPETTACOLO e/o durante gli spostamenti per il
+		        raggiungimento del luogo dello SPETTACOLO) anche di carattere mortale, afferenti la persona
+		        dell’ARTISTA, del personale applicato e del pubblico, nonché eventuali sinistri relativi al
+		        danneggiamento o pertinenti della strumentazione di proprietà e/o disponibilità dell’ARTISTA ed a
+		        darne evidenza alla SOCIETÀ almeno 48 ore prima della rappresentazione dello SPETTACOLO;
+		      </li>
+	  
+		      <li>
+		        h) a pagare al competente Ente percettore quanto dovuto per la pubblica esecuzione delle opere musicali
+		        eseguite dall’ARTISTA durante lo SPETTACOLO;
+		      </li>
+	  
+		      <li>
+		        i) a tenere a proprio carico i costi di viaggio (mezzo di trasporto, benzina, caselli) l’ARTISTA ed
+		        ulteriori accompagnatori, spese stimate di Euro <strong>{{TRANSPORTATION_COST}}</strong> da ritirare in
+		        serata. Il locale dovrà sostenere i costi di vitto e alloggio separatamente e previo consenso del
+		        tour manager.
+		      </li>
+		    </ul>
+		    <p>
+		      In caso di violazione, in tutto o in parte, anche di uno soltanto degli obblighi di cui al presente
+		      art. 3.1., l’ORGANIZZATORE si impegna fin da subito a tenere indenne e manlevata la SOCIETÀ da ogni e
+		      qualsivoglia responsabilità, di natura civile, amministrativa e/o penale e/o da qualsivoglia
 	      pregiudizio, danno, perdita, costo, onere o spesa, ivi comprese le eventuali spesi legali e in
 	      relazione a qualsivoglia pretesa e/o domanda e/o azione (sia essa di carattere risarcitorio e/o a
 	      titolo di indennizzo), e da ogni e qualsivoglia responsabilità, sanzione e/o conseguenza negativa, che
@@ -459,36 +465,36 @@ h2 {
 	      di qualsivoglia soggetto, che dovesse derivare dall’inadempimento e/o in conseguenza e/o in relazione
 	      alla violazione di anche uno soltanto degli obblighi di cui al presente articolo 3.1.
 	    </p>
-	    <p >
-	      3.2. Fermo restando quanto previsto all’art. 3.1., l’ORGANIZZATORE si obbliga:
-	    </p>
+		    <p >
+		      3.2. Fermo restando quanto previsto all’art. 3.1., l’ORGANIZZATORE si obbliga:
+		    </p>
     <ul class="legal-list">
-      <p>
+      <li>
         i) a non realizzare e/o a non far realizzare da terzi e, comunque, a non permettere la ripresa
         fotografica e audio e/o video, anche parziale, dello SPETTACOLO. L’ARTISTA potrà invece liberamente
         effettuare registrazioni audio/video dello SPETTACOLO ed utilizzare liberamente tali registrazioni
         senza che all’ORGANIZZATORE sia dovuto alcunché;
-      </p>
-      <p>
+      </li>
+      <li>
         ii) ad utilizzare nell’effettuazione della campagna promozionale e pubblicitaria dello SPETTACOLO
         presso il pubblico, che dovrà essere concordata con la SOCIETÀ, esclusivamente il Materiale fornito
         dalla Società ai sensi del precedente art. 2.2. lett. b);
-      </p>
-      <p>
+      </li>
+      <li>
         iii) a non concludere alcun tipo di accordo con terzi avente ad oggetto la sponsorizzazione dello
         SPETTACOLO né ad utilizzare e/o a far utilizzare gli elementi identificativi dell’ARTISTA per finalità
         pubblicitarie e/o promozionali a favore di aziende e/o di prodotti;
-      </p>
-      <p>
+      </li>
+      <li>
         iv) a non utilizzare e/o far utilizzare gli elementi identificativi dell’ARTISTA e/o immagini dello
         SPETTACOLO su siti internet e/o social network dell’Organizzatore né per finalità pubblicitarie e/o
         promozionali in favore dell’Organizzatore, salvo quanto previsto espressamente concordato con la
         SOCIETÀ;
-      </p>
-      <p>
+      </li>
+      <li>
         v) a non consentire, all’interno della VENUE, l’esposizione di Materiale pubblicitario di qualsiasi
         tipo non espressamente autorizzato dalla SOCIETÀ.
-      </p>
+      </li>
     </ul>
     <p>
       3.3. L’ORGANIZZATORE inoltre acconsente a che la SOCIETÀ possa adibire presso la VENUE una postazione per
@@ -516,12 +522,12 @@ h2 {
   presentazione della relativa documentazione fiscale da parte della SOCIETÀ, secondo le seguenti modalità:
 </p>
 <p>
-  In data di sottoscrizione del contratto <strong>Euro</strong> <strong>{{UPFRONT_PAYMENT}}</strong> oltre iva al momento
+  a) In data di sottoscrizione del contratto <strong>Euro</strong> <strong>{{UPFRONT_PAYMENT}}</strong> oltre iva al momento
   della sottoscrizione del presente contratto; mediante bonifico bancario.
 </p>
-<p>Il saldo verrà effettuato in data <strong>{{PAYMENT_DATE}}</strong></p>
+<p>b) Il saldo verrà effettuato in data <strong>{{PAYMENT_DATE}}</strong></p>
 <p>
-  In caso di annullamento da parte dell’ORGANIZZATORE dello SPETTACOLO, comunicato con un preavviso minimo di 10 (dieci)
+  c) In caso di annullamento da parte dell’ORGANIZZATORE dello SPETTACOLO, comunicato con un preavviso minimo di 10 (dieci)
   giorni dalla data prevista dell’evento, le somme eventualmente già corrisposte non saranno rimborsate. Le parti si
   impegnano a concordare una nuova data di recupero dello SPETTACOLO compatibile con le rispettive disponibilità, entro e
   non oltre 60 (sessanta) giorni dalla data originaria.
@@ -573,12 +579,12 @@ h2 {
   all’ORGANIZZATORE, salva la restituzione della parte di compenso già eventualmente versata (Anticipo):
 </p>
 <p>
-  nell’ipotesi in cui, per malattia, infortunio o altra causa di forza maggiore che generi un impedimento
+  i) nell’ipotesi in cui, per malattia, infortunio o altra causa di forza maggiore che generi un impedimento
   dell’ARTISTA, quest’ultimo non sia più in grado di effettuare le proprie prestazioni relativamente allo
   SPETTACOLO;
 </p>
 <p>
-  nel caso di sopraggiunti ed inderogabili impegni professionali dell’ARTISTA che rendano inconciliabile la
+  ii) nel caso di sopraggiunti ed inderogabili impegni professionali dell’ARTISTA che rendano inconciliabile la
   rappresentazione dello SPETTACOLO.
 </p>
 <p>
@@ -627,12 +633,12 @@ h2 {
 <h2>Art. 10 - Legge applicabile. Foro competente
 </h2>
 <ul class="legal-list">
-  <p >
+  <li>
     1. Le Parti riconoscono che il presente accordo è disciplinato, in via esclusiva, dalla legge italiana.
-  </p>
-  <p >
+  </li>
+  <li>
     2. Per ogni controversia relativa al presente accordo sarà ritenuta competente, in via esclusiva, l’Autorità Giudiziaria di Milano.
-  </p>
+  </li>
 </ul>
 
 <div class="hr-wrapper">
@@ -647,7 +653,7 @@ h2 {
 <div class="hr-wrapper">
   <div class="hr"></div>
 </div>
-<h2>Art. 12 - Trattative </h2>
+<h2>Art. 12. Trattative.</h2>
   <p>
     Le Parti dichiarano che quanto previsto dal Contratto corrisponde a ciò che è stato pattuito nelle
     trattative preliminarmente intercorse, essendo privo di validità ogni altro accordo non recepito dallo
@@ -658,25 +664,32 @@ h2 {
     clausola. In relazione a ciò le Parti si danno reciprocamente atto che le disposizioni degli articoli
     1341 e 1342 c.c. non trovano pertanto applicazione.
   </p>
-  <h3>FORMULA DI ACCETTAZIONE</h3>
-  <p>Milano, __________________________</p>
+	  <h3>FORMULA DI ACCETTAZIONE</h3>
+	  <p class="acceptance-date">Milano, __________________________</p>
 
   <div class="signing-section">
     <!-- SIGNATURES -->
-    <div class="signature-row">
-      <!-- LEFT -->
-      <div class="signature-left">
-        <p class="signature-name"><strong>Milano Ovest S.r.l.</strong></p>
-        <div class="signature-mark">Milano Ovest S.r.l.</div>
-        <div class="signature-line left-line"></div>
-      </div>
-  
-      <!-- RIGHT -->
-      <div class="signature-right">
-        <span class="signature-anchor">DOCUSIGN_SIGNATURE</span>
-      </div>
-    </div>
-  </div>
+	  <div class="signature-row">
+	      <!-- LEFT -->
+	      <div class="signature-left">
+	        <p class="signature-name"><strong>Milano Ovest S.r.l.</strong></p>
+	        <div class="company-line left-line invisible"></div>
+	        <div class="signature-field">
+	          <div class="signature-line left-line"></div>
+	        </div>
+	      </div>
+	  
+	      <!-- RIGHT -->
+	      <div class="signature-right">
+	        <p class="signature-name"><strong>{{VENUE_COMPANY_NAME}}</strong></p>
+	        <div class="company-line right-line"></div>
+	        <div class="signature-field">
+	          <span class="signature-anchor">DOCUSIGN_SIGNATURE</span>
+	          <div class="signature-line right-line"></div>
+	        </div>
+	      </div>
+	    </div>
+	  </div>
   
 
 </section>
@@ -692,11 +705,12 @@ h2 {
         ARTIST_NAME: DATA.artistName ?? "",
     ARTIST_STAGE_NAME: DATA.artistStageName ?? "",
 
-    // Venue / Organizer
-    VENUE_NAME: DATA.venueName ?? "",
-    VENUE_ADDRESS: DATA.venueAddress ?? "—",
-    VENUE_CITY: DATA.venueCity ?? "",
-    VENUE_VAT: DATA.venueVatNumber ?? DATA.venueVat ?? "—",
+	    // Venue / Organizer
+	    VENUE_NAME: DATA.venueName ?? "",
+	    VENUE_COMPANY_NAME: DATA.venueCompanyName ?? DATA.venueName ?? "",
+	    VENUE_ADDRESS: DATA.venueAddress ?? "—",
+	    VENUE_CITY: DATA.venueCity ?? "",
+	    VENUE_VAT: DATA.venueVatNumber ?? DATA.venueVat ?? "—",
 
     // Event
     EVENT_TYPE: DATA.eventType ?? "",

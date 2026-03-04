@@ -108,15 +108,15 @@ export async function generateFilledContractHtml(
 
   let html = await res.text();
 
-  const replacements: Record<string, string> = {
-    ARTIST_NAME: data.artistName,
-    ARTIST_STAGE_NAME: data.artistStageName ?? "",
+	  const replacements: Record<string, string> = {
+	    ARTIST_NAME: data.artistName,
+	    ARTIST_STAGE_NAME: data.artistStageName ?? "",
 
-    VENUE_NAME: data.venueName,
-    VENUE_COMPANY_NAME: data.venueCompanyName ?? "",
-    VENUE_ADDRESS: data.venueAddress ?? "",
-    VENUE_VAT: data.venueVatNumber ?? "",
-    VENUE_CITY: data.venueCity ?? "",
+	    VENUE_NAME: data.venueName,
+	    VENUE_COMPANY_NAME: data.venueCompanyName ?? data.venueName ?? "",
+	    VENUE_ADDRESS: data.venueAddress ?? "",
+	    VENUE_VAT: data.venueVatNumber ?? "",
+	    VENUE_CITY: data.venueCity ?? "",
 
     EVENT_TYPE: data.eventType ?? "",
     EVENT_DATE: data.eventDate,
